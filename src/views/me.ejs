@@ -1,0 +1,11 @@
+<%- include("layout", { title: "My submissions" , user, leaflet: false, body: ` <h1>My submissions</h1>
+    ${submissions.length ? submissions.map(s => `
+    <div class="card">
+        <div><strong>#${s.id}</strong> · ${s.type} · <strong>${s.status}</strong></div>
+        <div class="small">Created: ${new Date(s.createdAt).toLocaleString()}</div>
+        ${s.rejectionReason ? `<div class="small">Reason: ${s.rejectionReason}</div>` : ""}
+    </div>
+    `).join("") : "<p>No submissions yet.</p>"}
+    `
+    })
+    %>

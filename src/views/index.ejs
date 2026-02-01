@@ -1,0 +1,21 @@
+<%- include("layout", { title: "OpenPizzaMap" , user, leaflet: false, body: ` <h1>Find great pizza</h1>
+    <p class="small">Search by name/city or use near-me.</p>
+    <form action="/map" method="get" class="card">
+        <div class="row">
+            <div style="flex:2;">
+                <label>Name</label>
+                <input name="query" placeholder="e.g. Sorbillo" />
+            </div>
+            <div style="flex:2;">
+                <label>City</label>
+                <input name="city" placeholder="e.g. Barcelona" />
+            </div>
+            <div style="flex:1; align-self:end;">
+                <button type="submit">Search</button>
+            </div>
+        </div>
+    </form>
+    <p><a href="/map">Open map</a></p>
+    `
+    })
+    %>

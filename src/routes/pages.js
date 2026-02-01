@@ -1,0 +1,107 @@
+const express = require("express");
+const { prisma } = require("../db");
+const { requireAuth, requireAdmin } = require("../middleware/auth");
+
+const router = express.Router();
+
+router.get("/", (req, res) => res.render("index", { user: req.session.user || null }));
+
+router.get("/map", (req, res) => {
+    res.render("map", { user: req.session.user || null });
+});
+
+router.get("/place/:id", async (req, res) => {
+    const id = Number(req.params.id);
+    const place = await prisma.place.findUnique({ where: { id } });
+    if (!place) return res.status(404).send("Not found");
+    res.render("place", { user: req.session.user || null, place });
+});
+
+router.get("/add", requireAuth, (req, res) => {
+    res.render("add", { user: req.session.user });
+});
+
+router.post("/add", requireAuth, async (req, res) => {
+    // form posts into submissions endpoint logic (server-side)
+    const payload = {
+        name: req.body.name,
+        addressLine: req.body.addressLine,
+        city: req.body.city,
+        region: req.body.region || null,
+        postalCode: req.body.postalCode || null,
+        country: req.body.country || "ES",
+        lat: req.body.lat,
+        lng: req.body.lng,
+        priceLevel: Number(req.body.priceLevel || 2),
+        stylesJson: JSON.stringify((req.body.styles || "").split(",").map(s => s.trim()).filter(Boolean)),
+        dineIn: !!req.body.dineIn,
+        takeaway: !!req.body.takeaway,
+        delivery: !!req.body.delivery,
+        websiteUrl: req.body.websiteUrl || null,
+        googleMapsUrl: req.body.googleMapsUrl || null,
+        instagramUrl: req.body.instagramUrl || null,
+        status: "active",
+    };
+
+    await prisma.submission.create({
+        data: {
+            userId: req.session.user.id,
+            type: "new_place",
+            payloadJson: JSON.stringify(payload),
+        },
+    });
+
+    res.redirect("/me");
+});
+
+router.get("/register", (req, res) => res.render("register", { user: req.session.user || null }));
+router.get("/login", (req, res) => res.render("login", { user: req.session.user || null }));
+router.post("/logout", (req, res) => req.session.destroy(() => res.redirect("/")));
+
+router.get("/me", requireAuth, async (req, res) => {
+    const subs = await prisma.submission.findMany({
+        where: { userId: req.session.user.id },
+        orderBy: { createdAt: "desc" },
+        take: 100,
+    });
+    res.render("me", { user: req.session.user, submissions: subs });
+});
+
+router.get("/admin/submissions", requireAdmin, async (req, res) => {
+    const subs = await prisma.submission.findMany({
+        where: { status: "pending" },
+        orderBy: { createdAt: "desc" },
+        take: 200,
+    });
+    res.render("admin_submissions", { user: req.session.user, submissions: subs });
+});
+
+router.post("/admin/submissions/:id/approve", requireAdmin, async (req, res) => {
+    const id = Number(req.params.id);
+    const sub = await prisma.submission.findUnique({ where: { id } });
+    if (!sub || sub.status !== "pending") return res.redirect("/admin/submissions");
+
+    const payload = JSON.parse(sub.payloadJson);
+    await prisma.place.create({ data: payload });
+
+    await prisma.submission.update({
+        where: { id },
+        data: { status: "approved", reviewedAt: new Date(), reviewedByUserId: req.session.user.id },
+    });
+
+    res.redirect("/admin/submissions");
+});
+
+router.post("/admin/submissions/:id/reject", requireAdmin, async (req, res) => {
+    const id = Number(req.params.id);
+    const reason = (req.body.reason || "Rejected").slice(0, 200);
+
+    await prisma.submission.update({
+        where: { id },
+        data: { status: "rejected", rejectionReason: reason, reviewedAt: new Date(), reviewedByUserId: req.session.user.id },
+    });
+
+    res.redirect("/admin/submissions");
+});
+
+module.exports = router;

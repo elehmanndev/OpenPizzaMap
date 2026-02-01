@@ -1,0 +1,27 @@
+<%- include("layout", { title: "Admin submissions" , user, leaflet: false, body: ` <h1>Pending submissions</h1>
+    ${submissions.length ? submissions.map(s => {
+    const payload = JSON.parse(s.payloadJson);
+    return `
+    <div class="card">
+        <div><strong>#${s.id}</strong> · ${s.type} · by user ${s.userId}</div>
+        <div class="small">${payload.name} — ${payload.city}</div>
+        <details>
+            <summary class="small">Payload</summary>
+            <pre class="small">${JSON.stringify(payload, null, 2)}</pre>
+        </details>
+        <div class="row">
+            <form method="post" action="/admin/submissions/${s.id}/approve">
+                <button type="submit">Approve</button>
+            </form>
+            <form method="post" action="/admin/submissions/${s.id}/reject"
+                style="display:flex;gap:8px;align-items:center;">
+                <input name="reason" placeholder="Reason" required />
+                <button type="submit">Reject</button>
+            </form>
+        </div>
+    </div>
+    `;
+    }).join("") : "<p>No pending submissions.</p>"}
+    `
+    })
+    %>

@@ -1,0 +1,23 @@
+<%- include("layout", { title: place.name, user, leaflet: false, body: ` <h1>${place.name}</h1>
+    <p>${place.addressLine}, ${place.city}</p>
+    <p class="small">Price: ${"€".repeat(place.priceLevel)} · Status: ${place.status}</p>
+    <p class="small">Styles: ${place.stylesJson}</p>
+    <div class="card">
+        <div>Services:
+            ${place.dineIn ? "Dine-in " : ""}
+            ${place.takeaway ? "Takeaway " : ""}
+            ${place.delivery ? "Delivery " : ""}
+        </div>
+        <div class="small">
+            ${place.websiteUrl ? `Website: <a href="${place.websiteUrl}" target="_blank" rel="noopener">link</a><br />`
+            : ""}
+            ${place.instagramUrl ? `Instagram: <a href="${place.instagramUrl}" target="_blank"
+                rel="noopener">link</a><br />` : ""}
+            ${place.googleMapsUrl ? `Maps: <a href="${place.googleMapsUrl}" target="_blank" rel="noopener">link</a>` :
+            ""}
+        </div>
+    </div>
+    <p><a href="/map">Back to map</a></p>
+    `
+    })
+    %>

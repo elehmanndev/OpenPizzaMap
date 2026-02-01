@@ -1,0 +1,98 @@
+<%- include("layout", { title: "Add place" , user, leaflet: true, body: ` <h1>Add a pizza place</h1>
+    <p class="small">Your submission will be reviewed before going live.</p>
+
+    <form method="post" action="/add" class="card">
+        <label>Name</label>
+        <input name="name" required />
+
+        <label>Address line</label>
+        <input name="addressLine" required />
+
+        <div class="row">
+            <div style="flex:2;">
+                <label>City</label>
+                <input name="city" required />
+            </div>
+            <div style="flex:2;">
+                <label>Region</label>
+                <input name="region" />
+            </div>
+            <div style="flex:1;">
+                <label>Postal code</label>
+                <input name="postalCode" />
+            </div>
+            <div style="flex:1;">
+                <label>Country (ISO2)</label>
+                <input name="country" value="ES" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div style="flex:1;">
+                <label>Price level</label>
+                <select name="priceLevel">
+                    <option value="1">€</option>
+                    <option value="2" selected>€€</option>
+                    <option value="3">€€€</option>
+                </select>
+            </div>
+            <div style="flex:3;">
+                <label>Styles (comma-separated)</label>
+                <input name="styles" placeholder="neapolitan, roman, ny_slice" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div style="flex:1;">
+                <label><input type="checkbox" name="dineIn" checked /> Dine-in</label>
+            </div>
+            <div style="flex:1;">
+                <label><input type="checkbox" name="takeaway" checked /> Takeaway</label>
+            </div>
+            <div style="flex:1;">
+                <label><input type="checkbox" name="delivery" /> Delivery</label>
+            </div>
+        </div>
+
+        <label>Website URL</label>
+        <input name="websiteUrl" placeholder="https://..." />
+
+        <label>Google Maps URL</label>
+        <input name="googleMapsUrl" placeholder="https://..." />
+
+        <label>Instagram URL</label>
+        <input name="instagramUrl" placeholder="https://..." />
+
+        <div class="card">
+            <p class="small">Pick location on map (click):</p>
+            <div id="pickMap" style="height: 360px;"></div>
+            <div class="row">
+                <div style="flex:1;">
+                    <label>Lat</label>
+                    <input name="lat" id="lat" required />
+                </div>
+                <div style="flex:1;">
+                    <label>Lng</label>
+                    <input name="lng" id="lng" required />
+                </div>
+            </div>
+        </div>
+
+        <button type="submit">Submit for review</button>
+    </form>
+
+    <script>
+        const m = L.map("pickMap").setView([41.3851, 2.1734], 13);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(m);
+        let marker = null;
+        m.on("click", (e) => {
+            const { lat, lng } = e.latlng;
+            document.getElementById("lat").value = lat.toFixed(7);
+            document.getElementById("lng").value = lng.toFixed(7);
+            if (marker) marker.remove();
+            marker = L.marker([lat, lng]).addTo(m);
+        });
+    </script>
+    `
+    })
+    %>

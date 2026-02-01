@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  displayName  String
+  role         String   @default("user")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  submissions  Submission[] @relation("UserSubmissions")
+  reviews      Submission[] @relation("ReviewedBy")
+}
+
+model Place {
+  id          Int        @id @default(autoincrement())
+  name        String
+  addressLine String
+  city        String
+  region      String?
+  postalCode  String?
+  country     String
+  lat         Decimal
+  lng         Decimal
+
+  priceLevel  Int        // 1..3
+  stylesJson  String     // JSON array string, e.g. ["neapolitan","roman"]
+  dineIn      Boolean    @default(true)
+  takeaway    Boolean    @default(true)
+  delivery    Boolean    @default(false)
+
+  websiteUrl    String?
+  googleMapsUrl String?
+  instagramUrl  String?
+
+  status      String   @default("active")
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([city])
+  @@index([lat])
+  @@index([lng])
+}
+
+model Submission {
+  id              Int              @id @default(autoincrement())
+  userId          Int
+  type            String
+  targetPlaceId   Int?
+  payloadJson     String           // JSON string of proposed fields
+  status          String   @default("pending")
+  rejectionReason String?
+
+  createdAt       DateTime  @default(now())
+  reviewedAt      DateTime?
+  reviewedByUserId Int?
+
+  user        User @relation("UserSubmissions", fields: [userId], references: [id])
+  reviewedBy  User? @relation("ReviewedBy", fields: [reviewedByUserId], references: [id])
+
+  @@index([status])
+  @@index([createdAt])
+}

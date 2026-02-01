@@ -1,0 +1,41 @@
+<%- include("layout", { title: "Map" , user, leaflet: true, body: ` <h1>Map</h1>
+    <div class="card">
+        <form id="searchForm" class="row">
+            <div style="flex:2;">
+                <label>Name</label>
+                <input id="q" placeholder="e.g. neapolitan" />
+            </div>
+            <div style="flex:2;">
+                <label>City</label>
+                <input id="c" placeholder="e.g. Barcelona" />
+            </div>
+            <div style="flex:1;">
+                <label>Radius (km)</label>
+                <select id="radius">
+                    <option value="1">1</option>
+                    <option value="5" selected>5</option>
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                </select>
+            </div>
+            <div style="flex:1; align-self:end;">
+                <button type="submit">Search</button>
+            </div>
+            <div style="flex:1; align-self:end;">
+                <button type="button" id="nearMe">Near me</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="split">
+        <div id="map"></div>
+        <div>
+            <h3>Results</h3>
+            <div id="results"></div>
+        </div>
+    </div>
+
+    <script src="/public/js/map.js"></script>
+    `
+    })
+    %>

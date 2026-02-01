@@ -1,0 +1,26 @@
+<%- include("layout", { title: "Register" , user, leaflet: false, body: ` <h1>Register</h1>
+    <form class="card" id="reg">
+        <label>Email</label><input name="email" type="email" required />
+        <label>Display name</label><input name="displayName" required />
+        <label>Password</label><input name="password" type="password" required />
+        <button type="submit">Create account</button>
+        <p class="small" id="msg"></p>
+    </form>
+    <script>
+        document.getElementById("reg").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const body = Object.fromEntries(fd.entries());
+            const res = await fetch("/api/auth/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body),
+            });
+            const data = await res.json();
+            if (data.ok) location.href = "/map";
+            else document.getElementById("msg").textContent = JSON.stringify(data.error);
+        });
+    </script>
+    `
+    })
+    %>

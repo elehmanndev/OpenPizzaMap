@@ -1,0 +1,25 @@
+<%- include("layout", { title: "Login" , user, leaflet: false, body: ` <h1>Login</h1>
+    <form class="card" id="login">
+        <label>Email</label><input name="email" type="email" required />
+        <label>Password</label><input name="password" type="password" required />
+        <button type="submit">Login</button>
+        <p class="small" id="msg"></p>
+    </form>
+    <script>
+        document.getElementById("login").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const body = Object.fromEntries(fd.entries());
+            const res = await fetch("/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body),
+            });
+            const data = await res.json();
+            if (data.ok) location.href = "/map";
+            else document.getElementById("msg").textContent = data.error || "Login failed";
+        });
+    </script>
+    `
+    })
+    %>

@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title><%= title || "OpenPizzaMap" %></title>
+    <link rel="stylesheet" href="/public/css/styles.css" />
+    <% if (leaflet) { %>
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+      <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <% } %>
+  </head>
+  <body>
+    <header>
+      <div class="nav">
+        <a href="/"><strong>OpenPizzaMap</strong></a>
+        <a href="/map">Map</a>
+        <% if (user) { %>
+          <a href="/add">Add</a>
+          <a href="/me">My submissions</a>
+          <% if (user.role === "admin") { %>
+            <a href="/admin/submissions">Admin</a>
+          <% } %>
+        <% } %>
+      </div>
+      <div>
+        <% if (user) { %>
+          <span class="small">Hi, <%= user.displayName %></span>
+          <form method="post" action="/logout" style="display:inline;">
+            <button type="submit">Logout</button>
+          </form>
+        <% } else { %>
+          <a href="/login">Login</a> · <a href="/register">Register</a>
+        <% } %>
+      </div>
+    </header>
+    <main class="container">
+      <%- body %>
+    </main>
+  </body>
+</html>
