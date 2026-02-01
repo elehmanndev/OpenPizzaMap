@@ -4,7 +4,7 @@ const { requireAuth, requireAdmin } = require("../middleware/auth");
 
 const router = express.Router();
 
-router.get("/", (req, res) => res.render("maintenance"));
+router.get("/", (req, res) => res.redirect("/map"));
 
 router.get("/map", (req, res) => {
     res.render("map", { user: req.session.user || null });
