@@ -12,8 +12,24 @@ const apiPlaces = require("./routes/api.places");
 const apiSubmissions = require("./routes/api.submissions");
 const apiAdmin = require("./routes/api.admin");
 const { errorHandler } = require("./middleware/error");
+const { prisma } = require("./db");
 
 const app = express();
+
+// Auto-seed if empty (Hostinger helper)
+async function autoSeed() {
+    const count = await prisma.place.count();
+    if (count === 0) {
+        console.log("Database empty, running auto-seed...");
+        try {
+            const { execSync } = require("child_process");
+            execSync("node prisma/seed.js", { stdio: "inherit" });
+        } catch (e) {
+            console.error("Auto-seed failed:", e.message);
+        }
+    }
+}
+autoSeed();
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));

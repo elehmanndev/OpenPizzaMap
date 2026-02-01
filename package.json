@@ -5,7 +5,8 @@
   "type": "commonjs",
   "scripts": {
     "dev": "node src/app.js",
-    "start": "node src/app.js",
+    "start": "npx prisma migrate deploy && node src/app.js",
+    "seed": "node prisma/seed.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
     "prisma:migrate:dev": "prisma migrate dev",
