@@ -1,25 +1,67 @@
-<%- include("layout", { title: "Login" , user, leaflet: false, body: ` <h1>Login</h1>
-    <form class="card" id="login">
-        <label>Email</label><input name="email" type="email" required />
-        <label>Password</label><input name="password" type="password" required />
-        <button type="submit">Login</button>
-        <p class="small" id="msg"></p>
+<%- include("layout", { title: "Login", user, leaflet: false, bodyClass: "auth-page", body: `
+<section class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <span class="auth-logo">OPM</span>
+      <div>
+        <span class="auth-brand-name">OpenPizzaMap</span>
+        <span class="auth-brand-tag">Your pizza intel hub</span>
+      </div>
+    </div>
+    <h1 class="auth-title">Welcome back</h1>
+    <p class="auth-subtitle">Sign in to keep your slice map up to date.</p>
+    <button class="auth-social" type="button" disabled aria-disabled="true">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.2-.9 2.1-1.9 2.8v2.3h3.1c1.8-1.6 2.9-4 2.9-6.9 0-.7-.1-1.4-.2-2.1H12z"/>
+        <path fill="#34A853" d="M12 22c2.6 0 4.8-.9 6.4-2.5l-3.1-2.3c-.9.6-2 .9-3.3.9-2.5 0-4.6-1.7-5.4-4.1H3.4v2.6C5 19.9 8.2 22 12 22z"/>
+        <path fill="#4A90E2" d="M6.6 13.9c-.2-.6-.3-1.3-.3-1.9s.1-1.3.3-1.9V7.5H3.4C2.8 8.8 2.4 10.4 2.4 12s.4 3.2 1 4.5l3.2-2.6z"/>
+        <path fill="#FBBC05" d="M12 5.8c1.4 0 2.6.5 3.6 1.4l2.7-2.7C16.8 2.8 14.6 2 12 2 8.2 2 5 4.1 3.4 7.5l3.2 2.6C7.4 7.5 9.5 5.8 12 5.8z"/>
+      </svg>
+      Continue with Google
+    </button>
+    <div class="auth-divider"><span>or continue with email</span></div>
+    <form class="auth-form" id="login">
+      <label class="auth-field">
+        <span>Email address</span>
+        <input name="email" type="email" autocomplete="email" required />
+      </label>
+      <label class="auth-field">
+        <span>Password</span>
+        <input name="password" type="password" autocomplete="current-password" required />
+      </label>
+      <button class="auth-submit" type="submit">Sign in</button>
+      <p class="auth-msg" id="msg"></p>
     </form>
-    <script>
-        document.getElementById("login").addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const fd = new FormData(e.target);
-            const body = Object.fromEntries(fd.entries());
-            const res = await fetch("/api/auth/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(body),
-            });
-            const data = await res.json();
-            if (data.ok) location.href = "/map";
-            else document.getElementById("msg").textContent = data.error || "Login failed";
-        });
-    </script>
-    `
-    })
-    %>
+    <p class="auth-footer">New here? <a href="/register">Create an account</a></p>
+  </div>
+</section>
+<script>
+  const form = document.getElementById("login");
+  const msg = document.getElementById("msg");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    msg.textContent = "";
+    const fd = new FormData(form);
+    const body = Object.fromEntries(fd.entries());
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      location.href = "/map";
+      return;
+    }
+    if (typeof data.error === "string") {
+      msg.textContent = data.error;
+    } else if (data.error && data.error.formErrors && data.error.formErrors.length) {
+      msg.textContent = data.error.formErrors.join(", ");
+    } else if (data.error && data.error.fieldErrors) {
+      msg.textContent = Object.values(data.error.fieldErrors).flat().join(", ");
+    } else {
+      msg.textContent = "Login failed";
+    }
+  });
+</script>
+` }) %>
