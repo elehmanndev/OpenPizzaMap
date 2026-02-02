@@ -6,4 +6,3 @@ yarn-error.log*
 .DS_Store
 .prisma
 *.log
-.env.example

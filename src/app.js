@@ -5,7 +5,6 @@ const express = require("express");
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
-const passport = require("passport");
 
 const pages = require("./routes/pages");
 const apiAuth = require("./routes/api.auth");
@@ -54,8 +53,6 @@ app.use(
         },
     })
 );
-
-app.use(passport.initialize());
 
 app.use("/public", express.static(path.join(__dirname, "..", "public")));
 

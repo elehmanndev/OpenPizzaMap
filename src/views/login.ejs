@@ -1,6 +1,4 @@
 <%- include("layout", { title: "Login" , user, leaflet: false, body: ` <h1>Login</h1>
-    <a class="btn google" href="/api/auth/google">Continue with Google</a>
-    <div class="divider"><span>or</span></div>
     <form class="card" id="login">
         <label>Email</label><input name="email" type="email" required />
         <label>Password</label><input name="password" type="password" required />
@@ -21,10 +19,6 @@
             if (data.ok) location.href = "/map";
             else document.getElementById("msg").textContent = data.error || "Login failed";
         });
-        const params = new URLSearchParams(location.search);
-        if (params.get("error") === "google") {
-            document.getElementById("msg").textContent = "Google login failed";
-        }
     </script>
     `
     })
