@@ -1,4 +1,4 @@
-<%- include("layout", { title: "Register", user, leaflet: false, bodyClass: "auth-page", body: `
+<%- include("layout", { title: "Register", user, leaflet: false, bodyClass: "auth-page", body: String.raw`
 <section class="auth-wrap">
   <div class="auth-card">
     <div class="auth-brand">
@@ -20,32 +20,80 @@
       Continue with Google
     </button>
     <div class="auth-divider"><span>or continue with email</span></div>
-    <form class="auth-form" id="reg">
+    <form class="auth-form" id="reg" novalidate>
       <label class="auth-field">
         <span>Email address</span>
         <input name="email" type="email" autocomplete="email" required />
+        <small class="auth-error" aria-live="polite"></small>
       </label>
       <label class="auth-field">
-        <span>Display name</span>
-        <input name="displayName" type="text" autocomplete="name" required />
+        <span>Username</span>
+        <input name="displayName" type="text" autocomplete="username" required minlength="3" maxlength="20" pattern="^[A-Za-z0-9_]{3,20}$" />
+        <small class="auth-error" aria-live="polite"></small>
       </label>
       <label class="auth-field">
         <span>Password</span>
-        <input name="password" type="password" autocomplete="new-password" required />
+        <input name="password" type="password" autocomplete="new-password" required minlength="8" maxlength="128" pattern="^(?=.*[A-Za-z])(?=.*\\d).+$" />
+        <small class="auth-hint">At least 8 characters with letters and numbers.</small>
+        <small class="auth-error" aria-live="polite"></small>
       </label>
       <button class="auth-submit" type="submit">Create account</button>
       <p class="auth-msg" id="msg"></p>
     </form>
-    <p class="auth-legal">By creating an account, you agree to keep submissions accurate and kind.</p>
-    <p class="auth-footer">Already have an account? <a href="/login">Sign in</a></p>
+    <p class="auth-legal">By creating an account, you agree to our <a class="auth-link" href="/terms">Terms of Service</a> and <a class="auth-link" href="/privacy">Privacy Policy</a>.</p>
+    <p class="auth-footer">Already have an account? <a class="auth-link" href="/login">Sign in</a></p>
   </div>
 </section>
 <script>
   const form = document.getElementById("reg");
   const msg = document.getElementById("msg");
+  const fields = Array.from(form.querySelectorAll("input"));
+  let submitted = false;
+  const getMessage = (input) => {
+    const value = input.value.trim();
+    if (input.validity.valueMissing) {
+      if (input.name === "email") return "Email is required.";
+      if (input.name === "displayName") return "Username is required.";
+      if (input.name === "password") return "Password is required.";
+    }
+    if (input.name === "email" && (input.validity.typeMismatch || input.validity.patternMismatch)) {
+      return "\"" + (value || "This") + "\" isn't a valid email address.";
+    }
+    if (input.name === "displayName" && (input.validity.tooShort || input.validity.patternMismatch)) {
+      return "Username must be 3-20 characters and use letters, numbers, or underscores.";
+    }
+    if (input.name === "password" && (input.validity.tooShort || input.validity.patternMismatch)) {
+      return "Password must be at least 8 characters and include letters and numbers.";
+    }
+    return input.validationMessage || "Please check this field.";
+  };
+  const updateValidity = (input) => {
+    const field = input.closest(".auth-field");
+    const error = field ? field.querySelector(".auth-error") : null;
+    const isValid = input.checkValidity();
+    const hasValue = input.value.trim().length > 0;
+    const showError = submitted && (!isValid);
+    input.classList.toggle("is-valid", isValid && hasValue);
+    input.classList.toggle("is-invalid", !isValid && hasValue);
+    if (field) field.classList.toggle("is-invalid", submitted && !isValid);
+    if (error && showError) {
+      error.textContent = getMessage(input);
+    } else if (error) {
+      error.textContent = "";
+    }
+  };
+  fields.forEach((input) => {
+    input.addEventListener("input", () => updateValidity(input));
+  });
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     msg.textContent = "";
+    submitted = true;
+    fields.forEach((input) => updateValidity(input));
+    if (!form.checkValidity()) {
+      msg.textContent = "Please fix the highlighted fields.";
+      return;
+    }
     const fd = new FormData(form);
     const body = Object.fromEntries(fd.entries());
     const res = await fetch("/api/auth/register", {

@@ -1,4 +1,4 @@
-<%- include("layout", { title: "Login", user, leaflet: false, bodyClass: "auth-page", body: `
+<%- include("layout", { title: "Login", user, leaflet: false, bodyClass: "auth-page", body: String.raw`
 <section class="auth-wrap">
   <div class="auth-card">
     <div class="auth-brand">
@@ -20,14 +20,17 @@
       Continue with Google
     </button>
     <div class="auth-divider"><span>or continue with email</span></div>
-    <form class="auth-form" id="login">
+    <form class="auth-form" id="login" novalidate>
       <label class="auth-field">
         <span>Email address</span>
         <input name="email" type="email" autocomplete="email" required />
+        <small class="auth-error" aria-live="polite"></small>
       </label>
       <label class="auth-field">
         <span>Password</span>
-        <input name="password" type="password" autocomplete="current-password" required />
+        <input name="password" type="password" autocomplete="current-password" required minlength="8" maxlength="128" pattern="^(?=.*[A-Za-z])(?=.*\\d).+$" />
+        <small class="auth-hint">At least 8 characters with letters and numbers.</small>
+        <small class="auth-error" aria-live="polite"></small>
       </label>
       <button class="auth-submit" type="submit">Sign in</button>
       <p class="auth-msg" id="msg"></p>
@@ -38,9 +41,49 @@
 <script>
   const form = document.getElementById("login");
   const msg = document.getElementById("msg");
+  const fields = Array.from(form.querySelectorAll("input"));
+  let submitted = false;
+  const getMessage = (input) => {
+    const value = input.value.trim();
+    if (input.validity.valueMissing) {
+      if (input.name === "email") return "Email is required.";
+      if (input.name === "password") return "Password is required.";
+    }
+    if (input.name === "email" && (input.validity.typeMismatch || input.validity.patternMismatch)) {
+      return "\"" + (value || "This") + "\" isn't a valid email address.";
+    }
+    if (input.name === "password" && (input.validity.tooShort || input.validity.patternMismatch)) {
+      return "Password must be at least 8 characters and include letters and numbers.";
+    }
+    return input.validationMessage || "Please check this field.";
+  };
+  const updateValidity = (input) => {
+    const field = input.closest(".auth-field");
+    const error = field ? field.querySelector(".auth-error") : null;
+    const isValid = input.checkValidity();
+    const hasValue = input.value.trim().length > 0;
+    const showError = submitted && (!isValid);
+    input.classList.toggle("is-valid", isValid && hasValue);
+    input.classList.toggle("is-invalid", !isValid && hasValue);
+    if (field) field.classList.toggle("is-invalid", submitted && !isValid);
+    if (error && showError) {
+      error.textContent = getMessage(input);
+    } else if (error) {
+      error.textContent = "";
+    }
+  };
+  fields.forEach((input) => {
+    input.addEventListener("input", () => updateValidity(input));
+  });
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     msg.textContent = "";
+    submitted = true;
+    fields.forEach((input) => updateValidity(input));
+    if (!form.checkValidity()) {
+      msg.textContent = "Please fix the highlighted fields.";
+      return;
+    }
     const fd = new FormData(form);
     const body = Object.fromEntries(fd.entries());
     const res = await fetch("/api/auth/login", {

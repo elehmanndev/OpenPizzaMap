@@ -58,6 +58,14 @@ router.get("/register", (req, res) => res.render("register", { user: req.session
 router.get("/login", (req, res) => res.render("login", { user: req.session.user || null }));
 router.post("/logout", (req, res) => req.session.destroy(() => res.redirect("/")));
 
+router.get("/terms", (req, res) => {
+    res.render("terms", { user: req.session.user || null });
+});
+
+router.get("/privacy", (req, res) => {
+    res.render("privacy", { user: req.session.user || null });
+});
+
 router.get("/me", requireAuth, async (req, res) => {
     const subs = await prisma.submission.findMany({
         where: { userId: req.session.user.id },
