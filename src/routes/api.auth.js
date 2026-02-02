@@ -1,5 +1,5 @@
 const express = require("express");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const { z } = require("zod");
 const { prisma } = require("../db");
 const { authLimiter } = require("../middleware/rateLimit");

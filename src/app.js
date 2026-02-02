@@ -18,15 +18,16 @@ const app = express();
 
 // Auto-seed if empty (Hostinger helper)
 async function autoSeed() {
-    const count = await prisma.place.count();
-    if (count === 0) {
-        console.log("Database empty, running auto-seed...");
-        try {
+    try {
+        const count = await prisma.place.count();
+        if (count === 0) {
+            console.log("Database empty, running auto-seed...");
             const { execSync } = require("child_process");
             execSync("node prisma/seed.js", { stdio: "inherit" });
-        } catch (e) {
-            console.error("Auto-seed failed:", e.message);
         }
+    } catch (e) {
+        console.error("Auto-seed skipped/failed:", e.message);
+        // We don't crash the app here, just log it.
     }
 }
 autoSeed();
