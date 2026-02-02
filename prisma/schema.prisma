@@ -32,7 +32,8 @@ enum SubmissionStatus {
 model User {
   id           Int      @id @default(autoincrement())
   email        String   @unique
-  passwordHash String
+  passwordHash String?
+  googleId     String?  @unique
   displayName  String
   role         UserRole @default(user)
   createdAt    DateTime @default(now())
