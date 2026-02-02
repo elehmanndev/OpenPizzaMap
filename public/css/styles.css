@@ -425,6 +425,98 @@ button {
   text-underline-offset: 3px;
 }
 
+.legal-page main.container {
+  max-width: 860px;
+}
+
+.legal-page header,
+.legal-page header a,
+.legal-page header .small,
+.legal-page header strong {
+  color: var(--c-text);
+}
+
+.legal-page .card {
+  padding: 24px;
+  line-height: 1.6;
+}
+
+.legal-page .card h1,
+.legal-page .card h2 {
+  color: var(--c-text);
+}
+
+.legal-page .card p,
+.legal-page .card li {
+  color: var(--c-text);
+}
+
+.legal-page .card .small {
+  color: var(--c-muted);
+}
+
+.legal-page .card a {
+  color: var(--c-accent);
+  font-weight: 600;
+}
+
+.legal-collapse {
+  margin: 12px 0 18px;
+  border: 1px solid var(--c-border);
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: var(--c-surface);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+}
+
+.legal-collapse summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--c-text);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.legal-collapse summary::-webkit-details-marker {
+  display: none;
+}
+
+.legal-collapse summary::after {
+  content: "expand_more";
+  margin-left: 12px;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--c-input-bg);
+  border: 1px solid var(--c-border);
+  font-family: "Material Symbols Rounded";
+  font-size: 18px;
+  line-height: 1;
+  opacity: 0.9;
+}
+
+.legal-collapse > ul {
+  margin-top: 12px;
+}
+
+.legal-collapse[open] summary::after {
+  content: "▴";
+}
+
+.legal-collapse[open] summary::after {
+  content: "expand_less";
+}
+
+.legal-collapse ul {
+  margin: 10px 0 0;
+  padding-left: 18px;
+}
+
 .auth-legal {
   margin-top: 0;
   font-size: 12px;

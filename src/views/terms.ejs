@@ -1,15 +1,45 @@
-<%- include("layout", { title: "Terms of Service", user, leaflet: false, body: `
+<%- include("layout", { title: "Terms of Service", user, leaflet: false, bodyClass: "legal-page", body: String.raw`
 <section class="card">
   <h1>Terms of Service</h1>
   <p class="small">Last updated: February 2, 2026</p>
-  <p>By accessing OpenPizzaMap, you agree to these Terms. If you do not agree, do not use the service.</p>
-  <h2>Use of the Service</h2>
-  <p>You agree to provide accurate submissions, avoid abusive content, and follow local laws.</p>
-  <h2>Accounts</h2>
-  <p>You are responsible for your account and for safeguarding your password.</p>
-  <h2>Content</h2>
-  <p>You retain ownership of your content but grant OpenPizzaMap a license to display it.</p>
-  <h2>Changes</h2>
-  <p>We may update these Terms from time to time.</p>
+
+  <p>These Terms govern your use of OpenPizzaMap (“Service”). By using the Service, you agree to these Terms.</p>
+
+  <h2>Eligibility and Accounts</h2>
+  <p>You must provide accurate information, keep your credentials secure, and be responsible for all activity on your account.</p>
+
+  <details class="legal-collapse" open>
+    <summary>Acceptable Use</summary>
+    <ul>
+      <li>You shall not upload, transmit, or otherwise make available any unlawful, defamatory, infringing, or abusive content.</li>
+      <li>You shall not interfere with, disrupt, or attempt to gain unauthorized access to the Service or related systems.</li>
+      <li>You shall comply with all applicable laws, regulations, and third‑party rights.</li>
+    </ul>
+  </details>
+
+  <details class="legal-collapse">
+    <summary>User Content</summary>
+    <p>You retain ownership of content you submit. You grant OpenPizzaMap a non‑exclusive, worldwide, royalty‑free, sublicensable license to host, store, reproduce, distribute, display, perform, adapt, and create derivative works of such content solely for operating, maintaining, and improving the Service.</p>
+  </details>
+
+  <details class="legal-collapse">
+    <summary>Availability and Changes</summary>
+    <p>We may modify, suspend, or discontinue the Service (in whole or in part) at any time, without liability. We may update these Terms from time to time; continued use after changes constitutes acceptance.</p>
+  </details>
+
+  <details class="legal-collapse">
+    <summary>Disclaimers</summary>
+    <p>The Service is provided “as is” and “as available,” without warranties of any kind, express or implied, including merchantability, fitness for a particular purpose, and non‑infringement. We do not warrant that the Service will be uninterrupted, secure, or error‑free, or that content will be accurate or complete.</p>
+  </details>
+
+  <details class="legal-collapse">
+    <summary>Limitation of Liability</summary>
+    <p>To the maximum extent permitted by law, OpenPizzaMap shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly or indirectly, arising from your use of the Service.</p>
+  </details>
+
+  <details class="legal-collapse">
+    <summary>Contact</summary>
+    <p>Questions about these Terms? Email <a class="auth-link" href="mailto:hello@openpizzamap.com">hello@openpizzamap.com</a>.</p>
+  </details>
 </section>
 ` }) %>

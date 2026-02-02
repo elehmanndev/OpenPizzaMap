@@ -1,15 +1,63 @@
-<%- include("layout", { title: "Privacy Policy", user, leaflet: false, body: `
+<%- include("layout", { title: "Privacy Policy", user, leaflet: false, bodyClass: "legal-page", body: String.raw`
 <section class="card">
   <h1>Privacy Policy</h1>
   <p class="small">Last updated: February 2, 2026</p>
-  <p>We collect the information you provide (such as email and username) to operate your account.</p>
-  <h2>Data We Collect</h2>
-  <p>Account details, submissions, and basic usage data.</p>
-  <h2>How We Use Data</h2>
-  <p>To provide the service, prevent abuse, and improve the product.</p>
-  <h2>Sharing</h2>
-  <p>We do not sell your personal data. We may share data with vendors that help run the service.</p>
-  <h2>Contact</h2>
-  <p>Contact us if you have questions about your privacy.</p>
+
+  <p>This Policy explains how OpenPizzaMap (“we”) collects, uses, and shares information. We are based in the European Union. Contact: <a class="auth-link" href="mailto:hello@openpizzamap.com">hello@openpizzamap.com</a>.</p>
+
+  <details class="legal-collapse" open>
+    <summary>Data We Collect</summary>
+    <ul>
+      <li>Account data, including identifiers (email, username), authentication data (password hash), and profile attributes you elect to provide.</li>
+      <li>Content and interaction data, including submissions, edits, ratings, and related metadata.</li>
+      <li>Usage, device, and log data, including IP address, access timestamps, device/browser characteristics, and diagnostic signals.</li>
+      <li>Location data to the extent enabled by you for map and proximity features.</li>
+      <li>Cookie, SDK, and similar technology data for security, preferences, and analytics.</li>
+    </ul>
+  </details>
+
+  <details class="legal-collapse">
+    <summary>How We Use Data</summary>
+    <ul>
+      <li>Operate, secure, and maintain the Service, including authentication, abuse prevention, and incident response.</li>
+      <li>Personalize, measure, and improve the Service, including analytics and product development.</li>
+      <li>Communicate with you regarding your account, support inquiries, and administrative messages.</li>
+    </ul>
+  </details>
+
+  <details class="legal-collapse">
+    <summary>Legal Bases (EU/EEA)</summary>
+    <ul>
+      <li>Contractual necessity (GDPR Art. 6(1)(b)) to provide the Service you request.</li>
+      <li>Legitimate interests (GDPR Art. 6(1)(f)) for security, fraud prevention, and improvement.</li>
+      <li>Consent (GDPR Art. 6(1)(a)) where required for optional features or non‑essential cookies.</li>
+      <li>Legal obligations (GDPR Art. 6(1)(c)) where applicable.</li>
+    </ul>
+  </details>
+
+  <details class="legal-collapse">
+    <summary>Sharing</summary>
+    <p>We do not sell personal data. We may disclose data to processors and sub‑processors (e.g., hosting, analytics, email delivery) under appropriate contractual safeguards and confidentiality obligations.</p>
+  </details>
+
+  <details class="legal-collapse">
+    <summary>Retention</summary>
+    <p>We retain personal data for the duration of your account and thereafter for the period reasonably necessary to comply with legal obligations, resolve disputes, enforce agreements, and maintain backups, subject to applicable law and any valid deletion request. Retention periods may vary by data category and purpose.</p>
+  </details>
+
+  <details class="legal-collapse">
+    <summary>Your Rights</summary>
+    <p>You have rights to be informed, access, rectification, erasure, restriction, portability, objection, and (where applicable) not to be subject to solely automated decisions. You may lodge a complaint with a supervisory authority. You may exercise your rights by contacting us. Account deletion is available on request while we finalize the self‑serve feature.</p>
+  </details>
+
+  <details class="legal-collapse">
+    <summary>International Transfers</summary>
+    <p>If data is transferred outside the EU/EEA, we use appropriate safeguards such as standard contractual clauses.</p>
+  </details>
+
+  <details class="legal-collapse">
+    <summary>Updates</summary>
+    <p>We may update this Policy. Continued use means you accept the changes.</p>
+  </details>
 </section>
 ` }) %>
