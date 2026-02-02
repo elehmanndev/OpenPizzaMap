@@ -104,4 +104,41 @@ router.post("/admin/submissions/:id/reject", requireAdmin, async (req, res) => {
     res.redirect("/admin/submissions");
 });
 
+router.get("/sitemap.xml", async (req, res) => {
+    const places = await prisma.place.findMany({
+        where: { status: "active" },
+        select: { id: true, updatedAt: true }
+    });
+
+    const baseUrl = process.env.BASE_URL || "https://openpizzamap.com";
+
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>${baseUrl}/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/map</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>`;
+
+    places.forEach(place => {
+        xml += `
+  <url>
+    <loc>${baseUrl}/place/${place.id}</loc>
+    <lastmod>${place.updatedAt.toISOString().split('T')[0]}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>`;
+    });
+
+    xml += "\n</urlset>";
+
+    res.header("Content-Type", "application/xml");
+    res.send(xml);
+});
+
 module.exports = router;
