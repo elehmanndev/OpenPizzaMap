@@ -7,6 +7,66 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id           Int          @id @default(autoincrement())
+  email        String       @unique
+  passwordHash String?
+  displayName  String
+  role         UserRole     @default(user)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  googleId     String?      @unique
+  reviews      Submission[] @relation("ReviewedBy")
+  submissions  Submission[] @relation("UserSubmissions")
+}
+
+model Place {
+  id            Int         @id @default(autoincrement())
+  name          String
+  addressLine   String
+  city          String
+  region        String?
+  postalCode    String?
+  country       String
+  lat           Decimal     @db.Decimal(10, 7)
+  lng           Decimal     @db.Decimal(10, 7)
+  priceLevel    Int
+  stylesJson    String
+  dineIn        Boolean     @default(true)
+  takeaway      Boolean     @default(true)
+  delivery      Boolean     @default(false)
+  websiteUrl    String?
+  googleMapsUrl String?
+  instagramUrl  String?
+  status        PlaceStatus @default(active)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([city])
+  @@index([lat])
+  @@index([lng])
+}
+
+model Submission {
+  id               Int              @id @default(autoincrement())
+  userId           Int
+  type             SubmissionType
+  targetPlaceId    Int?
+  payloadJson      String
+  status           SubmissionStatus @default(pending)
+  rejectionReason  String?
+  createdAt        DateTime         @default(now())
+  reviewedAt       DateTime?
+  reviewedByUserId Int?
+  reviewedBy       User?            @relation("ReviewedBy", fields: [reviewedByUserId], references: [id])
+  user             User             @relation("UserSubmissions", fields: [userId], references: [id])
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([reviewedByUserId], map: "Submission_reviewedByUserId_fkey")
+  @@index([userId], map: "Submission_userId_fkey")
+}
+
 enum UserRole {
   user
   admin
@@ -27,68 +87,4 @@ enum SubmissionStatus {
   pending
   approved
   rejected
-}
-
-model User {
-  id           Int      @id @default(autoincrement())
-  email        String   @unique
-  passwordHash String?
-  googleId     String?  @unique
-  displayName  String
-  role         UserRole @default(user)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  submissions  Submission[] @relation("UserSubmissions")
-  reviews      Submission[] @relation("ReviewedBy")
-}
-
-model Place {
-  id          Int        @id @default(autoincrement())
-  name        String
-  addressLine String
-  city        String
-  region      String?
-  postalCode  String?
-  country     String
-  lat         Decimal    @db.Decimal(10, 7)
-  lng         Decimal    @db.Decimal(10, 7)
-
-  priceLevel  Int        // 1..3
-  stylesJson  String     // JSON array string, e.g. ["neapolitan","roman"]
-  dineIn      Boolean    @default(true)
-  takeaway    Boolean    @default(true)
-  delivery    Boolean    @default(false)
-
-  websiteUrl    String?
-  googleMapsUrl String?
-  instagramUrl  String?
-
-  status      PlaceStatus @default(active)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-
-  @@index([city])
-  @@index([lat])
-  @@index([lng])
-}
-
-model Submission {
-  id              Int              @id @default(autoincrement())
-  userId          Int
-  type            SubmissionType
-  targetPlaceId   Int?
-  payloadJson     String           // JSON string of proposed fields
-  status          SubmissionStatus @default(pending)
-  rejectionReason String?
-
-  createdAt       DateTime  @default(now())
-  reviewedAt      DateTime?
-  reviewedByUserId Int?
-
-  user        User @relation("UserSubmissions", fields: [userId], references: [id])
-  reviewedBy  User? @relation("ReviewedBy", fields: [reviewedByUserId], references: [id])
-
-  @@index([status])
-  @@index([createdAt])
 }
