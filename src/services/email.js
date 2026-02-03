@@ -12,11 +12,13 @@ function getClient() {
 }
 
 function buildVerifyLink(token) {
-    return `${baseUrl.replace(/\\/$/, "")}/verify?token=${encodeURIComponent(token)}`;
+    const trimmed = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+    return `${trimmed}/verify?token=${encodeURIComponent(token)}`;
 }
 
 function buildResetLink(token) {
-    return `${baseUrl.replace(/\\/$/, "")}/reset?token=${encodeURIComponent(token)}`;
+    const trimmed = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+    return `${trimmed}/reset?token=${encodeURIComponent(token)}`;
 }
 
 async function sendVerificationEmail({ to, token }) {
