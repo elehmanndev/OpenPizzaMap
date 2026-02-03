@@ -7,13 +7,14 @@
     "dev": "node src/app.js",
     "start": "npx prisma migrate deploy && node src/app.js",
     "build": "npx prisma generate",
-    "postinstall": "npx prisma generate",
+    "postinstall": "npx prisma generate && npm run sitemap:build",
     "seed": "node prisma/seed.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:seed": "node prisma/seed.js",
-    "admin:password": "node scripts/set-admin-password.js"
+    "admin:password": "node scripts/set-admin-password.js",
+    "sitemap:build": "node scripts/build-sitemap.js"
   },
   "dependencies": {
     "@prisma/client": "^5.18.0",

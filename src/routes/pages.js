@@ -3,6 +3,7 @@ const crypto = require("crypto");
 const { prisma } = require("../db");
 const { requireAuth, requireAdmin } = require("../middleware/auth");
 const { sendWelcomeEmail } = require("../services/email");
+const { buildSitemapXml, writeSitemapFiles } = require("../services/sitemap");
 
 const router = express.Router();
 
@@ -168,6 +169,13 @@ router.post("/admin/submissions/:id/approve", requireAdmin, async (req, res) => 
         data: { status: "approved", reviewedAt: new Date(), reviewedByUserId: req.session.user.id },
     });
 
+    try {
+        const xml = await buildSitemapXml(prisma);
+        writeSitemapFiles(xml);
+    } catch (err) {
+        console.error("Sitemap update failed:", err);
+    }
+
     res.redirect("/admin/submissions");
 });
 
@@ -183,14 +191,25 @@ router.post("/admin/submissions/:id/reject", requireAdmin, async (req, res) => {
     res.redirect("/admin/submissions");
 });
 
+router.post("/admin/sitemap/rebuild", requireAdmin, async (req, res) => {
+    try {
+        const xml = await buildSitemapXml(prisma);
+        writeSitemapFiles(xml);
+        return res.json({ ok: true });
+    } catch (err) {
+        console.error("Sitemap rebuild failed:", err);
+        return res.status(500).json({ ok: false, error: "Failed to rebuild sitemap" });
+    }
+});
+
 router.get("/sitemap.xml", async (req, res) => {
-    const xml = await buildSitemapXml();
+    const xml = await buildSitemapXml(prisma);
     res.header("Content-Type", "application/xml");
     res.send(xml);
 });
 
 router.get("/sitemap", async (req, res) => {
-    const xml = await buildSitemapXml();
+    const xml = await buildSitemapXml(prisma);
     res.header("Content-Type", "application/xml");
     res.send(xml);
 });
@@ -200,45 +219,10 @@ router.get("/robots.txt", (req, res) => {
     const body = [
         "User-agent: *",
         "Allow: /",
-        `Sitemap: ${baseUrl}/sitemap`,
+        `Sitemap: ${baseUrl}/sitemap.xml`,
     ].join("\n");
     res.header("Content-Type", "text/plain");
     res.send(body);
 });
-
-async function buildSitemapXml() {
-    const places = await prisma.place.findMany({
-        where: { status: "active" },
-        select: { id: true, updatedAt: true }
-    });
-
-    const baseUrl = process.env.BASE_URL || "https://openpizzamap.com";
-
-    let xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>${baseUrl}/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>${baseUrl}/map</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>`;
-
-    places.forEach(place => {
-        xml += `
-  <url>
-    <loc>${baseUrl}/place/${place.id}</loc>
-    <lastmod>${place.updatedAt.toISOString().split("T")[0]}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>`;
-    });
-
-    xml += "\n</urlset>";
-    return xml;
-}
 
 module.exports = router;
