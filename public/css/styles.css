@@ -450,6 +450,18 @@ button {
   background: rgba(var(--c-accent-rgb), 0.08);
 }
 
+.auth-submit-solid {
+  background: var(--c-accent);
+  color: #fff;
+  border-color: var(--c-accent);
+}
+
+.auth-submit-solid:hover {
+  background: var(--c-accent-strong);
+  border-color: var(--c-accent-strong);
+  color: #fff;
+}
+
 .auth-msg {
   min-height: 18px;
   color: var(--c-warn);

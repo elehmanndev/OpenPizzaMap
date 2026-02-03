@@ -142,13 +142,18 @@ router.post("/forgot", authLimiter, async (req, res) => {
         const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
         const tokenExpiresAt = new Date(Date.now() + 1000 * 60 * 60);
 
-        await prisma.user.update({
-            where: { id: user.id },
-            data: {
-                resetTokenHash: tokenHash,
-                resetTokenExpiresAt: tokenExpiresAt,
-            },
-        });
+        try {
+            await prisma.user.update({
+                where: { id: user.id },
+                data: {
+                    resetTokenHash: tokenHash,
+                    resetTokenExpiresAt: tokenExpiresAt,
+                },
+            });
+        } catch (dbErr) {
+            console.error("Reset token update failed:", dbErr);
+            return res.json({ ok: true });
+        }
 
         try {
             await sendPasswordResetEmail({ to: email, token });
@@ -159,7 +164,7 @@ router.post("/forgot", authLimiter, async (req, res) => {
         return res.json({ ok: true });
     } catch (err) {
         console.error("Reset request failed:", err);
-        return res.status(500).json({ ok: false });
+        return res.json({ ok: true });
     }
 });
 
@@ -176,16 +181,18 @@ router.post("/reset", authLimiter, async (req, res) => {
         }
 
         const passwordHash = await bcrypt.hash(password, 12);
-        await prisma.user.update({
+        const updated = await prisma.user.update({
             where: { id: user.id },
             data: {
                 passwordHash,
                 resetTokenHash: null,
                 resetTokenExpiresAt: null,
             },
+            select: { id: true, email: true, displayName: true, role: true },
         });
 
-        return res.json({ ok: true });
+        req.session.user = updated;
+        return res.json({ ok: true, user: updated });
     } catch (err) {
         console.error("Password reset failed:", err);
         return res.status(500).json({ ok: false, error: "Reset failed" });

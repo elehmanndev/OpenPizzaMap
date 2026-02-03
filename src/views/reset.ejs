@@ -94,8 +94,7 @@
     });
     const data = await res.json();
     if (data.ok) {
-      msg.textContent = "Password updated. You can sign in now.";
-      msg.style.color = "var(--c-success)";
+      location.href = "/";
       return;
     }
     msg.textContent = data.error || "Reset failed";
