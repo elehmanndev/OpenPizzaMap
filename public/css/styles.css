@@ -38,7 +38,7 @@ body::before {
   inset: 0;
   pointer-events: none;
   opacity: var(--pattern-opacity);
-  background-image: url("data:image/svg+xml,%3Csvg width='240' height='240' viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cstyle%3E .s %7B fill: none; stroke: %23d6d3ce; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; %7D %3C/style%3E%3Cg class='s'%3E%3C!-- Slice 1 --%3E%3Cg transform='translate(40,30) rotate(-10) scale(0.7)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Cpath d='M35 60 q 0 20 8 20 t 8 -20' /%3E%3Ccircle cx='50' cy='45' r='7' /%3E%3Ccircle cx='75' cy='65' r='6' /%3E%3C/g%3E%3C!-- Slice 2 --%3E%3Cg transform='translate(170,50) rotate(140) scale(0.5)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Ccircle cx='60' cy='50' r='8' /%3E%3C/g%3E%3C!-- Slice 3 --%3E%3Cg transform='translate(80,160) rotate(45) scale(0.6)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Cpath d='M30 55 q 0 15 5 15 t 5 -15' /%3E%3Ccircle cx='50' cy='40' r='6' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg width='240' height='240' viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cstyle%3E .s %7B fill: none; stroke: %232b2b2b; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; %7D %3C/style%3E%3Cg class='s'%3E%3C!-- Slice 1 --%3E%3Cg transform='translate(40,30) rotate(-10) scale(0.7)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Cpath d='M35 60 q 0 20 8 20 t 8 -20' /%3E%3Ccircle cx='50' cy='45' r='7' /%3E%3Ccircle cx='75' cy='65' r='6' /%3E%3C/g%3E%3C!-- Slice 2 --%3E%3Cg transform='translate(170,50) rotate(140) scale(0.5)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Ccircle cx='60' cy='50' r='8' /%3E%3C/g%3E%3C!-- Slice 3 --%3E%3Cg transform='translate(80,160) rotate(45) scale(0.6)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Cpath d='M30 55 q 0 15 5 15 t 5 -15' /%3E%3Ccircle cx='50' cy='40' r='6' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   background-repeat: repeat;
   -webkit-mask-image: radial-gradient(circle, transparent 10%, black 80%);
   mask-image: radial-gradient(circle, transparent 10%, black 80%);
@@ -175,6 +175,22 @@ button {
 
 .nav a {
   margin-right: 10px;
+}
+
+.map-page header {
+  color: #fff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.map-page header a,
+.map-page header .small {
+  color: #fff;
+}
+
+.map-page header button {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .auth-page {
@@ -694,7 +710,7 @@ button {
   }
 
   body::before {
-    background-image: url("data:image/svg+xml,%3Csvg width='240' height='240' viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cstyle%3E .s %7B fill: none; stroke: %233a3a3a; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; %7D %3C/style%3E%3Cg class='s'%3E%3C!-- Slice 1 --%3E%3Cg transform='translate(40,30) rotate(-10) scale(0.7)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Cpath d='M35 60 q 0 20 8 20 t 8 -20' /%3E%3Ccircle cx='50' cy='45' r='7' /%3E%3Ccircle cx='75' cy='65' r='6' /%3E%3C/g%3E%3C!-- Slice 2 --%3E%3Cg transform='translate(170,50) rotate(140) scale(0.5)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Ccircle cx='60' cy='50' r='8' /%3E%3C/g%3E%3C!-- Slice 3 --%3E%3Cg transform='translate(80,160) rotate(45) scale(0.6)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Cpath d='M30 55 q 0 15 5 15 t 5 -15' /%3E%3Ccircle cx='50' cy='40' r='6' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg width='240' height='240' viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cstyle%3E .s %7B fill: none; stroke: %23f2efe7; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; %7D %3C/style%3E%3Cg class='s'%3E%3C!-- Slice 1 --%3E%3Cg transform='translate(40,30) rotate(-10) scale(0.7)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Cpath d='M35 60 q 0 20 8 20 t 8 -20' /%3E%3Ccircle cx='50' cy='45' r='7' /%3E%3Ccircle cx='75' cy='65' r='6' /%3E%3C/g%3E%3C!-- Slice 2 --%3E%3Cg transform='translate(170,50) rotate(140) scale(0.5)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Ccircle cx='60' cy='50' r='8' /%3E%3C/g%3E%3C!-- Slice 3 --%3E%3Cg transform='translate(80,160) rotate(45) scale(0.6)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Cpath d='M30 55 q 0 15 5 15 t 5 -15' /%3E%3Ccircle cx='50' cy='40' r='6' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   }
 }
 .auth-msg {
