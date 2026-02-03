@@ -2,10 +2,16 @@ const fs = require("fs");
 const path = require("path");
 
 async function buildSitemapXml(prisma, baseUrlOverride) {
-    const places = await prisma.place.findMany({
-        where: { status: "active" },
-        select: { id: true, updatedAt: true }
-    });
+    let places = [];
+    try {
+        places = await prisma.place.findMany({
+            where: { status: "active" },
+            select: { id: true, updatedAt: true }
+        });
+    } catch (err) {
+        // Keep sitemap generation non-fatal (e.g., build-time DB auth issues).
+        console.error("Sitemap place query failed:", err.message || err);
+    }
 
     const baseUrl = baseUrlOverride || process.env.BASE_URL || "https://openpizzamap.com";
 
