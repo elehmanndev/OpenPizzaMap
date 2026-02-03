@@ -184,6 +184,29 @@ router.post("/admin/submissions/:id/reject", requireAdmin, async (req, res) => {
 });
 
 router.get("/sitemap.xml", async (req, res) => {
+    const xml = await buildSitemapXml();
+    res.header("Content-Type", "application/xml");
+    res.send(xml);
+});
+
+router.get("/sitemap", async (req, res) => {
+    const xml = await buildSitemapXml();
+    res.header("Content-Type", "application/xml");
+    res.send(xml);
+});
+
+router.get("/robots.txt", (req, res) => {
+    const baseUrl = process.env.BASE_URL || "https://openpizzamap.com";
+    const body = [
+        "User-agent: *",
+        "Allow: /",
+        `Sitemap: ${baseUrl}/sitemap`,
+    ].join("\n");
+    res.header("Content-Type", "text/plain");
+    res.send(body);
+});
+
+async function buildSitemapXml() {
     const places = await prisma.place.findMany({
         where: { status: "active" },
         select: { id: true, updatedAt: true }
@@ -208,16 +231,14 @@ router.get("/sitemap.xml", async (req, res) => {
         xml += `
   <url>
     <loc>${baseUrl}/place/${place.id}</loc>
-    <lastmod>${place.updatedAt.toISOString().split('T')[0]}</lastmod>
+    <lastmod>${place.updatedAt.toISOString().split("T")[0]}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>`;
     });
 
     xml += "\n</urlset>";
-
-    res.header("Content-Type", "application/xml");
-    res.send(xml);
-});
+    return xml;
+}
 
 module.exports = router;
