@@ -88,10 +88,11 @@ router.get("/verify", async (req, res) => {
     }
 
     if (user.emailVerifiedAt) {
+        req.session.user = { id: user.id, email: user.email, displayName: user.displayName, role: user.role };
         return res.render("verify", {
             user: req.session.user || null,
             status: "success",
-            message: "Your email is already verified. You can sign in now.",
+            message: "You're already verified. Let's get you in.",
         });
     }
 
@@ -111,6 +112,8 @@ router.get("/verify", async (req, res) => {
             verificationTokenExpiresAt: null,
         },
     });
+
+    req.session.user = { id: user.id, email: user.email, displayName: user.displayName, role: user.role };
 
     try {
         await sendWelcomeEmail({ to: user.email });

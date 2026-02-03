@@ -66,17 +66,18 @@
     }
     const fd = new FormData(form);
     const body = Object.fromEntries(fd.entries());
-    const res = await fetch("/api/auth/forgot", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    if (res.ok) {
+    try {
+      await fetch("/api/auth/forgot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
       msg.textContent = "If the email exists, we sent a reset link.";
       msg.style.color = "var(--c-success)";
-      return;
+    } catch (err) {
+      msg.textContent = "Request failed";
+      msg.style.color = "var(--c-warn)";
     }
-    msg.textContent = "Request failed";
   });
 </script>
 ` }) %>
