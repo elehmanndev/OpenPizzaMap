@@ -1,4 +1,8 @@
-require("dotenv").config();
+const fs = require("fs");
+const path = require("path");
+const localEnv = path.join(process.cwd(), ".env.local");
+const defaultEnv = path.join(process.cwd(), ".env");
+require("dotenv").config({ path: fs.existsSync(localEnv) ? localEnv : defaultEnv });
 
 const path = require("path");
 const express = require("express");

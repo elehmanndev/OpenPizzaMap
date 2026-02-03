@@ -33,28 +33,44 @@
       </label>
       <label class="auth-field">
         <span>Password</span>
-        <input name="password" type="password" autocomplete="new-password" required minlength="8" maxlength="128" pattern="^(?=.*[A-Za-z])(?=.*\\d).+$" />
+        <div class="auth-password">
+          <input name="password" type="password" autocomplete="new-password" required minlength="8" maxlength="128" pattern="^(?=.*[A-Za-z])(?=.*[0-9]).+$" />
+          <button class="auth-toggle" type="button" aria-label="Show password" aria-pressed="false" data-password-toggle>
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M12 5c5.2 0 9.4 3.3 11 7-1.6 3.7-5.8 7-11 7S2.6 15.7 1 12c1.6-3.7 5.8-7 11-7zm0 2c-3.9 0-7.3 2.3-8.8 5 1.5 2.7 4.9 5 8.8 5s7.3-2.3 8.8-5c-1.5-2.7-4.9-5-8.8-5zm0 2.5A2.5 2.5 0 1 1 12 16a2.5 2.5 0 0 1 0-5z"/>
+            </svg>
+          </button>
+        </div>
         <small class="auth-hint">At least 8 characters with letters and numbers.</small>
+        <small class="auth-error" aria-live="polite"></small>
+      </label>
+      <label class="auth-check">
+        <input type="checkbox" name="newsletterOptIn" checked data-ignore-validation />
+        <span>Sign me up for pizza intel and newsletter updates.</span>
+      </label>
+      <label class="auth-check auth-check-required">
+        <input type="checkbox" name="termsAccepted" required checked data-terms />
+        <span>Agree to our <a class="auth-link" href="/terms">Terms of Service</a> and <a class="auth-link" href="/privacy">Privacy Policy</a>.</span>
         <small class="auth-error" aria-live="polite"></small>
       </label>
       <button class="auth-submit" type="submit">Create account</button>
       <p class="auth-msg" id="msg"></p>
     </form>
-    <p class="auth-legal">By creating an account, you agree to our <a class="auth-link" href="/terms">Terms of Service</a> and <a class="auth-link" href="/privacy">Privacy Policy</a>.</p>
     <p class="auth-footer">Already have an account? <a class="auth-link" href="/login">Sign in</a></p>
   </div>
 </section>
 <script>
   const form = document.getElementById("reg");
   const msg = document.getElementById("msg");
-  const fields = Array.from(form.querySelectorAll("input"));
+  const fields = Array.from(form.querySelectorAll("input:not([data-ignore-validation])"));
   let submitted = false;
   const getMessage = (input) => {
-    const value = input.value.trim();
+    const value = input.type === "checkbox" ? "" : input.value.trim();
     if (input.validity.valueMissing) {
       if (input.name === "email") return "Email is required.";
       if (input.name === "displayName") return "Username is required.";
       if (input.name === "password") return "Password is required.";
+      if (input.name === "termsAccepted") return "No check, no party.";
     }
     if (input.name === "email" && (input.validity.typeMismatch || input.validity.patternMismatch)) {
       return "\"" + (value || "This") + "\" isn't a valid email address.";
@@ -68,10 +84,10 @@
     return input.validationMessage || "Please check this field.";
   };
   const updateValidity = (input) => {
-    const field = input.closest(".auth-field");
+    const field = input.closest(".auth-field, .auth-check");
     const error = field ? field.querySelector(".auth-error") : null;
     const isValid = input.checkValidity();
-    const hasValue = input.value.trim().length > 0;
+    const hasValue = input.type === "checkbox" ? input.checked : input.value.trim().length > 0;
     const showError = submitted && (!isValid);
     input.classList.toggle("is-valid", isValid && hasValue);
     input.classList.toggle("is-invalid", !isValid && hasValue);
@@ -84,6 +100,19 @@
   };
   fields.forEach((input) => {
     input.addEventListener("input", () => updateValidity(input));
+  });
+  const toggles = Array.from(document.querySelectorAll("[data-password-toggle]"));
+  toggles.forEach((btn) => {
+    const field = btn.closest(".auth-field");
+    const input = field ? field.querySelector("input") : null;
+    if (!input) return;
+    btn.addEventListener("click", () => {
+      const isText = input.type === "text";
+      input.type = isText ? "password" : "text";
+      btn.setAttribute("aria-pressed", String(!isText));
+      btn.setAttribute("aria-label", isText ? "Show password" : "Hide password");
+      btn.classList.toggle("is-on", !isText);
+    });
   });
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -103,7 +132,7 @@
     });
     const data = await res.json();
     if (data.ok) {
-      location.href = "/map";
+      location.href = "/check-email";
       return;
     }
     if (typeof data.error === "string") {
@@ -116,5 +145,26 @@
       msg.textContent = "Sign up failed";
     }
   });
+
+  const terms = form.querySelector("[data-terms]");
+  if (terms) {
+    const termsField = terms.closest(".auth-check");
+    const termsError = termsField ? termsField.querySelector(".auth-error") : null;
+    const showTip = () => {
+      if (termsField) termsField.classList.add("is-invalid");
+      if (termsError) termsError.textContent = "Sorry, this is a must - no check, no pizza.";
+      clearTimeout(showTip._hideTimer);
+      showTip._hideTimer = setTimeout(() => {
+        if (termsField) termsField.classList.remove("is-invalid");
+        if (termsError) termsError.textContent = "";
+      }, 2000);
+    };
+    terms.addEventListener("change", () => {
+      if (!terms.checked) {
+        terms.checked = true;
+        showTip();
+      }
+    });
+  }
 </script>
 ` }) %>

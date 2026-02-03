@@ -12,7 +12,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
     "prisma:migrate:dev": "prisma migrate dev",
-    "prisma:seed": "node prisma/seed.js"
+    "prisma:seed": "node prisma/seed.js",
+    "admin:password": "node scripts/set-admin-password.js"
   },
   "dependencies": {
     "@prisma/client": "^5.18.0",
@@ -26,6 +27,7 @@
     "morgan": "^1.10.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
+    "resend": "^3.2.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {

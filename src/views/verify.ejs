@@ -1,0 +1,18 @@
+<%- include("layout", { title: "Verify email", user, leaflet: false, bodyClass: "auth-page", body: String.raw`
+<section class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <span class="auth-logo">OPM</span>
+      <div>
+        <span class="auth-brand-name">OpenPizzaMap</span>
+        <span class="auth-brand-tag">Account verification</span>
+      </div>
+    </div>
+    <h1 class="auth-title">${status === "success" ? "Email verified" : "Verification issue"}</h1>
+    <p class="auth-subtitle">${message}</p>
+    <div class="auth-actions">
+      <a class="auth-submit auth-submit-link" href="${status === "success" ? "/login" : "/register"}">${status === "success" ? "Sign in" : "Create account"}</a>
+    </div>
+  </div>
+</section>
+` }) %>

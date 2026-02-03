@@ -1,6 +1,8 @@
 const express = require("express");
+const crypto = require("crypto");
 const { prisma } = require("../db");
 const { requireAuth, requireAdmin } = require("../middleware/auth");
+const { sendWelcomeEmail } = require("../services/email");
 
 const router = express.Router();
 
@@ -56,6 +58,72 @@ router.post("/add", requireAuth, async (req, res) => {
 
 router.get("/register", (req, res) => res.render("register", { user: req.session.user || null }));
 router.get("/login", (req, res) => res.render("login", { user: req.session.user || null }));
+router.get("/forgot", (req, res) => res.render("forgot", { user: req.session.user || null }));
+router.get("/reset", (req, res) => {
+    const token = typeof req.query.token === "string" ? req.query.token : "";
+    res.render("reset", { user: req.session.user || null, token });
+});
+router.get("/check-email", (req, res) => {
+    const email = typeof req.query.email === "string" ? req.query.email : null;
+    res.render("check_email", { user: req.session.user || null, email });
+});
+router.get("/verify", async (req, res) => {
+    const token = typeof req.query.token === "string" ? req.query.token : "";
+    if (!token) {
+        return res.render("verify", {
+            user: req.session.user || null,
+            status: "error",
+            message: "Missing verification token. Please open the link from your email.",
+        });
+    }
+
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+    const user = await prisma.user.findFirst({ where: { verificationTokenHash: tokenHash } });
+    if (!user) {
+        return res.render("verify", {
+            user: req.session.user || null,
+            status: "error",
+            message: "That verification link is invalid or has already been used.",
+        });
+    }
+
+    if (user.emailVerifiedAt) {
+        return res.render("verify", {
+            user: req.session.user || null,
+            status: "success",
+            message: "Your email is already verified. You can sign in now.",
+        });
+    }
+
+    if (user.verificationTokenExpiresAt && user.verificationTokenExpiresAt < new Date()) {
+        return res.render("verify", {
+            user: req.session.user || null,
+            status: "error",
+            message: "That verification link has expired. Please register again.",
+        });
+    }
+
+    await prisma.user.update({
+        where: { id: user.id },
+        data: {
+            emailVerifiedAt: new Date(),
+            verificationTokenHash: null,
+            verificationTokenExpiresAt: null,
+        },
+    });
+
+    try {
+        await sendWelcomeEmail({ to: user.email });
+    } catch (err) {
+        console.error("Welcome email failed:", err);
+    }
+
+    res.render("verify", {
+        user: req.session.user || null,
+        status: "success",
+        message: "Your email is verified! Welcome to OpenPizzaMap.",
+    });
+});
 router.post("/logout", (req, res) => req.session.destroy(() => res.redirect("/")));
 
 router.get("/terms", (req, res) => {

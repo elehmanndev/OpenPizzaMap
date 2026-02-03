@@ -1,0 +1,82 @@
+<%- include("layout", { title: "Forgot password", user, leaflet: false, bodyClass: "auth-page", body: String.raw`
+<section class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <span class="auth-logo">OPM</span>
+      <div>
+        <span class="auth-brand-name">OpenPizzaMap</span>
+        <span class="auth-brand-tag">Password reset</span>
+      </div>
+    </div>
+    <h1 class="auth-title">Forgot your password?</h1>
+    <p class="auth-subtitle">We’ll email you a reset link.</p>
+    <form class="auth-form" id="forgot" novalidate>
+      <label class="auth-field">
+        <span>Email address</span>
+        <input name="email" type="email" autocomplete="email" required />
+        <small class="auth-error" aria-live="polite"></small>
+      </label>
+      <button class="auth-submit" type="submit">Send reset link</button>
+      <p class="auth-msg" id="msg"></p>
+    </form>
+    <p class="auth-footer">Remembered it? <a href="/login">Sign in</a></p>
+  </div>
+</section>
+<script>
+  const form = document.getElementById("forgot");
+  const msg = document.getElementById("msg");
+  const fields = Array.from(form.querySelectorAll("input"));
+  let submitted = false;
+  const getMessage = (input) => {
+    const value = input.value.trim();
+    if (input.validity.valueMissing) {
+      return "Email is required.";
+    }
+    if (input.validity.typeMismatch || input.validity.patternMismatch) {
+      return "\"" + (value || "This") + "\" isn't a valid email address.";
+    }
+    return input.validationMessage || "Please check this field.";
+  };
+  const updateValidity = (input) => {
+    const field = input.closest(".auth-field");
+    const error = field ? field.querySelector(".auth-error") : null;
+    const isValid = input.checkValidity();
+    const hasValue = input.value.trim().length > 0;
+    const showError = submitted && (!isValid);
+    input.classList.toggle("is-valid", isValid && hasValue);
+    input.classList.toggle("is-invalid", !isValid && hasValue);
+    if (field) field.classList.toggle("is-invalid", submitted && !isValid);
+    if (error && showError) {
+      error.textContent = getMessage(input);
+    } else if (error) {
+      error.textContent = "";
+    }
+  };
+  fields.forEach((input) => {
+    input.addEventListener("input", () => updateValidity(input));
+  });
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    msg.textContent = "";
+    submitted = true;
+    fields.forEach((input) => updateValidity(input));
+    if (!form.checkValidity()) {
+      msg.textContent = "Please fix the highlighted fields.";
+      return;
+    }
+    const fd = new FormData(form);
+    const body = Object.fromEntries(fd.entries());
+    const res = await fetch("/api/auth/forgot", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (res.ok) {
+      msg.textContent = "If the email exists, we sent a reset link.";
+      msg.style.color = "var(--c-success)";
+      return;
+    }
+    msg.textContent = "Request failed";
+  });
+</script>
+` }) %>

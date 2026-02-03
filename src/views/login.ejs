@@ -28,21 +28,37 @@
       </label>
       <label class="auth-field">
         <span>Password</span>
-        <input name="password" type="password" autocomplete="current-password" required minlength="8" maxlength="128" pattern="^(?=.*[A-Za-z])(?=.*\\d).+$" />
+        <div class="auth-password">
+          <input name="password" type="password" autocomplete="current-password" required minlength="8" maxlength="128" pattern="^(?=.*[A-Za-z])(?=.*[0-9]).+$" />
+          <button class="auth-toggle" type="button" aria-label="Show password" aria-pressed="false" data-password-toggle>
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M12 5c5.2 0 9.4 3.3 11 7-1.6 3.7-5.8 7-11 7S2.6 15.7 1 12c1.6-3.7 5.8-7 11-7zm0 2c-3.9 0-7.3 2.3-8.8 5 1.5 2.7 4.9 5 8.8 5s7.3-2.3 8.8-5c-1.5-2.7-4.9-5-8.8-5zm0 2.5A2.5 2.5 0 1 1 12 16a2.5 2.5 0 0 1 0-5z"/>
+            </svg>
+          </button>
+        </div>
         <small class="auth-hint">At least 8 characters with letters and numbers.</small>
         <small class="auth-error" aria-live="polite"></small>
       </label>
       <button class="auth-submit" type="submit">Sign in</button>
       <p class="auth-msg" id="msg"></p>
     </form>
+    <p class="auth-footer" id="forgot-wrap" hidden><a href="/forgot">I forgot my password</a></p>
     <p class="auth-footer">New here? <a href="/register">Create an account</a></p>
   </div>
 </section>
 <script>
   const form = document.getElementById("login");
   const msg = document.getElementById("msg");
+  const forgotWrap = document.getElementById("forgot-wrap");
   const fields = Array.from(form.querySelectorAll("input"));
   let submitted = false;
+  const FAIL_KEY = "opm_login_fails";
+  const getFails = () => Number(sessionStorage.getItem(FAIL_KEY) || 0);
+  const setFails = (value) => sessionStorage.setItem(FAIL_KEY, String(value));
+  const updateForgotVisibility = () => {
+    if (!forgotWrap) return;
+    forgotWrap.hidden = getFails() < 3;
+  };
   const getMessage = (input) => {
     const value = input.value.trim();
     if (input.validity.valueMissing) {
@@ -75,6 +91,19 @@
   fields.forEach((input) => {
     input.addEventListener("input", () => updateValidity(input));
   });
+  const toggles = Array.from(document.querySelectorAll("[data-password-toggle]"));
+  toggles.forEach((btn) => {
+    const field = btn.closest(".auth-field");
+    const input = field ? field.querySelector("input") : null;
+    if (!input) return;
+    btn.addEventListener("click", () => {
+      const isText = input.type === "text";
+      input.type = isText ? "password" : "text";
+      btn.setAttribute("aria-pressed", String(!isText));
+      btn.setAttribute("aria-label", isText ? "Show password" : "Hide password");
+      btn.classList.toggle("is-on", !isText);
+    });
+  });
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     msg.textContent = "";
@@ -93,9 +122,13 @@
     });
     const data = await res.json();
     if (data.ok) {
-      location.href = "/map";
+      setFails(0);
+      updateForgotVisibility();
+      location.href = "/";
       return;
     }
+    setFails(getFails() + 1);
+    updateForgotVisibility();
     if (typeof data.error === "string") {
       msg.textContent = data.error;
     } else if (data.error && data.error.formErrors && data.error.formErrors.length) {
@@ -106,5 +139,6 @@
       msg.textContent = "Login failed";
     }
   });
+  updateForgotVisibility();
 </script>
 ` }) %>

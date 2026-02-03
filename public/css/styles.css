@@ -329,6 +329,12 @@ button {
   color: var(--c-muted);
 }
 
+.auth-password {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
 .auth-field input {
   border: 1px solid var(--c-border);
   border-radius: 12px;
@@ -338,6 +344,46 @@ button {
   color: var(--c-text);
   width: 100%;
   box-sizing: border-box;
+}
+
+.auth-password input {
+  padding-right: 44px;
+}
+
+.auth-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 0;
+  background: transparent;
+  color: var(--c-muted);
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+
+.auth-toggle svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+.auth-toggle:hover {
+  background: rgba(var(--c-accent-rgb), 0.12);
+  color: var(--c-text);
+}
+
+.auth-toggle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(var(--c-accent-rgb), 0.18);
+}
+
+.auth-toggle.is-on {
+  color: var(--c-accent);
 }
 
 .auth-field input:focus {
@@ -378,6 +424,10 @@ button {
 }
 
 .auth-field.is-invalid .auth-error {
+  display: inline-flex;
+}
+
+.auth-check.is-invalid .auth-error {
   display: inline-flex;
 }
 
@@ -538,6 +588,53 @@ button {
   opacity: 1;
   max-height: 40px;
   transform: translateY(0);
+}
+
+.auth-check {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 13px;
+  color: var(--c-muted);
+  flex-wrap: wrap;
+}
+
+.auth-check input {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  padding: 0;
+  border-radius: 4px;
+  accent-color: var(--c-accent);
+}
+
+.auth-check span {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.auth-check .auth-error {
+  flex: 1 1 100%;
+  margin-left: 26px;
+}
+
+
+.auth-note {
+  border: 1px solid var(--c-border);
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: var(--c-input-bg);
+  font-size: 13px;
+  color: var(--c-muted);
+}
+
+.auth-actions {
+  margin-top: 16px;
+}
+
+.auth-submit-link {
+  text-decoration: none;
+  text-align: center;
 }
 
 @keyframes auth-pop {
