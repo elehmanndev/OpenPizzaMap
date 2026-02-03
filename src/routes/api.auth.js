@@ -5,6 +5,8 @@ const { z } = require("zod");
 const { prisma } = require("../db");
 const { authLimiter } = require("../middleware/rateLimit");
 const { sendVerificationEmail, sendPasswordResetEmail } = require("../services/email");
+const passport = require("passport");
+const { isGoogleAuthConfigured, getGoogleCallbackUrl } = require("../services/googleAuth");
 
 const router = express.Router();
 
@@ -201,6 +203,52 @@ router.post("/reset", authLimiter, async (req, res) => {
 
 router.post("/logout", async (req, res) => {
     req.session.destroy(() => res.json({ ok: true }));
+});
+
+router.get("/google", (req, res, next) => {
+    if (!isGoogleAuthConfigured()) {
+        return res.status(503).send("Google auth not configured");
+    }
+    const callbackURL = getGoogleCallbackUrl(req);
+    if (!callbackURL) {
+        return res.status(500).send("Google callback URL not available");
+    }
+    return passport.authenticate("google", {
+        scope: ["profile", "email"],
+        prompt: "select_account",
+        callbackURL,
+    })(
+        req,
+        res,
+        next
+    );
+});
+
+router.get("/google/callback", (req, res, next) => {
+    if (!isGoogleAuthConfigured()) {
+        return res.status(503).send("Google auth not configured");
+    }
+    if (!req.query || !req.query.code) {
+        const reason = typeof req.query?.error === "string" ? req.query.error : "missing_code";
+        return res.redirect(`/login?google=${encodeURIComponent(reason)}`);
+    }
+    const callbackURL = getGoogleCallbackUrl(req);
+    if (!callbackURL) {
+        return res.status(500).send("Google callback URL not available");
+    }
+    return passport.authenticate("google", { session: false, callbackURL }, (err, user) => {
+        if (err || !user) {
+            console.error("Google auth failed:", err);
+            return res.redirect("/login?google=failed");
+        }
+        req.session.user = {
+            id: user.id,
+            email: user.email,
+            displayName: user.displayName,
+            role: user.role,
+        };
+        return res.redirect("/me");
+    })(req, res, next);
 });
 
 module.exports = router;

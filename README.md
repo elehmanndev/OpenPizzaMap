@@ -12,7 +12,7 @@ Community-submitted pizza places with moderation, map + search.
 ## Local setup
 1. Install Node.js LTS
 2. Create a MariaDB database (local or remote)
-3. Copy `.env.example` → `.env` and set `DATABASE_URL` and `SESSION_SECRET`
+3. Create `.env.local` for localhost (and `.env` for production) with `DATABASE_URL` and `SESSION_SECRET`
 
 Install deps:
 ```bash
@@ -22,6 +22,11 @@ npm install
 Generate Prisma client:
 ```bash
 npm run prisma:generate
+```
+
+Build sitemap (manual, when needed):
+```bash
+npm run sitemap:build
 ```
 
 Run migrations:

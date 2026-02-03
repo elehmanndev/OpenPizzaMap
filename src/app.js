@@ -2,7 +2,8 @@ const fs = require("fs");
 const path = require("path");
 const localEnv = path.join(process.cwd(), ".env.local");
 const defaultEnv = path.join(process.cwd(), ".env");
-require("dotenv").config({ path: fs.existsSync(localEnv) ? localEnv : defaultEnv });
+const envPath = fs.existsSync(localEnv) ? localEnv : defaultEnv;
+require("dotenv").config({ path: envPath, override: envPath === localEnv });
 const express = require("express");
 const morgan = require("morgan");
 
@@ -34,6 +35,8 @@ if (maintenanceMode) {
     const apiAdmin = require("./routes/api.admin");
     const { errorHandler } = require("./middleware/error");
     const { prisma } = require("./db");
+    const passport = require("passport");
+    const { configureGoogleAuth } = require("./services/googleAuth");
 
     // Auto-seed if empty (Hostinger helper)
     async function autoSeed() {
@@ -68,6 +71,8 @@ if (maintenanceMode) {
             },
         })
     );
+    configureGoogleAuth();
+    app.use(passport.initialize());
 
     app.use("/", pages);
     app.use("/api/auth", apiAuth);

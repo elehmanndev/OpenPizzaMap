@@ -1,9 +1,12 @@
 const express = require("express");
 const crypto = require("crypto");
+const fs = require("fs");
+const path = require("path");
 const { prisma } = require("../db");
 const { requireAuth, requireAdmin } = require("../middleware/auth");
 const { sendWelcomeEmail } = require("../services/email");
 const { buildSitemapXml, writeSitemapFiles } = require("../services/sitemap");
+const { isGoogleAuthConfigured } = require("../services/googleAuth");
 
 const router = express.Router();
 
@@ -57,8 +60,12 @@ router.post("/add", requireAuth, async (req, res) => {
     res.redirect("/me");
 });
 
-router.get("/register", (req, res) => res.render("register", { user: req.session.user || null }));
-router.get("/login", (req, res) => res.render("login", { user: req.session.user || null }));
+router.get("/register", (req, res) =>
+    res.render("register", { user: req.session.user || null, googleAuthEnabled: isGoogleAuthConfigured() })
+);
+router.get("/login", (req, res) =>
+    res.render("login", { user: req.session.user || null, googleAuthEnabled: isGoogleAuthConfigured() })
+);
 router.get("/forgot", (req, res) => res.render("forgot", { user: req.session.user || null }));
 router.get("/reset", (req, res) => {
     const token = typeof req.query.token === "string" ? req.query.token : "";
@@ -203,15 +210,27 @@ router.post("/admin/sitemap/rebuild", requireAdmin, async (req, res) => {
 });
 
 router.get("/sitemap.xml", async (req, res) => {
+    const sitemapPath = path.join(process.cwd(), "public", "sitemap.xml");
+    if (fs.existsSync(sitemapPath)) {
+        res.header("Content-Type", "application/xml");
+        return res.send(fs.readFileSync(sitemapPath, "utf8"));
+    }
     const xml = await buildSitemapXml(prisma);
+    writeSitemapFiles(xml);
     res.header("Content-Type", "application/xml");
-    res.send(xml);
+    return res.send(xml);
 });
 
 router.get("/sitemap", async (req, res) => {
+    const sitemapPath = path.join(process.cwd(), "public", "sitemap.xml");
+    if (fs.existsSync(sitemapPath)) {
+        res.header("Content-Type", "application/xml");
+        return res.send(fs.readFileSync(sitemapPath, "utf8"));
+    }
     const xml = await buildSitemapXml(prisma);
+    writeSitemapFiles(xml);
     res.header("Content-Type", "application/xml");
-    res.send(xml);
+    return res.send(xml);
 });
 
 router.get("/robots.txt", (req, res) => {
