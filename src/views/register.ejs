@@ -143,6 +143,11 @@
       body: JSON.stringify(body),
     });
     const data = await res.json();
+    if (res.status === 409 && data && data.error === "google_account") {
+      const redirectEmail = data.email || body.email || "";
+      location.href = "/set-password?email=" + encodeURIComponent(redirectEmail);
+      return;
+    }
     if (data.ok) {
       location.href = "/check-email";
       return;

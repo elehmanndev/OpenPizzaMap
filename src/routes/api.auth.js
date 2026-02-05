@@ -55,6 +55,19 @@ const resetSchema = z.object({
         .regex(/^(?=.*[A-Za-z])(?=.*\d).+$/, "Password must include letters and numbers"),
 });
 
+const setPasswordSchema = z.object({
+    email: z.string().trim().email(),
+    password: z
+        .string()
+        .min(8)
+        .max(128)
+        .regex(/^(?=.*[A-Za-z])(?=.*\d).+$/, "Password must include letters and numbers"),
+    confirmPassword: z.string().min(1).max(128),
+}).refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match.",
+    path: ["confirmPassword"],
+});
+
 router.post("/register", authLimiter, async (req, res) => {
     try {
         const parsed = registerSchema.safeParse(req.body);
@@ -63,7 +76,16 @@ router.post("/register", authLimiter, async (req, res) => {
         const { email, password, displayName } = parsed.data;
         const newsletterOptIn = parsed.data.newsletterOptIn === true;
         const existing = await prisma.user.findUnique({ where: { email } });
-        if (existing) return res.status(409).json({ ok: false, error: "Email already in use" });
+        if (existing) {
+            if (!existing.passwordHash) {
+                return res.status(409).json({
+                    ok: false,
+                    error: "google_account",
+                    email,
+                });
+            }
+            return res.status(409).json({ ok: false, error: "Email already in use" });
+        }
 
         const nameTaken = await prisma.user.findFirst({ where: { displayName } });
         if (nameTaken) return res.status(409).json({ ok: false, error: "Username already taken" });
@@ -198,6 +220,40 @@ router.post("/reset", authLimiter, async (req, res) => {
     } catch (err) {
         console.error("Password reset failed:", err);
         return res.status(500).json({ ok: false, error: "Reset failed" });
+    }
+});
+
+router.post("/set-password", authLimiter, async (req, res) => {
+    try {
+        const parsed = setPasswordSchema.safeParse(req.body);
+        if (!parsed.success) return res.status(400).json({ ok: false, error: parsed.error.flatten() });
+
+        const { email, password } = parsed.data;
+        const user = await prisma.user.findUnique({ where: { email } });
+        if (!user) return res.status(404).json({ ok: false, error: "Account not found" });
+        if (user.passwordHash) {
+            return res.status(409).json({ ok: false, error: "Password already set" });
+        }
+
+        const passwordHash = await bcrypt.hash(password, 12);
+        const updates = {
+            passwordHash,
+            emailVerifiedAt: user.emailVerifiedAt || new Date(),
+            verificationTokenHash: null,
+            verificationTokenExpiresAt: null,
+        };
+
+        const updated = await prisma.user.update({
+            where: { id: user.id },
+            data: updates,
+            select: { id: true, email: true, displayName: true, role: true },
+        });
+
+        req.session.user = updated;
+        return res.json({ ok: true, user: updated });
+    } catch (err) {
+        console.error("Set password failed:", err);
+        return res.status(500).json({ ok: false, error: "Set password failed" });
     }
 });
 

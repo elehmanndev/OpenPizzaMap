@@ -5,6 +5,7 @@
   "type": "commonjs",
   "scripts": {
     "dev": "node src/app.js",
+    "test": "node --test",
     "start": "npx prisma migrate deploy && node src/app.js",
     "build": "npx prisma generate",
     "postinstall": "npx prisma generate",

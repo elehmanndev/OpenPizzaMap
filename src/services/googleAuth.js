@@ -30,37 +30,43 @@ function isGoogleAuthConfigured() {
 function normalizeDisplayName(raw) {
     const cleaned = String(raw || "")
         .trim()
-        .replace(/[^A-Za-z0-9_]/g, "")
-        .slice(0, 20);
+        .replace(/\s+/g, " ")
+        .replace(/[^A-Za-z0-9\s'-]/g, "")
+        .slice(0, 32);
 
     if (cleaned.length >= 3) return cleaned;
 
-    const fallback = (cleaned + "pizza").slice(0, 20);
+    const fallback = (cleaned + " pizza").trim().slice(0, 32);
     return fallback.length >= 3 ? fallback : "pizza";
 }
 
 async function ensureUniqueDisplayName(base) {
     let candidate = normalizeDisplayName(base);
 
+    const maxLength = 32;
     for (let i = 0; i < 50; i += 1) {
         const exists = await prisma.user.findFirst({ where: { displayName: candidate } });
         if (!exists) return candidate;
 
-        const suffix = String(i + 1);
-        const maxBaseLength = Math.max(3, 20 - suffix.length - 1);
+        const suffix = ` ${i + 1}`;
+        const maxBaseLength = Math.max(3, maxLength - suffix.length);
         const trimmedBase = normalizeDisplayName(base).slice(0, maxBaseLength);
-        candidate = `${trimmedBase}_${suffix}`;
+        candidate = `${trimmedBase}${suffix}`;
     }
 
-    return `${normalizeDisplayName(base).slice(0, 14)}_${Date.now().toString().slice(-5)}`;
+    return `${normalizeDisplayName(base).slice(0, 22)} ${Date.now().toString().slice(-5)}`;
 }
 
 function pickDisplayName(profile, email) {
-    if (profile && profile.displayName) return profile.displayName;
     if (profile && profile.name && profile.name.givenName) {
-        const family = profile.name.familyName ? `_${profile.name.familyName}` : "";
-        return `${profile.name.givenName}${family}`;
+        const parts = [
+            profile.name.givenName,
+            profile.name.middleName,
+            profile.name.familyName,
+        ].filter(Boolean);
+        if (parts.length) return parts.join(" ");
     }
+    if (profile && profile.displayName) return profile.displayName;
     if (email && email.includes("@")) return email.split("@")[0];
     return "pizza";
 }

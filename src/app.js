@@ -4,6 +4,9 @@ const localEnv = path.join(process.cwd(), ".env.local");
 const defaultEnv = path.join(process.cwd(), ".env");
 const envPath = fs.existsSync(localEnv) ? localEnv : defaultEnv;
 require("dotenv").config({ path: envPath, override: envPath === localEnv });
+console.log(
+    `Startup env: NODE_ENV=${process.env.NODE_ENV || "unset"} DATABASE_URL=${process.env.DATABASE_URL ? "set" : "unset"} BASE_URL=${process.env.BASE_URL ? "set" : "unset"}`
+);
 const express = require("express");
 const morgan = require("morgan");
 

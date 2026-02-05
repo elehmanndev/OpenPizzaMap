@@ -67,6 +67,10 @@ router.get("/login", (req, res) =>
     res.render("login", { user: req.session.user || null, googleAuthEnabled: isGoogleAuthConfigured() })
 );
 router.get("/forgot", (req, res) => res.render("forgot", { user: req.session.user || null }));
+router.get("/set-password", (req, res) => {
+    const email = typeof req.query.email === "string" ? req.query.email : "";
+    res.render("set_password", { user: req.session.user || null, email });
+});
 router.get("/reset", (req, res) => {
     const token = typeof req.query.token === "string" ? req.query.token : "";
     res.render("reset", { user: req.session.user || null, token });

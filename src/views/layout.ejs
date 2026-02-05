@@ -7,6 +7,18 @@
   <title>
     <%= title || "OpenPizzaMap" %>
   </title>
+  <script>
+    (function () {
+      try {
+        var theme = localStorage.getItem("theme");
+        if (theme === "light" || theme === "dark") {
+          document.documentElement.setAttribute("data-theme", theme);
+        }
+      } catch (err) {
+        // ignore storage errors
+      }
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
@@ -42,9 +54,60 @@
           <% } %>
     </div>
   </header>
+  <% const isAuthPage = typeof bodyClass === "string" && bodyClass.includes("auth-page"); %>
   <main class="container">
     <%- body %>
+    <% if (isAuthPage) { %>
+      <div class="theme-toggle">
+        <button type="button" class="theme-toggle-btn" data-theme-toggle aria-pressed="false">
+          <span class="material-symbols-rounded" aria-hidden="true" data-theme-icon>dark_mode</span>
+          <span data-theme-label>Switch to dark mode</span>
+        </button>
+      </div>
+    <% } %>
   </main>
+  <% if (!isAuthPage) { %>
+    <div class="theme-toggle">
+      <button type="button" class="theme-toggle-btn" data-theme-toggle aria-pressed="false">
+        <span class="material-symbols-rounded" aria-hidden="true" data-theme-icon>dark_mode</span>
+        <span data-theme-label>Switch to dark mode</span>
+      </button>
+    </div>
+  <% } %>
+  <script>
+    (function () {
+      var toggle = document.querySelector("[data-theme-toggle]");
+      if (!toggle) return;
+      var root = document.documentElement;
+      var getCurrent = function () {
+        var current = root.getAttribute("data-theme");
+        if (current === "light" || current === "dark") return current;
+        return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
+      };
+      var updateLabel = function () {
+        var current = getCurrent();
+        var icon = toggle.querySelector("[data-theme-icon]");
+        var label = toggle.querySelector("[data-theme-label]");
+        var isDark = current === "dark";
+        if (icon) icon.textContent = isDark ? "light_mode" : "dark_mode";
+        if (label) label.textContent = isDark ? "Switch to light mode" : "Switch to dark mode";
+        toggle.setAttribute("aria-pressed", isDark ? "true" : "false");
+      };
+      toggle.addEventListener("click", function () {
+        var next = getCurrent() === "dark" ? "light" : "dark";
+        root.setAttribute("data-theme", next);
+        try {
+          localStorage.setItem("theme", next);
+        } catch (err) {
+          // ignore storage errors
+        }
+        updateLabel();
+      });
+      updateLabel();
+    })();
+  </script>
 </body>
 
 </html>
