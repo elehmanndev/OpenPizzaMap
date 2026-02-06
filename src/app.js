@@ -13,6 +13,7 @@ const morgan = require("morgan");
 const app = express();
 
 const maintenanceMode = String(process.env.MAINTENANCE_MODE || "").toLowerCase() === "true";
+let postListenTasks = () => {};
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -42,6 +43,7 @@ if (maintenanceMode) {
     const { configureGoogleAuth } = require("./services/googleAuth");
 
     // Auto-seed if empty (Hostinger helper)
+    let autoSeedScheduled = false;
     async function autoSeed() {
         try {
             const count = await prisma.place.count();
@@ -55,7 +57,20 @@ if (maintenanceMode) {
             // We don't crash the app here, just log it.
         }
     }
-    autoSeed();
+    postListenTasks = () => {
+        if (autoSeedScheduled) return;
+        if (String(process.env.AUTO_SEED || "true").toLowerCase() === "false") {
+            console.log("Auto-seed disabled via AUTO_SEED=false");
+            return;
+        }
+        autoSeedScheduled = true;
+        const delayMs = Number(process.env.AUTO_SEED_DELAY_MS || 3000);
+        setTimeout(() => {
+            autoSeed().catch((e) => {
+                console.error("Auto-seed failed:", e && e.message ? e.message : e);
+            });
+        }, Number.isFinite(delayMs) ? delayMs : 3000);
+    };
 
     app.use(express.urlencoded({ extended: true }));
     app.use(express.json());
@@ -87,8 +102,9 @@ if (maintenanceMode) {
 }
 
 const port = Number(process.env.PORT || 3000);
-app.listen(port, () =>
+app.listen(port, () => {
     console.log(
         `OpenPizzaMap running on port ${port}${maintenanceMode ? " (maintenance mode)" : ""}`
-    )
-);
+    );
+    postListenTasks();
+});
