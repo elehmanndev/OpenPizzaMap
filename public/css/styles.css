@@ -266,6 +266,14 @@ button {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 0;
+}
+
+.auth-stack {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 16px;
 }
 
@@ -338,8 +346,8 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: 0;
+  padding: 10px 44px;
   font-weight: 600;
   font-size: 15px;
   color: #fff;
@@ -348,12 +356,16 @@ button {
   text-decoration: none;
   min-height: 46px;
   align-self: stretch;
+  position: relative;
+  text-align: center;
 }
 
 .auth-social svg {
   width: 18px;
   height: 18px;
   flex-shrink: 0;
+  position: absolute;
+  left: 18px;
 }
 
 .auth-social svg path {

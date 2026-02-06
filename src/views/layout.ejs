@@ -56,14 +56,18 @@
   </header>
   <% const isAuthPage = typeof bodyClass === "string" && bodyClass.includes("auth-page"); %>
   <main class="container">
-    <%- body %>
     <% if (isAuthPage) { %>
-      <div class="theme-toggle">
-        <button type="button" class="theme-toggle-btn" data-theme-toggle aria-pressed="false">
-          <span class="material-symbols-rounded" aria-hidden="true" data-theme-icon>dark_mode</span>
-          <span data-theme-label>Switch to dark mode</span>
-        </button>
+      <div class="auth-stack">
+        <%- body %>
+        <div class="theme-toggle">
+          <button type="button" class="theme-toggle-btn" data-theme-toggle aria-pressed="false">
+            <span class="material-symbols-rounded" aria-hidden="true" data-theme-icon>dark_mode</span>
+            <span data-theme-label>Switch to dark mode</span>
+          </button>
+        </div>
       </div>
+    <% } else { %>
+      <%- body %>
     <% } %>
   </main>
   <% if (!isAuthPage) { %>

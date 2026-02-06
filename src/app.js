@@ -1,9 +1,15 @@
 const fs = require("fs");
 const path = require("path");
+const hostingerEnv = path.join(process.cwd(), ".builds", "config", ".env");
 const localEnv = path.join(process.cwd(), ".env.local");
 const defaultEnv = path.join(process.cwd(), ".env");
-const envPath = fs.existsSync(localEnv) ? localEnv : defaultEnv;
-require("dotenv").config({ path: envPath, override: envPath === localEnv });
+const envPath = fs.existsSync(hostingerEnv)
+    ? hostingerEnv
+    : (fs.existsSync(localEnv) ? localEnv : defaultEnv);
+require("dotenv").config({
+    path: envPath,
+    override: envPath === localEnv || envPath === hostingerEnv
+});
 console.log(
     `Startup env: NODE_ENV=${process.env.NODE_ENV || "unset"} DATABASE_URL=${process.env.DATABASE_URL ? "set" : "unset"} BASE_URL=${process.env.BASE_URL ? "set" : "unset"}`
 );

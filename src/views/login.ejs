@@ -1,13 +1,6 @@
 <%- include("layout", { title: "Login", user, leaflet: false, bodyClass: "auth-page", body: String.raw`
 <section class="auth-wrap">
   <div class="auth-card">
-    <div class="auth-brand">
-      <span class="auth-logo">OPM</span>
-      <div>
-        <span class="auth-brand-name">OpenPizzaMap</span>
-        <span class="auth-brand-tag">Your pizza intel hub</span>
-      </div>
-    </div>
     <h1 class="auth-title">Welcome back</h1>
     <p class="auth-subtitle">Sign in to keep your slice map up to date.</p>
     ${googleAuthEnabled ? String.raw`
