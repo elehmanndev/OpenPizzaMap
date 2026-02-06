@@ -6,9 +6,9 @@
   "scripts": {
     "dev": "node src/app.js",
     "test": "node --test",
-    "start": "npx prisma migrate deploy && node src/app.js",
-    "build": "npx prisma generate",
-    "postinstall": "npx prisma generate",
+    "start": "node node_modules/.bin/prisma migrate deploy && node src/app.js",
+    "build": "node node_modules/.bin/prisma generate",
+    "postinstall": "node node_modules/.bin/prisma generate",
     "seed": "node prisma/seed.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
