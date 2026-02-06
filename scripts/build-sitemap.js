@@ -1,13 +1,11 @@
 const fs = require("fs");
 const path = require("path");
-const { PrismaClient } = require("@prisma/client");
-
 const localEnv = path.join(process.cwd(), ".env.local");
 const defaultEnv = path.join(process.cwd(), ".env");
 require("dotenv").config({ path: fs.existsSync(localEnv) ? localEnv : defaultEnv });
 
 const { buildSitemapXml, writeSitemapFiles } = require("../src/services/sitemap");
-const prisma = new PrismaClient();
+const { prisma } = require("../src/db");
 
 async function main() {
     const xml = await buildSitemapXml(prisma);

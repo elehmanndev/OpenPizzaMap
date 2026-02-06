@@ -4,8 +4,8 @@ const localEnv = path.join(process.cwd(), ".env.local");
 const defaultEnv = path.join(process.cwd(), ".env");
 require("dotenv").config({ path: fs.existsSync(localEnv) ? localEnv : defaultEnv });
 
-const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
+const { prisma } = require("../src/db");
 
 function parseArgs(argv) {
     const args = argv.slice(2);
@@ -34,7 +34,6 @@ async function main() {
         process.exit(1);
     }
 
-    const prisma = new PrismaClient();
     try {
         const hash = await bcrypt.hash(password, 12);
         await prisma.user.update({
