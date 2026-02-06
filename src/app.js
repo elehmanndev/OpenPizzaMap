@@ -1,9 +1,26 @@
 const fs = require("fs");
 const path = require("path");
+const dotenv = require("dotenv");
 const localEnv = path.join(process.cwd(), ".env.local");
 const defaultEnv = path.join(process.cwd(), ".env");
-const envPath = fs.existsSync(localEnv) ? localEnv : defaultEnv;
-require("dotenv").config({ path: envPath, override: envPath === localEnv });
+
+const loadEnvFile = (filePath) => {
+    if (!fs.existsSync(filePath)) return {};
+    const raw = fs.readFileSync(filePath, "utf8");
+    return dotenv.parse(raw);
+};
+
+// Precedence: runtime env vars > .env.local > .env
+const mergedEnv = {
+    ...loadEnvFile(defaultEnv),
+    ...loadEnvFile(localEnv),
+};
+
+Object.entries(mergedEnv).forEach(([key, value]) => {
+    if (typeof process.env[key] === "undefined") {
+        process.env[key] = value;
+    }
+});
 console.log(
     `Startup env: NODE_ENV=${process.env.NODE_ENV || "unset"} DATABASE_URL=${process.env.DATABASE_URL ? "set" : "unset"} BASE_URL=${process.env.BASE_URL ? "set" : "unset"}`
 );
