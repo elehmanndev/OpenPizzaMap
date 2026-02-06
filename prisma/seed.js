@@ -4,8 +4,10 @@ const localEnv = path.join(process.cwd(), ".env.local");
 const defaultEnv = path.join(process.cwd(), ".env");
 require("dotenv").config({ path: fs.existsSync(localEnv) ? localEnv : defaultEnv });
 
+const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
-const { prisma } = require("../src/db");
+
+const prisma = new PrismaClient();
 
 async function main() {
     // Create admin user (local dev)
