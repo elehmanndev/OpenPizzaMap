@@ -12,6 +12,23 @@ const morgan = require("morgan");
 
 const app = express();
 
+// Block common bot scans early (before any middleware/routes).
+app.use((req, res, next) => {
+    const p = req.path.toLowerCase();
+
+    if (
+        p.startsWith("/wp-") ||
+        p.startsWith("/wordpress") ||
+        p === "/xmlrpc.php" ||
+        p.endsWith(".php")
+    ) {
+        res.set("Cache-Control", "public, max-age=3600");
+        return res.status(404).end();
+    }
+
+    next();
+});
+
 const maintenanceMode = String(process.env.MAINTENANCE_MODE || "").toLowerCase() === "true";
 
 app.set("view engine", "ejs");
