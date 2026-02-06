@@ -17,7 +17,7 @@ const registerSchema = z.object({
         .min(8)
         .max(128)
         .regex(/^(?=.*[A-Za-z])(?=.*\d).+$/, "Password must include letters and numbers"),
-    displayName: z
+    username: z
         .string()
         .trim()
         .min(3)
@@ -57,6 +57,13 @@ const resetSchema = z.object({
 
 const setPasswordSchema = z.object({
     email: z.string().trim().email(),
+    username: z
+        .string()
+        .trim()
+        .min(3)
+        .max(20)
+        .regex(/^[A-Za-z0-9_]+$/, "Username can use letters, numbers, and underscores")
+        .optional(),
     password: z
         .string()
         .min(8)
@@ -73,7 +80,7 @@ router.post("/register", authLimiter, async (req, res) => {
         const parsed = registerSchema.safeParse(req.body);
         if (!parsed.success) return res.status(400).json({ ok: false, error: parsed.error.flatten() });
 
-        const { email, password, displayName } = parsed.data;
+        const { email, password, username } = parsed.data;
         const newsletterOptIn = parsed.data.newsletterOptIn === true;
         const existing = await prisma.user.findUnique({ where: { email } });
         if (existing) {
@@ -87,7 +94,7 @@ router.post("/register", authLimiter, async (req, res) => {
             return res.status(409).json({ ok: false, error: "Email already in use" });
         }
 
-        const nameTaken = await prisma.user.findFirst({ where: { displayName } });
+        const nameTaken = await prisma.user.findFirst({ where: { username } });
         if (nameTaken) return res.status(409).json({ ok: false, error: "Username already taken" });
 
         const passwordHash = await bcrypt.hash(password, 12);
@@ -99,13 +106,14 @@ router.post("/register", authLimiter, async (req, res) => {
             data: {
                 email,
                 passwordHash,
-                displayName,
+                displayName: username,
+                username,
                 role: "user",
                 verificationTokenHash: tokenHash,
                 verificationTokenExpiresAt: tokenExpiresAt,
                 newsletterOptIn,
             },
-            select: { id: true, email: true, displayName: true, role: true },
+            select: { id: true, email: true, displayName: true, username: true, role: true },
         });
 
         try {
@@ -143,7 +151,13 @@ router.post("/login", authLimiter, async (req, res) => {
         const ok = await bcrypt.compare(password, user.passwordHash);
         if (!ok) return res.status(401).json({ ok: false, error: "Invalid credentials" });
 
-        req.session.user = { id: user.id, email: user.email, displayName: user.displayName, role: user.role };
+        req.session.user = {
+            id: user.id,
+            email: user.email,
+            displayName: user.displayName,
+            username: user.username,
+            role: user.role,
+        };
         res.json({ ok: true, user: req.session.user });
     } catch (err) {
         console.error("Login failed:", err);
@@ -212,7 +226,7 @@ router.post("/reset", authLimiter, async (req, res) => {
                 resetTokenHash: null,
                 resetTokenExpiresAt: null,
             },
-            select: { id: true, email: true, displayName: true, role: true },
+            select: { id: true, email: true, displayName: true, username: true, role: true },
         });
 
         req.session.user = updated;
@@ -228,11 +242,20 @@ router.post("/set-password", authLimiter, async (req, res) => {
         const parsed = setPasswordSchema.safeParse(req.body);
         if (!parsed.success) return res.status(400).json({ ok: false, error: parsed.error.flatten() });
 
-        const { email, password } = parsed.data;
+        const { email, password, username } = parsed.data;
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user) return res.status(404).json({ ok: false, error: "Account not found" });
         if (user.passwordHash) {
             return res.status(409).json({ ok: false, error: "Password already set" });
+        }
+        if (!user.username) {
+            if (!username) {
+                return res.status(400).json({ ok: false, error: "Username is required." });
+            }
+            const existingUsername = await prisma.user.findFirst({ where: { username } });
+            if (existingUsername) {
+                return res.status(409).json({ ok: false, error: "Username already taken" });
+            }
         }
 
         const passwordHash = await bcrypt.hash(password, 12);
@@ -242,11 +265,12 @@ router.post("/set-password", authLimiter, async (req, res) => {
             verificationTokenHash: null,
             verificationTokenExpiresAt: null,
         };
+        if (!user.username && username) updates.username = username;
 
         const updated = await prisma.user.update({
             where: { id: user.id },
             data: updates,
-            select: { id: true, email: true, displayName: true, role: true },
+            select: { id: true, email: true, displayName: true, username: true, role: true },
         });
 
         req.session.user = updated;
@@ -301,10 +325,48 @@ router.get("/google/callback", (req, res, next) => {
             id: user.id,
             email: user.email,
             displayName: user.displayName,
+            username: user.username,
             role: user.role,
         };
+        if (!user.username) {
+            return res.redirect("/set-username");
+        }
         return res.redirect("/me");
     })(req, res, next);
+});
+
+router.post("/set-username", authLimiter, async (req, res) => {
+    try {
+        const schema = z.object({
+            username: z
+                .string()
+                .trim()
+                .min(3)
+                .max(20)
+                .regex(/^[A-Za-z0-9_]+$/, "Username can use letters, numbers, and underscores"),
+        });
+        const parsed = schema.safeParse(req.body);
+        if (!parsed.success) return res.status(400).json({ ok: false, error: parsed.error.flatten() });
+        if (!req.session || !req.session.user) {
+            return res.status(401).json({ ok: false, error: "Unauthorized" });
+        }
+
+        const { username } = parsed.data;
+        const existing = await prisma.user.findFirst({ where: { username } });
+        if (existing) return res.status(409).json({ ok: false, error: "Username already taken" });
+
+        const updated = await prisma.user.update({
+            where: { id: req.session.user.id },
+            data: { username },
+            select: { id: true, email: true, displayName: true, username: true, role: true },
+        });
+
+        req.session.user = updated;
+        return res.json({ ok: true, user: updated });
+    } catch (err) {
+        console.error("Set username failed:", err);
+        return res.status(500).json({ ok: false, error: "Set username failed" });
+    }
 });
 
 module.exports = router;

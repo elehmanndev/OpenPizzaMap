@@ -80,8 +80,8 @@
   <% } %>
   <script>
     (function () {
-      var toggle = document.querySelector("[data-theme-toggle]");
-      if (!toggle) return;
+      var toggles = Array.from(document.querySelectorAll("[data-theme-toggle]"));
+      if (!toggles.length) return;
       var root = document.documentElement;
       var getCurrent = function () {
         var current = root.getAttribute("data-theme");
@@ -92,22 +92,26 @@
       };
       var updateLabel = function () {
         var current = getCurrent();
-        var icon = toggle.querySelector("[data-theme-icon]");
-        var label = toggle.querySelector("[data-theme-label]");
         var isDark = current === "dark";
-        if (icon) icon.textContent = isDark ? "light_mode" : "dark_mode";
-        if (label) label.textContent = isDark ? "Switch to light mode" : "Switch to dark mode";
-        toggle.setAttribute("aria-pressed", isDark ? "true" : "false");
+        toggles.forEach(function (toggle) {
+          var icon = toggle.querySelector("[data-theme-icon]");
+          var label = toggle.querySelector("[data-theme-label]");
+          if (icon) icon.textContent = isDark ? "light_mode" : "dark_mode";
+          if (label) label.textContent = isDark ? "Switch to light mode" : "Switch to dark mode";
+          toggle.setAttribute("aria-pressed", isDark ? "true" : "false");
+        });
       };
-      toggle.addEventListener("click", function () {
-        var next = getCurrent() === "dark" ? "light" : "dark";
-        root.setAttribute("data-theme", next);
-        try {
-          localStorage.setItem("theme", next);
-        } catch (err) {
-          // ignore storage errors
-        }
-        updateLabel();
+      toggles.forEach(function (toggle) {
+        toggle.addEventListener("click", function () {
+          var next = getCurrent() === "dark" ? "light" : "dark";
+          root.setAttribute("data-theme", next);
+          try {
+            localStorage.setItem("theme", next);
+          } catch (err) {
+            // ignore storage errors
+          }
+          updateLabel();
+        });
       });
       updateLabel();
     })();

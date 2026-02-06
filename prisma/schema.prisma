@@ -11,7 +11,8 @@ model User {
   id           Int          @id @default(autoincrement())
   email        String       @unique
   passwordHash String?
-  displayName  String       @unique
+  displayName  String
+  username     String?      @unique @db.VarChar(20)
   role         UserRole     @default(user)
   emailVerifiedAt DateTime?
   verificationTokenHash String?

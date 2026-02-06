@@ -40,7 +40,7 @@
       </label>
       <label class="auth-field">
         <span>Username</span>
-        <input name="displayName" type="text" autocomplete="username" required minlength="3" maxlength="20" pattern="^[A-Za-z0-9_]{3,20}$" />
+        <input name="username" type="text" autocomplete="username" required minlength="3" maxlength="20" pattern="^[A-Za-z0-9_]{3,20}$" />
         <small class="auth-error" aria-live="polite"></small>
       </label>
       <label class="auth-field">
@@ -80,14 +80,14 @@
     const value = input.type === "checkbox" ? "" : input.value.trim();
     if (input.validity.valueMissing) {
       if (input.name === "email") return "Email is required.";
-      if (input.name === "displayName") return "Username is required.";
+      if (input.name === "username") return "Username is required.";
       if (input.name === "password") return "Password is required.";
       if (input.name === "termsAccepted") return "No check, no party.";
     }
     if (input.name === "email" && (input.validity.typeMismatch || input.validity.patternMismatch)) {
       return "\"" + (value || "This") + "\" isn't a valid email address.";
     }
-    if (input.name === "displayName" && (input.validity.tooShort || input.validity.patternMismatch)) {
+    if (input.name === "username" && (input.validity.tooShort || input.validity.patternMismatch)) {
       return "Username must be 3-20 characters and use letters, numbers, or underscores.";
     }
     if (input.name === "password" && (input.validity.tooShort || input.validity.patternMismatch)) {

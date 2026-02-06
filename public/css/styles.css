@@ -91,8 +91,8 @@ a {
 }
 
 .auth-page .theme-toggle {
-  margin-top: 0;
-  padding-bottom: 0;
+  margin-top: 16px;
+  padding: 0 16px 0;
 }
 
 .theme-toggle-btn {
@@ -274,7 +274,7 @@ button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 0;
 }
 
 .auth-wrap {
@@ -343,11 +343,11 @@ button {
   border-radius: 12px;
   border: 2px solid var(--c-accent);
   background: var(--c-accent);
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0;
-  padding: 10px 44px;
+  gap: 10px;
+  padding: 10px 16px;
   font-weight: 600;
   font-size: 15px;
   color: #fff;
@@ -356,7 +356,6 @@ button {
   text-decoration: none;
   min-height: 46px;
   align-self: stretch;
-  position: relative;
   text-align: center;
 }
 
@@ -364,8 +363,6 @@ button {
   width: 18px;
   height: 18px;
   flex-shrink: 0;
-  position: absolute;
-  left: 18px;
 }
 
 .auth-social svg path {

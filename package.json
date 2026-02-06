@@ -15,6 +15,7 @@
     "prisma:migrate": "prisma migrate deploy",
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:seed": "node prisma/seed.js",
+    "users:backfill": "node scripts/backfill-usernames.js",
     "admin:password": "node scripts/set-admin-password.js",
     "sitemap:build": "node scripts/build-sitemap.js"
   },

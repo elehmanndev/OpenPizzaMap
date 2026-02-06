@@ -66,10 +66,28 @@ router.get("/register", (req, res) =>
 router.get("/login", (req, res) =>
     res.render("login", { user: req.session.user || null, googleAuthEnabled: isGoogleAuthConfigured() })
 );
+router.get("/set-username", requireAuth, async (req, res) => {
+    const existing = await prisma.user.findUnique({
+        where: { id: req.session.user.id },
+        select: { username: true },
+    });
+    if (existing && existing.username) {
+        return res.redirect("/me");
+    }
+    res.render("set_username", { user: req.session.user || null });
+});
 router.get("/forgot", (req, res) => res.render("forgot", { user: req.session.user || null }));
-router.get("/set-password", (req, res) => {
+router.get("/set-password", async (req, res) => {
     const email = typeof req.query.email === "string" ? req.query.email : "";
-    res.render("set_password", { user: req.session.user || null, email });
+    let needsUsername = false;
+    if (email) {
+        const existing = await prisma.user.findUnique({
+            where: { email },
+            select: { username: true },
+        });
+        needsUsername = !!existing && !existing.username;
+    }
+    res.render("set_password", { user: req.session.user || null, email, needsUsername });
 });
 router.get("/reset", (req, res) => {
     const token = typeof req.query.token === "string" ? req.query.token : "";
@@ -100,7 +118,13 @@ router.get("/verify", async (req, res) => {
     }
 
     if (user.emailVerifiedAt) {
-        req.session.user = { id: user.id, email: user.email, displayName: user.displayName, role: user.role };
+        req.session.user = {
+            id: user.id,
+            email: user.email,
+            displayName: user.displayName,
+            username: user.username,
+            role: user.role,
+        };
         return res.render("verify", {
             user: req.session.user || null,
             status: "success",
@@ -125,7 +149,13 @@ router.get("/verify", async (req, res) => {
         },
     });
 
-    req.session.user = { id: user.id, email: user.email, displayName: user.displayName, role: user.role };
+    req.session.user = {
+        id: user.id,
+        email: user.email,
+        displayName: user.displayName,
+        username: user.username,
+        role: user.role,
+    };
 
     try {
         await sendWelcomeEmail({ to: user.email });

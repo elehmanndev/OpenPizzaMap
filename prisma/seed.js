@@ -24,6 +24,7 @@ async function main() {
             email: adminEmail,
             passwordHash: hash,
             displayName: "Admin",
+            username: "admin",
             role: "admin",
             emailVerifiedAt: new Date(),
             newsletterOptIn: false,

@@ -24,6 +24,48 @@ let postListenTasks = () => {};
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
+// Block common bot scans early (before any middleware/routes).
+app.use((req, res, next) => {
+    const p = req.path.toLowerCase();
+    const allowedApiPrefixes = ["/api/auth", "/api/places", "/api/submissions", "/api/admin"];
+    const blockedPrefixes = [
+        "/wp-",
+        "/wp/",
+        "/wp-admin",
+        "/wp-login",
+        "/wordpress",
+        "/xmlrpc.php",
+        "/cgi-bin",
+        "/.env",
+        "/.git",
+        "/.svn",
+        "/.hg",
+        "/vendor/",
+        "/wap/",
+        "/client/",
+        "/ajax/",
+        "/public/mobile/",
+    ];
+    const blockedExtensions = [".php", ".asp", ".aspx", ".jsp", ".cgi", ".ashx", ".asmx"];
+
+    if (p.startsWith("/api/") && !allowedApiPrefixes.some((prefix) => p.startsWith(prefix))) {
+        res.set("Cache-Control", "public, max-age=3600");
+        return res.status(404).end();
+    }
+
+    if (blockedPrefixes.some((prefix) => p.startsWith(prefix))) {
+        res.set("Cache-Control", "public, max-age=3600");
+        return res.status(404).end();
+    }
+
+    if (blockedExtensions.some((ext) => p.endsWith(ext))) {
+        res.set("Cache-Control", "public, max-age=3600");
+        return res.status(404).end();
+    }
+
+    next();
+});
+
 app.use(morgan("dev"));
 app.use("/public", express.static(path.join(__dirname, "..", "public")));
 
@@ -44,6 +86,7 @@ if (maintenanceMode) {
     const apiSubmissions = require("./routes/api.submissions");
     const apiAdmin = require("./routes/api.admin");
     const { errorHandler } = require("./middleware/error");
+    const { requireApiKey } = require("./middleware/apiKey");
     const { prisma } = require("./db");
     const passport = require("passport");
     const { configureGoogleAuth } = require("./services/googleAuth");
@@ -102,7 +145,7 @@ if (maintenanceMode) {
     app.use("/api/auth", apiAuth);
     app.use("/api/places", apiPlaces);
     app.use("/api/submissions", apiSubmissions);
-    app.use("/api/admin", apiAdmin);
+    app.use("/api/admin", requireApiKey({ envKey: "ADMIN_API_KEYS" }), apiAdmin);
 
     app.use(errorHandler);
 }

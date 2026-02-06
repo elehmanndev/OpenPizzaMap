@@ -41,6 +41,7 @@ function createFakePrisma(seedUsers = []) {
         },
         findFirst: async ({ where }) => {
             if (where.displayName) return findBy((u) => u.displayName === where.displayName);
+            if (where.username) return findBy((u) => u.username === where.username);
             if (where.resetTokenHash) return findBy((u) => u.resetTokenHash === where.resetTokenHash);
             if (where.googleId) return findBy((u) => u.googleId === where.googleId);
             return null;
@@ -128,7 +129,7 @@ test("registers a new user", async () => {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 email: "mario@example.com",
-                displayName: "Mario_123",
+                username: "Mario_123",
                 password: "Pizza123",
                 termsAccepted: true,
             }),
@@ -164,7 +165,7 @@ test("register detects existing Google-only account", async () => {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 email: "luigi@example.com",
-                displayName: "Luigi_2",
+                username: "Luigi_2",
                 password: "Pizza123",
                 termsAccepted: true,
             }),

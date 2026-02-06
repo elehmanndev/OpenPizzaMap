@@ -1,0 +1,88 @@
+<%- include("layout", { title: "Set username", user, leaflet: false, bodyClass: "auth-page", body: String.raw`
+<section class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <span class="auth-logo">OPM</span>
+      <div>
+        <span class="auth-brand-name">OpenPizzaMap</span>
+        <span class="auth-brand-tag">Finish setting up</span>
+      </div>
+    </div>
+    <h1 class="auth-title">Choose a username</h1>
+    <p class="auth-subtitle">Pick a nickname to show on your submissions.</p>
+    <form class="auth-form" id="set-username" novalidate>
+      <label class="auth-field">
+        <span>Username</span>
+        <input name="username" type="text" autocomplete="username" required minlength="3" maxlength="20" pattern="^[A-Za-z0-9_]{3,20}$" />
+        <small class="auth-error" aria-live="polite"></small>
+      </label>
+      <button class="auth-submit" type="submit">Save username</button>
+      <p class="auth-msg" id="msg"></p>
+    </form>
+  </div>
+</section>
+<script>
+  const form = document.getElementById("set-username");
+  const msg = document.getElementById("msg");
+  const input = form.querySelector("input[name='username']");
+  let submitted = false;
+
+  const getMessage = () => {
+    const value = input.value.trim();
+    if (input.validity.valueMissing) return "Username is required.";
+    if (input.validity.tooShort || input.validity.patternMismatch) {
+      return "Username must be 3-20 characters and use letters, numbers, or underscores.";
+    }
+    return "\"" + (value || "This") + "\" isn't a valid username.";
+  };
+
+  const updateValidity = () => {
+    const field = input.closest(".auth-field");
+    const error = field ? field.querySelector(".auth-error") : null;
+    const isValid = input.checkValidity();
+    const hasValue = input.value.trim().length > 0;
+    const showError = submitted && (!isValid);
+    input.classList.toggle("is-valid", isValid && hasValue);
+    input.classList.toggle("is-invalid", !isValid && hasValue);
+    if (field) field.classList.toggle("is-invalid", submitted && !isValid);
+    if (error && showError) {
+      error.textContent = getMessage();
+    } else if (error) {
+      error.textContent = "";
+    }
+  };
+
+  input.addEventListener("input", updateValidity);
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    msg.textContent = "";
+    submitted = true;
+    updateValidity();
+    if (!form.checkValidity()) {
+      msg.textContent = "Please fix the highlighted fields.";
+      return;
+    }
+    const body = { username: input.value.trim() };
+    const res = await fetch("/api/auth/set-username", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      location.href = "/me";
+      return;
+    }
+    if (typeof data.error === "string") {
+      msg.textContent = data.error;
+    } else if (data.error && data.error.formErrors && data.error.formErrors.length) {
+      msg.textContent = data.error.formErrors.join(", ");
+    } else if (data.error && data.error.fieldErrors) {
+      msg.textContent = Object.values(data.error.fieldErrors).flat().join(", ");
+    } else {
+      msg.textContent = "Save failed";
+    }
+  });
+</script>
+` }) %>

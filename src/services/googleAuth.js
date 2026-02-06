@@ -27,47 +27,33 @@ function isGoogleAuthConfigured() {
     );
 }
 
-function normalizeDisplayName(raw) {
+function normalizeDisplayName(raw, email) {
     const cleaned = String(raw || "")
         .trim()
         .replace(/\s+/g, " ")
         .replace(/[^A-Za-z0-9\s'-]/g, "")
         .slice(0, 32);
 
-    if (cleaned.length >= 3) return cleaned;
+    if (cleaned.length >= 2) return cleaned;
 
-    const fallback = (cleaned + " pizza").trim().slice(0, 32);
-    return fallback.length >= 3 ? fallback : "pizza";
-}
-
-async function ensureUniqueDisplayName(base) {
-    let candidate = normalizeDisplayName(base);
-
-    const maxLength = 32;
-    for (let i = 0; i < 50; i += 1) {
-        const exists = await prisma.user.findFirst({ where: { displayName: candidate } });
-        if (!exists) return candidate;
-
-        const suffix = ` ${i + 1}`;
-        const maxBaseLength = Math.max(3, maxLength - suffix.length);
-        const trimmedBase = normalizeDisplayName(base).slice(0, maxBaseLength);
-        candidate = `${trimmedBase}${suffix}`;
+    if (email && email.includes("@")) {
+        const fallback = email.split("@")[0].split(/[._-]/)[0].slice(0, 32);
+        if (fallback.length >= 2) return fallback;
     }
 
-    return `${normalizeDisplayName(base).slice(0, 22)} ${Date.now().toString().slice(-5)}`;
+    return "pizza";
 }
 
 function pickDisplayName(profile, email) {
     if (profile && profile.name && profile.name.givenName) {
-        const parts = [
-            profile.name.givenName,
-            profile.name.middleName,
-            profile.name.familyName,
-        ].filter(Boolean);
-        if (parts.length) return parts.join(" ");
+        return profile.name.givenName;
     }
-    if (profile && profile.displayName) return profile.displayName;
-    if (email && email.includes("@")) return email.split("@")[0];
+    if (profile && profile.displayName) {
+        return String(profile.displayName).trim().split(/\s+/)[0];
+    }
+    if (email && email.includes("@")) {
+        return email.split("@")[0].split(/[._-]/)[0];
+    }
     return "pizza";
 }
 
@@ -99,6 +85,8 @@ function configureGoogleAuth() {
 
                     const now = new Date();
 
+                    const displayName = normalizeDisplayName(pickDisplayName(profile, email), email);
+
                     if (user) {
                         if (user.googleId && user.googleId !== googleId) {
                             return done(new Error("Google account already linked to another user."));
@@ -107,6 +95,7 @@ function configureGoogleAuth() {
                         const updates = {};
                         if (!user.googleId) updates.googleId = googleId;
                         if (!user.emailVerifiedAt) updates.emailVerifiedAt = now;
+                        if (user.displayName !== displayName) updates.displayName = displayName;
                         if (user.verificationTokenHash || user.verificationTokenExpiresAt) {
                             updates.verificationTokenHash = null;
                             updates.verificationTokenExpiresAt = null;
@@ -122,12 +111,11 @@ function configureGoogleAuth() {
                         return done(null, user);
                     }
 
-                    const displayName = await ensureUniqueDisplayName(pickDisplayName(profile, email));
-
                     const created = await prisma.user.create({
                         data: {
                             email,
                             displayName,
+                            username: null,
                             role: "user",
                             googleId,
                             emailVerifiedAt: now,
