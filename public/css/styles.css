@@ -95,19 +95,6 @@ a {
   padding-bottom: 0;
 }
 
-.auth-shell {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-}
-
-.auth-shell .theme-toggle {
-  margin-top: 0;
-  padding-bottom: 0;
-}
-
 .theme-toggle-btn {
   display: inline-flex;
   align-items: center;
@@ -120,7 +107,6 @@ a {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  white-space: nowrap;
 }
 
 .theme-toggle-btn:hover {
