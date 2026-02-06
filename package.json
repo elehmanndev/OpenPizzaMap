@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "node src/app.js",
     "test": "node --test",
-    "start": "/opt/alt/alt-nodejs20/root/bin/node node_modules/.bin/prisma migrate deploy && /opt/alt/alt-nodejs20/root/bin/node src/app.js",
-    "start:local": "node node_modules/.bin/prisma migrate deploy && node src/app.js",
+    "start": "/opt/alt/alt-nodejs20/root/bin/node scripts/migrate.js && /opt/alt/alt-nodejs20/root/bin/node src/app.js",
+    "start:local": "node scripts/migrate.js && node src/app.js",
     "build": "npm run prisma:generate",
     "postinstall": "npm run prisma:generate",
     "seed": "npm run prisma:seed",

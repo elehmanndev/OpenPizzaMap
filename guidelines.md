@@ -27,3 +27,7 @@ Set this in hPanel:
 1. `Websites` -> your site -> `Advanced` -> `Environment variables`
 2. Add `ADMIN_API_KEYS` and paste the key(s)
 3. Restart the Node app to apply
+
+## Deploy Note (Hostinger)
+If your start command runs `prisma migrate deploy`, it must load the same env file
+used by the app (`.builds/config/.env`). The repo uses `scripts/migrate.js` for this.
