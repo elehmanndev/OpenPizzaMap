@@ -158,37 +158,7 @@
             margin: 2rem auto 0;
             border-radius: 999px;
         }
-        .theme-toggle {
-            display: flex;
-            justify-content: center;
-            padding: 0 16px 0;
-            margin-top: 16px;
-        }
-
-        .theme-toggle-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            border: 1px solid var(--c-border);
-            background: var(--c-surface);
-            color: var(--c-text);
-            padding: 10px 16px;
-            border-radius: 999px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .theme-toggle-btn:hover {
-            background: rgba(0, 0, 0, 0.04);
-        }
-
-        .theme-toggle-btn .material-symbols-rounded {
-            font-size: 18px;
-            line-height: 1;
-        }
-
-        @media (max-width: 600px) {
+@media (max-width: 600px) {
             body {
                 padding: 20px;
             }
@@ -267,48 +237,7 @@
       <p class="tagline">We're heating up the ovens. Check back soon for the next slice.</p>
       <span class="status-chip"><span class="status-dot"></span>Maintenance</span>
     </div>
-    <div class="theme-toggle">
-      <button class="theme-toggle-btn" type="button" data-theme-toggle aria-pressed="false">
-        <span class="material-symbols-rounded" aria-hidden="true" data-theme-icon>dark_mode</span>
-        <span data-theme-label>Switch to dark mode</span>
-      </button>
-    </div>
-  </div>
-
-  <script>
-        (function () {
-            var toggle = document.querySelector("[data-theme-toggle]");
-            if (!toggle) return;
-            var root = document.documentElement;
-            var getCurrent = function () {
-                var current = root.getAttribute("data-theme");
-                if (current === "light" || current === "dark") return current;
-                return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
-                    ? "dark"
-                    : "light";
-            };
-            var updateLabel = function () {
-                var current = getCurrent();
-                var icon = toggle.querySelector("[data-theme-icon]");
-                var label = toggle.querySelector("[data-theme-label]");
-                var isDark = current === "dark";
-                if (icon) icon.textContent = isDark ? "light_mode" : "dark_mode";
-                if (label) label.textContent = isDark ? "Switch to light mode" : "Switch to dark mode";
-                toggle.setAttribute("aria-pressed", isDark ? "true" : "false");
-            };
-            toggle.addEventListener("click", function () {
-                var next = getCurrent() === "dark" ? "light" : "dark";
-                root.setAttribute("data-theme", next);
-                try {
-                    localStorage.setItem("theme", next);
-                } catch (err) {
-                    // ignore storage errors
-                }
-                updateLabel();
-            });
-            updateLabel();
-        })();
-    </script>
+</div>
 </body>
 
 </html>

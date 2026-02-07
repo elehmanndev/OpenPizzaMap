@@ -188,6 +188,10 @@ router.get("/me", requireAuth, async (req, res) => {
     res.render("me", { user: req.session.user, submissions: subs });
 });
 
+router.get("/favourites", requireAuth, (req, res) => {
+    res.render("favourites", { user: req.session.user });
+});
+
 router.get("/admin/submissions", requireAdmin, async (req, res) => {
     const subs = await prisma.submission.findMany({
         where: { status: "pending" },

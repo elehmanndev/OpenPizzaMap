@@ -34,24 +34,45 @@
   <header>
     <div class="nav">
       <a href="/"><strong>OpenPizzaMap</strong></a>
-      <a href="/map">Map</a>
-      <% if (user) { %>
-        <a href="/add">Add</a>
-        <a href="/me">My submissions</a>
-        <% if (user.role==="admin" ) { %>
-          <a href="/admin/submissions">Admin</a>
-          <% } %>
-            <% } %>
     </div>
-    <div>
+    <div class="header-actions">
       <% if (user) { %>
-        <span class="small">Hi, <%= user.displayName %></span>
-        <form method="post" action="/logout" style="display:inline;">
-          <button type="submit">Logout</button>
-        </form>
-        <% } else { %>
-          <a href="/login">Login</a> · <a href="/register">Register</a>
+        <span class="greeting">Hi, <%= user.displayName %></span>
+      <% } %>
+      <details class="menu">
+        <summary class="menu-toggle" aria-label="Open menu">
+          <span class="material-symbols-rounded" aria-hidden="true">menu</span>
+        </summary>
+        <div class="menu-panel">
+          <nav class="menu-links">
+            <a href="/map">Map</a>
+            <% if (user) { %>
+              <a href="/add">Add</a>
+              <a href="/me">My submissions</a>
+              <a href="/favourites">My favourites</a>
+              <% if (user.role==="admin" ) { %>
+                <a href="/admin/submissions">Admin</a>
+              <% } %>
+            <% } %>
+          </nav>
+          <div class="menu-section">
+            <button type="button" class="theme-toggle-btn" data-theme-toggle aria-pressed="false">
+              <span class="material-symbols-rounded" aria-hidden="true" data-theme-icon>dark_mode</span>
+              <span data-theme-label>Switch to dark mode</span>
+            </button>
+          </div>
+          <% if (user) { %>
+            <form method="post" action="/logout">
+              <button type="submit" class="menu-logout">Logout</button>
+            </form>
+          <% } else { %>
+            <div class="menu-auth">
+              <a href="/login">Login</a>
+              <a href="/register">Register</a>
+            </div>
           <% } %>
+        </div>
+      </details>
     </div>
   </header>
   <% const isAuthPage = typeof bodyClass === "string" && bodyClass.includes("auth-page"); %>
@@ -59,25 +80,11 @@
     <% if (isAuthPage) { %>
       <div class="auth-stack">
         <%- body %>
-        <div class="theme-toggle">
-          <button type="button" class="theme-toggle-btn" data-theme-toggle aria-pressed="false">
-            <span class="material-symbols-rounded" aria-hidden="true" data-theme-icon>dark_mode</span>
-            <span data-theme-label>Switch to dark mode</span>
-          </button>
-        </div>
       </div>
     <% } else { %>
       <%- body %>
     <% } %>
   </main>
-  <% if (!isAuthPage) { %>
-    <div class="theme-toggle">
-      <button type="button" class="theme-toggle-btn" data-theme-toggle aria-pressed="false">
-        <span class="material-symbols-rounded" aria-hidden="true" data-theme-icon>dark_mode</span>
-        <span data-theme-label>Switch to dark mode</span>
-      </button>
-    </div>
-  <% } %>
   <script>
     (function () {
       var toggles = Array.from(document.querySelectorAll("[data-theme-toggle]"));

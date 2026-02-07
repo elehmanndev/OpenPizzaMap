@@ -68,6 +68,123 @@ header {
   z-index: 10;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.greeting {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--c-muted);
+}
+
+.menu {
+  position: relative;
+}
+
+.menu-toggle {
+  list-style: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--c-border);
+  background: var(--c-surface);
+  color: var(--c-text);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.menu-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.menu-toggle:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.menu-toggle .material-symbols-rounded {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.menu-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  min-width: 220px;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid var(--c-border);
+  background: var(--c-surface);
+  box-shadow: var(--c-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 20;
+}
+
+.menu-links {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.menu-links a {
+  text-decoration: none;
+  font-weight: 600;
+  padding: 6px 8px;
+  border-radius: 10px;
+}
+
+.menu-links a:hover {
+  background: rgba(var(--c-accent-rgb), 0.08);
+}
+
+.menu-section {
+  border-top: 1px solid var(--c-border);
+  padding-top: 10px;
+}
+
+.menu-panel .theme-toggle-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.menu-logout {
+  width: 100%;
+  border: 1px solid var(--c-border);
+  background: var(--c-surface);
+  color: var(--c-text);
+  font-weight: 600;
+}
+
+.menu-logout:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.menu-auth {
+  display: flex;
+  gap: 8px;
+}
+
+.menu-auth a {
+  flex: 1 1 0;
+  text-align: center;
+  border: 1px solid var(--c-border);
+  border-radius: 10px;
+  padding: 8px 10px;
+  text-decoration: none;
+  font-weight: 600;
+  background: var(--c-surface);
+}
+
+.menu-auth a:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
 main {
   padding: calc(16px + var(--header-height)) 16px 16px;
 }
@@ -236,11 +353,18 @@ button {
 }
 
 .map-page header a,
-.map-page header .small {
+.map-page header .small,
+.map-page header .greeting {
   color: #fff;
 }
 
 .map-page header button {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.map-page header .menu-toggle {
   color: #fff;
   background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.3);
