@@ -219,6 +219,10 @@
         border-radius: 28px;
       }
 
+      .notfound-illustration-inline {
+        display: none;
+      }
+
       .notfound-text {
         display: grid;
         gap: 14px;
@@ -300,8 +304,36 @@
           text-align: center;
         }
 
+        .notfound-art {
+          display: none;
+        }
+
+        .notfound-illustration-inline {
+          display: block;
+          width: min(320px, 82vw);
+          margin: 6px auto 2px;
+        }
+
+        .notfound-code {
+          font-size: clamp(36px, 9vw, 56px);
+        }
+
+        .notfound-text h1 {
+          font-size: clamp(20px, 4.6vw, 28px);
+          white-space: nowrap;
+        }
+
         .notfound-actions {
           justify-content: center;
+          flex-direction: column;
+          width: min(360px, 100%);
+          margin-left: auto;
+          margin-right: auto;
+        }
+
+        .notfound-actions .btn {
+          width: 100%;
+          text-align: center;
         }
 
         .notfound-text h1 {
@@ -428,7 +460,14 @@
         </div>
         <div class="notfound-text">
           <div class="notfound-code">Sorry!</div>
-          <h1>This Page got lost in the oven</h1>
+          <h1>This page got lost in the oven</h1>
+          <img
+            class="notfound-illustration notfound-illustration-inline"
+            src="/public/assets/404.webp"
+            alt="Illustration of a pizza with 404 written in cheese"
+            loading="lazy"
+            decoding="async"
+          />
           <p>We couldn't find what you were looking for.</p>
           <div class="notfound-actions">
             <a class="btn" href="/">Back to Home</a>

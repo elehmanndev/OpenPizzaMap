@@ -50,31 +50,6 @@ async function sendVerificationEmail({ to, token }) {
     return resend.emails.send({ from, to, subject, text, html });
 }
 
-async function sendWelcomeEmail({ to }) {
-    const resend = getClient();
-    const subject = "Welcome to OpenPizzaMap";
-    const text = [
-        "Welcome to OpenPizzaMap",
-        "",
-        "Your email is verified and your account is ready. Start mapping your favorite slices.",
-        baseUrl,
-    ].join("\n");
-    const html = `
-        <div style="background: #faf7f2; padding: 24px 12px;">
-          <div style="max-width: 520px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e2dc; border-radius: 16px; padding: 24px; font-family: 'Outfit', Arial, sans-serif; color: #1e1e1e;">
-            <h2 style="margin: 0 0 12px;">Welcome to OpenPizzaMap</h2>
-            <p style="margin: 0 0 16px;">Your email is verified and your account is ready. Start mapping your favorite slices.</p>
-            <div style="margin: 0 0 20px;">
-              <a href="${baseUrl}" style="display: block; width: 100%; box-sizing: border-box; text-align: center; padding: 12px 16px; border-radius: 10px; background: #c0392b; color: #fff; text-decoration: none; font-weight: 600;">Let’s find pizza 🍕</a>
-            </div>
-            <div style="height: 6px; background: #c0392b; border-radius: 999px;"></div>
-          </div>
-        </div>
-    `;
-
-    return resend.emails.send({ from, to, subject, text, html });
-}
-
 async function sendPasswordResetEmail({ to, token }) {
     const resend = getClient();
     const resetUrl = buildResetLink(token);
@@ -104,4 +79,4 @@ async function sendPasswordResetEmail({ to, token }) {
     return resend.emails.send({ from, to, subject, text, html });
 }
 
-module.exports = { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail };
+module.exports = { sendVerificationEmail, sendPasswordResetEmail };

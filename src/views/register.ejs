@@ -76,13 +76,15 @@
   const msg = document.getElementById("msg");
   const fields = Array.from(form.querySelectorAll("input:not([data-ignore-validation])"));
   let submitted = false;
+  const touched = new Set();
+  const isPasswordField = (input) => input.name === "password";
   const getMessage = (input) => {
     const value = input.type === "checkbox" ? "" : input.value.trim();
     if (input.validity.valueMissing) {
       if (input.name === "email") return "Email is required.";
       if (input.name === "username") return "Username is required.";
       if (input.name === "password") return "Password is required.";
-      if (input.name === "termsAccepted") return "No check, no party.";
+      if (input.name === "termsAccepted") return "No check, no pizza.";
     }
     if (input.name === "email" && (input.validity.typeMismatch || input.validity.patternMismatch)) {
       return "\"" + (value || "This") + "\" isn't a valid email address.";
@@ -100,9 +102,11 @@
     const error = field ? field.querySelector(".auth-error") : null;
     const isValid = input.checkValidity();
     const hasValue = input.type === "checkbox" ? input.checked : input.value.trim().length > 0;
+    const isTouched = touched.has(input);
+    const shouldMark = hasValue || (isPasswordField(input) && isTouched);
     const showError = submitted && (!isValid);
-    input.classList.toggle("is-valid", isValid && hasValue);
-    input.classList.toggle("is-invalid", !isValid && hasValue);
+    input.classList.toggle("is-valid", isValid && shouldMark);
+    input.classList.toggle("is-invalid", !isValid && shouldMark);
     if (field) field.classList.toggle("is-invalid", submitted && !isValid);
     if (error && showError) {
       error.textContent = getMessage(input);
@@ -110,8 +114,28 @@
       error.textContent = "";
     }
   };
+  const clearFixMsgIfValid = () => {
+    if (!msg) return;
+    if (msg.textContent === "Please fix the highlighted fields." && form.checkValidity()) {
+      msg.textContent = "";
+    }
+  };
   fields.forEach((input) => {
-    input.addEventListener("input", () => updateValidity(input));
+    input.addEventListener("input", () => {
+      updateValidity(input);
+      clearFixMsgIfValid();
+    });
+    input.addEventListener("change", () => {
+      updateValidity(input);
+      clearFixMsgIfValid();
+    });
+    if (isPasswordField(input)) {
+      input.addEventListener("focus", () => {
+        touched.add(input);
+        updateValidity(input);
+      });
+      input.addEventListener("blur", () => updateValidity(input));
+    }
   });
   const toggles = Array.from(document.querySelectorAll("[data-password-toggle]"));
   toggles.forEach((btn) => {

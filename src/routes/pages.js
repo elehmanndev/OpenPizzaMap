@@ -4,7 +4,6 @@ const fs = require("fs");
 const path = require("path");
 const { prisma } = require("../db");
 const { requireAuth, requireAdmin } = require("../middleware/auth");
-const { sendWelcomeEmail } = require("../services/email");
 const { buildSitemapXml, writeSitemapFiles } = require("../services/sitemap");
 const { isGoogleAuthConfigured } = require("../services/googleAuth");
 
@@ -156,12 +155,6 @@ router.get("/verify", async (req, res) => {
         username: user.username,
         role: user.role,
     };
-
-    try {
-        await sendWelcomeEmail({ to: user.email });
-    } catch (err) {
-        console.error("Welcome email failed:", err);
-    }
 
     res.render("verify", {
         user: req.session.user || null,
