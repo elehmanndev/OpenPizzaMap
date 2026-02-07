@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>404 – Page not found | OpenPizzaMap</title>
-    <meta name="title" content="404 – Page not found | OpenPizzaMap" />
+    <title>404 Page Not Found | OpenPizzaMap</title>
+    <meta name="title" content="404 Page Not Found | OpenPizzaMap" />
     <script>
       (function () {
         try {
@@ -21,37 +21,459 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@400&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/public/css/styles.css" />
+    <style>
+      :root {
+        --c-accent: #c0392b;
+        --c-accent-strong: #a93226;
+        --c-accent-rgb: 192, 57, 43;
+        --c-text: #1e1e1e;
+        --c-bg: #faf7f2;
+        --c-surface: #faf7f2;
+        --c-muted: rgba(30, 30, 30, 0.6);
+        --c-shadow: 0 25px 60px rgba(30, 30, 30, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Outfit", sans-serif;
+        color: var(--c-text);
+        background: var(--c-bg);
+        position: relative;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.85;
+        background-image: url("data:image/svg+xml,%3Csvg width='240' height='240' viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cstyle%3E .s %7B fill: none; stroke: %232b2b2b; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; %7D %3C/style%3E%3Cg class='s'%3E%3C!-- Slice 1 --%3E%3Cg transform='translate(40,30) rotate(-10) scale(0.7)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Cpath d='M35 60 q 0 20 8 20 t 8 -20' /%3E%3Ccircle cx='50' cy='45' r='7' /%3E%3Ccircle cx='75' cy='65' r='6' /%3E%3C/g%3E%3C!-- Slice 2 --%3E%3Cg transform='translate(170,50) rotate(140) scale(0.5)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Ccircle cx='60' cy='50' r='8' /%3E%3C/g%3E%3C!-- Slice 3 --%3E%3Cg transform='translate(80,160) rotate(45) scale(0.6)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Cpath d='M30 55 q 0 15 5 15 t 5 -15' /%3E%3Ccircle cx='50' cy='40' r='6' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        background-repeat: repeat;
+        -webkit-mask-image: radial-gradient(circle, transparent 10%, black 80%);
+        mask-image: radial-gradient(circle, transparent 10%, black 80%);
+        z-index: 0;
+      }
+
+      body > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      header {
+        padding: 12px 16px;
+        height: 64px;
+        box-sizing: border-box;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--c-bg);
+      }
+
+      .nav a {
+        text-decoration: none;
+        color: var(--c-text);
+        font-weight: 700;
+      }
+
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .menu {
+        position: relative;
+      }
+
+      .menu-toggle {
+        list-style: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        background: #fff;
+        color: var(--c-text);
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+      }
+
+      .menu-toggle::-webkit-details-marker {
+        display: none;
+      }
+
+      .menu-panel {
+        position: absolute;
+        right: 0;
+        top: calc(100% + 10px);
+        min-width: 220px;
+        padding: 12px;
+        border-radius: 16px;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        background: var(--c-surface);
+        box-shadow: var(--c-shadow);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        z-index: 20;
+      }
+
+      .menu-links {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .menu-links a {
+        text-decoration: none;
+        font-weight: 600;
+        padding: 6px 8px;
+        border-radius: 10px;
+        color: var(--c-text);
+      }
+
+      .menu-links a:hover {
+        background: rgba(var(--c-accent-rgb), 0.08);
+      }
+
+      .menu-section {
+        border-top: 1px solid rgba(0, 0, 0, 0.12);
+        padding-top: 10px;
+      }
+
+      .theme-toggle-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        background: var(--c-surface);
+        color: var(--c-text);
+        padding: 10px 16px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+      }
+
+      .theme-toggle-btn .material-symbols-rounded {
+        font-size: 18px;
+        line-height: 1;
+      }
+
+      .menu-auth {
+        display: flex;
+        gap: 8px;
+      }
+
+      .menu-auth a {
+        flex: 1 1 0;
+        text-align: center;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        border-radius: 10px;
+        padding: 8px 10px;
+        text-decoration: none;
+        font-weight: 600;
+        background: var(--c-surface);
+        color: var(--c-text);
+      }
+
+      .container {
+        width: 100%;
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 28px 24px 48px;
+        min-height: calc(100vh - 64px);
+        display: flex;
+        align-items: center;
+      }
+
+      .notfound {
+        width: 100%;
+        display: grid;
+        gap: 72px;
+        grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
+        align-items: center;
+      }
+
+      .notfound-art {
+        display: grid;
+        place-items: center;
+        position: relative;
+      }
+
+      .notfound-illustration {
+        width: min(420px, 78vw);
+        height: auto;
+        object-fit: contain;
+        filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.22));
+        animation: slice-float 3.8s ease-in-out infinite;
+        border-radius: 28px;
+      }
+
+      .notfound-text {
+        display: grid;
+        gap: 14px;
+      }
+
+      .notfound-code {
+        font-size: clamp(54px, 7vw, 110px);
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        color: var(--c-muted);
+        line-height: 1;
+      }
+
+      .notfound-text h1 {
+        font-size: clamp(30px, 4vw, 46px);
+        margin: 0;
+        white-space: nowrap;
+      }
+
+      .notfound-text p {
+        margin: 0;
+        color: var(--c-muted);
+        font-size: 16px;
+        white-space: nowrap;
+      }
+
+      .notfound-actions {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-top: 6px;
+      }
+
+      .btn {
+        display: inline-block;
+        padding: 12px 26px;
+        border-radius: 999px;
+        text-decoration: none;
+        border: 1px solid var(--c-accent);
+        background: var(--c-accent);
+        color: #fff;
+        font-weight: 600;
+      }
+
+      .btn:hover {
+        background: var(--c-accent-strong);
+        border-color: var(--c-accent-strong);
+      }
+
+      .btn.secondary {
+        background: transparent;
+        color: var(--c-text);
+        border: 1px solid rgba(30, 30, 30, 0.35);
+        box-shadow: 0 0 0 1px rgba(30, 30, 30, 0.15);
+      }
+
+      [data-theme="dark"] .btn.secondary {
+        color: #f8f6f2;
+        border: 1px solid rgba(248, 246, 242, 0.55);
+        box-shadow: 0 0 0 1px rgba(248, 246, 242, 0.2);
+      }
+
+      .btn.secondary:hover {
+        background: rgba(30, 30, 30, 0.08);
+      }
+
+      [data-theme="dark"] .btn.secondary:hover {
+        background: rgba(248, 246, 242, 0.08);
+      }
+
+      @keyframes slice-float {
+        0%, 100% { transform: rotate(-12deg) translateY(0); }
+        50% { transform: rotate(-14deg) translateY(-8px); }
+      }
+
+      @media (max-width: 820px) {
+        .notfound {
+          grid-template-columns: 1fr;
+          text-align: center;
+        }
+
+        .notfound-actions {
+          justify-content: center;
+        }
+
+        .notfound-text h1 {
+          white-space: normal;
+        }
+
+        .notfound-text p {
+          margin: 0 auto;
+          white-space: normal;
+        }
+      }
+
+      @media (max-width: 520px) {
+        header {
+          padding: 10px 12px;
+        }
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --c-accent: #30d158;
+          --c-accent-strong: #30d158;
+          --c-accent-rgb: 48, 209, 88;
+          --c-text: #faf7f2;
+          --c-bg: #1e1e1e;
+          --c-surface: #242424;
+          --c-muted: rgba(250, 247, 242, 0.6);
+          --c-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+        }
+
+        header {
+          border-bottom-color: rgba(255, 255, 255, 0.12);
+        }
+
+        .menu-toggle,
+        .theme-toggle-btn,
+        .menu-auth a {
+          border-color: rgba(255, 255, 255, 0.2);
+          background: #1f1f1f;
+        }
+
+        .menu-panel {
+          border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .menu-section {
+          border-top-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn.secondary {
+          color: #f8f6f2;
+          border: 1px solid rgba(248, 246, 242, 0.55);
+          box-shadow: 0 0 0 1px rgba(248, 246, 242, 0.2);
+        }
+
+        .btn.secondary:hover {
+          background: rgba(248, 246, 242, 0.08);
+        }
+
+        body::before {
+          opacity: 0.6;
+          background-image: url("data:image/svg+xml,%3Csvg width='240' height='240' viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cstyle%3E .s %7B fill: none; stroke: %23f2efe7; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; %7D %3C/style%3E%3Cg class='s'%3E%3C!-- Slice 1 --%3E%3Cg transform='translate(40,30) rotate(-10) scale(0.7)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Cpath d='M35 60 q 0 20 8 20 t 8 -20' /%3E%3Ccircle cx='50' cy='45' r='7' /%3E%3Ccircle cx='75' cy='65' r='6' /%3E%3C/g%3E%3C!-- Slice 2 --%3E%3Cg transform='translate(170,50) rotate(140) scale(0.5)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Ccircle cx='60' cy='50' r='8' /%3E%3C/g%3E%3C!-- Slice 3 --%3E%3Cg transform='translate(80,160) rotate(45) scale(0.6)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Cpath d='M30 55 q 0 15 5 15 t 5 -15' /%3E%3Ccircle cx='50' cy='40' r='6' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+      }
+
+      html[data-theme="dark"] {
+        --c-accent: #30d158;
+        --c-accent-strong: #30d158;
+        --c-accent-rgb: 48, 209, 88;
+        --c-text: #faf7f2;
+        --c-bg: #1e1e1e;
+        --c-surface: #242424;
+        --c-muted: rgba(250, 247, 242, 0.6);
+        --c-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+      }
+
+
+      html[data-theme="dark"] body::before {
+        opacity: 0.6;
+        background-image: url("data:image/svg+xml,%3Csvg width='240' height='240' viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cstyle%3E .s %7B fill: none; stroke: %23f2efe7; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; %7D %3C/style%3E%3Cg class='s'%3E%3C!-- Slice 1 --%3E%3Cg transform='translate(40,30) rotate(-10) scale(0.7)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Cpath d='M35 60 q 0 20 8 20 t 8 -20' /%3E%3Ccircle cx='50' cy='45' r='7' /%3E%3Ccircle cx='75' cy='65' r='6' /%3E%3C/g%3E%3C!-- Slice 2 --%3E%3Cg transform='translate(170,50) rotate(140) scale(0.5)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Ccircle cx='60' cy='50' r='8' /%3E%3C/g%3E%3C!-- Slice 3 --%3E%3Cg transform='translate(80,160) rotate(45) scale(0.6)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Cpath d='M30 55 q 0 15 5 15 t 5 -15' /%3E%3Ccircle cx='50' cy='40' r='6' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      }
+
+    </style>
   </head>
-  <body class="notfound-page">
+  <body>
+    <header>
+      <div class="nav">
+        <a href="/">OpenPizzaMap</a>
+      </div>
+      <div class="header-actions">
+        <details class="menu">
+          <summary class="menu-toggle" aria-label="Open menu">
+            <span class="material-symbols-rounded" aria-hidden="true">menu</span>
+          </summary>
+          <div class="menu-panel">
+            <nav class="menu-links">
+              <a href="/">Home</a>
+              <a href="/map">Map</a>
+            </nav>
+            <div class="menu-section">
+              <button type="button" class="theme-toggle-btn" data-theme-toggle aria-pressed="false">
+                <span class="material-symbols-rounded" aria-hidden="true" data-theme-icon>dark_mode</span>
+                <span data-theme-label>Switch to dark mode</span>
+              </button>
+            </div>
+            <div class="menu-auth">
+              <a href="/login">Login</a>
+              <a href="/register">Register</a>
+            </div>
+          </div>
+        </details>
+      </div>
+    </header>
     <main class="container">
       <section class="notfound">
-        <div class="notfound-art" aria-hidden="true">
-          <div class="pizza">
-            <div class="pizza-base"></div>
-            <div class="pizza-crust"></div>
-            <div class="pizza-cheese"></div>
-            <div class="cheese-pull"></div>
-            <div class="cheese-puddle"></div>
-            <span class="cheese-drip drip-1"></span>
-            <span class="cheese-drip drip-2"></span>
-            <span class="cheese-drip drip-3"></span>
-            <span class="pepperoni p1"></span>
-            <span class="pepperoni p2"></span>
-            <span class="pepperoni p3"></span>
-            <span class="pepperoni p4"></span>
-          </div>
-          <div class="slice-shadow"></div>
+        <div class="notfound-art">
+          <img
+            class="notfound-illustration"
+            src="/public/assets/404.webp"
+            alt="Illustration of a pizza with 404 written in cheese"
+            loading="eager"
+            decoding="async"
+          />
         </div>
         <div class="notfound-text">
-          <div class="notfound-code">Whoopsie,</div>
-          <h1>We&apos;ve run out of dough</h1>
-          <p>This slice slid off the peel. Let&apos;s get you back to the oven.</p>
+          <div class="notfound-code">Sorry!</div>
+          <h1>This Page got lost in the oven</h1>
+          <p>We couldn't find what you were looking for.</p>
           <div class="notfound-actions">
-            <a class="btn primary" href="/">Back to Home</a>
+            <a class="btn" href="/">Back to Home</a>
+            <a class="btn secondary" href="/map">Explore Pizza Map</a>
           </div>
         </div>
       </section>
     </main>
+    <script>
+      (function () {
+        var toggles = Array.from(document.querySelectorAll("[data-theme-toggle]"));
+        if (!toggles.length) return;
+        var root = document.documentElement;
+        var getCurrent = function () {
+          var current = root.getAttribute("data-theme");
+          if (current === "light" || current === "dark") return current;
+          return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light";
+        };
+        var updateLabel = function () {
+          var current = getCurrent();
+          var isDark = current === "dark";
+          toggles.forEach(function (toggle) {
+            var icon = toggle.querySelector("[data-theme-icon]");
+            var label = toggle.querySelector("[data-theme-label]");
+            if (icon) icon.textContent = isDark ? "light_mode" : "dark_mode";
+            if (label) label.textContent = isDark ? "Switch to light mode" : "Switch to dark mode";
+            toggle.setAttribute("aria-pressed", isDark ? "true" : "false");
+          });
+        };
+        toggles.forEach(function (toggle) {
+          toggle.addEventListener("click", function () {
+            var next = getCurrent() === "dark" ? "light" : "dark";
+            root.setAttribute("data-theme", next);
+            try {
+              localStorage.setItem("theme", next);
+            } catch (err) {
+              // ignore storage errors
+            }
+            updateLabel();
+          });
+        });
+        updateLabel();
+      })();
+    </script>
   </body>
 </html>
