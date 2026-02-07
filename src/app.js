@@ -18,6 +18,44 @@ const morgan = require("morgan");
 
 const app = express();
 
+// Cache-bust static assets with a single version string that updates when public files change.
+const publicRoot = path.join(__dirname, "..", "public");
+function getLatestMtimeMs(dir) {
+    let latest = 0;
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+            latest = Math.max(latest, getLatestMtimeMs(fullPath));
+            continue;
+        }
+        if (!entry.isFile()) continue;
+        const stat = fs.statSync(fullPath);
+        latest = Math.max(latest, stat.mtimeMs);
+    }
+    return latest;
+}
+let assetVersion = String(process.env.ASSET_VERSION || "");
+if (!assetVersion) {
+    try {
+        const latest = getLatestMtimeMs(publicRoot);
+        assetVersion = latest ? String(Math.floor(latest)) : String(Date.now());
+    } catch (err) {
+        console.warn("Could not compute public asset version:", err && err.message ? err.message : err);
+        assetVersion = String(Date.now());
+    }
+}
+app.locals.assetVersion = assetVersion;
+app.locals.asset = function asset(url) {
+    if (typeof url !== "string") return url;
+    if (/^https?:\/\//i.test(url) || url.startsWith("//")) return url;
+    const parts = url.split("?");
+    const base = parts[0];
+    const query = parts.slice(1).join("?");
+    const sep = query ? "&" : "?";
+    return base + (query ? `?${query}` : "") + `${sep}v=${encodeURIComponent(assetVersion)}`;
+};
+
 const maintenanceMode = String(process.env.MAINTENANCE_MODE || "").toLowerCase() === "true";
 let postListenTasks = () => {};
 
