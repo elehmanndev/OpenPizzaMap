@@ -142,18 +142,47 @@ router.post("/login", authLimiter, async (req, res) => {
         const { login, password } = parsed.data;
         const normalized = login.trim();
         const isEmail = normalized.includes("@");
-        const user = isEmail
+        let user = isEmail
             ? await prisma.user.findUnique({ where: { email: normalized.toLowerCase() } })
             : await prisma.user.findUnique({ where: { username: normalized } });
 
         if (!user || !user.passwordHash) {
-            if (user && !user.passwordHash) {
-                return res.status(409).json({
-                    ok: false,
-                    error: "google_account",
-                    email: user.email,
+            if (user && !user.passwordHash && isEmail) {
+                const passwordOk = /^(?=.*[A-Za-z])(?=.*\d).{8,128}$/.test(password);
+                if (!passwordOk) {
+                    return res.status(400).json({
+                        ok: false,
+                        error: "Password must be at least 8 characters and include letters and numbers.",
+                    });
+                }
+
+                const passwordHash = await bcrypt.hash(password, 12);
+                const updates = {
+                    passwordHash,
+                    emailVerifiedAt: user.emailVerifiedAt || new Date(),
+                    verificationTokenHash: null,
+                    verificationTokenExpiresAt: null,
+                };
+
+                user = await prisma.user.update({
+                    where: { id: user.id },
+                    data: updates,
                 });
+
+                req.session.user = {
+                    id: user.id,
+                    email: user.email,
+                    displayName: user.displayName,
+                    username: user.username,
+                    role: user.role,
+                };
+
+                if (!user.username) {
+                    return res.json({ ok: true, redirect: "/set-username" });
+                }
+                return res.json({ ok: true, redirect: "/me" });
             }
+
             return res.status(401).json({ ok: false, error: "Incorrect email/username or password." });
         }
         if (!user.emailVerifiedAt) {

@@ -28,7 +28,7 @@
     <form class="auth-form" id="login" novalidate>
       <label class="auth-field">
         <span>Email or username</span>
-        <input name="login" type="text" autocomplete="username" required pattern="^(?:[A-Za-z0-9_]{3,20}|[^\\s@]+@[^\\s@]+\\.[^\\s@]+)$" />
+        <input name="login" type="text" autocomplete="username" required />
         <small class="auth-error" aria-live="polite"></small>
       </label>
       <label class="auth-field">
@@ -69,9 +69,6 @@
     if (input.validity.valueMissing) {
       if (input.name === "login") return "Email or username is required.";
       if (input.name === "password") return "Password is required.";
-    }
-    if (input.name === "login" && input.validity.patternMismatch) {
-      return "Enter a valid email address or username.";
     }
     if (input.name === "password" && (input.validity.tooShort || input.validity.patternMismatch)) {
       return "Password must be at least 8 characters and include letters and numbers.";
@@ -126,14 +123,13 @@
       body: JSON.stringify(body),
     });
     const data = await res.json();
-    if (res.status === 409 && data && data.error === "google_account") {
-      const redirectEmail = data.email || "";
-      location.href = "/set-password?email=" + encodeURIComponent(redirectEmail);
-      return;
-    }
     if (data.ok) {
       setFails(0);
       updateForgotVisibility();
+      if (data.redirect) {
+        location.href = data.redirect;
+        return;
+      }
       location.href = "/";
       return;
     }
