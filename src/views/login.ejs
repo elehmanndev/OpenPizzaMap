@@ -27,8 +27,8 @@
     <div class="auth-divider"><span>or continue with email</span></div>
     <form class="auth-form" id="login" novalidate>
       <label class="auth-field">
-        <span>Email address</span>
-        <input name="email" type="email" autocomplete="email" required />
+        <span>Email or username</span>
+        <input name="login" type="text" autocomplete="username" required pattern="^(?:[A-Za-z0-9_]{3,20}|[^\\s@]+@[^\\s@]+\\.[^\\s@]+)$" />
         <small class="auth-error" aria-live="polite"></small>
       </label>
       <label class="auth-field">
@@ -67,11 +67,11 @@
   const getMessage = (input) => {
     const value = input.value.trim();
     if (input.validity.valueMissing) {
-      if (input.name === "email") return "Email is required.";
+      if (input.name === "login") return "Email or username is required.";
       if (input.name === "password") return "Password is required.";
     }
-    if (input.name === "email" && (input.validity.typeMismatch || input.validity.patternMismatch)) {
-      return "\"" + (value || "This") + "\" isn't a valid email address.";
+    if (input.name === "login" && input.validity.patternMismatch) {
+      return "Enter a valid email address or username.";
     }
     if (input.name === "password" && (input.validity.tooShort || input.validity.patternMismatch)) {
       return "Password must be at least 8 characters and include letters and numbers.";
@@ -126,6 +126,11 @@
       body: JSON.stringify(body),
     });
     const data = await res.json();
+    if (res.status === 409 && data && data.error === "google_account") {
+      const redirectEmail = data.email || "";
+      location.href = "/set-password?email=" + encodeURIComponent(redirectEmail);
+      return;
+    }
     if (data.ok) {
       setFails(0);
       updateForgotVisibility();

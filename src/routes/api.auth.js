@@ -38,7 +38,7 @@ const registerSchema = z.object({
 });
 
 const loginSchema = z.object({
-    email: z.string().trim().email(),
+    login: z.string().trim().min(3).max(254),
     password: z.string().min(1).max(128),
 });
 
@@ -139,17 +139,29 @@ router.post("/login", authLimiter, async (req, res) => {
         const parsed = loginSchema.safeParse(req.body);
         if (!parsed.success) return res.status(400).json({ ok: false, error: parsed.error.flatten() });
 
-        const { email, password } = parsed.data;
-        const user = await prisma.user.findUnique({ where: { email } });
+        const { login, password } = parsed.data;
+        const normalized = login.trim();
+        const isEmail = normalized.includes("@");
+        const user = isEmail
+            ? await prisma.user.findUnique({ where: { email: normalized.toLowerCase() } })
+            : await prisma.user.findUnique({ where: { username: normalized } });
+
         if (!user || !user.passwordHash) {
-            return res.status(401).json({ ok: false, error: "Invalid credentials" });
+            if (user && !user.passwordHash) {
+                return res.status(409).json({
+                    ok: false,
+                    error: "google_account",
+                    email: user.email,
+                });
+            }
+            return res.status(401).json({ ok: false, error: "Incorrect email/username or password." });
         }
         if (!user.emailVerifiedAt) {
             return res.status(403).json({ ok: false, error: "Please verify your email before signing in." });
         }
 
         const ok = await bcrypt.compare(password, user.passwordHash);
-        if (!ok) return res.status(401).json({ ok: false, error: "Invalid credentials" });
+        if (!ok) return res.status(401).json({ ok: false, error: "Incorrect email/username or password." });
 
         req.session.user = {
             id: user.id,
