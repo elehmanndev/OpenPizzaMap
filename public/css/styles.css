@@ -27,7 +27,7 @@
 body {
   font-family: 'Outfit', sans-serif;
   margin: 0;
-  color: #1e1e1e;
+  color: var(--c-text);
   background: var(--c-bg);
   min-height: 100vh;
   position: relative;
@@ -120,6 +120,7 @@ header {
   border: 1px solid var(--c-border);
   background: var(--c-surface);
   box-shadow: var(--c-shadow);
+  color: var(--c-text);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -137,6 +138,7 @@ header {
   font-weight: 600;
   padding: 6px 8px;
   border-radius: 10px;
+  color: var(--c-text);
 }
 
 .menu-links a:hover {
@@ -179,6 +181,7 @@ header {
   text-decoration: none;
   font-weight: 600;
   background: var(--c-surface);
+  color: var(--c-text);
 }
 
 .menu-auth a:hover {
