@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>404 – Page not found | OpenPizzaMap</title>
+    <meta name="title" content="404 – Page not found | OpenPizzaMap" />
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem("theme");
+          if (theme === "light" || theme === "dark") {
+            document.documentElement.setAttribute("data-theme", theme);
+          }
+        } catch (err) {
+          // ignore storage errors
+        }
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@400&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/public/css/styles.css" />
+  </head>
+  <body class="notfound-page">
+    <main class="container">
+      <section class="notfound">
+        <div class="notfound-art" aria-hidden="true">
+          <div class="pizza">
+            <div class="pizza-base"></div>
+            <div class="pizza-crust"></div>
+            <div class="pizza-cheese"></div>
+            <div class="cheese-pull"></div>
+            <div class="cheese-puddle"></div>
+            <span class="cheese-drip drip-1"></span>
+            <span class="cheese-drip drip-2"></span>
+            <span class="cheese-drip drip-3"></span>
+            <span class="pepperoni p1"></span>
+            <span class="pepperoni p2"></span>
+            <span class="pepperoni p3"></span>
+            <span class="pepperoni p4"></span>
+          </div>
+          <div class="slice-shadow"></div>
+        </div>
+        <div class="notfound-text">
+          <div class="notfound-code">Whoopsie,</div>
+          <h1>We&apos;ve run out of dough</h1>
+          <p>This slice slid off the peel. Let&apos;s get you back to the oven.</p>
+          <div class="notfound-actions">
+            <a class="btn primary" href="/">Back to Home</a>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

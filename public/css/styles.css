@@ -295,6 +295,18 @@ button {
   background: var(--c-surface);
 }
 
+.btn.primary {
+  background: var(--c-accent);
+  border-color: var(--c-accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.btn.primary:hover {
+  background: var(--c-accent-strong);
+  border-color: var(--c-accent-strong);
+}
+
 .btn.google {
   border-color: var(--c-border);
   background: var(--c-surface);
@@ -353,6 +365,185 @@ button {
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(10px);
+}
+
+.notfound-page main.container {
+  max-width: 980px;
+}
+
+.notfound {
+  display: grid;
+  gap: 28px;
+  grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
+  align-items: center;
+  padding: 24px 0;
+}
+
+.notfound-art {
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+
+.pizza {
+  width: 220px;
+  height: 220px;
+  position: relative;
+  transform: rotate(-16deg);
+  animation: pizza-float 3s ease-in-out infinite;
+}
+
+.pizza-crust {
+  position: absolute;
+  inset: -6px;
+  background: #d28b3a;
+  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+  border-radius: 18px;
+}
+
+.pizza-base {
+  position: absolute;
+  inset: 6px;
+  background: #f3c979;
+  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+  border-radius: 16px;
+}
+
+.pizza-cheese {
+  position: absolute;
+  inset: 18px 16px 14px;
+  background: #f7e27b;
+  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+  border-radius: 12px;
+}
+
+
+.cheese-pull {
+  position: absolute;
+  left: 38%;
+  bottom: -6px;
+  width: 90px;
+  height: 120px;
+  background: linear-gradient(180deg, #f7e27b 0%, #f2c965 100%);
+  border-radius: 40px 40px 60px 60px;
+  transform: rotate(-8deg);
+  filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.18));
+}
+
+
+.cheese-puddle {
+  position: absolute;
+  left: 42%;
+  bottom: -28px;
+  width: 140px;
+  height: 60px;
+  background: linear-gradient(120deg, #f7e27b 0%, #f2c965 90%);
+  border-radius: 999px 999px 60px 80px;
+  transform: rotate(-4deg);
+  opacity: 0.95;
+  filter: blur(0.2px);
+}
+.cheese-drip {
+  position: absolute;
+  width: 24px;
+  height: 34px;
+  background: #f7e27b;
+  border-radius: 18px;
+  bottom: -10px;
+  animation: drip 2.8s ease-in-out infinite;
+}
+
+.cheese-drip.drip-1 {
+  left: 18%;
+  height: 42px;
+}
+
+.cheese-drip.drip-2 {
+  left: 40%;
+  height: 32px;
+  animation-delay: 0.3s;
+}
+
+.cheese-drip.drip-3 {
+  left: 62%;
+  height: 46px;
+  animation-delay: 0.6s;
+}
+
+.pepperoni {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  background: #c0392b;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.18);
+}
+
+.pepperoni.p1 { top: 40px; left: 90px; }
+.pepperoni.p2 { top: 90px; left: 56px; }
+.pepperoni.p3 { top: 110px; left: 118px; }
+.pepperoni.p4 { top: 70px; left: 120px; }
+
+.slice-shadow {
+  position: absolute;
+  width: 180px;
+  height: 30px;
+  background: rgba(0, 0, 0, 0.15);
+  filter: blur(10px);
+  border-radius: 999px;
+  bottom: 10px;
+  z-index: -1;
+}
+
+.notfound-text {
+  display: grid;
+  gap: 12px;
+}
+
+.notfound-code {
+  font-size: clamp(28px, 4vw, 36px);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--c-muted);
+}
+
+.notfound-text h1 {
+  font-size: clamp(28px, 4vw, 44px);
+  margin: 0;
+}
+
+.notfound-text p {
+  margin: 0;
+  color: var(--c-muted);
+  font-size: 16px;
+}
+
+.notfound-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+@keyframes pizza-float {
+  0%, 100% { transform: rotate(-16deg) translateY(0); }
+  50% { transform: rotate(-18deg) translateY(-8px); }
+}
+
+@keyframes drip {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(4px); }
+}
+
+@media (max-width: 820px) {
+  .notfound {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .notfound-actions {
+    justify-content: center;
+  }
 }
 
 .map-page header a,

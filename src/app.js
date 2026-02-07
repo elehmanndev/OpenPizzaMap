@@ -185,6 +185,19 @@ if (maintenanceMode) {
     app.use("/api/submissions", apiSubmissions);
     app.use("/api/admin", requireApiKey({ envKey: "ADMIN_API_KEYS" }), apiAdmin);
 
+    app.use((req, res) => {
+        if (req.path && req.path.startsWith("/api/")) {
+            return res.status(404).json({ ok: false, error: "Not Found" });
+        }
+        const notFoundPath = path.join(__dirname, "..", "public", "404.html");
+        res.set("Cache-Control", "public, max-age=600");
+        return res.status(404).sendFile(notFoundPath, (err) => {
+            if (err) {
+                res.status(404).send("Not Found");
+            }
+        });
+    });
+
     app.use(errorHandler);
 }
 
