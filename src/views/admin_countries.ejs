@@ -1,0 +1,32 @@
+<%- include("layout", { title: "Admin · Countries", user, leaflet: false, body: String.raw`
+  <h1>Countries</h1>
+
+  <div class="card">
+    <form method="post" action="/admin/countries/upsert" class="row">
+      <div style="flex:1; min-width: 160px;">
+        <label>Country code</label>
+        <input name="code" placeholder="ES" maxlength="2" required />
+      </div>
+      <div style="flex:2; min-width: 220px;">
+        <label>Name (optional)</label>
+        <input name="name" placeholder="Spain" />
+      </div>
+      <div style="flex:1; align-self:end;">
+        <button type="submit">Create</button>
+      </div>
+    </form>
+  </div>
+
+  ${countries && countries.length ? countries.map(c => `
+    <div class="card">
+      <div><strong>${escapeHtml(c.code)}</strong>${c.name ? ` · ${escapeHtml(c.name)}` : ""} ${c.isVisible ? "" : "<span class='small'>(hidden)</span>"}</div>
+      <div class="small">${c.visibleCities} visible cities</div>
+      <div style="margin-top:8px;" class="row">
+        <a class="btn primary" href="/admin/countries/${encodeURIComponent(c.code)}">Edit</a>
+        <form method="post" action="/admin/countries/${encodeURIComponent(c.code)}/toggle-visible">
+          <button type="submit">${c.isVisible ? "Hide" : "Make visible"}</button>
+        </form>
+      </div>
+    </div>
+  `).join("") : "<p class=\"small\">No countries yet.</p>"}
+` }) %>

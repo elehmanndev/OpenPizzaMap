@@ -1,0 +1,10 @@
+<%- include("layout", { title: "FAQ", user, leaflet: false, body: String.raw`
+  <h1>FAQ</h1>
+  ${introHtml ? `<div class="card">${introHtml}</div>` : ""}
+  ${faqs && faqs.length ? faqs.map(f => `
+    <div class="card">
+      <strong>${escapeHtml(f.question)}</strong>
+      <div style="margin-top:8px;">${f.answerHtml}</div>
+    </div>
+  `).join("") : "<p class=\"small\">No FAQs yet.</p>"}
+` }) %>

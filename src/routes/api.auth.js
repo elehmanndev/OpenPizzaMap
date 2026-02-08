@@ -37,10 +37,21 @@ const registerSchema = z.object({
         .refine((val) => val === true, "Terms must be accepted"),
 });
 
-const loginSchema = z.object({
-    login: z.string().trim().min(3).max(254),
-    password: z.string().min(1).max(128),
-});
+const loginSchema = z
+    .object({
+        // Back-compat: older clients may send { email, password }.
+        login: z.string().trim().min(3).max(254).optional(),
+        email: z.string().trim().min(3).max(254).optional(),
+        password: z.string().min(1).max(128),
+    })
+    .refine((val) => !!(val.login || val.email), {
+        message: "Email/username is required.",
+        path: ["login"],
+    })
+    .transform((val) => ({
+        login: val.login || val.email || "",
+        password: val.password,
+    }));
 
 const resetRequestSchema = z.object({
     email: z.string().trim().email(),

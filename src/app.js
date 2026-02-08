@@ -56,6 +56,10 @@ app.locals.asset = function asset(url) {
     return base + (query ? `?${query}` : "") + `${sep}v=${encodeURIComponent(assetVersion)}`;
 };
 
+const { escapeHtml, escapeAttr } = require("./services/escape");
+app.locals.escapeHtml = escapeHtml;
+app.locals.escapeAttr = escapeAttr;
+
 const maintenanceMode = String(process.env.MAINTENANCE_MODE || "").toLowerCase() === "true";
 let postListenTasks = () => {};
 

@@ -3,14 +3,34 @@ const path = require("path");
 
 async function buildSitemapXml(prisma, baseUrlOverride) {
     let places = [];
+    let cities = [];
+    let countries = [];
     try {
         places = await prisma.place.findMany({
-            where: { status: "active" },
+            where: { status: "active", isVisible: true },
             select: { id: true, updatedAt: true }
         });
     } catch (err) {
         // Keep sitemap generation non-fatal (e.g., build-time DB auth issues).
         console.error("Sitemap place query failed:", err.message || err);
+    }
+
+    try {
+        cities = await prisma.city.findMany({
+            where: { isVisible: true },
+            select: { countryCode: true, slug: true, updatedAt: true },
+        });
+    } catch (err) {
+        console.error("Sitemap city query failed:", err.message || err);
+    }
+
+    try {
+        countries = await prisma.country.findMany({
+            where: { isVisible: true },
+            select: { code: true, updatedAt: true },
+        });
+    } catch (err) {
+        console.error("Sitemap country query failed:", err.message || err);
     }
 
     const baseUrl = baseUrlOverride || process.env.BASE_URL || "https://openpizzamap.com";
@@ -27,6 +47,38 @@ async function buildSitemapXml(prisma, baseUrlOverride) {
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>`;
+
+    xml += `
+  <url>
+    <loc>${baseUrl}/about</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/faq</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>`;
+
+    countries.forEach((c) => {
+        xml += `
+  <url>
+    <loc>${baseUrl}/country/${c.code}</loc>
+    <lastmod>${c.updatedAt.toISOString().split("T")[0]}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>`;
+    });
+
+    cities.forEach((c) => {
+        xml += `
+  <url>
+    <loc>${baseUrl}/country/${c.countryCode}/city/${c.slug}</loc>
+    <lastmod>${c.updatedAt.toISOString().split("T")[0]}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>`;
+    });
 
     places.forEach(place => {
         xml += `

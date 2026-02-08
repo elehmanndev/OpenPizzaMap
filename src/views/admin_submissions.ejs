@@ -1,27 +1,29 @@
-<%- include("layout", { title: "Admin submissions" , user, leaflet: false, body: ` <h1>Pending submissions</h1>
-    ${submissions.length ? submissions.map(s => {
+<%- include("layout", { title: "Admin submissions", user, leaflet: false, body: String.raw`
+  <h1>Pending submissions</h1>
+  ${submissions.length ? submissions.map(s => {
     const payload = JSON.parse(s.payloadJson);
+    const summary = s.type === "new_place"
+      ? `${payload.name || "(no name)"} - ${payload.city || "(no city)"}`
+      : `Edit place #${s.targetPlaceId || "?"} - fields: ${Object.keys(payload || {}).slice(0, 12).join(", ")}${Object.keys(payload || {}).length > 12 ? "..." : ""}`;
+
     return `
-    <div class="card">
-        <div><strong>#${s.id}</strong> · ${s.type} · by user ${s.userId}</div>
-        <div class="small">${payload.name} — ${payload.city}</div>
-        <details>
+        <div class="card">
+          <div><strong>#${s.id}</strong> - ${s.type} - by user ${s.userId}</div>
+          <div class="small">${escapeHtml(summary)}</div>
+          <details>
             <summary class="small">Payload</summary>
-            <pre class="small">${JSON.stringify(payload, null, 2)}</pre>
-        </details>
+            <pre class="small">${escapeHtml(JSON.stringify(payload, null, 2))}</pre>
+          </details>
         <div class="row">
-            <form method="post" action="/admin/submissions/${s.id}/approve">
-                <button type="submit">Approve</button>
-            </form>
-            <form method="post" action="/admin/submissions/${s.id}/reject"
-                style="display:flex;gap:8px;align-items:center;">
-                <input name="reason" placeholder="Reason" required />
-                <button type="submit">Reject</button>
-            </form>
+          <form method="post" action="/admin/submissions/${s.id}/approve">
+            <button type="submit">Approve</button>
+          </form>
+          <form method="post" action="/admin/submissions/${s.id}/reject" style="display:flex;gap:8px;align-items:center;">
+            <input name="reason" placeholder="Reason" required />
+            <button type="submit">Reject</button>
+          </form>
         </div>
-    </div>
+      </div>
     `;
-    }).join("") : "<p>No pending submissions.</p>"}
-    `
-    })
-    %>
+  }).join("") : "<p>No pending submissions.</p>"}
+` }) %>

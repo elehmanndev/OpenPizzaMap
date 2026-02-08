@@ -1,0 +1,42 @@
+<%- include("layout", { title: "Admin · FAQs", user, leaflet: false, body: String.raw`
+  <h1>FAQs</h1>
+
+  <div class="card">
+    <form method="get" action="/admin/faqs" class="row">
+      <div style="flex:1; min-width: 200px;">
+        <label>Scope</label>
+        <select name="scope">
+          ${["global","country","city","place"].map(s => `<option value="${s}" ${(filters.scope||"")==s ? "selected" : ""}>${s}</option>`).join("")}
+        </select>
+      </div>
+      <div style="flex:1; min-width: 200px;">
+        <label>Country code</label>
+        <input name="countryCode" value="${escapeAttr(filters.countryCode || "")}" placeholder="ES" />
+      </div>
+      <div style="flex:1; min-width: 200px;">
+        <label>City ID</label>
+        <input name="cityId" value="${escapeAttr(filters.cityId || "")}" placeholder="123" />
+      </div>
+      <div style="flex:1; min-width: 200px;">
+        <label>Place ID</label>
+        <input name="placeId" value="${escapeAttr(filters.placeId || "")}" placeholder="456" />
+      </div>
+      <div style="flex:1; align-self:end;">
+        <button type="submit">Filter</button>
+      </div>
+      <div style="flex:1; align-self:end;">
+        <a class="btn" href="/admin/faqs/new?scope=${encodeURIComponent(filters.scope||'global')}&countryCode=${encodeURIComponent(filters.countryCode||'')}&cityId=${encodeURIComponent(filters.cityId||'')}&placeId=${encodeURIComponent(filters.placeId||'')}">New FAQ</a>
+      </div>
+    </form>
+  </div>
+
+  ${faqs && faqs.length ? faqs.map(f => `
+    <div class="card">
+      <div><strong>${escapeHtml(f.question)}</strong> ${f.isVisible ? "" : "<span class='small'>(hidden)</span>"}</div>
+      <div class="small">scope=${f.scope}${f.countryCode ? ` · country=${f.countryCode}` : ""}${f.cityId ? ` · cityId=${f.cityId}` : ""}${f.placeId ? ` · placeId=${f.placeId}` : ""}</div>
+      <div style="margin-top:8px;">
+        <a class="btn primary" href="/admin/faqs/${f.id}">Edit</a>
+      </div>
+    </div>
+  `).join("") : "<p class=\"small\">No FAQs found.</p>"}
+` }) %>

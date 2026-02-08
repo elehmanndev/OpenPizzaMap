@@ -1,0 +1,6 @@
+<%- include("layout", { title: page && page.seoTitle ? page.seoTitle : "About", user, leaflet: false, body: String.raw`
+  <h1>${escapeHtml(page && page.title ? page.title : "About")}</h1>
+  <div class="card">
+    ${page && page.bodyHtml ? page.bodyHtml : ""}
+  </div>
+` }) %>

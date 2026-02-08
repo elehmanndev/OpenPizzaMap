@@ -19,6 +19,7 @@ router.get("/", async (req, res) => {
                     c ? { city: { contains: c } } : {},
                 ],
                 status: "active",
+                isVisible: true,
             },
             orderBy: { updatedAt: "desc" },
             take: 200,
@@ -39,6 +40,7 @@ router.get("/", async (req, res) => {
         const pre = await prisma.place.findMany({
             where: {
                 status: "active",
+                isVisible: true,
                 lat: { gte: box.minLat, lte: box.maxLat },
                 lng: { gte: box.minLng, lte: box.maxLng },
             },
@@ -63,7 +65,7 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
     const id = Number(req.params.id);
     const place = await prisma.place.findUnique({ where: { id } });
-    if (!place) return res.status(404).json({ ok: false, error: "Not found" });
+    if (!place || place.isVisible === false) return res.status(404).json({ ok: false, error: "Not found" });
     res.json({ ok: true, place });
 });
 

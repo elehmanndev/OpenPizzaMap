@@ -46,12 +46,101 @@ model Place {
   googleMapsUrl String?
   instagramUrl  String?
   status        PlaceStatus @default(active)
+  slug          String?     @unique
+  cityId        Int?
+  cityRef       City?       @relation(fields: [cityId], references: [id])
+  faqs          Faq[]
+  descriptionHtml String?   @db.LongText
+  heroImageUrl  String?
+  seoTitle      String?
+  seoDescription String?    @db.VarChar(200)
+  isVisible     Boolean     @default(true)
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
   @@index([city])
   @@index([lat])
   @@index([lng])
+}
+
+model Country {
+  code          String   @id @db.Char(2)
+  name          String?
+  slug          String?  @unique
+  introHtml     String?  @db.LongText
+  heroImageUrl  String?
+  seoTitle      String?
+  seoDescription String? @db.VarChar(200)
+  isVisible     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([isVisible])
+}
+
+model City {
+  id            Int      @id @default(autoincrement())
+  name          String
+  slug          String
+  countryCode   String   @db.Char(2)
+  introHtml     String?  @db.LongText
+  heroImageUrl  String?
+  seoTitle      String?
+  seoDescription String? @db.VarChar(200)
+  isVisible     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  places        Place[]
+  faqs          Faq[]
+
+  @@unique([countryCode, slug])
+  @@index([countryCode])
+  @@index([isVisible])
+}
+
+enum FaqScope {
+  global
+  country
+  city
+  place
+}
+
+model Faq {
+  id           Int      @id @default(autoincrement())
+  scope        FaqScope
+  countryCode  String?  @db.Char(2)
+  cityId       Int?
+  placeId      Int?
+  question     String   @db.VarChar(200)
+  answerHtml   String   @db.LongText
+  sortOrder    Int      @default(0)
+  isVisible    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  city         City?    @relation(fields: [cityId], references: [id])
+  place        Place?   @relation(fields: [placeId], references: [id])
+
+  @@index([scope])
+  @@index([countryCode])
+  @@index([cityId])
+  @@index([placeId])
+  @@index([isVisible])
+}
+
+model Page {
+  id            Int      @id @default(autoincrement())
+  key           String   @unique @db.VarChar(60)
+  title         String   @db.VarChar(120)
+  bodyHtml      String   @db.LongText
+  seoTitle      String?
+  seoDescription String? @db.VarChar(200)
+  isVisible     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([isVisible])
 }
 
 model Submission {

@@ -1,0 +1,25 @@
+<%- include("layout", { title: city && (city.seoTitle || city.name) ? (city.seoTitle || city.name) : "City", user, leaflet: false, body: String.raw`
+  <h1>${escapeHtml(city ? city.name : "City")}</h1>
+  ${city && city.introHtml ? `<div class="card">${city.introHtml}</div>` : ""}
+
+  <h2>Places</h2>
+  ${places && places.length ? `<div class="row">${places.map(p => `
+    <div class="card" style="flex:1; min-width: 220px;">
+      <div><strong>${escapeHtml(p.name)}</strong></div>
+      <div class="small">${escapeHtml(p.city)}${p.country ? ` · ${escapeHtml(p.country)}` : ""}</div>
+      <div style="margin-top:8px;">
+        <a class="btn primary" href="/place/${p.id}">View place</a>
+      </div>
+    </div>
+  `).join("")}</div>` : "<p class=\"small\">No places yet.</p>"}
+
+  ${faqs && faqs.length ? String.raw`
+    <h2>FAQs</h2>
+    ${faqs.map(f => `
+      <div class="card">
+        <strong>${escapeHtml(f.question)}</strong>
+        <div style="margin-top:8px;">${f.answerHtml}</div>
+      </div>
+    `).join("")}
+  ` : ""}
+` }) %>

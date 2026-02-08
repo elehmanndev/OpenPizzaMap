@@ -1,23 +1,37 @@
-<%- include("layout", { title: place.name, user, leaflet: false, body: ` <h1>${place.name}</h1>
-    <p>${place.addressLine}, ${place.city}</p>
-    <p class="small">Price: ${"€".repeat(place.priceLevel)} · Status: ${place.status}</p>
-    <p class="small">Styles: ${place.stylesJson}</p>
-    <div class="card">
-        <div>Services:
-            ${place.dineIn ? "Dine-in " : ""}
-            ${place.takeaway ? "Takeaway " : ""}
-            ${place.delivery ? "Delivery " : ""}
-        </div>
-        <div class="small">
-            ${place.websiteUrl ? `Website: <a href="${place.websiteUrl}" target="_blank" rel="noopener">link</a><br />`
-            : ""}
-            ${place.instagramUrl ? `Instagram: <a href="${place.instagramUrl}" target="_blank"
-                rel="noopener">link</a><br />` : ""}
-            ${place.googleMapsUrl ? `Maps: <a href="${place.googleMapsUrl}" target="_blank" rel="noopener">link</a>` :
-            ""}
-        </div>
+<%- include("layout", { title: place.name, user, leaflet: false, body: String.raw`
+  <h1>${escapeHtml(place.name)}</h1>
+  <p>${escapeHtml(place.addressLine)}, ${escapeHtml(place.city)}</p>
+
+  ${place.descriptionHtml ? `<div class="card">${place.descriptionHtml}</div>` : ""}
+
+  <p class="small">Price: ${place.priceLevel ? "€".repeat(place.priceLevel) : "Unknown"} · Status: ${escapeHtml(place.status)}</p>
+  <p class="small">Styles: ${escapeHtml((() => { try { const a = JSON.parse(place.stylesJson || "[]"); return Array.isArray(a) && a.length ? a.join(", ") : "—"; } catch { return "—"; } })())}</p>
+
+  <div class="card">
+    <div>Services:
+      ${place.dineIn ? "Dine-in " : ""}
+      ${place.takeaway ? "Takeaway " : ""}
+      ${place.delivery ? "Delivery " : ""}
     </div>
-    <p><a href="/map">Back to map</a></p>
-    `
-    })
-    %>
+    <div class="small">
+      ${place.websiteUrl ? `Website: <a href="${escapeAttr(place.websiteUrl)}" target="_blank" rel="noopener">link</a><br />` : ""}
+      ${place.instagramUrl ? `Instagram: <a href="${escapeAttr(place.instagramUrl)}" target="_blank" rel="noopener">link</a><br />` : ""}
+      ${place.googleMapsUrl ? `Maps: <a href="${escapeAttr(place.googleMapsUrl)}" target="_blank" rel="noopener">link</a>` : ""}
+    </div>
+  </div>
+
+  ${place.faqs && place.faqs.length ? String.raw`
+    <h2>FAQs</h2>
+    ${place.faqs.map(f => `
+      <div class="card">
+        <strong>${escapeHtml(f.question)}</strong>
+        <div style="margin-top:8px;">${f.answerHtml}</div>
+      </div>
+    `).join("")}
+  ` : ""}
+
+  <p>
+    <a href="/map">Back to map</a>
+    ${user ? ` · <a href="/place/${place.id}/suggest-edit">Suggest an edit</a>` : ""}
+  </p>
+` }) %>

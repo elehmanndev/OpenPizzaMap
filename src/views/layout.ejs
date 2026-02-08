@@ -5,7 +5,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>
-    <%= title || "OpenPizzaMap" %>
+    <%= (typeof title === "string" && title.includes("OpenPizzaMap"))
+      ? title
+      : (title ? `${title} | OpenPizzaMap` : "OpenPizzaMap") %>
   </title>
   <script>
     (function () {
@@ -51,7 +53,7 @@
               <a href="/me">My submissions</a>
               <a href="/favourites">My favourites</a>
               <% if (user.role==="admin" ) { %>
-                <a href="/admin/submissions">Admin</a>
+                <a href="/admin/pages">Admin</a>
               <% } %>
             <% } %>
           </nav>

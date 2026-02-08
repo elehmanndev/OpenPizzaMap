@@ -1,0 +1,25 @@
+<%- include("layout", { title: country && (country.seoTitle || country.name) ? (country.seoTitle || country.name) : `Country ${country ? country.code : ""}`, user, leaflet: false, body: String.raw`
+  <h1>${escapeHtml(country && (country.name || country.code) ? (country.name || country.code) : "Country")}</h1>
+  ${country && country.introHtml ? `<div class="card">${country.introHtml}</div>` : ""}
+
+  <h2>Cities</h2>
+  ${cities && cities.length ? `<div class="row">${cities.map(c => `
+    <div class="card" style="flex:1; min-width: 220px;">
+      <div><strong>${escapeHtml(c.name)}</strong></div>
+      <div class="small">${c.placeCount} places</div>
+      <div style="margin-top:8px;">
+        <a class="btn primary" href="/country/${encodeURIComponent(country.code)}/city/${encodeURIComponent(c.slug)}">View city</a>
+      </div>
+    </div>
+  `).join("")}</div>` : "<p class=\"small\">No visible cities yet.</p>"}
+
+  ${faqs && faqs.length ? String.raw`
+    <h2>FAQs</h2>
+    ${faqs.map(f => `
+      <div class="card">
+        <strong>${escapeHtml(f.question)}</strong>
+        <div style="margin-top:8px;">${f.answerHtml}</div>
+      </div>
+    `).join("")}
+  ` : ""}
+` }) %>

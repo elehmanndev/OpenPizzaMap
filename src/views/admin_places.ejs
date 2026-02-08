@@ -1,0 +1,33 @@
+<%- include("layout", { title: "Admin · Places", user, leaflet: false, body: String.raw`
+  <h1>Places</h1>
+
+  <div class="card">
+    <form method="get" action="/admin/places" class="row">
+      <div style="flex:2; min-width:220px;">
+        <label>Name contains</label>
+        <input name="q" value="${escapeAttr(filters.q || "")}" placeholder="Sorbillo" />
+      </div>
+      <div style="flex:1; min-width:160px;">
+        <label>City ID</label>
+        <input name="cityId" value="${escapeAttr(filters.cityId || "")}" placeholder="123" />
+      </div>
+      <div style="flex:1; align-self:end;">
+        <button type="submit">Filter</button>
+      </div>
+    </form>
+  </div>
+
+  ${places && places.length ? places.map(p => `
+    <div class="card">
+      <div><strong>${escapeHtml(p.name)}</strong> ${p.isVisible ? "" : "<span class='small'>(hidden)</span>"}</div>
+      <div class="small">${escapeHtml(p.city)} · ${escapeHtml(p.country)} ${p.cityId ? `· cityId=${p.cityId}` : ""}</div>
+      <div style="margin-top:8px;" class="row">
+        <a class="btn primary" href="/admin/places/${p.id}">Edit</a>
+        <a class="btn" href="/place/${p.id}">View</a>
+        <form method="post" action="/admin/places/${p.id}/toggle-visible">
+          <button type="submit">${p.isVisible ? "Hide" : "Make visible"}</button>
+        </form>
+      </div>
+    </div>
+  `).join("") : "<p class=\"small\">No places found.</p>"}
+` }) %>
