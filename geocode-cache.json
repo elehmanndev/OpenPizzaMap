@@ -1387,5 +1387,1174 @@
     "lng": 2.3474984,
     "display": "42, Rue Tiquetonne, Quartier de Bonne-Nouvelle, Paris 2e Arrondissement, Paris, Île-de-France, France métropolitaine, 75002, France"
   },
-  "7Bis Rue du Colonel Driant, 75001 Paris, France e 27 Rue de Bretagne, 75003 Paris, France": null
+  "7Bis Rue du Colonel Driant, 75001 Paris, France e 27 Rue de Bretagne, 75003 Paris, France": null,
+  "Via Don Luigi Sturzo, 28, 73100 Lecce LE": {
+    "lat": 40.0114864,
+    "lng": 18.1796556,
+    "display": "28, Via Don Luigi Sturzo, Pàmpana, Casarano, Lecce, Puglia, 73042, Italia"
+  },
+  "Via Vito Mario Stampacchia, 9, 73100 Lecce LE": {
+    "lat": 40.3589662,
+    "lng": 18.1745152,
+    "display": "Via Vito Mario Stampacchia, Lecce, Puglia, 73100, Italia"
+  },
+  "Via del Delfino, 3, 73100 Lecce LE": {
+    "lat": 40.3469021,
+    "lng": 18.1734708,
+    "display": "Rustika, 3, Via del Delfino, Lecce, Puglia, 73100, Italia"
+  },
+  "Corso Roma, 62, 73014 Gallipoli LE": {
+    "lat": 40.0561175,
+    "lng": 17.9893694,
+    "display": "Lievita 72, 62,64, Corso Roma, Gallipoli, Lecce, Puglia, 73014, Italia"
+  },
+  "7 Northumberland Ave, Westminster, London WC2N 5BY, Regno Unito": {
+    "lat": 51.5070186,
+    "lng": -0.126327,
+    "display": "50 Kalo di Ciro Salvo Pizzeria, 7, Northumberland Avenue, Westminster, Covent Garden, City of Westminster, Greater London, England, WC2N 5BY, United Kingdom"
+  },
+  "199 Baker St, Marylebone, London NW1 6UY, Regno Unito": {
+    "lat": 51.5226391,
+    "lng": -0.1579633,
+    "display": "L'Antica Pizzeria da Michele, 199, Baker Street, Marylebone, City of Westminster, Greater London, England, NW1 6UY, United Kingdom"
+  },
+  "44 Old Compton St, Soho, London W1D 4TY, Regno Unito": {
+    "lat": 51.5131014,
+    "lng": -0.1317907,
+    "display": "L'Antica Pizzeria da Michele, 44, Old Compton Street, Soho, City of Westminster, Greater London, England, W1D 4TY, United Kingdom"
+  },
+  "7Bis Rue du Colonel Driant, 75001 Paris, France e 27 Rue de Bretagne, 75003 Paris, France, France": null,
+  "7Bis Rue du Colonel Driant, 75001 Paris, Paris, France": {
+    "lat": 48.863272,
+    "lng": 2.340487,
+    "display": "7 bis, Rue du Colonel Driant, Quartier Les Halles, Paris 1er Arrondissement, Paris, Île-de-France, France métropolitaine, 75001, France"
+  },
+  "8 Rue Tiquetonne, 75002 Paris, France": {
+    "lat": 48.8644866,
+    "lng": 2.3494552,
+    "display": "8, Rue Tiquetonne, Quartier de Bonne-Nouvelle, Paris 2e Arrondissement, Paris, Île-de-France, France métropolitaine, 75002, France"
+  },
+  "32 Quai de la Marne, 75019 Paris, France": {
+    "lat": 48.8902013,
+    "lng": 2.3840185,
+    "display": "Simonetta, 32, Quai de la Marne, Quartier du Pont-de-Flandre, Paris 19e Arrondissement, Paris, Île-de-France, France métropolitaine, 75019, France"
+  },
+  "10 Rue Dancourt, 75018 Paris, France": {
+    "lat": 48.8831365,
+    "lng": 2.3418983,
+    "display": "Popine, 10, Rue Dancourt, Quartier de Clignancourt, Paris 18e Arrondissement, Paris, Île-de-France, France métropolitaine, 75018, France"
+  },
+  "Universitätsring 14, 1010 Wien, Austria": {
+    "lat": 48.2133477,
+    "lng": 16.3620265,
+    "display": "McDonald's, 14, Universitätsring, Regierungsviertel, Katastralgemeinde Innere Stadt, Innere Stadt, Wien, 1010, Österreich"
+  },
+  "C/ de Provença, 330, 08037 Barcelona, Spagna": {
+    "lat": 41.3971753,
+    "lng": 2.1649105,
+    "display": "Sartoria Panatieri, 330, Carrer de Provença, la Dreta de l'Eixample, l'Eixample, Barcelona, Barcelonès, Barcelona, Catalunya, 08037, España"
+  },
+  "Rambla del Poblenou, 20, 08005 Barcelona, Spagna": {
+    "lat": 41.3984836,
+    "lng": 2.2048202,
+    "display": "20, Rambla del Poblenou, el Poblenou, Sant Martí, Barcelona, Barcelonès, Barcelona, Catalunya, 08005, España"
+  },
+  "Ronda de Sant Pau, 59, 08015 Barcelona, Spagna": {
+    "lat": 41.377499,
+    "lng": 2.164177,
+    "display": "Pummarola, 59, Ronda de Sant Pau, Superilla Sant Antoni, Sant Antoni, l'Eixample, Barcelona, Barcelonès, Barcelona, Catalunya, 08015, España"
+  },
+  "Av. del Paral·lel, 15, 08004 Barcelona, Spagna": {
+    "lat": 41.3744869,
+    "lng": 2.1747504,
+    "display": "15, Avinguda del Paral·lel, el Poble-sec, Sants-Montjuïc, Barcelona, Barcelonès, Barcelona, Catalunya, 08004, España"
+  },
+  "Carrer de Manso, 22, 08015 Barcelona, Spagna": {
+    "lat": 41.3761712,
+    "lng": 2.1602583,
+    "display": "22, Carrer de Manso, Sant Antoni, l'Eixample, Barcelona, Barcelonès, Barcelona, Catalunya, 08015, España"
+  },
+  "178 Lexington Ave, New York, NY 10016, USA": {
+    "lat": 40.7444593,
+    "lng": -73.9813057,
+    "display": "Vezzo, 178, Lexington Avenue, Murray Hill, Manhattan Community Board 5, Manhattan, New York County, New York, 10016, United States"
+  },
+  "575 Henry St, Brooklyn, NY 11231, USA": {
+    "lat": 40.6818173,
+    "lng": -74.0003171,
+    "display": "575, Henry Street, Columbia Street Waterfront District, Brooklyn, Kings County, New York, 11231, United States"
+  },
+  "Via del Duomo, 35, Italy": {
+    "lat": 41.3207499,
+    "lng": 16.2857661,
+    "display": "33,35, Via del Duomo, Santa Maria, Barletta, Barletta-Andria-Trani, Puglia, 76121, Italia"
+  },
+  "Via Piave, 41": {
+    "lat": 45.4880066,
+    "lng": 12.2345536,
+    "display": "Laundry, 41, Via Piave, Mestre-Carpenedo, Mestre, Venezia, Veneto, 30171, Italia"
+  },
+  "Viale Druso, 50": {
+    "lat": 46.4954269,
+    "lng": 11.3352555,
+    "display": "50, Viale Druso - Drususallee, Gries-San Quirino - Gries-Quirein, Bolzano - Bozen, Trentino-Alto Adige/Südtirol, 39100, Italia"
+  },
+  "Via Delle Ginestre 27-28, Ischia, Italy": {
+    "lat": 40.7331386,
+    "lng": 13.9426348,
+    "display": "Via delle Ginestre, Piripissa, Ischia, Napoli, Campania, 80077, Italia"
+  },
+  "Via Camillo Porzio,79": {
+    "lat": 41.8716855,
+    "lng": 12.516649,
+    "display": "Via Camillo Porzio, Municipio Roma VII, Roma, Roma Capitale, Lazio, 00183, Italia"
+  },
+  "Avda Benicasim s, Castellon, Spain": {
+    "lat": 40.0039744,
+    "lng": -0.0426886,
+    "display": "Avinguda de Benicàssim, Grup de Benvinguda, Castelló de la Plana / Castellón de la Plana, la Plana Alta, Castelló / Castellón, Comunitat Valenciana, 12004, España"
+  },
+  "Via Ascanio, 25": {
+    "lat": 45.4495926,
+    "lng": 9.1776711,
+    "display": "25, Via Ascanio Sforza, Ticinese, Municipio 5, Milano, Lombardia, 20136, Italia"
+  },
+  "Via Alfieri, 2": {
+    "lat": 45.4299567,
+    "lng": 9.0603718,
+    "display": "2, Via Vittorio Alfieri, Quartiere Campetto, Quartiere Morona, Cascina Gaggia, Trezzano sul Naviglio, Milano, Lombardia, 20090, Italia"
+  },
+  "4-2-4 Eifuku Suginami -Ku, 1680064 Tokyo, Suginami (Tokyo) Kantō": null,
+  "4-2-4 Eifuku Suginami -Ku, 1680064 Tokyo, Suginami (Tokyo) Kantō, Japan": null,
+  "4-2-4 Eifuku Suginami -Ku, 1680064 Tokyo, Tokyo, Suginami, Japan": {
+    "lat": 35.6677768,
+    "lng": 139.6380186,
+    "display": "パークジャパン, 甲州街道, 下高井戸二丁目, 下高井戸, 杉並区, 東京都, 168-0073, 日本"
+  },
+  "S.S.158 Km 70,200": null,
+  "S.S.158 Km 70,200, Italy": null,
+  "Sant'Angelo d'Alife, Italy": {
+    "lat": 41.3592004,
+    "lng": 14.2635865,
+    "display": "Sant'Angelo d'Alife, Caserta, Campania, 81017, Italia"
+  },
+  "Via San Marco, 32": {
+    "lat": 45.5246698,
+    "lng": 9.2251199,
+    "display": "32, Via San Marco, Vittoria, Sesto San Giovanni, Zona Omogenea Milano Nord, Milano, Lombardia, 20099, Italia"
+  },
+  "1-22-20 Ebisu Shibuya-Ku, Tokyo, 150-": {
+    "lat": 35.6461176,
+    "lng": 139.7139689,
+    "display": "Ken Production, 20, 恵比寿一丁目, 恵比寿, 渋谷区, 東京都, 150-0013, 日本"
+  },
+  "Via Tuoro, 6": {
+    "lat": 41.0703192,
+    "lng": 14.3494854,
+    "display": "Checkpoint®, 6, Via San Gennaro, Caserta, Parco degli Aranci, Falciano, San Clemente, Caserta, Campania, 81100, Italia"
+  },
+  "Via Dante Alighieri, 2": {
+    "lat": 43.7709219,
+    "lng": 11.256901,
+    "display": "2, Via Dante Alighieri, Quartiere 1, Firenze, Toscana, 50122, Italia"
+  },
+  "Karl Hòllstrasse, 4": {
+    "lat": 47.4770242,
+    "lng": 9.7307539,
+    "display": "Tandir Restaurant, 4, Karl-Höll-Straße, Alter Markt, Lauterach, Bezirk Bregenz, Vorarlberg, 6923, Österreich"
+  },
+  "1-7-22 Yokokawa-cho, Nishi-ku, Hiroshima, 733-": null,
+  "1-7-22 Yokokawa-cho, Nishi-ku, Hiroshima, 733-, Japan": null,
+  "1-7-22 Yokokawa-cho, Nishi-ku, Hiroshima, Japan": null,
+  "Hiroshima, Japan": {
+    "lat": 34.3917241,
+    "lng": 132.4517589,
+    "display": "広島市, 広島県, 日本"
+  },
+  "1 F Southern Hill Bldg, 1-13-6 Sannoushi, 206-": null,
+  "1 F Southern Hill Bldg, 1-13-6 Sannoushi, 206-, Japan": null,
+  "1 F Southern Hill Bldg, 1-13-6 Sannoushi, Tama, Japan": null,
+  "Tama, Japan": {
+    "lat": 35.6372468,
+    "lng": 139.4461101,
+    "display": "多摩市, 東京都, 日本"
+  },
+  "298, Kamikasuya, 259-": {
+    "lat": 35.4164016,
+    "lng": 139.288808,
+    "display": "上粕屋, 伊勢原市, 神奈川県, 259-1197, 日本"
+  },
+  "S.S. 17 Km 139, Roccaraso, Italy": null,
+  "Roccaraso, Italy": {
+    "lat": 41.8502606,
+    "lng": 14.0782574,
+    "display": "Roccaraso, L'Aquila, Abruzzo, 67037, Italia"
+  },
+  "Corso Moncenisio, 12 - Loc. Lo Verdino": null,
+  "Corso Moncenisio, 12 - Loc. Lo Verdino, Italy": null,
+  "S. Ambrogio di Torino, Italy": {
+    "lat": 45.1011329,
+    "lng": 7.3609493,
+    "display": "Sant'Ambrogio, Piazza della Stazione, Cascina Gariglio, Sant'Ambrogio di Torino, Torino, Piemonte, 10057, Italia"
+  },
+  "Via S. Biagio dei Librai, 115": {
+    "lat": 40.84912,
+    "lng": 14.2574367,
+    "display": "Via San Biagio dei Librai, Pendino, Municipalità 2, Napoli, Campania, 80138, Italia"
+  },
+  "Via Romagnosi, 9": {
+    "lat": 46.0733413,
+    "lng": 11.12183,
+    "display": "9, Via Gian Domenico Romagnosi, San Martino, Centro Storico - Piedicastello, Martignano, Trento, Territorio Val d'Adige, Provincia di Trento, Trentino-Alto Adige/Südtirol, 38122, Italia"
+  },
+  "913 East Pike St. - Capitol Hill, Seattle, United States": {
+    "lat": 47.6139546,
+    "lng": -122.319989,
+    "display": "Via Tribunali - Capitol Hill, 913, East Pike Street, Madison Valley, First Hill, Seattle, King County, Washington, 98122, United States"
+  },
+  "3-chōme-36 Ōsu, 4600011 Nagoya (Aichi) Tōkai": null,
+  "3-chōme-36 Ōsu, 4600011 Nagoya (Aichi) Tōkai, Japan": null,
+  "Nagoya, Japan": {
+    "lat": 35.1851045,
+    "lng": 136.8998438,
+    "display": "名古屋市, 愛知県, 日本"
+  },
+  "1-13-4 Kawara-Machi, 760-": {
+    "lat": 33.6992935,
+    "lng": 130.8445151,
+    "display": "香春町, 田川郡, 福岡県, 822-1406, 日本"
+  },
+  "Tucson, United States": {
+    "lat": 32.2228765,
+    "lng": -110.974847,
+    "display": "Tucson, Pima County, Arizona, United States"
+  },
+  "Via Gian Lorenzo Bernini, 29": {
+    "lat": 44.6314973,
+    "lng": 10.9154896,
+    "display": "29, Via Gian Lorenzo Bernini, Rosselli, Buon Pastore-Sant'Agnese-San Damaso, Modena, Emilia-Romagna, 41125, Italia"
+  },
+  "Via Ferdinando Isola, 12": {
+    "lat": 44.3277621,
+    "lng": 8.5036434,
+    "display": "Au Caruggiu, 12, Via Ferdinando Isola, Poggio del Sole, Albissola Marina, Savona, Liguria, 17012, Italia"
+  },
+  "Via Mechnikova, 9": null,
+  "Via Mechnikova, 9, Ukraine": null,
+  "Kiev, Ukraine": {
+    "lat": 50.4500336,
+    "lng": 30.5241361,
+    "display": "Київ, Україна"
+  },
+  "Via del Duomo, 35": {
+    "lat": 41.3207499,
+    "lng": 16.2857661,
+    "display": "33,35, Via del Duomo, Santa Maria, Barletta, Barletta-Andria-Trani, Puglia, 76121, Italia"
+  },
+  "2-14-1 Kego Chyuouku, 810-": null,
+  "2-14-1 Kego Chyuouku, 810-, Japan": null,
+  "Fukuoka, Japan": {
+    "lat": 33.6251241,
+    "lng": 130.6180016,
+    "display": "福岡県, 日本"
+  },
+  "172-1 Kamata, 639-": {
+    "lat": 35.5637235,
+    "lng": 139.7216959,
+    "display": "蒲田, 大田区, 東京都, 日本"
+  },
+  "Via Caporra, 64": null,
+  "Via Caporra, 64, Italy": null,
+  "Caselle in Pittari - Salerno, Italy": {
+    "lat": 40.1725386,
+    "lng": 15.5457516,
+    "display": "Caselle in Pittari, Salerno, Campania, Italia"
+  },
+  "Denver, United States": {
+    "lat": 39.7392364,
+    "lng": -104.984862,
+    "display": "Denver, Colorado, United States"
+  },
+  "221, Ossington Ave, m6j 2z8 Toronto (Ontario) Ontario": {
+    "lat": 43.6489623,
+    "lng": -79.42028,
+    "display": "221, Ossington Avenue, Trinity-Bellwoods, Spadina—Fort York, Toronto, Golden Horseshoe, Ontario, M6J 2Z2, Canada"
+  },
+  "317 W. Galer, Seattle, United States": {
+    "lat": 47.6322539,
+    "lng": -122.397849,
+    "display": "West Galer Street, Seattle, King County, Washington, 98199, United States"
+  },
+  "Hagurocho Osaeguchiaza Kawabata 37-7, 997-": null,
+  "Hagurocho Osaeguchiaza Kawabata 37-7, 997-, Japan": null,
+  "Tsuruoka, Japan": {
+    "lat": 38.7272187,
+    "lng": 139.8266292,
+    "display": "鶴岡市, 山形県, 日本"
+  },
+  "Seattle, United States": {
+    "lat": 47.6038321,
+    "lng": -122.330062,
+    "display": "Seattle, King County, Washington, United States"
+  },
+  "Via Don Minzoni, Latina, Italy": {
+    "lat": 41.3534714,
+    "lng": 13.4379307,
+    "display": "Via Don Minzoni, Fondi, Latina, Lazio, 04022, Italia"
+  },
+  "Summerstage &ndash; U4 Ro&szlig;auer L&auml;nde e, Vienna, Austria": null,
+  "Vienna, Austria": {
+    "lat": 48.2083537,
+    "lng": 16.3725042,
+    "display": "Wien, Österreich"
+  },
+  "705 N.1st Street, Phoenix, United States": {
+    "lat": 33.455937,
+    "lng": -112.0722201,
+    "display": "La Flor De Calabaza, 705, North 1st Street, Central City, Phoenix, Maricopa County, Arizona, 85004, United States"
+  },
+  "Corso Colombo 26, Rapallo, Italy": {
+    "lat": 44.3473769,
+    "lng": 9.2266908,
+    "display": "Corso Cristoforo Colombo, Costaguta, San Michele di Pagana, Rapallo, Genova, Liguria, 16035, Italia"
+  },
+  "Via Monte Acuto, 19": {
+    "lat": 42.9600206,
+    "lng": 12.6910061,
+    "display": "Vesuvio Ristorante Pizzeria, 19, Via Monte Acuto, Maceratola, Foligno, Perugia, Umbria, 06034, Italia"
+  },
+  "Via Bellini, 23": {
+    "lat": 40.9261875,
+    "lng": 9.4846955,
+    "display": "23, Via Vincenzo Bellini, Santa Maria, Olbia, Gallura Nord-Est Sardegna, Sardigna/Sardegna, 07026, Italia"
+  },
+  "Via Rue Adrien-Lachenal, 24A": null,
+  "Via Rue Adrien-Lachenal, 24A, Switzerland": null,
+  "Geneva, Switzerland": {
+    "lat": 46.2017559,
+    "lng": 6.1466014,
+    "display": "Genève, Schweiz/Suisse/Svizzera/Svizra"
+  },
+  "Arlington, United States": {
+    "lat": 32.7355816,
+    "lng": -97.1071186,
+    "display": "Arlington, Tarrant County, Texas, United States"
+  },
+  "Viale dei Pini, 25": {
+    "lat": 44.517781,
+    "lng": 12.2694316,
+    "display": "25, Viale dei Pini, Marina Romea, Ravenna, Emilia-Romagna, 48023, Italia"
+  },
+  "Via V. Coronelli, 30": {
+    "lat": 44.4494072,
+    "lng": 8.9197724,
+    "display": "30, Via alla costa di Begato, Coronelli, Val Polcevera, Genova, Liguria, 16159, Italia"
+  },
+  "No. 19, Dexing W. Rd., Shilin Dist, 111 Taipei ()": null,
+  "No. 19, Dexing W. Rd., Shilin Dist, 111 Taipei (), Taiwan": {
+    "lat": 25.1060204,
+    "lng": 121.5239296,
+    "display": "德行西路, 德行里, 士林區, 蘭雅, 臺北市, 111046, 臺灣"
+  },
+  "12 Gopeng Street #01-78-81 Icon Village, Singapore, Singapore": null,
+  "Singapore, Singapore": {
+    "lat": 1.357107,
+    "lng": 103.8194992,
+    "display": "Singapore"
+  },
+  "Awakigahara 4 2 7 6 - 1 2 5 5, 880-": null,
+  "Awakigahara 4 2 7 6 - 1 2 5 5, 880-, Japan": null,
+  "Miyazaki, Japan": {
+    "lat": 32.097681,
+    "lng": 131.294542,
+    "display": "宮崎県, 日本"
+  },
+  "Chuoku Watanabedori 2-7-14, 810-": null,
+  "Chuoku Watanabedori 2-7-14, 810-, Japan": null,
+  "105-230 Cook Street, V8V 3X3 Victoria (British Columbia) British Columbia": null,
+  "105-230 Cook Street, V8V 3X3 Victoria (British Columbia) British Columbia, Canada": null,
+  "Victoria, Canada": {
+    "lat": 48.4283182,
+    "lng": -123.364953,
+    "display": "Victoria, Capital Regional District, British Columbia, Canada"
+  },
+  "107-2 Banpodong, Seochogu, 137-040 Seoul ()": null,
+  "107-2 Banpodong, Seochogu, 137-040 Seoul (), South Korea": null,
+  "107-2 Banpodong, Seochogu, Seoul, South Korea": {
+    "lat": 37.50312,
+    "lng": 127.0014,
+    "display": "반포동, 반포2동, 서초구, 서울특별시, 06546, 대한민국"
+  },
+  "550 Danforth Ave, M4K 1P8 Toronto (Ontario) Ontario": {
+    "lat": 43.6785172,
+    "lng": -79.3476897,
+    "display": "550, Danforth Avenue, North Riverdale, Toronto—Danforth, Toronto, Golden Horseshoe, Ontario, M4K 1P6, Canada"
+  },
+  "C.so Novara, 1 - Angolo Piazza Crispi 52": null,
+  "C.so Novara, 1 - Angolo Piazza Crispi 52, Italy": null,
+  "Turin, Italy": {
+    "lat": 45.0677551,
+    "lng": 7.6824892,
+    "display": "Torino, Piemonte, Italia"
+  },
+  "Vancouver, Canada": {
+    "lat": 49.2608724,
+    "lng": -123.113952,
+    "display": "Vancouver, Metro Vancouver Regional District, British Columbia, Canada"
+  },
+  "379 King Street, Newtown, Australia": {
+    "lat": -33.8992674,
+    "lng": 151.1775277,
+    "display": "The Abbey on King, 379, King Street, Newtown, Inner West, Sydney, New South Wales, 2042, Australia, Inner West Council"
+  },
+  "1-8-14 Miyajimaguchi, 739-": {
+    "lat": 34.312148,
+    "lng": 132.303526,
+    "display": "宮島口一丁目, 宮島口西三丁目, 廿日市市, 広島県, 739-0411, 日本"
+  },
+  "8-20 Isoshi, 665-": {
+    "lat": 34.8060029,
+    "lng": 135.3268693,
+    "display": "伊孑志, 光ガ丘二丁目, 宝塚市, 兵庫県, 665-0845, 日本"
+  },
+  "Vicolo San Giovanni Battista 3, Caiazzo, Italy": null,
+  "Caiazzo, Italy": {
+    "lat": 41.1783215,
+    "lng": 14.3649478,
+    "display": "Caiazzo, Caserta, Campania, 81013, Italia"
+  },
+  "Via Albino Albini, 18": null,
+  "Via Albino Albini, 18, Italy": null,
+  "15 North Butler Street, Madison, United States": {
+    "lat": 43.0771889,
+    "lng": -89.3813581,
+    "display": "Butler Plaza, 15, North Butler Street, James Madison Park, Madison, Dane County, Wisconsin, 53703, United States"
+  },
+  "SCLS 408, Blocco C, Lj. 35": null,
+  "SCLS 408, Blocco C, Lj. 35, Brazil": null,
+  "SCLS 408, Blocco C, Brasilia, Brazil": null,
+  "Brasilia, Brazil": {
+    "lat": -10.3333333,
+    "lng": -53.2,
+    "display": "Brasil"
+  },
+  "SCN QUADRA 05 BLOCO A S, Brasilia, Brazil": null,
+  "Schlickgasse 2, Vienna, Austria": {
+    "lat": 48.2183709,
+    "lng": 16.3647695,
+    "display": "Oasia, 2, Schlickgasse, Servitenviertel, Roßau, Katastralgemeinde Alsergrund, Alsergrund, Wien, 1090, Österreich"
+  },
+  "Via Leonardo da Vinci 4, Barbariga di Vigonza, Italy": {
+    "lat": 45.442604,
+    "lng": 12.0179569,
+    "display": "Via Leonardo da Vinci, Carpane, Barbariga, Vigonza, Padova, Veneto, 35010, Italia"
+  },
+  "48 E 12th St, New York, United States": {
+    "lat": 40.733256,
+    "lng": -73.9914891,
+    "display": "Leon's, 48, East 12th Street, East Village, Manhattan Community Board 3, Manhattan, New York County, New York, 10003, United States"
+  },
+  "Via Angelo Migliaccio 47, Barano d'Ischia Buonopane, Italy": {
+    "lat": 40.7082558,
+    "lng": 13.9153639,
+    "display": "Via Angelo Migliaccio, Buonopane, Vatoliere, Barano d'Ischia, Napoli, Campania, 80076, Italia"
+  },
+  "Via Duomo 181, Naples, Italy": {
+    "lat": 40.8500868,
+    "lng": 14.2602831,
+    "display": "Via Duomo, Pendino, Municipalità 2, Napoli, Campania, 80138, Italia"
+  },
+  "Via Luigia Sanfelice 8, Naples, Italy": {
+    "lat": 40.8411873,
+    "lng": 14.2334677,
+    "display": "Via Luigia Sanfelice, Vomero, Municipalità 5, Napoli, Campania, 80127, Italia"
+  },
+  "448 South California Avenue, Palo Alto, United States": {
+    "lat": 37.4259864,
+    "lng": -122.1454894,
+    "display": "Terún Pizzeria, 448, South California Avenue, Evergreen Park, Palo Alto, Santa Clara County, California, 94306, United States"
+  },
+  "Chicago, United States": {
+    "lat": 41.8755616,
+    "lng": -87.6244212,
+    "display": "Chicago, South Chicago Township, Cook County, Illinois, United States"
+  },
+  "Via Arena alla Sanità 7 bis, Naples, Italy": null,
+  "Culver City, United States": {
+    "lat": 34.0211224,
+    "lng": -118.396466,
+    "display": "Culver City, Los Angeles County, California, 90232, United States"
+  },
+  "Via Cristoforo Marino 22, Naples, Italy": {
+    "lat": 40.8494219,
+    "lng": 14.2784237,
+    "display": "Via Cristoforo Marino, Vicaria, Municipalità 4, Napoli, Campania, 80142, Italia"
+  },
+  "Kichijoji Minamicho 1-17-1, Purejiru Bldg B1F, 180-": null,
+  "Kichijoji Minamicho 1-17-1, Purejiru Bldg B1F, 180-, Japan": null,
+  "Kichijoji Minamicho 1-17-1, Purejiru Bldg B1F, Musashino, Japan": null,
+  "Musashino, Japan": {
+    "lat": 35.7177239,
+    "lng": 139.5659802,
+    "display": "武蔵野市, 東京都, 180-0000, 日本"
+  },
+  "Shimotoda 2-24-23 Todasi, Saitama, 335-": null,
+  "Shimotoda 2-24-23 Todasi, Saitama, 335-, Japan": null,
+  "Shimotoda 2-24-23 Todasi, Saitama, Toda, Japan": null,
+  "Toda, Japan": {
+    "lat": 35.8175874,
+    "lng": 139.6778944,
+    "display": "戸田市, 埼玉県, 日本"
+  },
+  "Kanda Bldg.1F,7-17 Kanda-machi, Gifu Tōkai": null,
+  "Kanda Bldg.1F,7-17 Kanda-machi, Gifu Tōkai, Japan": null,
+  "Kanda Bldg.1F,7-17 Kanda-machi, Gifu, Japan": null,
+  "Gifu, Japan": {
+    "lat": 35.4230949,
+    "lng": 136.7627526,
+    "display": "岐阜市, 岐阜県, 日本"
+  },
+  "3-5-16 Tenjin Tenjinbashi, Kita-ku, 530-": null,
+  "3-5-16 Tenjin Tenjinbashi, Kita-ku, 530-, Japan": null,
+  "3-5-16 Tenjin Tenjinbashi, Kita-ku, Osaka, Kita, Japan": null,
+  "Osaka, Kita, Japan": {
+    "lat": 34.7022133,
+    "lng": 135.4955732,
+    "display": "大阪, 市道梅田線, 梅田三丁目, 北区, 大阪市, 大阪府, 530-8558, 日本"
+  },
+  "C. C. de Alvalade, Praça de Alvalade, 6B, lojas 9 e 10": null,
+  "C. C. de Alvalade, Praça de Alvalade, 6B, lojas 9 e 10, Portugal": null,
+  "C. C. de Alvalade, Praça de Alvalade, Lisbona, Portugal": {
+    "lat": 38.7533541,
+    "lng": -9.1450688,
+    "display": "Centro Comercial de Alvalade, 6, Praça de Alvalade, São João de Brito, Campo Grande, Alvalade, Lisboa, 1700-036, Portugal"
+  },
+  "Donghae-si, South Korea": {
+    "lat": 37.5245142,
+    "lng": 129.1146302,
+    "display": "동해시, 강원특별자치도, 대한민국"
+  },
+  "3-8-3 Higashi Nakano, Nakano-ku, Tokyo, 1640003 Tokyo Kantō": null,
+  "3-8-3 Higashi Nakano, Nakano-ku, Tokyo, 1640003 Tokyo Kantō, Japan": null,
+  "3-8-3 Higashi Nakano, Nakano-ku, Tokyo, Japan": {
+    "lat": 35.708367,
+    "lng": 139.6819293,
+    "display": "東中野三丁目, 東中野, 中野区, 東京都, 日本"
+  },
+  "Via Giudecca Vecchia, 39": {
+    "lat": 40.8512419,
+    "lng": 14.2634191,
+    "display": "Pizzeria de' Figliole, 39, Via Giudecca Vecchia, Rione Forcella, San Lorenzo, Municipalità 4, Napoli, Campania, 80139, Italia"
+  },
+  "Omladinskih brigada 86, Belgrado, Serbia": {
+    "lat": 44.812292,
+    "lng": 20.4014546,
+    "display": "West 65 Mall, 86a, Омладинских бригада, МЗ Савски кеј, Градска општина Нови Београд, Београд, Град Београд, Централна Србија, 11000, Србија"
+  },
+  "Via Panzani, 57": {
+    "lat": 43.7743977,
+    "lng": 11.2504247,
+    "display": "Pizzeria Giotto, 57 rosso, Via Panzani, Quartiere 1, Firenze, Toscana, 50123, Italia"
+  },
+  "1-6-19 Numakage, Minami-ku, Saitama-shi, Saitama, 336-": {
+    "lat": 35.8413408,
+    "lng": 139.645281,
+    "display": "沼影, 南区, さいたま市, 埼玉県, 336-0027, 日本"
+  },
+  "513-1 Kamiura Urashou Ishii-cho, Myozai-gun, Tokushima, Japan, 779-": null,
+  "513-1 Kamiura Urashou Ishii-cho, Myozai-gun, Tokushima, Japan, 779-, Japan": null,
+  "513-1 Kamiura Urashou Ishii-cho, Myozai-gun, Ishii-cho, Japan": null,
+  "Ishii-cho, Japan": {
+    "lat": 34.0741015,
+    "lng": 134.4406557,
+    "display": "石井町, 名西郡, 徳島県, 日本"
+  },
+  "5-6-23 Sakura, 989-": null,
+  "5-6-23 Sakura, 989-, Japan": null,
+  "Iwanuma, Japan": {
+    "lat": 38.1042874,
+    "lng": 140.8701494,
+    "display": "岩沼市, 宮城県, 日本"
+  },
+  "15-2-101 Bunkyo-cho, 036-": null,
+  "15-2-101 Bunkyo-cho, 036-, Japan": null,
+  "Hirosaki, Japan": {
+    "lat": 40.6030543,
+    "lng": 140.4640389,
+    "display": "弘前市, 青森県, 日本"
+  },
+  "2-6-15 Ekimae, Koriyama, Fukushima, 963-": null,
+  "2-6-15 Ekimae, Koriyama, Fukushima, 963-, Japan": null,
+  "2-6-15 Ekimae, Koriyama, Koriyama, Japan": null,
+  "Koriyama, Japan": {
+    "lat": 37.404937,
+    "lng": 140.333381,
+    "display": "郡山市, 福島県, 日本"
+  },
+  "Via Buia 10, Livorno, Italy": {
+    "lat": 43.5533833,
+    "lng": 10.309831,
+    "display": "Via Buia, Venezia Nuova, Consiglio di Zona 2, Livorno, Toscana, 57123, Italia"
+  },
+  "224 Chem. du Lac-Millette, J0R 1R3 Saint-Sauveur (QC) Quebec": null,
+  "224 Chem. du Lac-Millette, J0R 1R3 Saint-Sauveur (QC) Quebec, Canada": null,
+  "Saint-Sauveur, Canada": {
+    "lat": 45.894309,
+    "lng": -74.158058,
+    "display": "Saint-Sauveur, Les Pays-d'en-Haut, Laurentides, Québec, Canada"
+  },
+  "3-18-1 Ueno Higashi, 560-": {
+    "lat": 35.7107997,
+    "lng": 139.78054,
+    "display": "東上野三丁目, 東上野, 台東区, 東京都, 110-0015, 日本"
+  },
+  "Lune Sanda Ekimae Heartcity 102, 3-10 Ekimaecho, 669-": null,
+  "Lune Sanda Ekimae Heartcity 102, 3-10 Ekimaecho, 669-, Japan": null,
+  "Lune Sanda Ekimae Heartcity 102, 3-10 Ekimaecho, Sanda, Japan": null,
+  "Sanda, Japan": {
+    "lat": 34.8899451,
+    "lng": 135.2252469,
+    "display": "三田市, 兵庫県, 日本"
+  },
+  "1-1-24 Maebara chuo, 819-": null,
+  "1-1-24 Maebara chuo, 819-, Japan": null,
+  "Itoshima, Japan": {
+    "lat": 33.5571816,
+    "lng": 130.196231,
+    "display": "糸島市, 福岡県, 日本"
+  },
+  "Tarumi Ward, Kuganocho, 10&minus;30, 655-": null,
+  "Tarumi Ward, Kuganocho, 10&minus;30, 655-, Japan": null,
+  "Tarumi Ward, Kuganocho, Kobe, Japan": {
+    "lat": 34.6308637,
+    "lng": 135.0553693,
+    "display": "長坂垂水線, 神田町, 垂水区, 神戸市, 兵庫県, 655-0027, 日本"
+  },
+  "Iruma, Japan": {
+    "lat": 35.8358142,
+    "lng": 139.3909293,
+    "display": "入間市, 埼玉県, 日本"
+  },
+  "Saku, Japan": {
+    "lat": 36.2488014,
+    "lng": 138.4767695,
+    "display": "佐久市, 日本"
+  },
+  "Fukuoka, Hakata Ward, Hakataekichuogai, 8&minus;1, Jrjp Hakata Building, B1, 812-": null,
+  "Fukuoka, Hakata Ward, Hakataekichuogai, 8&minus;1, Jrjp Hakata Building, B1, 812-, Japan": null,
+  "Fukuoka, Hakata Ward, Fukuoka, Japan": {
+    "lat": 33.586802,
+    "lng": 130.4473939,
+    "display": "福岡空港, 筑紫通り, 博多駅南四丁目, 比恵町, 博多区, 福岡市, 福岡県, 812-0893, 日本"
+  },
+  "56 N. Central Park, Jacksonville, United States": {
+    "lat": 39.7348738,
+    "lng": -90.2287732,
+    "display": "56, North Central Park Plaza, Jacksonville, Morgan County, Illinois, 62650, United States"
+  },
+  "Huntington Beach, United States": {
+    "lat": 33.6783336,
+    "lng": -118.000016,
+    "display": "Huntington Beach, Orange County, California, United States"
+  },
+  "Caserta, Italy": {
+    "lat": 41.2035193,
+    "lng": 14.1168624,
+    "display": "Caserta, Campania, Italia"
+  },
+  "San Bonifacio (VR), Italy": {
+    "lat": 45.3956425,
+    "lng": 11.2700817,
+    "display": "San Bonifacio, Verona, Veneto, 37047, Italia"
+  },
+  "Succivo (CE), Italy": {
+    "lat": 40.968012,
+    "lng": 14.255629,
+    "display": "Succivo, Caserta, Campania, Italia"
+  },
+  "Ferrari World Abu Dhabi, Abu Dhabi, United Arab Emirates": {
+    "lat": 24.484072,
+    "lng": 54.6098893,
+    "display": "عالم فراري, شارع الخُيُول, جزيرة ياس, أبو ظبي, أبوظبي, أبو ظبي, الإمارات العربية المتحدة"
+  },
+  "Caiazzo (CE), Italy": {
+    "lat": 41.1783215,
+    "lng": 14.3649478,
+    "display": "Caiazzo, Caserta, Campania, 81013, Italia"
+  },
+  "Caggiano (SA), Italy": {
+    "lat": 40.567813,
+    "lng": 15.493361,
+    "display": "Caggiano, Salerno, Campania, Italia"
+  },
+  "Rezzato (BS), Italy": {
+    "lat": 45.5142403,
+    "lng": 10.3168627,
+    "display": "Rezzato, Brescia, Lombardia, 25086, Italia"
+  },
+  "Fiumicino (RM), Italy": {
+    "lat": 41.7783002,
+    "lng": 12.2266746,
+    "display": "B&B PURPLE ITALY, 15, Via Ippolito Salviani, Fiumicino, Roma Capitale, Lazio, 00054, Italia"
+  },
+  "Montepaone Lido (CZ), Italy": {
+    "lat": 38.728542,
+    "lng": 16.5408673,
+    "display": "Montepaone Lido, Montepaone, Catanzaro, Calabria, 88071, Italia"
+  },
+  "Pietrasanta (LU), Italy": {
+    "lat": 43.9589031,
+    "lng": 10.2332031,
+    "display": "Pietrasanta, Unione dei comuni della Versilia, Lucca, Toscana, Italia"
+  },
+  "Pomigliano d'Arco (NA), Italy": {
+    "lat": 40.907912,
+    "lng": 14.386233,
+    "display": "Pomigliano d'Arco, Napoli, Campania, 80038, Italia"
+  },
+  "Pozzuoli (NA), Italy": {
+    "lat": 40.822643,
+    "lng": 14.1219109,
+    "display": "Pozzuoli, Napoli, Campania, 80078, Italia"
+  },
+  "Aversa (CE), Italy": {
+    "lat": 40.9907673,
+    "lng": 14.2515782,
+    "display": "Vodafone Italy, US Naval Lodge, Gricignano - Teverola Scalo, Gricignano di Aversa, Caserta, Campania, 09618, Italia"
+  },
+  "Ercolano (NA), Italy": {
+    "lat": 40.8053613,
+    "lng": 14.3471036,
+    "display": "Ercolano, Via dei Papiri Ercolanesi, Ercolano, Napoli, Campania, 80055, Italia"
+  },
+  "Lecce, Italy": {
+    "lat": 40.1522173,
+    "lng": 18.2260628,
+    "display": "Lecce, Puglia, Italia"
+  },
+  "Pistoia, Italy": {
+    "lat": 43.9740957,
+    "lng": 10.8687081,
+    "display": "Pistoia, Toscana, Italia"
+  },
+  "Sassari, Italy": {
+    "lat": 40.7234746,
+    "lng": 8.5612674,
+    "display": "Tàttari/Sassari, Sardigna/Sardegna, 07100, Italia"
+  },
+  "Frosinone, Italy": {
+    "lat": 41.6285468,
+    "lng": 13.5758498,
+    "display": "Frosinone, Lazio, Italia"
+  },
+  "Faenza (RA), Italy": {
+    "lat": 44.2855555,
+    "lng": 11.8832055,
+    "display": "Faenza, Unione della Romagna Faentina, Ravenna, Emilia-Romagna, 48018, Italia"
+  },
+  "Arielli (CH), Italy": {
+    "lat": 42.26194,
+    "lng": 14.307512,
+    "display": "Arielli, Chieti, Abruzzo, Italia"
+  },
+  "Corciano (PG), Italy": {
+    "lat": 43.1290269,
+    "lng": 12.287718,
+    "display": "Corciano, Perugia, Umbria, 06073, Italia"
+  },
+  "Altavilla Milicia (PA), Italy": {
+    "lat": 38.0427339,
+    "lng": 13.5508934,
+    "display": "Altavilla Milicia, Palermo, Sicilia, 90010, Italia"
+  },
+  "Pontecagnano Faiano (SA), Italy": {
+    "lat": 40.6035077,
+    "lng": 14.864007,
+    "display": "Camper Stop Italy, Via dei Navigatori, Magazzeno, Pontecagnano Faiano, Salerno, Campania, 84141, Italia"
+  },
+  "Sarzana (SP), Italy": {
+    "lat": 44.1131762,
+    "lng": 9.9599823,
+    "display": "Sarzana, La Spezia, Liguria, 19038, Italia"
+  },
+  "Montesarchio (BN), Italy": {
+    "lat": 41.0639234,
+    "lng": 14.6397875,
+    "display": "Montesarchio, Benevento, Campania, 82016, Italia"
+  },
+  "Tempio Pausania (SS), Italy": {
+    "lat": 40.8973821,
+    "lng": 9.1035159,
+    "display": "Tèmpiu/Tempio Pausania, Gallura Nord-Est Sardegna, Sardigna/Sardegna, 07029, Italia"
+  },
+  "Este (PD), Italy": {
+    "lat": 45.2201668,
+    "lng": 11.6589117,
+    "display": "Este, Padova, Veneto, 35042, Italia"
+  },
+  "Messina, Italy": {
+    "lat": 38.1937571,
+    "lng": 15.5542082,
+    "display": "Messina, Sicilia, Italia"
+  },
+  "Mestre (VE), Italy": {
+    "lat": 45.4943063,
+    "lng": 12.2418053,
+    "display": "Mestre, Venezia, Veneto, 30170, Italia"
+  },
+  "Triuggio (MB), Italy": {
+    "lat": 45.6613638,
+    "lng": 9.2674406,
+    "display": "Triuggio, Monza e della Brianza, Lombardia, 20844, Italia"
+  },
+  "Acireale (CT), Italy": {
+    "lat": 37.6127773,
+    "lng": 15.1658804,
+    "display": "Acireale, Catania, Sicilia, 95024, Italia"
+  },
+  "Somma Vesuviana (NA), Italy": {
+    "lat": 40.8716147,
+    "lng": 14.4361417,
+    "display": "Somma Vesuviana, Napoli, Campania, 80049, Italia"
+  },
+  "Reggio Emilia, Italy": {
+    "lat": 44.6086674,
+    "lng": 10.5940667,
+    "display": "Reggio nell'Emilia, Emilia-Romagna, Italia"
+  },
+  "Colle di Val d'Elsa (SI), Italy": {
+    "lat": 43.4226367,
+    "lng": 11.1263856,
+    "display": "Colle di Val d'Elsa, Siena, Toscana, 53034, Italia"
+  },
+  "Alvignano (CE), Italy": {
+    "lat": 41.244718,
+    "lng": 14.335627,
+    "display": "Alvignano, Caserta, Campania, Italia"
+  },
+  "Cagliari, Italy": {
+    "lat": 39.2171994,
+    "lng": 9.113311,
+    "display": "Casteddu/Cagliari, Sardigna/Sardegna, Italia"
+  },
+  "Varese, Italy": {
+    "lat": 45.8397203,
+    "lng": 8.7541338,
+    "display": "Varese, Lombardia, Italia"
+  },
+  "Guardiagrele (CH), Italy": {
+    "lat": 42.1954758,
+    "lng": 14.2197122,
+    "display": "Guardiagrele, Chieti, 66016, Italia"
+  },
+  "Margherita di Savoia (BT), Italy": {
+    "lat": 41.374235,
+    "lng": 16.150166,
+    "display": "Margherita di Savoia, Barletta-Andria-Trani, Puglia, 76016, Italia"
+  },
+  "Querceta (LU), Italy": {
+    "lat": 43.976594,
+    "lng": 10.2004296,
+    "display": "Querceta, Seravezza, Unione dei comuni della Versilia, Lucca, Toscana, 55047, Italia"
+  },
+  "Canale (CN), Italy": {
+    "lat": 44.8021334,
+    "lng": 8.0099645,
+    "display": "Canale, Cuneo, Piemonte, 12043, Italia"
+  },
+  "Brescia, Italy": {
+    "lat": 45.7795805,
+    "lng": 10.425873,
+    "display": "Brescia, Lombardia, Italia"
+  },
+  "Salerno, Italy": {
+    "lat": 40.4194417,
+    "lng": 15.3106085,
+    "display": "Salerno, Campania, Italia"
+  },
+  "Volla (NA), Italy": {
+    "lat": 40.878411,
+    "lng": 14.342932,
+    "display": "Volla, Napoli, Campania, Italia"
+  },
+  "Orvieto (TR), Italy": {
+    "lat": 42.7186152,
+    "lng": 12.1087907,
+    "display": "Orvieto, Terni, Umbria, 05018, Italia"
+  },
+  "Rionero In Vulture (PZ), Italy": {
+    "lat": 40.9261881,
+    "lng": 15.6694407,
+    "display": "Rionero in Vulture, Potenza, Basilicata, 85028, Italia"
+  },
+  "Acri (CS), Italy": {
+    "lat": 39.4883826,
+    "lng": 16.3808051,
+    "display": "Mercato Acri (CS), Via Vincenzo Baffi, Acri, Cosenza, Calabria, 87041, Italia"
+  },
+  "Gaeta (LT), Italy": {
+    "lat": 41.218312,
+    "lng": 13.56281,
+    "display": "Gaeta, Latina, Lazio, 04024, Italia"
+  },
+  "Nucetto (CN), Italy": {
+    "lat": 44.340334,
+    "lng": 8.060343,
+    "display": "Nucetto, Cuneo, Piemonte, Italia"
+  },
+  "Marano Vicentino (VI), Italy": {
+    "lat": 45.6958873,
+    "lng": 11.4326207,
+    "display": "Marano Vicentino, Vicenza, Veneto, 36035, Italia"
+  },
+  "Latiano (BR), Italy": {
+    "lat": 40.5537831,
+    "lng": 17.718222,
+    "display": "Latiano, Brindisi, Puglia, 72022, Italia"
+  },
+  "Quart (AO), Italy": {
+    "lat": 45.7409575,
+    "lng": 7.4143619,
+    "display": "Quart, Valle d'Aosta / Vallée d'Aoste, Italia"
+  },
+  "Agrigento, Italy": {
+    "lat": 37.3122991,
+    "lng": 13.57465,
+    "display": "Agrigento, Sicilia, 92100, Italia"
+  },
+  "Maddaloni (CE), Italy": {
+    "lat": 41.0398815,
+    "lng": 14.3792066,
+    "display": "Maddaloni, Caserta, Campania, Italia"
+  },
+  "San Martino Buon Albergo (VR), Italy": {
+    "lat": 45.4275708,
+    "lng": 11.0958165,
+    "display": "San Martino Buon Albergo, Verona, Veneto, 37036, Italia"
+  },
+  "Verona, Italy": {
+    "lat": 45.4424977,
+    "lng": 10.9857377,
+    "display": "Verona, Veneto, Italia"
+  },
+  "Saluzzo (CN), Italy": {
+    "lat": 44.6446052,
+    "lng": 7.4926009,
+    "display": "Saluzzo, Cuneo, Piemonte, 12037, Italia"
+  },
+  "San Mauro Torinese (TO), Italy": {
+    "lat": 45.1044124,
+    "lng": 7.7619962,
+    "display": "San Mauro Torinese, Torino, Piemonte, 10099, Italia"
+  },
+  "Fiano Romano (RM), Italy": {
+    "lat": 42.1719129,
+    "lng": 12.5927265,
+    "display": "Fiano Romano, Roma Capitale, Lazio, 00065, Italia"
+  },
+  "San Giuseppe Vesuviano (NA), Italy": {
+    "lat": 40.829811,
+    "lng": 14.504436,
+    "display": "San Giuseppe Vesuviano, Napoli, Campania, 80047, Italia"
+  },
+  "Ortezzano (FM), Italy": {
+    "lat": 43.0289217,
+    "lng": 13.6086242,
+    "display": "Ortezzano, Fermo, Marche, 63851, Italia"
+  },
+  "Pesche (IS), Italy": {
+    "lat": 41.611079,
+    "lng": 14.2819702,
+    "display": "Pesche, Isernia, Molise, Italia"
+  },
+  "Radicondoli (SI), Italy": {
+    "lat": 43.2611122,
+    "lng": 11.0418861,
+    "display": "Radicondoli, Siena, Toscana, 53030, Italia"
+  },
+  "Mariglianella (NA), Italy": {
+    "lat": 40.929513,
+    "lng": 14.435833,
+    "display": "Mariglianella, Napoli, Campania, Italia"
+  },
+  "Trento, Italy": {
+    "lat": 46.1029536,
+    "lng": 11.1297425,
+    "display": "Provincia di Trento, Trentino-Alto Adige/Südtirol, Italia"
+  },
+  "Trani (BT), Italy": {
+    "lat": 41.2781809,
+    "lng": 16.4186056,
+    "display": "Trani, Barletta-Andria-Trani, Puglia, 76125, Italia"
+  },
+  "Pisa, Italy": {
+    "lat": 43.4714722,
+    "lng": 10.6797912,
+    "display": "Pisa, Toscana, Italia"
+  },
+  "Genoa, Italy": {
+    "lat": 44.40726,
+    "lng": 8.9338624,
+    "display": "Genova, Liguria, Italia"
+  },
+  "Lendinara (RO), Italy": {
+    "lat": 45.0832589,
+    "lng": 11.6041641,
+    "display": "Lendinara, Rovigo, Veneto, 45026, Italia"
+  },
+  "Baveno (VB), Italy": {
+    "lat": 45.9089158,
+    "lng": 8.5050171,
+    "display": "Baveno, Verbano-Cusio-Ossola, Piemonte, Italia"
+  },
+  "Molfetta (BA), Italy": {
+    "lat": 41.1992456,
+    "lng": 16.5968279,
+    "display": "Molfetta, Bari, Puglia, 70056, Italia"
+  },
+  "Barcelona, Spain": {
+    "lat": 41.3825802,
+    "lng": 2.177073,
+    "display": "Barcelona, Barcelonès, Barcelona, Catalunya, España"
+  },
+  "Madrid, Spain": {
+    "lat": 40.416782,
+    "lng": -3.703507,
+    "display": "Madrid, Comunidad de Madrid, España"
+  },
+  "Fürth, Germany": {
+    "lat": 49.4885711,
+    "lng": 10.9587203,
+    "display": "Fürth, Bayern, Deutschland"
+  },
+  "Puteaux, France": {
+    "lat": 48.8841522,
+    "lng": 2.2368863,
+    "display": "Puteaux, Nanterre, Hauts-de-Seine, Île-de-France, France métropolitaine, 92800, France"
+  },
+  "Amsterdam, Netherlands": {
+    "lat": 52.3730796,
+    "lng": 4.8924534,
+    "display": "Amsterdam, Noord-Holland, Nederland"
+  },
+  "Antwerp, Belgium": {
+    "lat": 51.2211097,
+    "lng": 4.3997081,
+    "display": "Antwerpen, Vlaanderen, België / Belgique / Belgien"
+  },
+  "Lisbon, Portugal": {
+    "lat": 38.7077507,
+    "lng": -9.1365919,
+    "display": "Lisboa, Portugal"
+  },
+  "Copenhagen, Denmark": {
+    "lat": 55.6867243,
+    "lng": 12.5700724,
+    "display": "København, Københavns Kommune, Region Hovedstaden, 1357, Danmark"
+  },
+  "Zagreb, Croatia": {
+    "lat": 45.8130967,
+    "lng": 15.9772795,
+    "display": "Grad Zagreb, Hrvatska"
+  },
+  "Dublin, Ireland": {
+    "lat": 53.3493795,
+    "lng": -6.2605593,
+    "display": "Dublin, County Dublin, Leinster, Éire / Ireland"
+  },
+  "Bilbao, Spain": {
+    "lat": 43.2630018,
+    "lng": -2.9350039,
+    "display": "Bilbao, Bizkaia, Euskadi, España"
+  },
+  "Chester, United Kingdom": {
+    "lat": 53.1908873,
+    "lng": -2.8908955,
+    "display": "Chester, Cheshire West and Chester, England, CH1 2ET, United Kingdom"
+  },
+  "Siracusa, Italy": {
+    "lat": 37.0315752,
+    "lng": 15.2124277,
+    "display": "Siracusa, Sicilia, 96100, Italia"
+  },
+  "Brussels, Belgium": {
+    "lat": 50.8467372,
+    "lng": 4.352493,
+    "display": "Bruxelles - Brussel, Brussel-Hoofdstad - Bruxelles-Capitale, Région de Bruxelles-Capitale - Brussels Hoofdstedelijk Gewest, België / Belgique / Belgien"
+  },
+  "Paris, France": {
+    "lat": 48.8534951,
+    "lng": 2.3483915,
+    "display": "Paris, Île-de-France, France métropolitaine, France"
+  },
+  "Turku, Finland": {
+    "lat": 60.4515932,
+    "lng": 22.2669991,
+    "display": "Turku, Turun seutukunta, Varsinais-Suomi, Manner-Suomi, Suomi / Finland"
+  },
+  "Helsinki, Finland": {
+    "lat": 60.1666204,
+    "lng": 24.9435408,
+    "display": "Helsinki, Helsingin seutukunta, Uusimaa, Manner-Suomi, Suomi / Finland"
+  },
+  "Berlin, Germany": {
+    "lat": 52.5173885,
+    "lng": 13.3951309,
+    "display": "Berlin, Deutschland"
+  },
+  "Lidingö, Sweden": {
+    "lat": 59.3669445,
+    "lng": 18.1820897,
+    "display": "Lidingö kommun, Stockholms län, Sverige"
+  },
+  "Athens, Greece": {
+    "lat": 37.9755648,
+    "lng": 23.7348324,
+    "display": "Αθήνα, Δήμος Αθηναίων, Περιφερειακή Ενότητα Κεντρικού Τομέα Αθηνών, Περιφέρεια Αττικής, Αποκεντρωμένη Διοίκηση Αττικής, 105 57, Ελλάς"
+  },
+  "Riga, Latvia": {
+    "lat": 56.9493977,
+    "lng": 24.1051846,
+    "display": "Rīga, Latvija"
+  },
+  "Warsaw, Poland": {
+    "lat": 52.2333742,
+    "lng": 21.0711489,
+    "display": "Warszawa, województwo mazowieckie, Polska"
+  },
+  "Ljubljana, Slovenia": {
+    "lat": 46.0500268,
+    "lng": 14.5069289,
+    "display": "Ljubljana, Upravna Enota Ljubljana, 1000, Slovenija"
+  },
+  "Belgrade, Serbia": {
+    "lat": 44.8153318,
+    "lng": 20.4456588,
+    "display": "Београд, Град Београд, Централна Србија, Србија"
+  },
+  "Sagres, Portugal": {
+    "lat": 37.0078288,
+    "lng": -8.941924,
+    "display": "Sagres, Vila do Bispo, Faro, Portugal"
+  },
+  "Budapest, Hungary": {
+    "lat": 47.4813896,
+    "lng": 19.1457723,
+    "display": "Budapest, Közép-Magyarország, Magyarország"
+  },
+  "Bratislava, Slovakia": {
+    "lat": 48.1516988,
+    "lng": 17.1093063,
+    "display": "Bratislava, Bratislavský kraj, Slovensko"
+  },
+  "Girona, Spain": {
+    "lat": 41.9793006,
+    "lng": 2.8199439,
+    "display": "Girona, Gironès, Girona, Catalunya, España"
+  },
+  "Tallinn, Estonia": {
+    "lat": 59.437242,
+    "lng": 24.7572693,
+    "display": "Tallinn, Harju maakond, Eesti"
+  }
 }

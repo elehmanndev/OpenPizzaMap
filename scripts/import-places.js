@@ -42,6 +42,7 @@ const SOURCES = [
   { file: 'avpn-scrape.json',                         source: 'avpn',           style: 'neapolitan',          shape: 'avpn' },
   { file: 'eater-scrape.json',                        source: 'eater',          style: null,                  shape: 'eater' },
   { file: '50toppizza-scrape.json',                   source: '50toppizza',     style: null,                  shape: '50tp' },
+  { file: 'michelin-scrape.json',                     source: 'michelin',       style: null,                  shape: 'michelin' },
 ];
 
 // ----- canonicalisation tables -----
@@ -375,6 +376,42 @@ function normalize50TopPizza(rec) {
   };
 }
 
+// Michelin scraper output. Cards have lat/lng + country (ISO2) inline.
+// Distinction values: '' / 'bib' / '1 star' / '2 stars' / '3 stars'. We encode
+// these into PlaceSource.rank so the surface Place row stays clean and the
+// distinction is queryable later for badges:
+//   bib = 1, 1 star = 2, 2 stars = 3, 3 stars = 4, '' = null.
+function michelinDistinctionToRank(d) {
+  if (!d) return null;
+  const s = String(d).toLowerCase().trim();
+  if (s === 'bib') return 1;
+  if (/^1\s*star/.test(s)) return 2;
+  if (/^2\s*star/.test(s)) return 3;
+  if (/^3\s*star/.test(s)) return 4;
+  return null;
+}
+
+function normalizeMichelin(rec) {
+  const det = rec.detail || {};
+  const code = (rec.country || '').toUpperCase() || null;
+  return {
+    name: decodeEntities(rec.name || '').trim(),
+    addressLine: det.addressLine ? decodeEntities(det.addressLine).trim() : null,
+    city: rec.city ? decodeEntities(rec.city).trim() : null,
+    region: rec.region || null,
+    postalCode: det.postalCode || null,
+    countryCode: code,
+    countryName: code ? CODE_TO_COUNTRY_NAME[code] : null,
+    phone: det.phone || null,
+    websiteUrl: det.website || null,
+    priceLevel: typeof rec.priceLevel === 'number' ? rec.priceLevel : 2,
+    heroImageUrl: det.heroImageUrl || null,
+    rank: michelinDistinctionToRank(rec.distinction),
+    lat: typeof rec.lat === 'number' ? rec.lat : null,
+    lng: typeof rec.lng === 'number' ? rec.lng : null,
+  };
+}
+
 function normalizeAvpn(rec) {
   // rec shape: { name, city, province, region, country, detail: { addressLine, postalCode, cityFull, countryFull, phone, website, heroImageUrl, lat, lng, ... } }
   const d = rec.detail || {};
@@ -439,6 +476,7 @@ function loadAll() {
       else if (cfg.shape === 'avpn') norm = normalizeAvpn(rec);
       else if (cfg.shape === 'eater') norm = normalizeEater(rec);
       else if (cfg.shape === '50tp') norm = normalize50TopPizza(rec);
+      else if (cfg.shape === 'michelin') norm = normalizeMichelin(rec);
       else norm = normalizeTasteatlas(rec);
       if (!norm.name || !norm.city || !norm.countryCode) {
         // can't dedupe / locate without these
@@ -519,6 +557,16 @@ async function nominatimLookup(query, attempt = 1) {
       headers: { 'User-Agent': NOMINATIM_USER_AGENT, 'Accept': 'application/json' },
       signal: ctrl.signal,
     });
+    // 429 = soft ban from Nominatim's public server (1 req/sec policy). Back off
+    // hard — they typically clear in 30-60s once you stop. Up to 4 attempts with
+    // 15s × attempt of cooldown buys ~1.5 min before giving up on a single query.
+    if (res.status === 429) {
+      if (attempt < 4) {
+        await new Promise(r => setTimeout(r, 15000 * attempt));
+        return nominatimLookup(query, attempt + 1);
+      }
+      throw new Error(`nominatim 429`);
+    }
     if (!res.ok) throw new Error(`nominatim ${res.status}`);
     const arr = await res.json();
     if (!Array.isArray(arr) || arr.length === 0) return null;
@@ -554,10 +602,16 @@ async function main() {
   if (LIMIT) entries = entries.slice(0, LIMIT);
 
   // --- geocode pass ---
-  let geocoded = 0, fromCache = 0, missed = 0;
+  // Progress log every Nth processed entry so a stall is diagnosable. Prints
+  // the in-flight query before the network call so you can see exactly which
+  // address is hanging if Nominatim wedges.
+  let geocoded = 0, fromCache = 0, missed = 0, alreadyHad = 0, processed = 0;
+  const needsGeocode = entries.filter(([, e]) => !(e.primary.lat && e.primary.lng)).length;
+  console.log(`[geocode] ${needsGeocode}/${entries.length} entries need geocoding`);
   for (const [key, entry] of entries) {
+    processed++;
     const p = entry.primary;
-    if (p.lat && p.lng) continue;
+    if (p.lat && p.lng) { alreadyHad++; continue; }
     const queries = geocodeQueries(p);
     if (!queries.length) { missed++; errors.push({ key, reason: 'empty-query', primary: p }); continue; }
     let hit = null;
@@ -572,12 +626,14 @@ async function main() {
         continue; // cached null — try next strategy
       }
       if (NO_GEOCODE) continue;
+      process.stdout.write(`[geocode ${processed}/${entries.length}] → ${q.slice(0, 80)}\n`);
       try {
         const r = await nominatimLookup(q);
         cache[q] = r ? { lat: r.lat, lng: r.lng, display: r.display } : null;
         saveCache(cache);
         if (r) { hit = r; usedQuery = q; break; }
       } catch (e) {
+        console.warn(`[geocode ${processed}/${entries.length}] error: ${String(e.message || e)}`);
         errors.push({ key, reason: 'fetch-failed', query: q, error: String(e.message || e) });
       }
       await sleep(NOMINATIM_DELAY_MS);
@@ -589,8 +645,11 @@ async function main() {
       missed++;
       errors.push({ key, reason: 'no-result', tried: triedQueries, primary: p });
     }
+    if (processed % 25 === 0) {
+      console.log(`[geocode progress] ${processed}/${entries.length} — net=${geocoded} cache=${fromCache} miss=${missed} skipped=${alreadyHad}`);
+    }
   }
-  console.log(`[geocode] hit=${geocoded} cache=${fromCache} miss=${missed}`);
+  console.log(`[geocode] hit=${geocoded} cache=${fromCache} miss=${missed} alreadyHadCoords=${alreadyHad}`);
 
   if (errors.length) {
     fs.writeFileSync(ERRORS_FILE, JSON.stringify(errors, null, 2));
@@ -610,8 +669,19 @@ async function main() {
   }
 
   // --- write pass ---
-  let citiesUpserted = 0, placesUpserted = 0, sourcesUpserted = 0;
+  // Merge policy: fill-only-if-null. New sources can ADD missing fields
+  // (image, website, phone, address, postal, region) on existing rows but
+  // never overwrite values that are already populated. This preserves the
+  // first source's data + any later human edits, while letting later
+  // higher-quality sources (e.g. 50TP filling a phone AVPN didn't have)
+  // enrich the row. Coords are deliberately NOT overwritten — once geocoded,
+  // a row's lat/lng stay put. Styles merge as a union via stylesJson.
+  let citiesUpserted = 0, placesCreated = 0, placesEnriched = 0, placesUntouched = 0, sourcesUpserted = 0;
   const usedSlugs = new Set();
+
+  // Treat empty string as "missing" — older rows landed addressLine='' rather
+  // than null because of `addressLine: p.addressLine || ''` in the create path.
+  const isEmpty = (v) => v == null || (typeof v === 'string' && v.trim() === '');
 
   for (const [key, entry] of entries) {
     const p = entry.primary;
@@ -632,7 +702,7 @@ async function main() {
     // Slug = name-city. Stable across runs so re-runs are idempotent.
     // Collisions only happen for two genuinely different pizzerias with the same
     // name in the same city — rare. If hit within a single run, suffix; otherwise
-    // an existing DB row with the same slug IS the same place (upsert no-ops).
+    // an existing DB row with the same slug IS the same place (we enrich it).
     const baseSlug = slugify(`${p.name}-${p.city}`);
     let placeSlug = baseSlug;
     let n = 1;
@@ -644,31 +714,66 @@ async function main() {
     usedSlugs.add(placeSlug);
 
     const styles = [...entry.styles];
+    const existing = await prisma.place.findUnique({ where: { slug: placeSlug } });
 
-    const place = await prisma.place.upsert({
-      where: { slug: placeSlug },
-      update: {}, // never overwrite on re-run; PlaceSource is the merge surface
-      create: {
-        name: p.name,
-        addressLine: p.addressLine || '',
-        city: p.city,
+    let place;
+    if (!existing) {
+      place = await prisma.place.create({
+        data: {
+          name: p.name,
+          addressLine: p.addressLine || '',
+          city: p.city,
+          region: p.region,
+          postalCode: p.postalCode,
+          country: p.countryName || CODE_TO_COUNTRY_NAME[p.countryCode] || p.countryCode,
+          lat: p.lat,
+          lng: p.lng,
+          priceLevel: p.priceLevel,
+          stylesJson: JSON.stringify(styles),
+          phone: p.phone,
+          websiteUrl: p.websiteUrl || null,
+          heroImageUrl: p.heroImageUrl,
+          slug: placeSlug,
+          cityId: cityRow.id,
+          status: 'active',
+          isVisible: false,
+        },
+      });
+      placesCreated++;
+    } else {
+      // Build a fill-only patch — never overwrite a populated field.
+      const patch = {};
+      const candidate = {
+        addressLine: p.addressLine,
         region: p.region,
         postalCode: p.postalCode,
-        country: p.countryName || CODE_TO_COUNTRY_NAME[p.countryCode] || p.countryCode,
-        lat: p.lat,
-        lng: p.lng,
-        priceLevel: p.priceLevel,
-        stylesJson: JSON.stringify(styles),
         phone: p.phone,
         websiteUrl: p.websiteUrl || null,
         heroImageUrl: p.heroImageUrl,
-        slug: placeSlug,
-        cityId: cityRow.id,
-        status: 'active',
-        isVisible: false,
-      },
-    });
-    placesUpserted++;
+      };
+      for (const [field, nextVal] of Object.entries(candidate)) {
+        if (isEmpty(existing[field]) && !isEmpty(nextVal)) patch[field] = nextVal;
+      }
+      // Merge styles as a union of existing JSON + new.
+      if (styles.length) {
+        let prev = [];
+        try { prev = JSON.parse(existing.stylesJson || '[]') || []; } catch {}
+        const merged = [...new Set([...prev, ...styles])];
+        if (merged.length !== prev.length) patch.stylesJson = JSON.stringify(merged);
+      }
+      // If existing row's image is an external URL we already self-hosted into
+      // /uploads/ for, don't replace with another external URL — keep the local.
+      if (typeof existing.heroImageUrl === 'string' && existing.heroImageUrl.startsWith('/uploads/')) {
+        delete patch.heroImageUrl;
+      }
+      if (Object.keys(patch).length) {
+        place = await prisma.place.update({ where: { id: existing.id }, data: patch });
+        placesEnriched++;
+      } else {
+        place = existing;
+        placesUntouched++;
+      }
+    }
 
     for (const s of entry.sources) {
       await prisma.placeSource.upsert({
@@ -680,7 +785,7 @@ async function main() {
     }
   }
 
-  console.log(`[write] cities=${citiesUpserted} places=${placesUpserted} sources=${sourcesUpserted}`);
+  console.log(`[write] cities=${citiesUpserted} created=${placesCreated} enriched=${placesEnriched} untouched=${placesUntouched} sources=${sourcesUpserted}`);
   await prisma.$disconnect();
 }
 
