@@ -39,6 +39,7 @@ const SOURCES = [
   { file: 'tasteatlas-apizza.json',                   source: 'tasteatlas',     style: 'new-haven',           shape: 'tasteatlas' },
   { file: 'tasteatlas-pizza-al-taglio.json',          source: 'tasteatlas',     style: 'al-taglio',           shape: 'tasteatlas' },
   { file: 'tasteatlas-traditional-italian-pizza.json',source: 'tasteatlas',     style: 'italian',             shape: 'tasteatlas' },
+  { file: 'avpn-scrape.json',                         source: 'avpn',           style: 'neapolitan',          shape: 'avpn' },
 ];
 
 // ----- canonicalisation tables -----
@@ -66,28 +67,143 @@ const CITY_SLUG_CANON = {
 const CITY_NAME_CANON = {
   roma: 'Rome', napoli: 'Naples', firenze: 'Florence', milano: 'Milan',
   torino: 'Turin', genova: 'Genoa', wien: 'Vienna',
+  bruxelles: 'Brussels', anversa: 'Antwerp', monaco: 'Munich',
+  copenaghen: 'Copenhagen', mosca: 'Moscow', praga: 'Prague',
+  varsavia: 'Warsaw', stoccolma: 'Stockholm', zurigo: 'Zurich',
+  ginevra: 'Geneva', lione: 'Lyon', nizza: 'Nice', marsiglia: 'Marseille',
+  siviglia: 'Seville', valencia: 'Valencia', citta: 'City',
+  'new york': 'New York', 'new york city': 'New York',
+  'sao paulo': 'São Paulo', 'são paulo': 'São Paulo',
+  'rio de janeiro': 'Rio de Janeiro',
+  buenos: 'Buenos Aires', 'buenos aires': 'Buenos Aires',
+  cdmx: 'Mexico City', 'ciudad de mexico': 'Mexico City', 'ciudad de méxico': 'Mexico City',
+  pechino: 'Beijing', tokio: 'Tokyo',
 };
 
-// country display name → ISO2
+// country display name → ISO2.
+// AVPN listings use Italian country names (Italia, Stati Uniti d'America, Giappone…),
+// so this table needs both English and Italian forms for global coverage.
 const COUNTRY_TO_CODE = {
+  // Europe
   'italia': 'IT', 'italy': 'IT',
   'francia': 'FR', 'france': 'FR',
   'spagna': 'ES', 'spain': 'ES', 'españa': 'ES',
-  'regno unito': 'GB', 'united kingdom': 'GB', 'uk': 'GB', 'great britain': 'GB',
-  'austria': 'AT',
-  'germania': 'DE', 'germany': 'DE',
-  'united states of america': 'US', 'united states': 'US', 'usa': 'US',
+  'regno unito': 'GB', 'united kingdom': 'GB', 'uk': 'GB', 'great britain': 'GB', 'inghilterra': 'GB', 'england': 'GB', 'scozia': 'GB', 'scotland': 'GB',
+  'irlanda': 'IE', 'ireland': 'IE',
+  'austria': 'AT', 'österreich': 'AT',
+  'germania': 'DE', 'germany': 'DE', 'deutschland': 'DE',
+  'svizzera': 'CH', 'switzerland': 'CH',
+  'belgio': 'BE', 'belgium': 'BE',
+  'paesi bassi': 'NL', 'olanda': 'NL', 'netherlands': 'NL', 'holland': 'NL',
+  'lussemburgo': 'LU', 'luxembourg': 'LU',
+  'portogallo': 'PT', 'portugal': 'PT',
+  'grecia': 'GR', 'greece': 'GR',
+  'svezia': 'SE', 'sweden': 'SE',
+  'norvegia': 'NO', 'norway': 'NO',
+  'danimarca': 'DK', 'denmark': 'DK',
+  'finlandia': 'FI', 'finland': 'FI',
+  'islanda': 'IS', 'iceland': 'IS',
+  'polonia': 'PL', 'poland': 'PL',
+  'repubblica ceca': 'CZ', 'czechia': 'CZ', 'czech republic': 'CZ',
+  'slovacchia': 'SK', 'slovakia': 'SK',
+  'ungheria': 'HU', 'hungary': 'HU',
+  'romania': 'RO',
+  'bulgaria': 'BG',
+  'croazia': 'HR', 'croatia': 'HR',
+  'slovenia': 'SI',
+  'serbia': 'RS',
+  'malta': 'MT',
+  'cipro': 'CY', 'cyprus': 'CY',
+  'estonia': 'EE',
+  'lettonia': 'LV', 'latvia': 'LV',
+  'lituania': 'LT', 'lithuania': 'LT',
+  'russia': 'RU', 'russian federation': 'RU',
+  'ucraina': 'UA', 'ukraine': 'UA',
+  'turchia': 'TR', 'turkey': 'TR', 'türkiye': 'TR',
+  'albania': 'AL',
+  'principato di monaco': 'MC', 'monaco': 'MC',
+  // Americas
+  'united states of america': 'US', 'united states': 'US', 'usa': 'US', 'stati uniti': 'US', "stati uniti d'america": 'US', "stati uniti d&#39;america": 'US',
+  'canada': 'CA',
+  'messico': 'MX', 'mexico': 'MX', 'méxico': 'MX',
+  'brasile': 'BR', 'brazil': 'BR', 'brasil': 'BR',
+  'argentina': 'AR',
+  'cile': 'CL', 'chile': 'CL',
+  'uruguay': 'UY',
+  'colombia': 'CO',
+  'peru': 'PE', 'perù': 'PE',
+  'venezuela': 'VE',
+  'panama': 'PA', 'panamá': 'PA',
+  'costa rica': 'CR',
+  'ecuador': 'EC',
+  'porto rico': 'PR', 'puerto rico': 'PR',
+  'repubblica dominicana': 'DO', 'dominican republic': 'DO',
+  // Asia / Oceania / Africa / Middle East
+  'giappone': 'JP', 'japan': 'JP',
+  'cina': 'CN', 'china': 'CN',
+  'corea del sud': 'KR', 'south korea': 'KR', 'korea': 'KR',
+  'thailandia': 'TH', 'thailand': 'TH',
+  'singapore': 'SG',
+  'malaysia': 'MY', 'malesia': 'MY',
+  'indonesia': 'ID',
+  'filippine': 'PH', 'philippines': 'PH',
+  'vietnam': 'VN',
+  'india': 'IN',
+  'taiwan': 'TW',
+  'hong kong': 'HK',
+  'australia': 'AU',
+  'nuova zelanda': 'NZ', 'new zealand': 'NZ',
+  'emirati arabi uniti': 'AE', 'united arab emirates': 'AE', 'uae': 'AE',
+  'qatar': 'QA',
+  'arabia saudita': 'SA', 'saudi arabia': 'SA',
+  'kuwait': 'KW',
+  'bahrein': 'BH', 'bahrain': 'BH',
+  'oman': 'OM',
+  'libano': 'LB', 'lebanon': 'LB',
+  'israele': 'IL', 'israel': 'IL',
+  'giordania': 'JO', 'jordan': 'JO',
+  'egitto': 'EG', 'egypt': 'EG',
+  'marocco': 'MA', 'morocco': 'MA',
+  'tunisia': 'TN',
+  'sud africa': 'ZA', 'south africa': 'ZA',
+  'kenya': 'KE',
+  // Long-tail
+  'anguilla': 'AI',
+  'armenia': 'AM',
+  'bolivia': 'BO',
+  'paraguay': 'PY',
+  'macedonia': 'MK', 'repubblica di macedonia': 'MK', 'north macedonia': 'MK',
+  'taiwan': 'TW',
+  'corea del sud': 'KR', 'repubblica di corea': 'KR', 'repubblica di corea (corea del sud)': 'KR',
 };
 
 const CODE_TO_COUNTRY_NAME = {
   IT: 'Italy', FR: 'France', ES: 'Spain', GB: 'United Kingdom',
-  AT: 'Austria', DE: 'Germany', US: 'United States',
+  IE: 'Ireland', AT: 'Austria', DE: 'Germany', CH: 'Switzerland',
+  BE: 'Belgium', NL: 'Netherlands', LU: 'Luxembourg', PT: 'Portugal',
+  GR: 'Greece', SE: 'Sweden', NO: 'Norway', DK: 'Denmark', FI: 'Finland', IS: 'Iceland',
+  PL: 'Poland', CZ: 'Czechia', SK: 'Slovakia', HU: 'Hungary', RO: 'Romania', BG: 'Bulgaria',
+  HR: 'Croatia', SI: 'Slovenia', RS: 'Serbia', MT: 'Malta', CY: 'Cyprus',
+  EE: 'Estonia', LV: 'Latvia', LT: 'Lithuania', RU: 'Russia', UA: 'Ukraine',
+  TR: 'Türkiye', AL: 'Albania', MC: 'Monaco',
+  US: 'United States', CA: 'Canada', MX: 'Mexico', BR: 'Brazil',
+  AR: 'Argentina', CL: 'Chile', UY: 'Uruguay', CO: 'Colombia', PE: 'Peru',
+  VE: 'Venezuela', PA: 'Panama', CR: 'Costa Rica', EC: 'Ecuador',
+  PR: 'Puerto Rico', DO: 'Dominican Republic',
+  JP: 'Japan', CN: 'China', KR: 'South Korea', TH: 'Thailand', SG: 'Singapore',
+  MY: 'Malaysia', ID: 'Indonesia', PH: 'Philippines', VN: 'Vietnam', IN: 'India',
+  TW: 'Taiwan', HK: 'Hong Kong', AU: 'Australia', NZ: 'New Zealand',
+  AE: 'United Arab Emirates', QA: 'Qatar', SA: 'Saudi Arabia', KW: 'Kuwait',
+  BH: 'Bahrain', OM: 'Oman', LB: 'Lebanon', IL: 'Israel', JO: 'Jordan',
+  EG: 'Egypt', MA: 'Morocco', TN: 'Tunisia', ZA: 'South Africa', KE: 'Kenya',
+  AI: 'Anguilla', AM: 'Armenia', BO: 'Bolivia', PY: 'Paraguay', MK: 'North Macedonia',
 };
 
 // ----- helpers -----
 function decodeEntities(s) {
   if (typeof s !== 'string') return s;
   return s
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, n) => String.fromCharCode(parseInt(n, 16)))
     .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(parseInt(n, 10)))
     .replace(/&amp;/g, '&')
     .replace(/&quot;/g, '"')
@@ -119,7 +235,13 @@ function canonCountryCode(rawCountry, citySlug) {
   let s = rawCountry;
   if (s && typeof s === 'object') s = s.name || '';
   s = decodeEntities(String(s || '')).trim().toLowerCase();
+  // Strip suffixes like "- USA", "(Olanda)", commas: "Taiwan, Repubblica di Cina" → "taiwan"
+  const stripped = s.split(/\s+-\s+|,/)[0].replace(/\s*\([^)]*\)\s*/g, '').trim();
+  if (stripped && COUNTRY_TO_CODE[stripped]) return COUNTRY_TO_CODE[stripped];
   if (s && COUNTRY_TO_CODE[s]) return COUNTRY_TO_CODE[s];
+  // Also try the parenthetical: "Paesi Bassi (Olanda)" → "olanda"
+  const paren = (s.match(/\(([^)]+)\)/) || [])[1];
+  if (paren && COUNTRY_TO_CODE[paren.trim()]) return COUNTRY_TO_CODE[paren.trim()];
   if (citySlug && CITY_SLUG_CANON[citySlug]) return CITY_SLUG_CANON[citySlug].code;
   return null;
 }
@@ -150,6 +272,30 @@ function normalizeGreat(rec) {
     priceLevel: priceLevelFromRange(rec.priceRange),
     heroImageUrl: rec.image || null,
     rank: null,
+  };
+}
+
+function normalizeAvpn(rec) {
+  // rec shape: { name, city, province, region, country, detail: { addressLine, postalCode, cityFull, countryFull, phone, website, heroImageUrl, lat, lng, ... } }
+  const d = rec.detail || {};
+  // Prefer the listing row's city (Italian like "Napoli") for canonical lookup.
+  const code = canonCountryCode(rec.country, null) || canonCountryCode(d.countryFull, null);
+  const city = canonCityName(rec.city, null) || canonCityName(d.cityFull, null);
+  return {
+    name: decodeEntities(rec.name || '').trim(),
+    addressLine: d.addressLine ? decodeEntities(d.addressLine).trim() : null,
+    city,
+    region: rec.region || d.regionFull || null,
+    postalCode: d.postalCode || null,
+    countryCode: code,
+    countryName: code ? CODE_TO_COUNTRY_NAME[code] : (rec.country || d.countryFull || null),
+    phone: d.phone || null,
+    websiteUrl: d.website || null,
+    priceLevel: 2,
+    heroImageUrl: d.heroImageUrl || null,
+    rank: null,
+    lat: typeof d.lat === 'number' ? d.lat : null,
+    lng: typeof d.lng === 'number' ? d.lng : null,
   };
 }
 
@@ -188,7 +334,10 @@ function loadAll() {
       continue;
     }
     for (const rec of arr) {
-      const norm = cfg.shape === 'great' ? normalizeGreat(rec) : normalizeTasteatlas(rec);
+      let norm;
+      if (cfg.shape === 'great') norm = normalizeGreat(rec);
+      else if (cfg.shape === 'avpn') norm = normalizeAvpn(rec);
+      else norm = normalizeTasteatlas(rec);
       if (!norm.name || !norm.city || !norm.countryCode) {
         // can't dedupe / locate without these
         continue;
@@ -209,8 +358,8 @@ function buildDedupMap(items) {
     }
     const entry = map.get(k);
     // Prefer first-seen primary, but fill in missing fields from later sources.
-    for (const f of ['addressLine', 'postalCode', 'region', 'phone', 'heroImageUrl']) {
-      if (!entry.primary[f] && it.norm[f]) entry.primary[f] = it.norm[f];
+    for (const f of ['addressLine', 'postalCode', 'region', 'phone', 'heroImageUrl', 'websiteUrl', 'lat', 'lng']) {
+      if (entry.primary[f] == null && it.norm[f] != null) entry.primary[f] = it.norm[f];
     }
     entry.sources.push({ source: it.source, rank: it.norm.rank, file: it.file });
     if (it.style) entry.styles.add(it.style);
@@ -386,6 +535,7 @@ async function main() {
         priceLevel: p.priceLevel,
         stylesJson: JSON.stringify(styles),
         phone: p.phone,
+        websiteUrl: p.websiteUrl || null,
         heroImageUrl: p.heroImageUrl,
         slug: placeSlug,
         cityId: cityRow.id,
