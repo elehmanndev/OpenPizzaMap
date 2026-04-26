@@ -507,14 +507,34 @@ function geocodeQueries(p) {
   return [...new Set(queries.filter(Boolean))];
 }
 
-async function nominatimLookup(query) {
+async function nominatimLookup(query, attempt = 1) {
   const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
-  const res = await fetch(url, { headers: { 'User-Agent': NOMINATIM_USER_AGENT, 'Accept': 'application/json' } });
-  if (!res.ok) throw new Error(`nominatim ${res.status}`);
-  const arr = await res.json();
-  if (!Array.isArray(arr) || arr.length === 0) return null;
-  const r = arr[0];
-  return { lat: parseFloat(r.lat), lng: parseFloat(r.lon), display: r.display_name, class: r.class, type: r.type };
+  // 10-second hard timeout per request — without this, a stuck Nominatim
+  // response hangs the entire import (the previous run sat dead for 11 min
+  // before being killed because there was no AbortController).
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 10000);
+  try {
+    const res = await fetch(url, {
+      headers: { 'User-Agent': NOMINATIM_USER_AGENT, 'Accept': 'application/json' },
+      signal: ctrl.signal,
+    });
+    if (!res.ok) throw new Error(`nominatim ${res.status}`);
+    const arr = await res.json();
+    if (!Array.isArray(arr) || arr.length === 0) return null;
+    const r = arr[0];
+    return { lat: parseFloat(r.lat), lng: parseFloat(r.lon), display: r.display_name, class: r.class, type: r.type };
+  } catch (e) {
+    const msg = String(e && e.name === 'AbortError' ? 'timeout' : (e && e.message) || e);
+    if (attempt < 3 && /timeout|fetch failed|ECONNRESET|ETIMEDOUT|EAI_AGAIN/i.test(msg)) {
+      // Brief backoff before retrying — total of up to 3 attempts per query.
+      await new Promise(r => setTimeout(r, 1500 * attempt));
+      return nominatimLookup(query, attempt + 1);
+    }
+    throw new Error(`nominatim: ${msg}`);
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));

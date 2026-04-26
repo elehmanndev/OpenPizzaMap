@@ -1227,5 +1227,165 @@
     "display": "Via Roma, Gioia del Colle, Bari, Puglia, 70023, Italia"
   },
   "Viale Martiri del 1799, 94-96, 70022 Altamura BA": null,
-  "Viale Martiri del 1799, 94-96, 70022 Altamura BA, Italy": null
+  "Viale Martiri del 1799, 94-96, 70022 Altamura BA, Italy": null,
+  "Via Enrico Bernardi, 1, 37026 Pescantina VR": {
+    "lat": 45.4819061,
+    "lng": 10.9041268,
+    "display": "Via Enrico Bernardi, Zona industriale di Pescantina, Moro Freoni, Settimo, Pescantina, Verona, Veneto, 37026, Italia"
+  },
+  "Via Mario Todeschini, 19, 37126 Verona VR": {
+    "lat": 45.4456862,
+    "lng": 10.9871057,
+    "display": "19, Via Mario Todeschini, Borgo Trento, Nord-Ovest, Verona, Veneto, 37126, Italia"
+  },
+  "Via Valpantena, 94f, 37142 Marzana VR": {
+    "lat": 45.4993505,
+    "lng": 11.0177486,
+    "display": "Pizzeria Focacceria Quattrocento, 94f, Via Valpantena, Nord-Est, Marzana, Verona, Veneto, 37142, Italia"
+  },
+  "Via Pellicciai, 2, 37121 Verona VR": {
+    "lat": 45.442753,
+    "lng": 10.9967818,
+    "display": "2, Via Pellicciai, Città antica, Centro storico, Verona, Veneto, 37121, Italia"
+  },
+  "Piazza del Popolo, 46, 37036 San Martino Buon Albergo VR": {
+    "lat": 45.4224527,
+    "lng": 11.0931406,
+    "display": "Piazza del Popolo, Case Nuove, San Martino Buon Albergo, Verona, Veneto, 37036, Italia"
+  },
+  "Via Camporosolo, 11, 37047 San Bonifacio VR": {
+    "lat": 45.3950109,
+    "lng": 11.2706615,
+    "display": "Gini Fragranze, 11, Via Camporosolo, San Bonifacio, Verona, Veneto, 37047, Italia"
+  },
+  "Piazzetta Municipio, 10, 37121 Verona VR": {
+    "lat": 45.4378634,
+    "lng": 10.9946668,
+    "display": "Peperino Pizza&Grill, 10, Piazzetta Municipio, Cittadella, Centro storico, Verona, Veneto, 37121, Italia"
+  },
+  "Via Emanuele Notarbartolo, 2/F, 90149 Palermo PA": {
+    "lat": 38.1317696,
+    "lng": 13.3416978,
+    "display": "Via Emanuele Notarbartolo, VIII Circoscrizione, Palermo, Sicilia, 90145, Italia"
+  },
+  "Via Marina Della, Str. Litorale della Bruca, 1, 90010 Altavilla Milicia PA": null,
+  "Via Marina Della, Str. Litorale della Bruca, 1, 90010 Altavilla Milicia PA, Italy": null,
+  "Via Marina Della, Str. Litorale della Bruca, Palermo, Italy": null,
+  "Palermo, Italy": {
+    "lat": 38.1112268,
+    "lng": 13.3524434,
+    "display": "Palermo, Sicilia, Italia"
+  },
+  "Via Vittorio Emanuele, 150, 90133 Palermo PA": {
+    "lat": 38.1173898,
+    "lng": 13.3658733,
+    "display": "Cagliostro, 150, Via Vittorio Emanuele, La Loggia, I Circoscrizione, Palermo, Sicilia, 90133, Italia"
+  },
+  "Via Gulli 4 catania, 95131 Catania": {
+    "lat": 37.5049175,
+    "lng": 15.0948768,
+    "display": "4, Via Gulli, Civita, Centro storico, Catania, Sicilia, 95131, Italia"
+  },
+  "Via Mario Sangiorgi 55, 95129 Catania": {
+    "lat": 37.5150425,
+    "lng": 15.0980777,
+    "display": "Pizzeria Napulè, 55, Via Mario Sangiorgi, Guardia, Picanello-Ognina-Barriera-Canalicchio, Catania, Sicilia, 95129, Italia"
+  },
+  "Viale Martiri del 1799, 94-96, Bari, Italy": null,
+  "Contrada l'Assunta, 123, 70043 Sant'Antonio D'ascula BA": null,
+  "Contrada l'Assunta, 123, 70043 Sant'Antonio D'ascula BA, Italy": null,
+  "Contrada l'Assunta, 123, Bari, Italy": {
+    "lat": 40.8857027,
+    "lng": 17.3356144,
+    "display": "Contrada L'Assunta, Monopoli, Bari, Puglia, Italia"
+  },
+  "Via Robertini, 3, 73013 Galatina LE": {
+    "lat": 40.1728086,
+    "lng": 18.1707509,
+    "display": "Via Robertini, Galatina, Lecce, Puglia, 73013, Italia"
+  },
+  "44 Old Compton St, Soho, London, United Kingdom": {
+    "lat": 51.5130823,
+    "lng": -0.131838,
+    "display": "44, Old Compton Street, Soho, City of Westminster, Greater London, England, W1D 5JN, United Kingdom"
+  },
+  "Newington Causeway, London SE1 6DR, Regno Unito": {
+    "lat": 51.4966027,
+    "lng": -0.0997653,
+    "display": "Newington Causeway, Elephant and Castle, London Borough of Southwark, Greater London, England, SE1 6FJ, United Kingdom"
+  },
+  "658 Garratt Ln, London SW17 0NP, Regno Unito": {
+    "lat": 51.4334668,
+    "lng": -0.1851088,
+    "display": "658, Garratt Lane, Summerstown, London Borough of Wandsworth, Greater London, England, SW17 0NW, United Kingdom"
+  },
+  "2 Grove Ln, Camberwell, London SE5 8SY, Regno Unito": {
+    "lat": 51.4701942,
+    "lng": -0.0874291,
+    "display": "2, Grove Lane, Denmark Hill, Camberwell, London Borough of Southwark, Greater London, England, SE5 8SW, United Kingdom"
+  },
+  "79 Brick Ln, Spitalfields, London E1 6QL, Regno Unito": {
+    "lat": 51.5202349,
+    "lng": -0.0720196,
+    "display": "Senso Italia, 79, Brick Lane, Spitalfields, Whitechapel, London Borough of Tower Hamlets, Greater London, England, E1 6QL, United Kingdom"
+  },
+  "10 Crouch End Hill, Crouch End, London N8 8AA, Regno Unito": {
+    "lat": 51.5780676,
+    "lng": -0.124481,
+    "display": "La Vecchia, 10, Crouch End Hill, Crouch Hall Park, Crouch End, London Borough of Haringey, Greater London, England, N8 8AA, United Kingdom"
+  },
+  "43 Greenwich Church St, Greenwich, London SE10 9BL, Regno Unito": {
+    "lat": 51.4815882,
+    "lng": -0.0103098,
+    "display": "43, Greenwich Church Street, Greenwich Town Centre, Royal Borough of Greenwich, Greater London, England, SE10 9BL, United Kingdom"
+  },
+  "19-21 Notting Hill Gate, London W11 3JQ, Regno Unito": {
+    "lat": 51.5093965,
+    "lng": -0.1942828,
+    "display": "Notting Hill Gate, Notting Hill, Royal Borough of Kensington and Chelsea, Greater London, England, W11 3JQ, United Kingdom"
+  },
+  "45 Chamberlayne Rd, Kensal Green, London NW10 3NB, Regno Unito": null,
+  "45 Chamberlayne Rd, Kensal Green, London NW10 3NB, Regno Unito, United Kingdom": null,
+  "45 Chamberlayne Rd, Kensal Green, London, United Kingdom": null,
+  "London, United Kingdom": {
+    "lat": 51.5074456,
+    "lng": -0.1277653,
+    "display": "Greater London, England, United Kingdom"
+  },
+  "The Duke, 125 Creek Rd, London SE8 3BU, Regno Unito": {
+    "lat": 51.4811582,
+    "lng": -0.0203976,
+    "display": "The Duke, 125, Creek Road, Greenwich Town Centre, Greenwich Peninsula, Royal Borough of Greenwich, Greater London, England, SE8 3BU, United Kingdom"
+  },
+  "153 Quai de Valmy, 75010 Paris, France": {
+    "lat": 48.8780195,
+    "lng": 2.3655773,
+    "display": "153, Quai de Valmy, Quartier de l'Hôpital Saint-Louis, Paris 10e Arrondissement, Paris, Île-de-France, France métropolitaine, 75010, France"
+  },
+  "48 Rue Notre Dame de Lorette, 75009 Paris, France": {
+    "lat": 48.8796175,
+    "lng": 2.3361976,
+    "display": "48, Rue Notre-Dame-de-Lorette, Quartier Saint-Georges, Paris 9e Arrondissement, Paris, Île-de-France, France métropolitaine, 75009, France"
+  },
+  "83 Rue de Longchamp, 75116 Paris, France": {
+    "lat": 48.8653029,
+    "lng": 2.2843614,
+    "display": "83, Rue de Longchamp, Quartier de la Porte-Dauphine, Paris 16e Arrondissement, Paris, Île-de-France, France métropolitaine, 75116, France"
+  },
+  "111 Rue Réaumur, 75002 Paris, France": {
+    "lat": 48.8681334,
+    "lng": 2.3433222,
+    "display": "111, Rue Réaumur, Quartier du Mail, Paris 2e Arrondissement, Paris, Île-de-France, France métropolitaine, 75002, France"
+  },
+  "37 Rue Berger, 75001 Paris, France": {
+    "lat": 48.8618548,
+    "lng": 2.3435992,
+    "display": "37, Rue Berger, Quartier Les Halles, Paris 1er Arrondissement, Paris, Île-de-France, France métropolitaine, 75001, France"
+  },
+  "42 Rue Tiquetonne, 75002 Paris, France": {
+    "lat": 48.8647787,
+    "lng": 2.3474984,
+    "display": "42, Rue Tiquetonne, Quartier de Bonne-Nouvelle, Paris 2e Arrondissement, Paris, Île-de-France, France métropolitaine, 75002, France"
+  },
+  "7Bis Rue du Colonel Driant, 75001 Paris, France e 27 Rue de Bretagne, 75003 Paris, France": null
 }
