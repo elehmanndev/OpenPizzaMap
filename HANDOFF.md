@@ -1,8 +1,9 @@
 # OpenPizzaMap — Session Handoff (2026-04-26, end of evening)
 
 ## Prod state right now
-- **~1,130 places, ~1,117 visible** on the map across **60+ countries** and **549+ cities**.
-- All visible places have hero images served from **Hostinger's own filesystem** (`/uploads/places/{id}.{ext}`) — no more cross-origin Referer leak. 935 images, ~200 MB total.
+- **1,130 places, 1,117 visible** on the map across **60+ countries** and **549+ cities**.
+- **898 self-hosted hero images** at `/uploads/places/{id}.{ext}` — no more cross-origin Referer leak. Files committed to the git repo (~191 MB) so they survive Hostinger's deploy cleans.
+- 232 places still have no image (mostly Instagram-embed venues from Eater pages where there's no static photo accessible, plus long-tail TasteAtlas/thegreat.pizza entries without image URLs in the source).
 - API: `https://openpizzamap.com/api/places` returns the full set as JSON.
 - Maintenance gate at `/` still in place. Map + style pages reachable but unlinked from the front door — Eric's call to keep it that way.
 
@@ -34,11 +35,11 @@
 - **No address or coords** — needs Nominatim. The local import attempt hung silently on a Nominatim request after writing the cache for ~3 min, then sat dead for 11 min before I killed it. **0 50TP places landed.**
 - Importer normalizer + country table extensions are committed; just needs another import run with reliable Nominatim. Try `node scripts/import-places.js` again with retries-on-timeout on the `nominatimLookup` function (current code has none).
 
-### 4. Image migration to Hostinger
-- `scripts/download-images.js` walks every Place row, downloads remote images to `public/uploads/places/{id}.{ext}`, rewrites `Place.heroImageUrl` to local path. Idempotent (skips rows already on `/uploads/`).
-- Eric ran this on Hostinger via SSH. Result: 935/935 ok, 199.9 MB. Map is now self-hosted.
-- 5 places (DB ids 42–46) have `heroImageUrl=NULL` from a botched 5-row test before the local-vs-Hostinger architecture was settled. Run `download-images.js` again on Hostinger to recover them — the scrape-image lookup now covers all five sources.
-- `public/uploads/` is gitignored (lives only on Hostinger).
+### 4. Image migration — self-hosted, in git
+- `scripts/download-images.js` walks every Place row, downloads remote images to `public/uploads/places/{id}.{ext}`, rewrites `Place.heroImageUrl` to the local path. Idempotent (skips rows already on `/uploads/`).
+- **Hostinger's Prisma client is broken right now** — it throws `PANIC: timer has gone away` on every query (Prisma 5.22 + Node 22 bug on Hostinger's distro). The first download via SSH worked, but subsequent runs all crash on the very first query. Until that's fixed, **the downloader has to run locally** (where Prisma works fine).
+- The first Hostinger-side download was wiped because every git push to `main` triggers a Hostinger redeploy that clears anything not tracked in git. The fix: removed the `public/uploads/` line from `.gitignore` and committed the 898 image files (~191 MB) directly. They now ride along with each deploy.
+- The repo bloat is acceptable for now. If it ever gets painful, the right refactor is an env-var path (`process.env.UPLOADS_DIR`) pointing at a persistent location outside the deploy dir, plus an Express static route — comment in `.gitignore` flags this.
 
 ### 5. Trust-flip auto-visibility
 - `scripts/flip-avpn-visible.js` (yes, still that name — accepts arbitrary trusted-source list) flips any place with a PlaceSource matching `['avpn','eater','50toppizza']` to `isVisible=true`. Curated lists stand in for our manual moderation.
@@ -46,9 +47,9 @@
 ## Open items / next-session priorities
 
 ### High priority
-1. **Finish 50 Top Pizza import** — re-run `node scripts/import-places.js` (without `--no-geocode`). Add retry-with-timeout to the `nominatimLookup` function in `scripts/import-places.js` so a single hung request doesn't tank the whole pass.
-2. **Re-run downloader on Hostinger after that** — to grab images for the new 50TP places.
-3. **Fix the 5 NULL-image places** (ids 42–46) — same downloader run will pick them up.
+1. **Finish 50 Top Pizza import** — `nominatimLookup` now has 10s timeout + retry, but the import still stalls partway through (different failure than the original hang). Try chunking with `--limit 50` batches, or rewrite the geocode loop to use serial fetches with explicit progress logging so the next stall can be diagnosed. 306 venues are in `50toppizza-scrape.json` and the importer recognises them; just needs a clean run.
+2. **Re-run `download-images.js` locally** after 50TP lands — to grab images for the ~150 new venues. Then commit + push images. Each subsequent push is now safe (the deploy preserves git-tracked uploads).
+3. **Fix Prisma on Hostinger.** `PrismaClientRustPanicError: timer has gone away` on every query, Prisma 5.22 + Node 22. Try upgrading `@prisma/client` and `prisma` to the latest 5.x or 6.x — known issue with patched fix in newer versions. Until that works, the downloader and any other DB script can only run from a local laptop.
 
 ### Medium priority
 4. **Eater international** — probe `vancouver.eater.com`, `montreal.eater.com`, `toronto.eater.com` for `/maps/best-pizza-*`. If alive, add to `CITY_PAGES` in `scripts/scrape-eater.js`.
@@ -69,39 +70,44 @@
 
 ## Hostinger ops cheat sheet
 
+**TL;DR:** As of 2026-04-26 evening, **don't run scripts on Hostinger** — Prisma client is broken there (`PANIC: timer has gone away` on every query). Run scripts on your laptop against prod DB instead, and let `git push` propagate code + images to the server.
+
+If/when Prisma is fixed:
 ```bash
-# SSH in
 ssh -p 65002 u975898812@92.113.28.98
-
-# Get to the app
 cd /home/u975898812/domains/openpizzamap.com/nodejs
-
-# Node lives at /opt/alt/alt-nodejs22/root/usr/bin/node
 export PATH=/opt/alt/alt-nodejs22/root/usr/bin:$PATH
 
 # DATABASE_URL is NOT in interactive shell env — copy from hPanel → Node.js → Env Vars
 export DATABASE_URL='mysql://...'
 
-# Run any script
-node scripts/download-images.js                # full
-nohup node scripts/<script>.js > /tmp/x.log 2>&1 &   # background-safe
+# Then any node script:
+node scripts/<name>.js
 ```
 
-**Security debt:** the prod DB password was pasted into the assistant's chat history during the SSH session. Eric chose not to rotate. Worth flagging in the next session if it bothers him.
+Hostinger app dir is `/home/u975898812/domains/openpizzamap.com/nodejs`. Node binaries live at `/opt/alt/alt-nodejs{18,20,22,24}/root/usr/bin/node`.
+
+**Security debt:** the prod DB password was pasted into the assistant's chat history during this session. Eric chose not to rotate. Worth flagging in the next session if it bothers him.
 
 ## How a new source lands (the pipeline)
 
 ```
-1. Scraper (scripts/scrape-<source>.js) → JSON file at repo root
-2. Add entry to SOURCES in scripts/import-places.js + write normalize<Source> function
+1. Scraper (scripts/scrape-<source>.js)              → JSON file at repo root
+2. Add entry to SOURCES in scripts/import-places.js + write normalize<Source>
 3. node scripts/import-places.js                      # geocodes + upserts
-4. node scripts/seed-styles.js                        # wires Place.stylesJson → PlaceStyle
-5. node scripts/flip-avpn-visible.js                  # flips trusted-source places visible
-6. SSH to Hostinger → node scripts/download-images.js # de-hotlinks new images
-7. git add + commit + push                            # auto-deploys
+4. node scripts/seed-styles.js                        # Place.stylesJson → PlaceStyle
+5. node scripts/flip-avpn-visible.js                  # flips trusted-source visible
+6. node scripts/download-images.js                    # downloads images locally
+7. git add public/uploads/places/ && git commit       # commit images + script changes
+8. git push                                           # Hostinger auto-deploys
 ```
 
-Steps 1-5 run on local laptop against prod DB (`.env` points there). Step 6 runs on Hostinger filesystem.
+**Everything runs locally** (laptop's `.env` points at prod DB). Hostinger's role is only to host the deployed app — its Prisma is currently broken (see Open Item #3) so we don't run scripts on it.
+
+Step 6 only re-fetches images for rows where `heroImageUrl` is null or external. To force a full re-download, first reset:
+```
+node -e "require('dotenv').config();const{PrismaClient}=require('@prisma/client');(async()=>{const p=new PrismaClient();await p.place.updateMany({where:{heroImageUrl:{startsWith:'/uploads/'}},data:{heroImageUrl:null}});await p.\$disconnect();})();"
+```
 
 ## Useful pointers
 - Schema: `prisma/schema.prisma`
