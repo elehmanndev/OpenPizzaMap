@@ -68,12 +68,15 @@ router.post("/add", requireAuth, async (req, res) => {
     res.redirect("/me");
 });
 
-router.get("/register", (req, res) =>
-    res.render("register", { user: req.session.user || null, googleAuthEnabled: isGoogleAuthConfigured() })
-);
-router.get("/login", (req, res) =>
-    res.render("login", { user: req.session.user || null, googleAuthEnabled: isGoogleAuthConfigured() })
-);
+router.get("/auth", (req, res) => {
+    if (req.session.user) return res.redirect("/me");
+    res.render("auth", { user: null, googleAuthEnabled: isGoogleAuthConfigured() });
+});
+
+router.get(["/login", "/register", "/forgot", "/reset", "/set-password"], (req, res) => {
+    res.redirect("/auth");
+});
+
 router.get("/set-username", requireAuth, async (req, res) => {
     const existing = await prisma.user.findUnique({
         where: { id: req.session.user.id },
@@ -84,34 +87,19 @@ router.get("/set-username", requireAuth, async (req, res) => {
     }
     res.render("set_username", { user: req.session.user || null });
 });
-router.get("/forgot", (req, res) => res.render("forgot", { user: req.session.user || null }));
-router.get("/set-password", async (req, res) => {
-    const email = typeof req.query.email === "string" ? req.query.email : "";
-    let needsUsername = false;
-    if (email) {
-        const existing = await prisma.user.findUnique({
-            where: { email },
-            select: { username: true },
-        });
-        needsUsername = !!existing && !existing.username;
-    }
-    res.render("set_password", { user: req.session.user || null, email, needsUsername });
-});
-router.get("/reset", (req, res) => {
-    const token = typeof req.query.token === "string" ? req.query.token : "";
-    res.render("reset", { user: req.session.user || null, token });
-});
+
 router.get("/check-email", (req, res) => {
     const email = typeof req.query.email === "string" ? req.query.email : null;
     res.render("check_email", { user: req.session.user || null, email });
 });
+
 router.get("/verify", async (req, res) => {
     const token = typeof req.query.token === "string" ? req.query.token : "";
     if (!token) {
         return res.render("verify", {
             user: req.session.user || null,
             status: "error",
-            message: "Missing verification token. Please open the link from your email.",
+            message: "Missing sign-in token. Please open the link from your email.",
         });
     }
 
@@ -121,22 +109,7 @@ router.get("/verify", async (req, res) => {
         return res.render("verify", {
             user: req.session.user || null,
             status: "error",
-            message: "That verification link is invalid or has already been used.",
-        });
-    }
-
-    if (user.emailVerifiedAt) {
-        req.session.user = {
-            id: user.id,
-            email: user.email,
-            displayName: user.displayName,
-            username: user.username,
-            role: user.role,
-        };
-        return res.render("verify", {
-            user: req.session.user || null,
-            status: "success",
-            message: "You're already verified. Let's get you in.",
+            message: "That sign-in link is invalid or has already been used.",
         });
     }
 
@@ -144,14 +117,14 @@ router.get("/verify", async (req, res) => {
         return res.render("verify", {
             user: req.session.user || null,
             status: "error",
-            message: "That verification link has expired. Please register again.",
+            message: "That sign-in link has expired. Please request a new one.",
         });
     }
 
     await prisma.user.update({
         where: { id: user.id },
         data: {
-            emailVerifiedAt: new Date(),
+            emailVerifiedAt: user.emailVerifiedAt || new Date(),
             verificationTokenHash: null,
             verificationTokenExpiresAt: null,
         },
@@ -165,11 +138,10 @@ router.get("/verify", async (req, res) => {
         role: user.role,
     };
 
-    res.render("verify", {
-        user: req.session.user || null,
-        status: "success",
-        message: "Your email is verified! Welcome to OpenPizzaMap.",
-    });
+    if (!user.username) {
+        return res.redirect("/set-username");
+    }
+    return res.redirect("/me");
 });
 router.post("/logout", (req, res) => req.session.destroy(() => res.redirect("/")));
 

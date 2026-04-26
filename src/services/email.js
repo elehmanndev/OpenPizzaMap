@@ -16,33 +16,26 @@ function buildVerifyLink(token) {
     return `${trimmed}/verify?token=${encodeURIComponent(token)}`;
 }
 
-function buildResetLink(token) {
-    const trimmed = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
-    return `${trimmed}/reset?token=${encodeURIComponent(token)}`;
-}
-
-async function sendVerificationEmail({ to, token }) {
+async function sendMagicLinkEmail({ to, token, isNewUser }) {
     const resend = getClient();
-    const verifyUrl = buildVerifyLink(token);
-    const subject = "Welcome to OpenPizzaMap";
-    const text = [
-        "Welcome to OpenPizzaMap",
-        "",
-        "You are just one click away from discovering the best pizza spots near you. Please verify your email to activate your OpenPizzaMap account.",
-        verifyUrl,
-        "",
-        "If this wasn't you, you can ignore this email.",
-    ].join("\n");
+    const link = buildVerifyLink(token);
+    const subject = isNewUser ? "Welcome to OpenPizzaMap" : "Your OpenPizzaMap sign-in link";
+    const heading = isNewUser ? "Welcome to OpenPizzaMap" : "Sign in to OpenPizzaMap";
+    const message = isNewUser
+        ? "You're one click away from discovering the best pizza spots near you. Open this link to finish creating your account."
+        : "Click the link below to sign in. It expires in 30 minutes.";
+    const cta = isNewUser ? "Activate my account" : "Sign me in";
+
+    const text = [heading, "", message, link, "", "If this wasn't you, you can ignore this email."].join("\n");
     const html = `
-        <div style="background: #faf7f2; padding: 24px 12px;">
-          <div style="max-width: 520px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e2dc; border-radius: 16px; padding: 24px; font-family: 'Outfit', Arial, sans-serif; color: #1e1e1e;">
-            <h2 style="margin: 0 0 12px;">Welcome to OpenPizzaMap</h2>
-            <p style="margin: 0 0 16px;">You are just one click away from discovering the best pizza spots near you. Please verify your email to activate your OpenPizzaMap account.</p>
+        <div style="padding: 24px 12px;">
+          <div style="max-width: 520px; margin: 0 auto; padding: 24px; font-family: 'Outfit', Arial, sans-serif; color: #1e1e1e;">
+            <h2 style="margin: 0 0 12px;">${heading}</h2>
+            <p style="margin: 0 0 16px;">${message}</p>
             <div style="margin: 0 0 20px;">
-              <a href="${verifyUrl}" style="display: block; width: 100%; box-sizing: border-box; text-align: center; padding: 12px 16px; border-radius: 10px; background: #c0392b; color: #fff; text-decoration: none; font-weight: 600;">Verify my Email</a>
+              <a href="${link}" style="display: block; width: 100%; box-sizing: border-box; text-align: center; padding: 12px 16px; border-radius: 10px; background: #2bb673; color: #fff; text-decoration: none; font-weight: 600;">${cta}</a>
             </div>
-            <p style="margin: 0 0 16px; font-size: 12px; color: #6b6b6b;">If this wasn't you, you can ignore this email.</p>
-            <div style="height: 6px; background: #c0392b; border-radius: 999px;"></div>
+            <p style="margin: 0; font-size: 12px; color: #6b6b6b;">If this wasn't you, you can ignore this email.</p>
           </div>
         </div>
     `;
@@ -50,33 +43,4 @@ async function sendVerificationEmail({ to, token }) {
     return resend.emails.send({ from, to, subject, text, html });
 }
 
-async function sendPasswordResetEmail({ to, token }) {
-    const resend = getClient();
-    const resetUrl = buildResetLink(token);
-    const subject = "Forgot your password?";
-    const text = [
-        "Forgot your password?",
-        "",
-        "Don't worry, we've got you. Reset it using this link:",
-        resetUrl,
-        "",
-        "If you didn't request this, you can ignore this email.",
-    ].join("\n");
-    const html = `
-        <div style="background: #faf7f2; padding: 24px 12px;">
-          <div style="max-width: 520px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e2dc; border-radius: 16px; padding: 24px; font-family: 'Outfit', Arial, sans-serif; color: #1e1e1e;">
-            <h2 style="margin: 0 0 12px;">Forgot your password?</h2>
-            <p style="margin: 0 0 16px;">Don't worry, we've got you.</p>
-            <div style="margin: 0 0 20px;">
-              <a href="${resetUrl}" style="display: block; width: 100%; box-sizing: border-box; text-align: center; padding: 12px 16px; border-radius: 10px; background: #c0392b; color: #fff; text-decoration: none; font-weight: 600;">Reset my password</a>
-            </div>
-            <p style="margin: 0 0 16px; font-size: 12px; color: #6b6b6b;">If you didn't request this, you can ignore this email.</p>
-            <div style="height: 6px; background: #c0392b; border-radius: 999px;"></div>
-          </div>
-        </div>
-    `;
-
-    return resend.emails.send({ from, to, subject, text, html });
-}
-
-module.exports = { sendVerificationEmail, sendPasswordResetEmail };
+module.exports = { sendMagicLinkEmail };

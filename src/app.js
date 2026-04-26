@@ -194,7 +194,7 @@ if (maintenanceMode) {
             return res.status(404).json({ ok: false, error: "Not Found" });
         }
         const notFoundPath = path.join(__dirname, "..", "public", "404.html");
-        res.set("Cache-Control", "public, max-age=600");
+        res.set("Cache-Control", "no-store");
         return res.status(404).sendFile(notFoundPath, (err) => {
             if (err) {
                 res.status(404).send("Not Found");

@@ -725,6 +725,18 @@ body.map-page::before {
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
+.map-page header .menu-panel,
+.map-page header .menu-panel a,
+.map-page header .menu-panel .menu-logout {
+  color: var(--c-text);
+}
+
+.map-page header .menu-panel .menu-logout,
+.map-page header .menu-panel .menu-auth a {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+}
+
 .auth-page {
   color: var(--c-text);
   background: var(--c-bg);
