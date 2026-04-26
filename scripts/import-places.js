@@ -40,6 +40,7 @@ const SOURCES = [
   { file: 'tasteatlas-pizza-al-taglio.json',          source: 'tasteatlas',     style: 'al-taglio',           shape: 'tasteatlas' },
   { file: 'tasteatlas-traditional-italian-pizza.json',source: 'tasteatlas',     style: 'italian',             shape: 'tasteatlas' },
   { file: 'avpn-scrape.json',                         source: 'avpn',           style: 'neapolitan',          shape: 'avpn' },
+  { file: 'eater-scrape.json',                        source: 'eater',          style: null,                  shape: 'eater' },
 ];
 
 // ----- canonicalisation tables -----
@@ -275,6 +276,66 @@ function normalizeGreat(rec) {
   };
 }
 
+// Eater pages embed venues as JSON in __NEXT_DATA__; address is a single
+// comma-joined string like "8433 S Pulaski Rd, Chicago, IL, 60652, US".
+function parseEaterAddress(addr) {
+  if (!addr || typeof addr !== 'string') return {};
+  const parts = addr.split(',').map(s => s.trim()).filter(Boolean);
+  // Common shape: [street, city, state, postal, country]. Country is always the last.
+  // Postal may be missing for some venues; state may be a two-letter US abbr.
+  if (parts.length < 2) return { street: parts[0] || null };
+  const out = { street: null, city: null, region: null, postalCode: null, country: null };
+  out.country = parts[parts.length - 1];
+  // Walk backward looking for a postal-code-like token (2-7 digits).
+  let cursor = parts.length - 2;
+  if (/^\d[\d\- ]{1,7}\d$/.test(parts[cursor] || '') || /^\d{4,6}$/.test(parts[cursor] || '')) {
+    out.postalCode = parts[cursor]; cursor--;
+  }
+  // Region is typically a 2-letter state abbreviation right before postal.
+  if (cursor >= 0 && /^[A-Z]{2}$/.test(parts[cursor] || '')) {
+    out.region = parts[cursor]; cursor--;
+  }
+  if (cursor >= 0) { out.city = parts[cursor]; cursor--; }
+  if (cursor >= 0) {
+    out.street = parts.slice(0, cursor + 1).join(', ');
+  } else {
+    out.street = parts[0];
+  }
+  return out;
+}
+
+function normalizeEater(rec) {
+  const parsed = parseEaterAddress(rec.address);
+  // Country: Eater uses two-letter codes ("US", "CA"). canonCountryCode handles
+  // longer names but not bare two-letter codes — short-circuit those.
+  let code = null;
+  if (parsed.country && /^[A-Za-z]{2}$/.test(parsed.country)) code = parsed.country.toUpperCase();
+  if (!code) code = canonCountryCode(parsed.country, null);
+  if (!code) code = canonCountryCode(rec.city_hint, null); // very weak fallback
+  // Default Eater pages we've configured are all US.
+  if (!code) code = 'US';
+  const cityName = parsed.city || rec.city_hint || null;
+  // Per-record style hints from the page (e.g. "best Detroit-style pizza in Chicago" → detroit).
+  const extraStyles = rec.style_hint ? [rec.style_hint] : [];
+  return {
+    name: decodeEntities(rec.name || '').trim(),
+    addressLine: parsed.street || rec.address || null,
+    city: cityName,
+    region: parsed.region || null,
+    postalCode: parsed.postalCode || null,
+    countryCode: code,
+    countryName: code ? CODE_TO_COUNTRY_NAME[code] : (parsed.country || null),
+    phone: rec.phone || null,
+    websiteUrl: rec.website || null,
+    priceLevel: 2,
+    heroImageUrl: rec.image || null,
+    rank: typeof rec.rank === 'number' ? rec.rank : null,
+    lat: typeof rec.lat === 'number' ? rec.lat : null,
+    lng: typeof rec.lng === 'number' ? rec.lng : null,
+    extraStyles,
+  };
+}
+
 function normalizeAvpn(rec) {
   // rec shape: { name, city, province, region, country, detail: { addressLine, postalCode, cityFull, countryFull, phone, website, heroImageUrl, lat, lng, ... } }
   const d = rec.detail || {};
@@ -337,6 +398,7 @@ function loadAll() {
       let norm;
       if (cfg.shape === 'great') norm = normalizeGreat(rec);
       else if (cfg.shape === 'avpn') norm = normalizeAvpn(rec);
+      else if (cfg.shape === 'eater') norm = normalizeEater(rec);
       else norm = normalizeTasteatlas(rec);
       if (!norm.name || !norm.city || !norm.countryCode) {
         // can't dedupe / locate without these
@@ -363,6 +425,9 @@ function buildDedupMap(items) {
     }
     entry.sources.push({ source: it.source, rank: it.norm.rank, file: it.file });
     if (it.style) entry.styles.add(it.style);
+    if (Array.isArray(it.norm.extraStyles)) {
+      for (const s of it.norm.extraStyles) entry.styles.add(s);
+    }
   }
   return map;
 }

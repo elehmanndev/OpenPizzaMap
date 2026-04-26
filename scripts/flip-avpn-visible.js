@@ -1,25 +1,30 @@
 #!/usr/bin/env node
-// Flip every place sourced from AVPN to isVisible=true.
-// AVPN-certified pizzerias are the highest-quality seed data we have —
-// they're vetted by the Naples-based certification body, so we don't need
-// the manual moderation step that the importer's default isVisible=false
-// applies to lower-trust scrapes.
+// Flip places sourced from trusted curated lists (AVPN, Eater) to isVisible=true.
+// AVPN-certified pizzerias are vetted by the Naples certification body; Eater
+// city maps are professionally edited and explicitly call out the best venues.
+// Both stand in for the manual moderation step that the importer's default
+// isVisible=false applies to lower-trust scrapes (thegreat.pizza, TasteAtlas).
+//
+// Usage: node scripts/flip-avpn-visible.js [source1 source2 ...]
+//   default sources: avpn, eater
 
 require('dotenv').config();
 const { PrismaClient } = require('@prisma/client');
 
+const argSources = process.argv.slice(2).filter(Boolean);
+const TRUSTED_SOURCES = argSources.length ? argSources : ['avpn', 'eater'];
+
 (async () => {
   const prisma = new PrismaClient();
-  // Find all places whose source set includes 'avpn' AND that are still hidden.
   const targets = await prisma.place.findMany({
     where: {
       isVisible: false,
-      sources: { some: { source: 'avpn' } },
+      sources: { some: { source: { in: TRUSTED_SOURCES } } },
     },
     select: { id: true },
   });
   if (targets.length === 0) {
-    console.log('[flip] nothing to do');
+    console.log(`[flip] nothing to do for sources: ${TRUSTED_SOURCES.join(', ')}`);
     await prisma.$disconnect();
     return;
   }
@@ -28,6 +33,6 @@ const { PrismaClient } = require('@prisma/client');
     where: { id: { in: ids } },
     data: { isVisible: true },
   });
-  console.log(`[flip] made ${res.count} AVPN places visible`);
+  console.log(`[flip] made ${res.count} places visible (sources: ${TRUSTED_SOURCES.join(', ')})`);
   await prisma.$disconnect();
 })().catch(e => { console.error(e); process.exit(1); });

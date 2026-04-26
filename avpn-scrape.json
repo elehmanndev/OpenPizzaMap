@@ -469,7 +469,7 @@
         "regionFull": "Lazio",
         "countryFull": "Italia",
         "phone": "+390775434642",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.larosettadialatri.it",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/rosetta001.jpg ",
@@ -665,7 +665,7 @@
         "regionFull": null,
         "countryFull": "Italia",
         "phone": "+39081640330",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "https://www.lacaraffa.it/it/",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/40916197072721a.jpg",
@@ -805,7 +805,7 @@
         "regionFull": "Adige",
         "countryFull": "Italia",
         "phone": "+390471286160",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/9416195149911a.jpg",
@@ -973,7 +973,7 @@
         "regionFull": "Campania",
         "countryFull": "Italia",
         "phone": "0819762751",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/dagaetanoischia001[1].jpg ",
@@ -1141,7 +1141,7 @@
         "regionFull": null,
         "countryFull": "Italia",
         "phone": "+39081290391",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/63416197807411a.jpg",
@@ -1281,7 +1281,7 @@
         "regionFull": null,
         "countryFull": "Spagna",
         "phone": "+349632511",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/capri001.jpg ",
@@ -1421,7 +1421,7 @@
         "regionFull": "Campania",
         "countryFull": "Italia",
         "phone": "+390815704042",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/29516206512311a.jpg",
@@ -1477,7 +1477,7 @@
         "regionFull": "Umbria",
         "countryFull": "Italia",
         "phone": "0758560243",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/30716195311911a.jpg",
@@ -1561,7 +1561,7 @@
         "regionFull": null,
         "countryFull": "Giappone",
         "phone": "+81359300008",
-        "fax": "+81333250554",
+        "fax": null,
         "email": null,
         "website": "http://www.piccolatavola.com",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/75816219347871a.jpg",
@@ -1589,7 +1589,7 @@
         "regionFull": "Campania",
         "countryFull": "Italia",
         "phone": "+390823916034",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/56116206519751a.jpg",
@@ -1673,7 +1673,7 @@
         "regionFull": "Campania",
         "countryFull": "Italia",
         "phone": "+390974823763",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "https://www.bbanna.it/",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/44116206527861a.jpg",
@@ -1729,7 +1729,7 @@
         "regionFull": "Kanto",
         "countryFull": "Giappone",
         "phone": "08081448832",
-        "fax": "0357915664",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/25816219359361a.jpg",
@@ -1841,7 +1841,7 @@
         "regionFull": "Campania",
         "countryFull": "Italia",
         "phone": "+390823711225",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.ilguappo.it/",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/59016206547381a.jpg",
@@ -1925,7 +1925,7 @@
         "regionFull": "Lazio",
         "countryFull": "Italia",
         "phone": "+390761477262",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.ilbabba.it",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/11516197752331a.jpg",
@@ -1953,7 +1953,7 @@
         "regionFull": "(Bregenz)",
         "countryFull": "Austria",
         "phone": "+43557475391",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "https://www.pizzeriaitalia.co.at",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/13947324221a.jpg",
@@ -2149,7 +2149,7 @@
         "regionFull": "Chūgoku",
         "countryFull": "Giappone",
         "phone": "+81822934741",
-        "fax": "+81822934741",
+        "fax": null,
         "email": null,
         "website": "http://www.pizzariva.com",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/88116219372901a.jpg",
@@ -2177,7 +2177,7 @@
         "regionFull": "Kantō",
         "countryFull": "Giappone",
         "phone": "+81423397888",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/66716219382701a.jpg",
@@ -2233,7 +2233,7 @@
         "regionFull": "Kantō",
         "countryFull": "Giappone",
         "phone": "+81463910088",
-        "fax": "+81463919393",
+        "fax": null,
         "email": null,
         "website": "https://www.popolo-hiroba.com/alberobello",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/28116219389641a.jpg",
@@ -2289,7 +2289,7 @@
         "regionFull": "Abruzzo",
         "countryFull": "Italia",
         "phone": "+39086462980",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.lafattoria-roccaraso.com",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/43016197779161a.jpg",
@@ -2317,7 +2317,7 @@
         "regionFull": "Piemonte",
         "countryFull": "Italia",
         "phone": "+390119323665",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "https://www.tiristorantemipizzeria.it/",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/10117392691341a.jpg",
@@ -2401,7 +2401,7 @@
         "regionFull": "Campania",
         "countryFull": "Italia",
         "phone": "+390815511035",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.vesi.it/",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/28816200329811a.jpg",
@@ -2429,7 +2429,7 @@
         "regionFull": "Lombardia",
         "countryFull": "Italia",
         "phone": "+390332287983",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "https://www.piedigrottavarese.it/",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/24316197876511a.jpg",
@@ -2455,9 +2455,9 @@
         "postalCode": "98122",
         "cityFull": "Seattle (King)",
         "regionFull": "Washington",
-        "countryFull": "Stati Uniti d&#x27;America - USA",
+        "countryFull": "Stati Uniti d'America - USA",
         "phone": "+12063229234",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "https://www.viatribunali.com/location/via-tribunali-capitol-hill/",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/81416215887951a.jpg",
@@ -2541,7 +2541,7 @@
         "regionFull": null,
         "countryFull": "Giappone",
         "phone": "+81522380372",
-        "fax": "+81522380288",
+        "fax": null,
         "email": null,
         "website": "https://www.cesari.jp",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/11116219407671a.jpg",
@@ -2681,7 +2681,7 @@
         "regionFull": "Chūgoku",
         "countryFull": "Giappone",
         "phone": "+81878316362",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/84516219476461a.jpg",
@@ -2819,9 +2819,9 @@
         "postalCode": "2990",
         "cityFull": "N. Swan Rd., 85712 Tucson (Pima)",
         "regionFull": "Arizona",
-        "countryFull": "Stati Uniti d&#x27;America - USA",
+        "countryFull": "Stati Uniti d'America - USA",
         "phone": "+15203254122",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.veroamorepizza.com",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/45816215880771a.jpg",
@@ -2849,7 +2849,7 @@
         "regionFull": null,
         "countryFull": "Italia",
         "phone": "+390815782248",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "https://www.gorizia1916.com/",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/44516200365451a.jpg",
@@ -2933,7 +2933,7 @@
         "regionFull": "Liguria",
         "countryFull": "Italia",
         "phone": "+39019485252",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "https://www.aucaruggiualbissola.it/",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/78916197897891a.jpg",
@@ -3045,7 +3045,7 @@
         "regionFull": null,
         "countryFull": "Ucraina",
         "phone": "+380444959263",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/19816212599941a.jpg",
@@ -3269,7 +3269,7 @@
         "regionFull": "Kyūshū",
         "countryFull": "Giappone",
         "phone": "+81927136888",
-        "fax": "0927136888",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/85316219548841a.jpg",
@@ -3297,7 +3297,7 @@
         "regionFull": "Kansai",
         "countryFull": "Giappone",
         "phone": "+81745798815",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.magazzino.co.jp",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/32616221071381a.jpg",
@@ -3325,7 +3325,7 @@
         "regionFull": "Campania",
         "countryFull": "Italia",
         "phone": "+390974988779",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.ristorantelapietraazzurra.it/",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/79716206569001a.jpg",
@@ -3351,9 +3351,9 @@
         "postalCode": "2129",
         "cityFull": "Larimer Street, 80205 Denver",
         "regionFull": "Colorado",
-        "countryFull": "Stati Uniti d&#x27;America - USA",
+        "countryFull": "Stati Uniti d'America - USA",
         "phone": "0013032967000",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.marcoscfp.com",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/13616209882671a.jpg",
@@ -3437,7 +3437,7 @@
         "regionFull": null,
         "countryFull": "Canada",
         "phone": "0014165328000",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "https://www.pizzerialibretto.com",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/49816216016851a.jpg",
@@ -3463,9 +3463,9 @@
         "postalCode": "98122",
         "cityFull": "Seattle (King)",
         "regionFull": "Washington",
-        "countryFull": "Stati Uniti d&#x27;America - USA",
+        "countryFull": "Stati Uniti d'America - USA",
         "phone": "0012062647768",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "https://www.viatribunali.com/location/via-tribunali-queen-anne/",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/58716215893841a.jpg",
@@ -3549,7 +3549,7 @@
         "regionFull": "Tōhoku",
         "countryFull": "Giappone",
         "phone": "+81235230303",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.honamikaido.com/",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/88916221105641a.jpg",
@@ -3659,9 +3659,9 @@
         "postalCode": "10003",
         "cityFull": "Rainier Ave S - Rainier Beach Neig, WA 98178 Seattle (King)",
         "regionFull": "Washington",
-        "countryFull": "Stati Uniti d&#x27;America - USA",
+        "countryFull": "Stati Uniti d'America - USA",
         "phone": "0012067726861",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/2516213347761a.jpg",
@@ -3717,7 +3717,7 @@
         "regionFull": "Lazio",
         "countryFull": "Italia",
         "phone": "+390773474258",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "https://www.giasaidamassimo.com/",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/49016202061931a.jpg",
@@ -3913,7 +3913,7 @@
         "regionFull": null,
         "countryFull": "Austria",
         "phone": "+4313102088",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/Riva-nuovo-logo.jpg ",
@@ -3967,9 +3967,9 @@
         "postalCode": "85004",
         "cityFull": "Phoenix (Maricopa)",
         "regionFull": "Arizona",
-        "countryFull": "Stati Uniti d&#x27;America - USA",
+        "countryFull": "Stati Uniti d'America - USA",
         "phone": "+16027952555",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.pomopizzeria.com",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/14006622311a.jpg",
@@ -4053,7 +4053,7 @@
         "regionFull": null,
         "countryFull": "Italia",
         "phone": "+39018556683",
-        "fax": "+39018556683",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/76016202103171a.jpg",
@@ -4081,7 +4081,7 @@
         "regionFull": "Umbria",
         "countryFull": "Italia",
         "phone": "+390742321250",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/44916202117041a.jpg",
@@ -4137,7 +4137,7 @@
         "regionFull": "()",
         "countryFull": "Emirati Arabi Uniti",
         "phone": "+971024968000",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "https://www.ferrariworldabudhabi.com/en-gb/shopping-and-dining/ristorante-cavallino.aspx",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/Ristorante-Cavallino-Logo.jpg ",
@@ -4165,7 +4165,7 @@
         "regionFull": null,
         "countryFull": "Italia",
         "phone": "+390815442859",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.vesi.it/",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/61716200435011a.jpg",
@@ -4221,7 +4221,7 @@
         "regionFull": "Campania",
         "countryFull": "Italia",
         "phone": "+39081299995",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.vesi.it",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/14616200442951a.jpg",
@@ -4249,7 +4249,7 @@
         "regionFull": "Genève",
         "countryFull": "Svizzera",
         "phone": "+41228401515",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/71516212615251a.jpg",
@@ -4275,9 +4275,9 @@
         "postalCode": "5104",
         "cityFull": "Wilson Blvd, 22205 Arlington",
         "regionFull": "Virginia",
-        "countryFull": "Stati Uniti d&#x27;America - USA",
+        "countryFull": "Stati Uniti d'America - USA",
         "phone": "0015713127230",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.pupatella.com",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/20616213465131a.jpg",
@@ -4305,7 +4305,7 @@
         "regionFull": "Campania",
         "countryFull": "Italia",
         "phone": "+390817418243",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/14611630861a.jpg",
@@ -4333,7 +4333,7 @@
         "regionFull": "Lazio",
         "countryFull": "Italia",
         "phone": "+390689684269",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.margari.it",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/47816202126531a.jpg",
@@ -4417,7 +4417,7 @@
         "regionFull": null,
         "countryFull": "Taiwan, Repubblica di Cina",
         "phone": "+886228343886",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.pizzeria-oggi.com/",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/10216219480961a.jpg",
@@ -4445,7 +4445,7 @@
         "regionFull": "()",
         "countryFull": "Singapore",
         "phone": "+6562229487",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "https://www.loperetta.com/pizzeria-loperetta",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/13316219495711a.jpg",
@@ -4641,7 +4641,7 @@
         "regionFull": "Kyūshū",
         "countryFull": "Giappone",
         "phone": "+81985294091",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/Pilaw-logo.jpg ",
@@ -4669,7 +4669,7 @@
         "regionFull": "Kyūshū",
         "countryFull": "Giappone",
         "phone": "+81929868822",
-        "fax": "+81929868775",
+        "fax": null,
         "email": null,
         "website": "http://www.gaetano.jp",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/Logodagaetano.jpg ",
@@ -4725,7 +4725,7 @@
         "regionFull": null,
         "countryFull": "Canada",
         "phone": "+12505908595",
-        "fax": "+12505908599",
+        "fax": null,
         "email": null,
         "website": "http://www.pizzeriaprimastrada.com",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/Logo-Prima-Strada.jpg ",
@@ -4753,7 +4753,7 @@
         "regionFull": null,
         "countryFull": "Repubblica di Corea (Corea del Sud)",
         "phone": "+8225371100",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/Volare-logo.jpg ",
@@ -4809,7 +4809,7 @@
         "regionFull": null,
         "countryFull": "Canada",
         "phone": "+14164660400",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "https://www.pizzerialibretto.com/",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/52816215998071a.jpg",
@@ -4949,7 +4949,7 @@
         "regionFull": null,
         "countryFull": "Italia",
         "phone": "0112876296",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/60416202169341a.jpg",
@@ -4977,7 +4977,7 @@
         "regionFull": "Columbia",
         "countryFull": "Canada",
         "phone": "+16043361803",
-        "fax": "+16048762545",
+        "fax": null,
         "email": null,
         "website": "http://www.viateverepizzeria.com",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/19216216059181a.jpg",
@@ -5061,7 +5061,7 @@
         "regionFull": "Wales",
         "countryFull": "Australia",
         "phone": "+60295572224",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.gigipizzeria.com.au/",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/99516224524151a.jpg",
@@ -5201,7 +5201,7 @@
         "regionFull": "Chūgoku",
         "countryFull": "Giappone",
         "phone": "+81829565308",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.polipo-net.com",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/34616221274051a.jpg",
@@ -5229,7 +5229,7 @@
         "regionFull": "Kansai",
         "countryFull": "Giappone",
         "phone": "+81797715971",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/7116221901861a.jpg",
@@ -5285,7 +5285,7 @@
         "regionFull": "Campania",
         "countryFull": "Italia",
         "phone": "+390823862718",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "https://www.pepeingrani.it/",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/43116206576871a.jpg",
@@ -5313,7 +5313,7 @@
         "regionFull": null,
         "countryFull": "Italia",
         "phone": "0815604642",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.pizzeriagorizia.it/",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/logogorizia1962.jpg ",
@@ -5339,9 +5339,9 @@
         "postalCode": "53703",
         "cityFull": "Madison (Dane)",
         "regionFull": "Wisconsin",
-        "countryFull": "Stati Uniti d&#x27;America - USA",
+        "countryFull": "Stati Uniti d'America - USA",
         "phone": "+16082506330",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.naples15.com",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/58916209968541a.jpg",
@@ -5369,7 +5369,7 @@
         "regionFull": "Goiás",
         "countryFull": "Brasile",
         "phone": "+556132442292",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.bacopizzaria.com.br",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/Baco-logo.jpg ",
@@ -5705,7 +5705,7 @@
         "regionFull": null,
         "countryFull": "Brasile",
         "phone": "+556132748600",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.bacopizzaria.com.br/",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/22517495523341a.jpg",
@@ -5761,7 +5761,7 @@
         "regionFull": null,
         "countryFull": "Austria",
         "phone": "+4313102088",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/Riva-nuovo-logo.jpg ",
@@ -5817,7 +5817,7 @@
         "regionFull": "Veneto",
         "countryFull": "Italia",
         "phone": "0498096598",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "https://www.antichisaporivigonza.it",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/Antichi-sapori-logo.jpg ",
@@ -5871,9 +5871,9 @@
         "postalCode": "10003",
         "cityFull": "New York City (New York) New",
         "regionFull": "York",
-        "countryFull": "Stati Uniti d&#x27;America - USA",
+        "countryFull": "Stati Uniti d'America - USA",
         "phone": "+12127777781",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.ribaltapizzarestaurant.com",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/78316214119001a.jpg",
@@ -5901,7 +5901,7 @@
         "regionFull": "Campania",
         "countryFull": "Italia",
         "phone": "081906492",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/13848656211a.jpg ",
@@ -5929,7 +5929,7 @@
         "regionFull": "Campania",
         "countryFull": "Italia",
         "phone": "0810330913",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/13851197571a.jpg ",
@@ -5957,7 +5957,7 @@
         "regionFull": "Campania",
         "countryFull": "Italia",
         "phone": "0810124555",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/84116201174861a.jpg",
@@ -5983,9 +5983,9 @@
         "postalCode": "94306",
         "cityFull": "Palo Alto (Santa Clara)",
         "regionFull": "California",
-        "countryFull": "Stati Uniti d&#x27;America - USA",
+        "countryFull": "Stati Uniti d'America - USA",
         "phone": "+16506008310",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.terunpizza.com",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/24716214280661a.jpg",
@@ -6011,9 +6011,9 @@
         "postalCode": "3719",
         "cityFull": "N. Harlem Ave., 60634 Chicago (Cook)",
         "regionFull": "Illinois",
-        "countryFull": "Stati Uniti d&#x27;America - USA",
+        "countryFull": "Stati Uniti d'America - USA",
         "phone": "+17732955697",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.fornorossopizzeria.com/",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/13866737571a.jpg ",
@@ -6097,7 +6097,7 @@
         "regionFull": "Campania",
         "countryFull": "Italia",
         "phone": "081290037",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.pizzeriaoliva.it/",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/20716201253601a.jpg",
@@ -6123,9 +6123,9 @@
         "postalCode": "3865",
         "cityFull": "Cardiff Ave, 90232 Culver City (Los Angeles)",
         "regionFull": "California",
-        "countryFull": "Stati Uniti d&#x27;America - USA",
+        "countryFull": "Stati Uniti d'America - USA",
         "phone": "+13102041222",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.cafeugo.com",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/13886725451a.jpg ",
@@ -6181,7 +6181,7 @@
         "regionFull": "Campania",
         "countryFull": "Italia",
         "phone": "+390815537425",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.carmnella.it",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/37515707933041a.jpg",
@@ -6209,7 +6209,7 @@
         "regionFull": "Kantō",
         "countryFull": "Giappone",
         "phone": "+81422265024",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/13945420731a.jpg",
@@ -6237,7 +6237,7 @@
         "regionFull": "Kantō",
         "countryFull": "Giappone",
         "phone": "+81484460300",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.pizzeria-ohsaki.com/",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/64416221934281a.jpg",
@@ -6265,7 +6265,7 @@
         "regionFull": null,
         "countryFull": "Giappone",
         "phone": "+81582661116",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "http://www.daachiu.com",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/13945420211a.jpg",
@@ -6293,7 +6293,7 @@
         "regionFull": "Kansai",
         "countryFull": "Giappone",
         "phone": "+81668092767",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/13945419521a.jpg",
@@ -6377,7 +6377,7 @@
         "regionFull": "Alvalade",
         "countryFull": "Portogallo",
         "phone": "+351217960313",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/72716213265601a.jpg",
@@ -9373,7 +9373,7 @@
         "regionFull": "(Gangwong-do)",
         "countryFull": "Repubblica di Corea (Corea del Sud)",
         "phone": "+82335343666",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/14849210911a.jpg",
@@ -15113,7 +15113,7 @@
         "regionFull": null,
         "countryFull": "Giappone",
         "phone": "(+81)03-6424-0309",
-        "fax": "(+81)03-6424-0309",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/5716351661381a.jpg",
@@ -15561,7 +15561,7 @@
         "regionFull": "Campania",
         "countryFull": "Italia",
         "phone": "+39081286721",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/69116540877901a.jpg",
@@ -16037,7 +16037,7 @@
         "regionFull": "()",
         "countryFull": "Serbia",
         "phone": "+381692134842",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/51216511413581a.jpg",
@@ -16562,8 +16562,22 @@
       "region": "",
       "country": "Lettonia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Graudu iela 21, LV-",
+        "postalCode": "3401",
+        "cityFull": "Liepāja",
+        "regionFull": "()",
+        "countryFull": "Lettonia",
+        "phone": "+37127830274",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/79316865719391a.jpg",
+        "lat": 56.5114432,
+        "lng": 21.00561,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 961,
@@ -16576,8 +16590,22 @@
       "region": "Griffith ACT",
       "country": "Australia",
       "continent": "Oceania",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Shop 33",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Australia",
+        "phone": "+610262607111",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/43516597049241a.jpg",
+        "lat": -35.3210247,
+        "lng": 149.1341946,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 962,
@@ -16590,8 +16618,22 @@
       "region": "NSW",
       "country": "Australia",
       "continent": "Oceania",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "11 Monaro St",
+        "postalCode": "2620",
+        "cityFull": "Queanbeyan ()",
+        "regionFull": "NSW",
+        "countryFull": "Australia",
+        "phone": "+610261521503",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/51416597058301a.jpg",
+        "lat": -35.3539645,
+        "lng": 149.2323802,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 963,
@@ -16604,8 +16646,22 @@
       "region": "Quebec",
       "country": "Canada",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": null,
+        "postalCode": "1332",
+        "cityFull": "Avenue Maguire, G1T123 Québec ()",
+        "regionFull": "Quebec",
+        "countryFull": "Canada",
+        "phone": "+15817425900",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/65416636802201a.jpg",
+        "lat": 46.7809221,
+        "lng": -71.2512323,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 964,
@@ -16618,8 +16674,22 @@
       "region": "Quebec",
       "country": "Canada",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "17 Rue d'Aberdeen, J4P2K3 Saint-Lambert () Quebec",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Canada",
+        "phone": "+14504869900",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/17116636813711a.jpg",
+        "lat": 45.502303,
+        "lng": -73.512866,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 966,
@@ -16632,8 +16702,22 @@
       "region": "Quebec",
       "country": "Canada",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": null,
+        "postalCode": "3080",
+        "cityFull": "des Grandes Tourelles Ave, J7H 1M9 Boisbriand ()",
+        "regionFull": "Quebec",
+        "countryFull": "Canada",
+        "phone": "+15796301900",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/45916637527091a.jpg",
+        "lat": 45.6266177,
+        "lng": -73.8491192,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 967,
@@ -16646,8 +16730,22 @@
       "region": "Toscana",
       "country": "Italia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Via Panzani, 57",
+        "postalCode": "50123",
+        "cityFull": "Firenze",
+        "regionFull": "Toscana",
+        "countryFull": "Italia",
+        "phone": null,
+        "fax": null,
+        "email": null,
+        "website": "https://www.pizzeriagiotto.it/#/",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/20616637547121a.jpg",
+        "lat": null,
+        "lng": null,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 968,
@@ -16660,8 +16758,22 @@
       "region": "ES",
       "country": "Brasile",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Rua Nona Elvira P. Modolo, 2",
+        "postalCode": "29278",
+        "cityFull": "-000 Pedra Azul (Domingos Martins)",
+        "regionFull": "ES",
+        "countryFull": "Brasile",
+        "phone": null,
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/50716655649791a.jpg",
+        "lat": -20.383056,
+        "lng": -41.0228795,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 969,
@@ -16674,8 +16786,22 @@
       "region": "",
       "country": "Spagna",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Carrer Ciutat de Quilmes, 10, bajos",
+        "postalCode": "07010",
+        "cityFull": "Palma, Balearic Islands",
+        "regionFull": "()",
+        "countryFull": "Spagna",
+        "phone": "+34871805732",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/82616655694991a.jpg",
+        "lat": 39.5856544,
+        "lng": 2.6493807,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 970,
@@ -16688,8 +16814,22 @@
       "region": "",
       "country": "Polonia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Babiogórska 24, 43-300 Bielsko-Biała ()",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Polonia",
+        "phone": "+48795933777",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/50816655702101a.jpg",
+        "lat": 49.8098662,
+        "lng": 19.0228851,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 971,
@@ -16702,8 +16842,22 @@
       "region": "Quebec",
       "country": "Canada",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": null,
+        "postalCode": "3200",
+        "cityFull": "Rue King O A-130, J1L 1C9 Sherbrooke ()",
+        "regionFull": "Quebec",
+        "countryFull": "Canada",
+        "phone": "+18198212900",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/78916655712681a.jpg",
+        "lat": 45.39451967942404,
+        "lng": -71.94636409625308,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 972,
@@ -16716,8 +16870,22 @@
       "region": "",
       "country": "Francia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "6 Pl. Paul et Jean Paul Avisseau",
+        "postalCode": "33000",
+        "cityFull": "Bordeaux",
+        "regionFull": "()",
+        "countryFull": "Francia",
+        "phone": "+33533051687",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/10616668699351a.jpg",
+        "lat": 44.8558603,
+        "lng": -0.567141,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 973,
@@ -16730,8 +16898,22 @@
       "region": "Inghilterra",
       "country": "Regno Unito",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "9 High Pavement, NG1 1HF Nottingham () Inghilterra",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Regno Unito",
+        "phone": "+441159586682",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/48516668710081a.jpg",
+        "lat": 52.9511378,
+        "lng": -1.1451425,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 974,
@@ -16744,8 +16926,22 @@
       "region": "Missouri",
       "country": "Stati Uniti d&#x27;America - USA",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": null,
+        "postalCode": "5105",
+        "cityFull": "Westwood Dr, 63304 St Peters ()",
+        "regionFull": "Missouri",
+        "countryFull": "Stati Uniti d'America - USA",
+        "phone": "+16363171143",
+        "fax": null,
+        "email": null,
+        "website": "https://www.notopizza.com/",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/6216668719561a.jpg",
+        "lat": 38.7324097,
+        "lng": -90.6407996,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 975,
@@ -16758,8 +16954,22 @@
       "region": "Quebec",
       "country": "Canada",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": null,
+        "postalCode": "1481",
+        "cityFull": "Laurier Ave E, H2J 1H8 Montreal ()",
+        "regionFull": "Quebec",
+        "countryFull": "Canada",
+        "phone": "+15145229900",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/13416674722251a.jpg",
+        "lat": 45.5344502,
+        "lng": -73.5831626,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 976,
@@ -16772,8 +16982,22 @@
       "region": "Quebec",
       "country": "Canada",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": null,
+        "postalCode": "4091",
+        "cityFull": "Rue Molson, H1Y 3J2 Montreal ()",
+        "regionFull": "Quebec",
+        "countryFull": "Canada",
+        "phone": "+15145448585",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/54116674734731a.jpg",
+        "lat": 45.5418705,
+        "lng": -73.5637187,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 977,
@@ -16786,8 +17010,22 @@
       "region": "Quebec",
       "country": "Canada",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": null,
+        "postalCode": "5611",
+        "cityFull": "Monkland Ave, H4A 1E2 Montreal ()",
+        "regionFull": "Quebec",
+        "countryFull": "Canada",
+        "phone": "+15145049009",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/13016674816061a.jpg",
+        "lat": 45.4755675,
+        "lng": -73.6230587,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 978,
@@ -16800,8 +17038,22 @@
       "region": "Quebec",
       "country": "Canada",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": null,
+        "postalCode": "1021",
+        "cityFull": "Rue Fleury E, H2C 1P8 Montreal ()",
+        "regionFull": "Quebec",
+        "countryFull": "Canada",
+        "phone": "+14383873900",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/6816690316241a.jpg",
+        "lat": 45.558075,
+        "lng": -73.659359,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 979,
@@ -16814,8 +17066,22 @@
       "region": "Quebec",
       "country": "Canada",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": null,
+        "postalCode": "2049",
+        "cityFull": "Peel St., H3A 1T6 Montreal ()",
+        "regionFull": "Quebec",
+        "countryFull": "Canada",
+        "phone": "+15143030334",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/16016690328411a.jpg",
+        "lat": 45.50091531741493,
+        "lng": -73.57573357255131,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 981,
@@ -16828,8 +17094,22 @@
       "region": "Kantō",
       "country": "Giappone",
       "continent": "Asia",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "1-6-19 Numakage, Minami-ku, Saitama-shi, Saitama, 336-",
+        "postalCode": "0027",
+        "cityFull": "Saitama",
+        "regionFull": "Kantō",
+        "countryFull": "Giappone",
+        "phone": "048-767-3870",
+        "fax": null,
+        "email": null,
+        "website": "https://www.pizzeria-ohsaki.com/musashi_urawa/",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/5016762515621a.jpg",
+        "lat": null,
+        "lng": null,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 982,
@@ -16842,8 +17122,22 @@
       "region": "Chūgoku/ Shikoku",
       "country": "Giappone",
       "continent": "Asia",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "513-1 Kamiura Urashou Ishii-cho, Myozai-gun, Tokushima, Japan, 779-",
+        "postalCode": "3241",
+        "cityFull": ", 776-0014 Ishii-cho (Tokushima)",
+        "regionFull": "Chūgoku",
+        "countryFull": "Giappone",
+        "phone": "+810883-30-5092",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": null,
+        "lat": null,
+        "lng": null,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 983,
@@ -16856,8 +17150,22 @@
       "region": "Tōhoku",
       "country": "Giappone",
       "continent": "Asia",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "5-6-23 Sakura, 989-",
+        "postalCode": "2433",
+        "cityFull": "Iwanuma (Miyagi)",
+        "regionFull": "Tōhoku",
+        "countryFull": "Giappone",
+        "phone": "+810223-36-9351",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/73116746978991a.jpg",
+        "lat": null,
+        "lng": null,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 984,
@@ -16870,8 +17178,22 @@
       "region": "Tōhoku",
       "country": "Giappone",
       "continent": "Asia",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "15-2-101 Bunkyo-cho, 036-",
+        "postalCode": "8244",
+        "cityFull": "Hirosaki (Aomori)",
+        "regionFull": "Tōhoku",
+        "countryFull": "Giappone",
+        "phone": "+810172-55-8065",
+        "fax": null,
+        "email": null,
+        "website": "https://www.zinachicco.jp/",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/79116746985871a.jpg",
+        "lat": null,
+        "lng": null,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 985,
@@ -16884,8 +17206,22 @@
       "region": "Tōhoku",
       "country": "Giappone",
       "continent": "Asia",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "2-6-15 Ekimae, Koriyama, Fukushima, 963-",
+        "postalCode": "8002",
+        "cityFull": "Koriyama (Fukushima)",
+        "regionFull": "Tōhoku",
+        "countryFull": "Giappone",
+        "phone": "(+81)024-923-6000",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": null,
+        "lat": null,
+        "lng": null,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 986,
@@ -16898,8 +17234,22 @@
       "region": "Inghilterra",
       "country": "Regno Unito",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "597 Burton Rd, Midway, DE11 0DH Swadlincote (Derbyshire) Inghilterra",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Regno Unito",
+        "phone": "+447789668822",
+        "fax": null,
+        "email": null,
+        "website": "https://www.pizzeriabufala.com/",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/6016744740301a.jpg",
+        "lat": 52.785503400000024,
+        "lng": -1.5679797582185602,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 987,
@@ -16912,8 +17262,22 @@
       "region": "",
       "country": "Francia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "8 Rue Général Fiorella",
+        "postalCode": "20000",
+        "cityFull": "Ajaccio",
+        "regionFull": "()",
+        "countryFull": "Francia",
+        "phone": "+330495295789",
+        "fax": null,
+        "email": null,
+        "website": "https://www.whatiseat.com/fr/menu/napule-pizzeria/",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/39116744813151a.jpg",
+        "lat": 41.918958,
+        "lng": 8.7352787,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 988,
@@ -16926,8 +17290,22 @@
       "region": "Quebec",
       "country": "Canada",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": null,
+        "postalCode": "1052",
+        "cityFull": "Rue Lionel-Daunais suite 202, J4B 0B2 Boucherville ()",
+        "regionFull": "Quebec",
+        "countryFull": "Canada",
+        "phone": "+14508574900",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/34916746414241a.jpg",
+        "lat": 45.5903737,
+        "lng": -73.4302976,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 989,
@@ -16940,8 +17318,22 @@
       "region": "Quebec",
       "country": "Canada",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "280 Sainte-Catherine Street W., H2X 2A1 Montreal () Quebec",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Canada",
+        "phone": "+14383841900",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/48416746418931a.jpg",
+        "lat": 45.5067901,
+        "lng": -73.5661769,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 990,
@@ -16954,8 +17346,22 @@
       "region": "Quebec",
       "country": "Canada",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "120 Boulevard René-Lévesque O, ,, QC G1R 2A5 Quebec () Quebec",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Canada",
+        "phone": "+15817415900",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/22116746424711a.jpg",
+        "lat": 46.8041122,
+        "lng": -71.2274221,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 991,
@@ -16968,8 +17374,22 @@
       "region": "Inghilterra",
       "country": "Regno Unito",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Pizza & Bar, 57-61, NEAPOLITAN, Lime St,, L1 1JQ Liverpool () Inghilterra",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Regno Unito",
+        "phone": "+441517080362",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/24916745672341a.jpg",
+        "lat": 53.4062994,
+        "lng": -2.9787076,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 992,
@@ -16982,8 +17402,22 @@
       "region": "Occitanie",
       "country": "Francia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "12 Rue de la Maison Carrée",
+        "postalCode": "30000",
+        "cityFull": "N&icirc;mes (GARD et HERAULT)",
+        "regionFull": "Occitanie",
+        "countryFull": "Francia",
+        "phone": "+33411833467",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/28316770610551a.jpg",
+        "lat": 43.8376302,
+        "lng": 4.3565569,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 993,
@@ -16996,8 +17430,22 @@
       "region": "Occitanie",
       "country": "Francia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Rambla des Calissons",
+        "postalCode": "34070",
+        "cityFull": "Montpellier (GARD et HERAULT)",
+        "regionFull": "Occitanie",
+        "countryFull": "Francia",
+        "phone": "+33467822739",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/71316746464391a.jpg",
+        "lat": 43.583552,
+        "lng": 3.8600272,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 994,
@@ -17010,8 +17458,22 @@
       "region": "Noord-Holland",
       "country": "Paesi Bassi (Olanda)",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Nassaukade 379H, 1054AD Amsterdam () Noord-Holland",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Paesi Bassi (Olanda)",
+        "phone": "+310202265448",
+        "fax": null,
+        "email": null,
+        "website": "https://www.pizzabeppe.nl/location/amsterdam-west",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/3116765488601a.jpg",
+        "lat": 52.364848353901394,
+        "lng": 4.878176403365606,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 995,
@@ -17024,8 +17486,22 @@
       "region": "",
       "country": "Portogallo",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Rua Dr. Luis Brás de Abreu n3",
+        "postalCode": "3810",
+        "cityFull": "-100 Aveiro",
+        "regionFull": "()",
+        "countryFull": "Portogallo",
+        "phone": "+351234483185",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/34716745618551a.jpg",
+        "lat": 40.6393078,
+        "lng": -8.6559195,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 996,
@@ -17038,8 +17514,22 @@
       "region": "Distrito Capital",
       "country": "Venezuela",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": null,
+        "postalCode": "1060",
+        "cityFull": "C. Sucre, 1060 Caracas () Distrito",
+        "regionFull": "Capital",
+        "countryFull": "Venezuela",
+        "phone": null,
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/3616745695431a.jpg",
+        "lat": 10.4932824,
+        "lng": -66.8582215,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 997,
@@ -17052,8 +17542,22 @@
       "region": "",
       "country": "Polonia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Jurowiecka 19",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Polonia",
+        "phone": "+48857333253",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/51116746546691a.jpg",
+        "lat": 53.1391889,
+        "lng": 23.1597319,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 998,
@@ -17066,8 +17570,22 @@
       "region": "Espirito Santo",
       "country": "Brasile",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "R. Ant&ocirc;nio Ataíde, 218 - Centro de Vila Velha",
+        "postalCode": "29100",
+        "cityFull": "-290 Vila Velha () Espirito",
+        "regionFull": "Santo",
+        "countryFull": "Brasile",
+        "phone": "+5527999467066",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/48516747336911a.jpg",
+        "lat": -20.3313304,
+        "lng": -40.291251,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1000,
@@ -17080,8 +17598,22 @@
       "region": "Lazio",
       "country": "Italia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Via Flavia 3",
+        "postalCode": "00187",
+        "cityFull": "Roma ()",
+        "regionFull": "Lazio",
+        "countryFull": "Italia",
+        "phone": "+390669429875",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/15516776700061a.jpg",
+        "lat": 41.906035,
+        "lng": 12.4958337,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1001,
@@ -17094,8 +17626,22 @@
       "region": "Quebec",
       "country": "Canada",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": null,
+        "postalCode": "1435",
+        "cityFull": "Bd Michèle-Bohec Local 102, J7C5L4 Blainville (Quebec)",
+        "regionFull": "Quebec",
+        "countryFull": "Canada",
+        "phone": "+14504370900",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/20616781989471a.jpg",
+        "lat": 45.6802212,
+        "lng": -73.9141421,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1002,
@@ -17108,8 +17654,22 @@
       "region": "Quebec",
       "country": "Canada",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": null,
+        "postalCode": "6000",
+        "cityFull": "Boul. de Rome #65, J4Y0B6 Brossard ()",
+        "regionFull": "Quebec",
+        "countryFull": "Canada",
+        "phone": "+14504864900",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/93916782000551a.jpg",
+        "lat": 45.4414785,
+        "lng": -73.4406296,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1003,
@@ -17122,8 +17682,22 @@
       "region": "British Columbia",
       "country": "Canada",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "347 Bernard Ave, V1Y 6N6 Kelowna () British Columbia",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Canada",
+        "phone": "+12507173741",
+        "fax": null,
+        "email": null,
+        "website": "http://www.anticapizza.ca/",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/84816795704871a.jpg",
+        "lat": 49.88718429055319,
+        "lng": -119.49836259613222,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1004,
@@ -17136,8 +17710,22 @@
       "region": "Quebec",
       "country": "Canada",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "540 Promenade Du Centropolis, H7T 3C2 Laval () Quebec",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Canada",
+        "phone": "+14509730947",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/5716795714251a.jpg",
+        "lat": 45.5612272,
+        "lng": -73.7463336,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1005,
@@ -17150,8 +17738,22 @@
       "region": "Quebec",
       "country": "Canada",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": null,
+        "postalCode": "1166",
+        "cityFull": "3e Ave, G1L 2X6 Québec City ()",
+        "regionFull": "Quebec",
+        "countryFull": "Canada",
+        "phone": "+15813004043",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/37216795721191a.jpg",
+        "lat": 46.8276894,
+        "lng": -71.2305947,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1006,
@@ -17164,8 +17766,22 @@
       "region": "Colorado",
       "country": "Stati Uniti d&#x27;America - USA",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": null,
+        "postalCode": "10055",
+        "cityFull": "Trainstation Circle, 8012 Lone Tree ()",
+        "regionFull": "Colorado",
+        "countryFull": "Stati Uniti d'America - USA",
+        "phone": "+17208184685",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/14316812073781a.jpg",
+        "lat": 39.53243321686565,
+        "lng": -104.87193718437027,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1007,
@@ -17178,8 +17794,22 @@
       "region": "Campania",
       "country": "Italia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Via Madonnella, 14",
+        "postalCode": "80011",
+        "cityFull": "Acerra (Napoli)",
+        "regionFull": "Campania",
+        "countryFull": "Italia",
+        "phone": "+393911348382",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/73016812085551a.jpg",
+        "lat": 40.9495656,
+        "lng": 14.3802392,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1008,
@@ -17192,8 +17822,22 @@
       "region": "Ohiggins",
       "country": "Cile",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Avenida Cachapoal 310, 2820000 Rancagua () Ohiggins",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Cile",
+        "phone": null,
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/3916812158861a.jpg",
+        "lat": -34.1779942,
+        "lng": -70.7436675,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1009,
@@ -17206,8 +17850,22 @@
       "region": "",
       "country": "Austria",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Elisabethstra&szlig;e 21a",
+        "postalCode": "5020",
+        "cityFull": "Salisburgo",
+        "regionFull": "()",
+        "countryFull": "Austria",
+        "phone": "+436643585844",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/66316812945471a.jpg",
+        "lat": 47.8132662,
+        "lng": 13.041833,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1011,
@@ -17220,8 +17878,22 @@
       "region": "",
       "country": "Paesi Bassi (Olanda)",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Van Woustraat 47",
+        "postalCode": "1074",
+        "cityFull": "Amsterdam",
+        "regionFull": "()",
+        "countryFull": "Paesi Bassi (Olanda)",
+        "phone": "+31202137120",
+        "fax": null,
+        "email": null,
+        "website": "https://www.pizzabeppe.nl/location/amsterdam",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/16416813814281a.jpg",
+        "lat": 52.3560818,
+        "lng": 4.9005059,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1012,
@@ -17234,8 +17906,22 @@
       "region": "",
       "country": "Polonia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Dworcowa 6, 40-012 Katowice ()",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Polonia",
+        "phone": "+48727266909",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/35816813825361a.jpg",
+        "lat": 50.2574052,
+        "lng": 19.0235218,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1013,
@@ -17248,8 +17934,22 @@
       "region": "",
       "country": "Polonia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Olszówka 27A, 43-309 Bielsko-Biała ()",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Polonia",
+        "phone": "+48728890003",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/12516813833681a.jpg",
+        "lat": 49.7903634,
+        "lng": 19.0491678,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1014,
@@ -17262,8 +17962,22 @@
       "region": "",
       "country": "Paesi Bassi (Olanda)",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Noard 38, 8711AJ Workum, ()",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Paesi Bassi (Olanda)",
+        "phone": "+31610549765",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/25316813925301a.jpg",
+        "lat": 52.9802678,
+        "lng": 5.4446806,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1015,
@@ -17276,8 +17990,22 @@
       "region": "",
       "country": "Francia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "1 Rue Raymond Lefebvre",
+        "postalCode": "94250",
+        "cityFull": "Gentilly (&Icirc;le de",
+        "regionFull": "France)",
+        "countryFull": "Francia",
+        "phone": "+33954700889",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/42816813931541a.jpg",
+        "lat": 48.8148745,
+        "lng": 2.3455922,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1016,
@@ -17290,8 +18018,22 @@
       "region": "",
       "country": "Peru",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Calle Coronel Inclán 300, Miraflores",
+        "postalCode": "15074",
+        "cityFull": "Lima",
+        "regionFull": "()",
+        "countryFull": "Peru",
+        "phone": "+51914201951",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/54316813945491a.jpg",
+        "lat": -12.1168319,
+        "lng": -77.0312792,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1018,
@@ -17304,8 +18046,22 @@
       "region": "",
       "country": "Regno Unito",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "30 Town St, Horsforth, LS18 4RJ Leeds ()",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Regno Unito",
+        "phone": null,
+        "fax": null,
+        "email": null,
+        "website": "https://www.napolinelcuore.co.uk/",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/17616826803221a.jpg",
+        "lat": 53.8374127,
+        "lng": -1.6411832,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1019,
@@ -17318,8 +18074,22 @@
       "region": "",
       "country": "Paesi Bassi (Olanda)",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Hardebollenstraat 10",
+        "postalCode": "3512",
+        "cityFull": "TP Utrecht",
+        "regionFull": "()",
+        "countryFull": "Paesi Bassi (Olanda)",
+        "phone": "+310302008071",
+        "fax": null,
+        "email": null,
+        "website": "https://www.pizzabeppe.nl/location/utrecht-centrum",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/67816838857741a.jpg",
+        "lat": 52.0948894,
+        "lng": 5.119323,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1020,
@@ -17332,8 +18102,22 @@
       "region": "",
       "country": "Paesi Bassi (Olanda)",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Amstel 84",
+        "postalCode": "1017",
+        "cityFull": "AC Amsterdam",
+        "regionFull": "()",
+        "countryFull": "Paesi Bassi (Olanda)",
+        "phone": "+310202090844",
+        "fax": null,
+        "email": null,
+        "website": "https://www.pizzabeppe.nl/location/amsterdam-centrum",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/75816838866051a.jpg",
+        "lat": 52.36967272278759,
+        "lng": 4.888792104644704,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1021,
@@ -17346,8 +18130,22 @@
       "region": "Virginia",
       "country": "Stati Uniti d&#x27;America - USA",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": null,
+        "postalCode": "8434",
+        "cityFull": "Old Keene Mill Rd, 22152 West Springfield ()",
+        "regionFull": "Virginia",
+        "countryFull": "Stati Uniti d'America - USA",
+        "phone": "+15713780566",
+        "fax": null,
+        "email": null,
+        "website": "https://www.pupatella.com/",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/92916838876481a.jpg",
+        "lat": 38.7791249,
+        "lng": -77.2356207,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1022,
@@ -17360,8 +18158,22 @@
       "region": "Virginia",
       "country": "Stati Uniti d&#x27;America - USA",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": null,
+        "postalCode": "2980",
+        "cityFull": "District Ave Suite 140, 22031 Fairfax ()",
+        "regionFull": "Virginia",
+        "countryFull": "Stati Uniti d'America - USA",
+        "phone": "+15713781896",
+        "fax": null,
+        "email": null,
+        "website": "https://www.pupatella.com/",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/73616838892901a.jpg",
+        "lat": 38.869821,
+        "lng": -77.2312129,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1023,
@@ -17374,8 +18186,22 @@
       "region": "Galles / Wales",
       "country": "Regno Unito",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "62 High Street, CF478DE Merthyr Tydfil () Galles",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Regno Unito",
+        "phone": null,
+        "fax": null,
+        "email": null,
+        "website": "https://www.scorchinis.com/",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/17816862167341a.jpg",
+        "lat": 51.7459547,
+        "lng": -3.3780842,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1024,
@@ -17388,8 +18214,22 @@
       "region": "",
       "country": "Regno Unito",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "577 Barlow Moor Rd, Chorlton-cum-Hardy, M21 8AE Manchester ()",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Regno Unito",
+        "phone": "+441614646686",
+        "fax": null,
+        "email": null,
+        "website": "https://www.rudyspizza.co.uk/pizzerias/chorlton",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/17816875174661a.jpg",
+        "lat": 53.4418134,
+        "lng": -2.2768645,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1025,
@@ -17402,8 +18242,22 @@
       "region": "",
       "country": "Regno Unito",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "2 Northenden Rd, Sale, M33 3BR Manchester ()",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Regno Unito",
+        "phone": "+441619690196",
+        "fax": null,
+        "email": null,
+        "website": "https://www.rudyspizza.co.uk/pizzerias/sale",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/36816875181321a.jpg",
+        "lat": 53.4240473,
+        "lng": -2.3174142,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1026,
@@ -17416,8 +18270,22 @@
       "region": "",
       "country": "Regno Unito",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "105, 107 Bold St, L1 4HL Liverpool ()",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Regno Unito",
+        "phone": "+441519095505",
+        "fax": null,
+        "email": null,
+        "website": "https://www.rudyspizza.co.uk/pizzerias/boldst",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/19216875188961a.jpg",
+        "lat": 53.4021963,
+        "lng": -2.9759394,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1027,
@@ -17430,8 +18298,22 @@
       "region": "",
       "country": "Finlandia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Kauppakatu 63",
+        "postalCode": "70110",
+        "cityFull": "Kuopio",
+        "regionFull": "()",
+        "countryFull": "Finlandia",
+        "phone": "+351234483185",
+        "fax": null,
+        "email": null,
+        "website": "https://www.sorrento.fi/sfizieria/",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/3417054130331a.jpg",
+        "lat": 62.8913964,
+        "lng": 27.6707546,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1028,
@@ -17444,8 +18326,22 @@
       "region": "Quebec",
       "country": "Canada",
       "continent": "",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "865 Rue St Pierre, J6W 1E6 Terrebonne (Quebec) Quebec",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Canada",
+        "phone": "+14504926466",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/93316899321751a.jpg",
+        "lat": 45.692688,
+        "lng": -73.6363493,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1029,
@@ -17458,8 +18354,22 @@
       "region": "",
       "country": "Polonia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Księcia Bogusława X 1-2 1, 71-440 Szczecin ()",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Polonia",
+        "phone": null,
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/27716902832391a.jpg",
+        "lat": 53.430906,
+        "lng": 14.544444,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1030,
@@ -17472,8 +18382,22 @@
       "region": "Lazio",
       "country": "Italia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Via Cesare Balbo, 15",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Italia",
+        "phone": "+39064746866",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/38716952894451a.jpg",
+        "lat": 41.8990304,
+        "lng": 12.4957566,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1031,
@@ -17486,8 +18410,22 @@
       "region": "Calabria",
       "country": "Italia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Via G. Rossini, 153",
+        "postalCode": "87036",
+        "cityFull": "Rende (Cosenza)",
+        "regionFull": "Calabria",
+        "countryFull": "Italia",
+        "phone": "+393519923401",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/16916952911901a.jpg",
+        "lat": 39.3343292,
+        "lng": 16.2313812,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1032,
@@ -17500,8 +18438,22 @@
       "region": "RGS",
       "country": "Brasile",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Rua Alfredo Chaves 998",
+        "postalCode": "95020",
+        "cityFull": "-460 Caxias do Sul ()",
+        "regionFull": "RGS",
+        "countryFull": "Brasile",
+        "phone": "+5437714744",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/98416952923351a.jpg",
+        "lat": -29.1703614,
+        "lng": -51.1757349,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1033,
@@ -17514,8 +18466,22 @@
       "region": "Quebec",
       "country": "Canada",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": null,
+        "postalCode": "4578",
+        "cityFull": "Wellington St, H4G 1W8 Verdun ()",
+        "regionFull": "Quebec",
+        "countryFull": "Canada",
+        "phone": "+15145640900",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/1016971958111a.jpg",
+        "lat": 45.4585235,
+        "lng": -73.5672751,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1034,
@@ -17528,8 +18494,22 @@
       "region": "Alberta",
       "country": "Canada",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": null,
+        "postalCode": "1114",
+        "cityFull": "Edmonton Trail #1, T2E 3K4 Calgary ()",
+        "regionFull": "Alberta",
+        "countryFull": "Canada",
+        "phone": "+14032774900",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/11316971964851a.jpg",
+        "lat": 51.0622284,
+        "lng": -114.0553827,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1035,
@@ -17542,8 +18522,22 @@
       "region": "",
       "country": "Norvegia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "&Oslash;vre Ole Bulls plass 1",
+        "postalCode": "5012",
+        "cityFull": "Bergen",
+        "regionFull": "()",
+        "countryFull": "Norvegia",
+        "phone": "+4755900900",
+        "fax": null,
+        "email": null,
+        "website": "https://www.villaparadiso.no/",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/33316972032911a.jpg",
+        "lat": 60.3922145,
+        "lng": 5.3227392,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1036,
@@ -17556,8 +18550,22 @@
       "region": "",
       "country": "Regno Unito",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "3-7 Castle Street, L2 4SW Liverpool ()",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Regno Unito",
+        "phone": "+441519095109",
+        "fax": null,
+        "email": null,
+        "website": "https://www.rudyspizza.co.uk/pizzerias/castlest",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/52116993633521a.jpg",
+        "lat": 53.4067742,
+        "lng": -2.9909849,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1037,
@@ -17570,8 +18578,22 @@
       "region": "",
       "country": "Regno Unito",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "80 Wardour St, W1F 0TF Londra",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Regno Unito",
+        "phone": "+442039300868",
+        "fax": null,
+        "email": null,
+        "website": "https://www.rudyspizza.co.uk/pizzerias/soho",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/77516993642281a.jpg",
+        "lat": 51.5131891,
+        "lng": -0.1336387,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1038,
@@ -17584,8 +18606,22 @@
       "region": "Illinois",
       "country": "Stati Uniti d&#x27;America - USA",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": null,
+        "postalCode": "6050",
+        "cityFull": "N Northwest Hwy, 60631 Chicago ()",
+        "regionFull": "Illinois",
+        "countryFull": "Stati Uniti d'America - USA",
+        "phone": "+17736287894",
+        "fax": null,
+        "email": null,
+        "website": "https://www.saporinapoletani.com/",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/9216971948471a.jpg",
+        "lat": 41.9909716,
+        "lng": -87.7974199,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1039,
@@ -17598,8 +18634,22 @@
       "region": "Namur",
       "country": "Belgio",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Rue de Mont les Champs 214",
+        "postalCode": "5550",
+        "cityFull": "Vresse-sur-Semois (Bohan)",
+        "regionFull": "Namur",
+        "countryFull": "Belgio",
+        "phone": "+3261292330",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/85616987628531a.jpg",
+        "lat": 49.8761257,
+        "lng": 4.8831928,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1040,
@@ -17612,8 +18662,22 @@
       "region": "",
       "country": "Cina",
       "continent": "Asia",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Unit B, 101 Xiangyang north road, Xuhui district",
+        "postalCode": "200000",
+        "cityFull": "Shanghai",
+        "regionFull": "()",
+        "countryFull": "Cina",
+        "phone": "+21162621223",
+        "fax": null,
+        "email": null,
+        "website": "https://www.bottegacn.com/",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/72116994396851a.jpg",
+        "lat": 31.18600528783111,
+        "lng": 121.43422034356797,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1041,
@@ -17626,8 +18690,22 @@
       "region": "Wisconsin",
       "country": "Stati Uniti d&#x27;America - USA",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": null,
+        "postalCode": "5810",
+        "cityFull": "Mineral Point Road, 53705 Madison ()",
+        "regionFull": "Wisconsin",
+        "countryFull": "Stati Uniti d'America - USA",
+        "phone": null,
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/88816994412411a.jpg",
+        "lat": 43.063872080801005,
+        "lng": -89.49126905805376,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1042,
@@ -17640,8 +18718,22 @@
       "region": "",
       "country": "Regno Unito",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "9 Cotton St, Ancoats, M4 5BF Manchester ()",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Regno Unito",
+        "phone": "+441618208292",
+        "fax": null,
+        "email": null,
+        "website": "https://www.rudyspizza.co.uk/pizzerias/ancoats",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/6016994425491a.jpg",
+        "lat": 53.4842011,
+        "lng": -2.22932,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1043,
@@ -17654,8 +18746,22 @@
       "region": "",
       "country": "Regno Unito",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "9-10 Bennetts Hill, B2 5RS Birmingham ()",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Regno Unito",
+        "phone": "+441213145880",
+        "fax": null,
+        "email": null,
+        "website": "https://www.rudyspizza.co.uk/pizzerias/birmingham",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/52816994431531a.jpg",
+        "lat": 52.4799052,
+        "lng": -1.9004842,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1044,
@@ -17668,8 +18774,22 @@
       "region": "",
       "country": "Regno Unito",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "6 Oozells Sq, Brindley Place, B1 2JB Birmingham ()",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Regno Unito",
+        "phone": "+441213922989",
+        "fax": null,
+        "email": null,
+        "website": "https://www.rudyspizza.co.uk/pizzerias/brindleyplace-birmingham",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/2616994433591a.jpg",
+        "lat": 52.47735,
+        "lng": -1.9131704,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1045,
@@ -17682,8 +18802,22 @@
       "region": "",
       "country": "Regno Unito",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "653 Wilmslow Rd, Didsbury, M20 6QZ Manchester ()",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Regno Unito",
+        "phone": "+441618203688",
+        "fax": null,
+        "email": null,
+        "website": "https://www.rudyspizza.co.uk/pizzerias/didsbury",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/12116994444921a.jpg",
+        "lat": 53.4184981,
+        "lng": -2.2314117,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1046,
@@ -17696,8 +18830,22 @@
       "region": "",
       "country": "Regno Unito",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "2 New Station St,, LS1 5DL Leeds ()",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Regno Unito",
+        "phone": "+441138349697",
+        "fax": null,
+        "email": null,
+        "website": "https://www.rudyspizza.co.uk/pizzerias/newstationst",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/12816994453061a.jpg",
+        "lat": 53.7954365,
+        "lng": -1.5446949,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1047,
@@ -17710,8 +18858,22 @@
       "region": "",
       "country": "Regno Unito",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "19 Walton Rd, Stockton Heath, WA4 6NJ Warrington ()",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Regno Unito",
+        "phone": "+441925396999",
+        "fax": null,
+        "email": null,
+        "website": "https://www.rudyspizza.co.uk/pizzerias/stocktonheath",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/27816994461281a.jpg",
+        "lat": 53.370543,
+        "lng": -2.5814773,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1048,
@@ -17724,8 +18886,22 @@
       "region": "",
       "country": "Regno Unito",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Unit 6, Britannia Pavilion, Royal Albert Dock, L3 4AD Liverpool ()",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Regno Unito",
+        "phone": "+441513128757",
+        "fax": null,
+        "email": null,
+        "website": "https://www.rudyspizza.co.uk/pizzerias/albert-dock",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/25916994466711a.jpg",
+        "lat": 53.3994268,
+        "lng": -2.9921513,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1050,
@@ -17738,8 +18914,22 @@
       "region": "Sicilia",
       "country": "Italia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Via Lungomare Rodia 15A",
+        "postalCode": "98161",
+        "cityFull": "Rodia (Messina)",
+        "regionFull": "Sicilia",
+        "countryFull": "Italia",
+        "phone": "+390912148316",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/53517010813561a.jpg",
+        "lat": 38.27132680802884,
+        "lng": 15.469355847182632,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1051,
@@ -17752,8 +18942,22 @@
       "region": "",
       "country": "Repubblica di Corea (Corea del Sud)",
       "continent": "Asia",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "15 Seongsui-ro 12-gil, Seongdong-gu",
+        "postalCode": "04784",
+        "cityFull": "Seoul",
+        "regionFull": "()",
+        "countryFull": "Repubblica di Corea (Corea del Sud)",
+        "phone": "+8224666777",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/49217010869271a.jpg",
+        "lat": 37.5397074,
+        "lng": 127.0568943,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1052,
@@ -17766,8 +18970,22 @@
       "region": "Virginia",
       "country": "Stati Uniti d&#x27;America - USA",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "350 E Market St",
+        "postalCode": "20176",
+        "cityFull": "Leesburg ()",
+        "regionFull": "Virginia",
+        "countryFull": "Stati Uniti d'America - USA",
+        "phone": "+15718313931",
+        "fax": null,
+        "email": null,
+        "website": "https://www.pupatella.com/",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/45617010915901a.jpg",
+        "lat": 39.1111958,
+        "lng": -77.555919,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1053,
@@ -17780,8 +18998,22 @@
       "region": "Nova Scotia",
       "country": "Canada",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": null,
+        "postalCode": "1299",
+        "cityFull": "Hollis St, B3J 1T7 Halifax (Nova Scotia) Nova",
+        "regionFull": "Scotia",
+        "countryFull": "Canada",
+        "phone": "+19024060909",
+        "fax": null,
+        "email": null,
+        "website": "https://www.trattoriavesso.ca/",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/77517010937171a.jpg",
+        "lat": 44.6419861,
+        "lng": -63.5697333,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1054,
@@ -17794,8 +19026,22 @@
       "region": "California",
       "country": "Stati Uniti d&#x27;America - USA",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": null,
+        "postalCode": "1803",
+        "cityFull": "Spring St., 93446 Paso Robles ()",
+        "regionFull": "California",
+        "countryFull": "Stati Uniti d'America - USA",
+        "phone": "+18052215163",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/8217018741541a.jpg",
+        "lat": 35.6332791,
+        "lng": -120.6923508,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1055,
@@ -17808,8 +19054,22 @@
       "region": "",
       "country": "Slovenia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Pre&scaron;ernova ulica 5",
+        "postalCode": "4000",
+        "cityFull": "Kranj",
+        "regionFull": "()",
+        "countryFull": "Slovenia",
+        "phone": "+38664221111",
+        "fax": null,
+        "email": null,
+        "website": "https://www.400gradikranj.com/",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/77917018758911a.jpg",
+        "lat": 46.2403216,
+        "lng": 14.3561615,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1056,
@@ -17822,8 +19082,22 @@
       "region": "",
       "country": "Belgio",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Rue Saint-Eloi 58",
+        "postalCode": "4300",
+        "cityFull": "Waremme",
+        "regionFull": "(Liegi)",
+        "countryFull": "Belgio",
+        "phone": null,
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/92117024636771a.jpg",
+        "lat": 50.6955247,
+        "lng": 5.2713033,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1057,
@@ -17836,8 +19110,22 @@
       "region": "Amambay",
       "country": "Paraguay",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Mariscal Francisco Solano López",
+        "postalCode": "1411",
+        "cityFull": ", 8500 Pedro Juan Caballero ()",
+        "regionFull": "Amambay",
+        "countryFull": "Paraguay",
+        "phone": null,
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/4117024645031a.jpg",
+        "lat": -22.5379448,
+        "lng": -55.7323666,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1058,
@@ -17850,8 +19138,22 @@
       "region": "",
       "country": "Spagna",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "C. Francisco Zarandona, 8",
+        "postalCode": "47003",
+        "cityFull": "Valladolid",
+        "regionFull": "()",
+        "countryFull": "Spagna",
+        "phone": "+34983509903",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/70817029867481a.jpg",
+        "lat": 41.6537905,
+        "lng": -4.7283825,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1059,
@@ -17864,8 +19166,22 @@
       "region": "",
       "country": "Svizzera",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "H&ouml;nggerstrasse 43",
+        "postalCode": "8037",
+        "cityFull": "Zurigo",
+        "regionFull": "()",
+        "countryFull": "Svizzera",
+        "phone": "+41433445544",
+        "fax": null,
+        "email": null,
+        "website": "http://www.danoi.me/",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/13717751250271a.jpg",
+        "lat": 47.3915947,
+        "lng": 8.5250597,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1060,
@@ -17878,8 +19194,22 @@
       "region": "Quebec",
       "country": "Canada",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "41 Bd de la Cité-des-Jeunes suite 110, J7V 0N3 Vaudreuil () Quebec",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Canada",
+        "phone": "+14507320900",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/12717029861011a.jpg",
+        "lat": 45.4111803,
+        "lng": -74.0316268,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1061,
@@ -17892,8 +19222,22 @@
       "region": "Hessen",
       "country": "Germania",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Am Hohenstein 3-5",
+        "postalCode": "65779",
+        "cityFull": "Kelkheim (Taunus)",
+        "regionFull": "Hessen",
+        "countryFull": "Germania",
+        "phone": "+4961959615224",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/62617072163891a.jpg",
+        "lat": 50.1447486,
+        "lng": 8.4323034,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1062,
@@ -17906,8 +19250,22 @@
       "region": "",
       "country": "Regno Unito",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "30 Portland Street, M14GS Manchester ()",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Regno Unito",
+        "phone": "+441615322922",
+        "fax": null,
+        "email": null,
+        "website": "https://www.rudyspizza.co.uk/pizzerias/portlandstreet",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/39217097331041a.jpg",
+        "lat": 53.4790412,
+        "lng": -2.238241,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1063,
@@ -17920,8 +19278,22 @@
       "region": "",
       "country": "Regno Unito",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "40-44 Division St, S1 4GF Sheffield ()",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Regno Unito",
+        "phone": "+441142992550",
+        "fax": null,
+        "email": null,
+        "website": "https://www.rudyspizza.co.uk/pizzerias/divisionst",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/3017097342351a.jpg",
+        "lat": 53.3800324,
+        "lng": -1.4743931,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1064,
@@ -17934,8 +19306,22 @@
       "region": "",
       "country": "Regno Unito",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "77 High St, Harborne, B17 9NS Birmingham ()",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Regno Unito",
+        "phone": "+441213149925",
+        "fax": null,
+        "email": null,
+        "website": "https://www.rudyspizza.co.uk/pizzerias/harborne",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/62217097367251a.jpg",
+        "lat": 52.4602772,
+        "lng": -1.9455446,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1065,
@@ -17948,8 +19334,22 @@
       "region": "",
       "country": "Regno Unito",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Unit 6-8, Arndale Centre, Otley Rd, LS6 2UJ Leeds ()",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Regno Unito",
+        "phone": "+441138349604",
+        "fax": null,
+        "email": null,
+        "website": "https://www.rudyspizza.co.uk/pizzerias/headingley",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/85717097387711a.jpg",
+        "lat": 53.8220078733502,
+        "lng": -1.5784492822784468,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1066,
@@ -17962,8 +19362,22 @@
       "region": "",
       "country": "Regno Unito",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "10-12 Stainbeck Ln,, LS7 3QY Chapel Allerton (Leeds)",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Regno Unito",
+        "phone": "+441135118676",
+        "fax": null,
+        "email": null,
+        "website": "https://www.rudyspizza.co.uk/pizzerias/chapelallerton",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/8917098080971a.jpg",
+        "lat": 53.8291291,
+        "lng": -1.5390977,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1067,
@@ -17976,8 +19390,22 @@
       "region": "",
       "country": "Colombia",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Cl. 81 #11 - 17",
+        "postalCode": "110110",
+        "cityFull": "Bogotà",
+        "regionFull": "()",
+        "countryFull": "Colombia",
+        "phone": "+573104642969",
+        "fax": null,
+        "email": null,
+        "website": "https://www.pizzardi.com.co/",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/20017098092211a.jpg",
+        "lat": 4.661586814638411,
+        "lng": -74.05157371387206,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1068,
@@ -17990,8 +19418,22 @@
       "region": "",
       "country": "Italia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Via Vittorio Emanuele II, 331",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Italia",
+        "phone": "+390172752895",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/93217098127141a.jpg",
+        "lat": 44.693339338494056,
+        "lng": 7.8562425061715455,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1069,
@@ -18004,8 +19446,22 @@
       "region": "Piemonte",
       "country": "Italia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Via Torino, 11",
+        "postalCode": "10028",
+        "cityFull": "Trofarello (Torino)",
+        "regionFull": "Piemonte",
+        "countryFull": "Italia",
+        "phone": null,
+        "fax": null,
+        "email": null,
+        "website": "https://www.alconfinetrofarello.it/#home-page",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/21117098929941a.jpg",
+        "lat": 44.9850951,
+        "lng": 7.734496,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1070,
@@ -18018,8 +19474,22 @@
       "region": "Piemonte",
       "country": "Italia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "C.so Francia, 93",
+        "postalCode": "10098",
+        "cityFull": "Rivoli (Torino)",
+        "regionFull": "Piemonte",
+        "countryFull": "Italia",
+        "phone": "+390119592797",
+        "fax": null,
+        "email": null,
+        "website": "https://www.bottegaflegrea.it/",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/9217098938751a.jpg",
+        "lat": 45.0714277,
+        "lng": 7.5393603,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1071,
@@ -18032,8 +19502,22 @@
       "region": "Piemonte",
       "country": "Italia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Via Cesare Battisti, 3",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Italia",
+        "phone": "+3901118731419",
+        "fax": null,
+        "email": null,
+        "website": "http://www.peperinopizza.it/",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/89917098956921a.jpg",
+        "lat": 45.0697283,
+        "lng": 7.6849533,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1072,
@@ -18046,8 +19530,22 @@
       "region": "Toscana",
       "country": "Italia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Via Buia 10",
+        "postalCode": "57123",
+        "cityFull": "Livorno ()",
+        "regionFull": "Toscana",
+        "countryFull": "Italia",
+        "phone": "+390586692632",
+        "fax": null,
+        "email": null,
+        "website": "http://www.peperinopizza.it/?fbclid=IwAR1QO_UMfW21B3lZmf5X2gr8haI9tmKJuoIjveHl8QMCdTH-0WRiWufZGGY",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/99217098991171a.jpg",
+        "lat": null,
+        "lng": null,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1073,
@@ -18060,8 +19558,22 @@
       "region": "Quebec",
       "country": "Canada",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "335 Bd des Promenades, J3V 6A7 Saint-Bruno-de-Montarville () Quebec",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Canada",
+        "phone": "+14504419900",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/78317101641561a.jpg",
+        "lat": 45.5055673,
+        "lng": -73.3765918,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1074,
@@ -18074,8 +19586,22 @@
       "region": "Noord-Holland",
       "country": "Paesi Bassi (Olanda)",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Middenweg 23",
+        "postalCode": "1098",
+        "cityFull": "AB Amsterdam ()",
+        "regionFull": "Noord-Holland",
+        "countryFull": "Paesi Bassi (Olanda)",
+        "phone": null,
+        "fax": null,
+        "email": null,
+        "website": "https://www.pizzabeppe.nl/location/amsterdam-oost",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/70917110161391a.jpg",
+        "lat": 52.3548229,
+        "lng": 4.9292689,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1075,
@@ -18088,8 +19614,22 @@
       "region": "Noord-Holland",
       "country": "Paesi Bassi (Olanda)",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Baarsstraat 3H",
+        "postalCode": "1075",
+        "cityFull": "RT Amsterdam ()",
+        "regionFull": "Noord-Holland",
+        "countryFull": "Paesi Bassi (Olanda)",
+        "phone": "+31202111038",
+        "fax": null,
+        "email": null,
+        "website": "https://www.pizzabeppe.nl/location/amsterdam-oud-zuid",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/34617111077121a.jpg",
+        "lat": 52.350633,
+        "lng": 4.85443,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1076,
@@ -18102,8 +19642,22 @@
       "region": "Noord-Holland",
       "country": "Paesi Bassi (Olanda)",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Herenstraat 43",
+        "postalCode": "1211",
+        "cityFull": "CA Hilversum ()",
+        "regionFull": "Noord-Holland",
+        "countryFull": "Paesi Bassi (Olanda)",
+        "phone": "+31352002917",
+        "fax": null,
+        "email": null,
+        "website": "https://www.pizzabeppe.nl/location/hilversum-herenstraat",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/76017123070821a.jpg",
+        "lat": 52.2236574,
+        "lng": 5.1745417,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1077,
@@ -18116,8 +19670,22 @@
       "region": "Utrecht",
       "country": "Paesi Bassi (Olanda)",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Oudegracht 178",
+        "postalCode": "3511",
+        "cityFull": "NP Utrecht ()",
+        "regionFull": "Utrecht",
+        "countryFull": "Paesi Bassi (Olanda)",
+        "phone": "+31302066000",
+        "fax": null,
+        "email": null,
+        "website": "https://www.pizzabeppe.nl/location/oudegracht",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/57617123079571a.jpg",
+        "lat": 52.0894151,
+        "lng": 5.1213442,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1078,
@@ -18130,8 +19698,22 @@
       "region": "",
       "country": "Repubblica di Corea (Corea del Sud)",
       "continent": "Asia",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Room 102,103 Central Plaza IF, 43-20 Jeongbalsan-ro, Ilsandong-gu",
+        "postalCode": "10402",
+        "cityFull": "Goyang-si",
+        "regionFull": "(Gyeonggl-do)",
+        "countryFull": "Repubblica di Corea (Corea del Sud)",
+        "phone": null,
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/6917121543691a.jpg",
+        "lat": 37.65836831885621,
+        "lng": 126.77082187632665,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1079,
@@ -18144,8 +19726,22 @@
       "region": "",
       "country": "Finlandia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Kruunuvuorenkatu 4",
+        "postalCode": "00160",
+        "cityFull": "Helsinki",
+        "regionFull": "()",
+        "countryFull": "Finlandia",
+        "phone": "+358503618168",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/94017137804471a.jpg",
+        "lat": 60.166501875030505,
+        "lng": 24.9627074771677,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1080,
@@ -18158,8 +19754,22 @@
       "region": "",
       "country": "Finlandia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Pursimiehenkatu 16",
+        "postalCode": "00150",
+        "cityFull": "Helsinki",
+        "regionFull": "()",
+        "countryFull": "Finlandia",
+        "phone": "+358503245169",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/8117137816301a.jpg",
+        "lat": 60.15921047502681,
+        "lng": 24.935014777167204,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1081,
@@ -18172,8 +19782,22 @@
       "region": "",
       "country": "Portogallo",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Rua do Mercado, Lote 4",
+        "postalCode": "5210",
+        "cityFull": "-210 Miranda do",
+        "regionFull": "Douro",
+        "countryFull": "Portogallo",
+        "phone": null,
+        "fax": null,
+        "email": null,
+        "website": "https://www.gorgonzolapizzaria.com/",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/54817150789051a.jpg",
+        "lat": 41.49826,
+        "lng": -6.269856,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1082,
@@ -18186,8 +19810,22 @@
       "region": "",
       "country": "Portogallo",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Rua do Alecrim 22",
+        "postalCode": "1200",
+        "cityFull": "-014",
+        "regionFull": "Lisbon",
+        "countryFull": "Portogallo",
+        "phone": null,
+        "fax": null,
+        "email": null,
+        "website": "https://www.gruposushicafe.pt/manoamano",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/49217121498391a.jpg",
+        "lat": 38.7075342,
+        "lng": -9.1432829,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1083,
@@ -18200,8 +19838,22 @@
       "region": "",
       "country": "Brasile",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Rua Afonso Pena,71- Loja c",
+        "postalCode": "20270",
+        "cityFull": "-242 Rio de",
+        "regionFull": "Janeiro",
+        "countryFull": "Brasile",
+        "phone": "+5521997033202",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/84617174069601a.jpg",
+        "lat": -22.9184889,
+        "lng": -43.218567,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1084,
@@ -18214,8 +19866,22 @@
       "region": "",
       "country": "Paesi Bassi (Olanda)",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Den uil,11, 5469TE Erp (Noord Brabant)",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Paesi Bassi (Olanda)",
+        "phone": null,
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/2017174066401a.jpg",
+        "lat": 51.5966705,
+        "lng": 5.6111351,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1085,
@@ -18228,8 +19894,22 @@
       "region": "",
       "country": "Argentina",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Calle 213 numero",
+        "postalCode": "1486",
+        "cityFull": ", 1886 Sourigues (Buenos",
+        "regionFull": "Aires)",
+        "countryFull": "Argentina",
+        "phone": "+5491168754234",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/59417182719351a.jpg",
+        "lat": -34.7971815,
+        "lng": -58.2129326,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1086,
@@ -18242,8 +19922,22 @@
       "region": "California",
       "country": "Stati Uniti d&#x27;America - USA",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": null,
+        "postalCode": "2601",
+        "cityFull": "Garcia Ave, 94043 Mountain View ()",
+        "regionFull": "California",
+        "countryFull": "Stati Uniti d'America - USA",
+        "phone": null,
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/79617182744311a.jpg",
+        "lat": 37.42716253210714,
+        "lng": -122.10099532368172,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1087,
@@ -18256,8 +19950,22 @@
       "region": "",
       "country": "Francia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "11 Rue Laurencin",
+        "postalCode": "69002",
+        "cityFull": "Lyon",
+        "regionFull": "()",
+        "countryFull": "Francia",
+        "phone": "+33472402593",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/11817186281871a.jpg",
+        "lat": 45.7528173,
+        "lng": 4.8327753,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1088,
@@ -18270,8 +19978,22 @@
       "region": "RGS",
       "country": "Brasile",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Rua Rio Branco 480 sala3 Centro",
+        "postalCode": "95185",
+        "cityFull": "-000 Carlos Barbosa ()",
+        "regionFull": "RGS",
+        "countryFull": "Brasile",
+        "phone": null,
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/66417187086041a.jpg",
+        "lat": -29.2977758,
+        "lng": -51.5055387,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1089,
@@ -18284,8 +20006,22 @@
       "region": "",
       "country": "Germania",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Osterstra&szlig;e 27",
+        "postalCode": "30159",
+        "cityFull": "Hannover",
+        "regionFull": "(Niedersachsen)",
+        "countryFull": "Germania",
+        "phone": "+4951141088730",
+        "fax": null,
+        "email": null,
+        "website": "https://www.bestia.pizza/",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/40917187967311a.jpg",
+        "lat": 52.3718661,
+        "lng": 9.7383096,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1090,
@@ -18298,8 +20034,22 @@
       "region": "",
       "country": "Bolivia",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Plazuela Italia, Calle 7 Oeste y, Santa Cruz de la Sierra, Bolivia",
+        "postalCode": "00000",
+        "cityFull": "Santa Cruz de la Sierra (Andrés",
+        "regionFull": "Ibáñez)",
+        "countryFull": "Bolivia",
+        "phone": "+59176624485",
+        "fax": null,
+        "email": null,
+        "website": "https://www.tiktok.com/@pizzeria.vulcanica",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/11217188791011a.jpg",
+        "lat": -17.7680154,
+        "lng": -63.1977462,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1091,
@@ -18312,8 +20062,22 @@
       "region": "Sicilia",
       "country": "Italia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Via Plebiscito 179",
+        "postalCode": "95100",
+        "cityFull": "Catania (CT)",
+        "regionFull": "Sicilia",
+        "countryFull": "Italia",
+        "phone": "+390950934947",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/93417174076321a.jpg",
+        "lat": 37.4975019,
+        "lng": 15.0843061,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1092,
@@ -18326,8 +20090,22 @@
       "region": "",
       "country": "Polonia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Rynek Wielki 2, 22-400 Zamość (Lubelskie)",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Polonia",
+        "phone": "+48791791593",
+        "fax": null,
+        "email": null,
+        "website": "http://www.lafiamma.pl",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/18117188831661a.jpg",
+        "lat": 50.7165748,
+        "lng": 23.253224,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1093,
@@ -18340,8 +20118,22 @@
       "region": "",
       "country": "Polonia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Aleja Najświętszej Maryi Panny 49, 42-217 Częstochowa (ŚLĄSK)",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Polonia",
+        "phone": "+48343000043",
+        "fax": null,
+        "email": null,
+        "website": "http://www.neapolska.pl",
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/99017193091561a.jpg",
+        "lat": 50.8116712,
+        "lng": 19.1119575,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1094,
@@ -18354,8 +20146,22 @@
       "region": "",
       "country": "Brasile",
       "continent": "America",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Estrada de Bom Jardim para Jaguari de Cima - Sitio \"Encanto da Mantiqueira\", 250",
+        "postalCode": "37650",
+        "cityFull": "-000 Camanducaia (MInas",
+        "regionFull": "Gerais)",
+        "countryFull": "Brasile",
+        "phone": "+5535999826497",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/95517193112421a.jpg",
+        "lat": -22.7830825,
+        "lng": -46.0262517,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1097,
@@ -18368,8 +20174,22 @@
       "region": "",
       "country": "Cina",
       "continent": "Asia",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Columbia circle 10-104, ShangHai city",
+        "postalCode": "200000",
+        "cityFull": "Shanghai",
+        "regionFull": null,
+        "countryFull": "Cina",
+        "phone": null,
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/11017205202881a.jpg",
+        "lat": 31.221089974245498,
+        "lng": 121.44291971160544,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1098,
@@ -18382,8 +20202,22 @@
       "region": "",
       "country": "Paesi Bassi (Olanda)",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Vleutenseweg 124, 3532HM Utrecht ()",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Paesi Bassi (Olanda)",
+        "phone": "+31302020720",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/97417194954851a.jpg",
+        "lat": 52.0927626,
+        "lng": 5.1007875,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1099,
@@ -18396,8 +20230,22 @@
       "region": "",
       "country": "Polonia",
       "continent": "Europa",
-      "detail": null,
-      "detailError": "http 429"
+      "detail": {
+        "addressLine": "Stefana Żeromskiego 113, 26-026 Bilcza (Swietokrzyskie)",
+        "postalCode": null,
+        "cityFull": null,
+        "regionFull": null,
+        "countryFull": "Polonia",
+        "phone": "+48660910620",
+        "fax": null,
+        "email": null,
+        "website": null,
+        "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/21317132630561a.jpg",
+        "lat": 50.78735160000001,
+        "lng": 20.604233400000002,
+        "memberSince": null
+      },
+      "detailError": null
     },
     {
       "memberNumber": 1100,
@@ -18445,7 +20293,7 @@
         "regionFull": null,
         "countryFull": "Canada",
         "phone": "+14502770900",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/29817664953571a.jpg",
@@ -18529,7 +20377,7 @@
         "regionFull": "Kansai",
         "countryFull": "Giappone",
         "phone": "(+81)06-6152-5428",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/92617301129851a.jpg",
@@ -18557,7 +20405,7 @@
         "regionFull": "Kansai",
         "countryFull": "Giappone",
         "phone": "(+81)79-562-3200",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "https://www.pizzeria-en-sanda.com/",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/28117301138691a.jpg",
@@ -18585,7 +20433,7 @@
         "regionFull": "Kyūshū",
         "countryFull": "Giappone",
         "phone": "(+81)92-332-9977",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/78617301147841a.jpg",
@@ -18613,7 +20461,7 @@
         "regionFull": "Kansai",
         "countryFull": "Giappone",
         "phone": "(+81)078-585-5594",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/87217301156771a.jpg",
@@ -18641,7 +20489,7 @@
         "regionFull": "Kantō",
         "countryFull": "Giappone",
         "phone": "(+81)49-257-5195",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/56317301172061a.jpg",
@@ -18669,7 +20517,7 @@
         "regionFull": "Hokuriku",
         "countryFull": "Giappone",
         "phone": "(+81)0267-77-7177",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "https://www.slow-style.com/gourmet/osarracino/",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/97417301220481a.jpg",
@@ -18697,7 +20545,7 @@
         "regionFull": "Kyūshū",
         "countryFull": "Giappone",
         "phone": "+81092-409-7298",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": null,
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/19217301230491a.jpg",
@@ -18807,9 +20655,9 @@
         "postalCode": "62650",
         "cityFull": "Jacksonville (IL)",
         "regionFull": "Illinois",
-        "countryFull": "Stati Uniti d&#x27;America - USA",
+        "countryFull": "Stati Uniti d'America - USA",
         "phone": "+19174998787",
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "https://www.thelittlestove.com/",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/97317298613791a.jpg",
@@ -22139,9 +23987,9 @@
         "postalCode": "9322",
         "cityFull": "Litchfield Drive, 92646 Huntington Beach ()",
         "regionFull": "CA",
-        "countryFull": "Stati Uniti d&#x27;America - USA",
+        "countryFull": "Stati Uniti d'America - USA",
         "phone": null,
-        "fax": "+390814201205(",
+        "fax": null,
         "email": null,
         "website": "https://www.eddiespizzanapoletana.com/",
         "heroImageUrl": "https://www.pizzanapoletana.org/public/assoc/17117749550121a.jpg",

@@ -187,7 +187,14 @@ async function passAvpnRescrape() {
   }
 }
 
-// ---- pass 2: geocode DB places that have address but no lat/lng ----
+// ---- pass 2: live-geocode any scrape-file record that still lacks coords,
+// then re-run the importer to land them in the DB.
+//
+// The DB never holds places without coords (Place.lat/lng are NOT NULL and the
+// importer skips writes for missing-coord entries). So "enrich coords" really
+// means: revisit the scrape JSONs at repo root, geocode their un-coord'd
+// records into geocode-cache.json via Nominatim, then run the importer (which
+// reads the cache) to land them. We do not call Prisma directly here.
 function loadCache() {
   if (!fs.existsSync(CACHE_FILE)) return {};
   try { return JSON.parse(fs.readFileSync(CACHE_FILE, 'utf8')); } catch { return {}; }
@@ -205,82 +212,20 @@ async function nominatimLookup(query) {
   return { lat: parseFloat(r.lat), lng: parseFloat(r.lon), display: r.display_name };
 }
 
-function buildGeoQueries(p) {
-  const al = (p.addressLine || '').trim();
-  const out = [];
-  if (al) {
-    if (al.includes(',')) {
-      out.push(al);
-      out.push(`${al}, ${p.country}`);
-      const head = al.split(',').slice(0, 2).join(',').trim();
-      if (head && head !== al) out.push([head, p.city, p.country].filter(Boolean).join(', '));
-    } else {
-      out.push([al, p.city, p.country].filter(Boolean).join(', '));
-    }
-  }
-  out.push([p.city, p.country].filter(Boolean).join(', '));
-  return [...new Set(out.filter(Boolean))];
-}
-
 async function passGeocode() {
-  const prisma = new PrismaClient();
-  // Pull places with no coords. Include those with isVisible=false too — backfilling
-  // their coords is what would let us flip them visible later.
-  const targets = await prisma.place.findMany({
-    where: {
-      OR: [{ lat: null }, { lng: null }, { lat: 0, lng: 0 }],
-    },
-    select: { id: true, name: true, addressLine: true, city: true, country: true, lat: true, lng: true },
-  });
-  let work = targets.filter(t => t.addressLine && t.city && t.country);
-  if (LIMIT) work = work.slice(0, LIMIT);
-  if (work.length === 0) {
-    console.log('[geo] nothing to geocode');
-    await prisma.$disconnect();
-    return;
-  }
-  console.log(`[geo] attempting ${work.length} places (delay=${NOMINATIM_DELAY_MS}ms)`);
-
-  const cache = loadCache();
-  let hit = 0, miss = 0, fromCache = 0, errs = 0;
-  for (let i = 0; i < work.length; i++) {
-    const p = work[i];
-    const queries = buildGeoQueries(p);
-    let result = null;
-    for (const q of queries) {
-      if (q in cache) {
-        if (cache[q] && cache[q].lat != null) { result = cache[q]; fromCache++; break; }
-        continue;
-      }
-      try {
-        const r = await nominatimLookup(q);
-        cache[q] = r ? { lat: r.lat, lng: r.lng, display: r.display } : null;
-        saveCache(cache);
-        if (r) { result = r; hit++; break; }
-      } catch (e) {
-        errs++;
-      }
-      await sleep(NOMINATIM_DELAY_MS);
-    }
-    if (result) {
-      try {
-        await prisma.place.update({
-          where: { id: p.id },
-          data: { lat: result.lat, lng: result.lng },
-        });
-      } catch (e) {
-        console.warn(`[geo] update failed for id=${p.id}: ${e.message}`);
-      }
-    } else {
-      miss++;
-    }
-    if ((i + 1) % 10 === 0 || i + 1 === work.length) {
-      process.stdout.write(`\r[geo] ${i + 1}/${work.length} hit=${hit} cache=${fromCache} miss=${miss} errs=${errs}   `);
-    }
-  }
-  process.stdout.write('\n');
-  console.log(`[geo] done: hit=${hit} cache=${fromCache} miss=${miss} errs=${errs}`);
-  await prisma.$disconnect();
+  // Use the importer's own no-geocode-disabled pass: it walks all scrape JSONs,
+  // checks each record for missing coords, and queries Nominatim for any not in
+  // the cache. We just spawn it.
+  console.log('[geo] running importer with geocoding enabled (this may take 5-15 min)');
+  const { spawnSync } = require('child_process');
+  const r = spawnSync(process.execPath, [path.join(ROOT, 'scripts/import-places.js')], { stdio: 'inherit' });
+  if (r.status !== 0) console.warn('[geo] importer exited non-zero');
+  // After geocoding new entries, re-seed styles and re-flip visibility on
+  // newly-trusted sources.
+  const r2 = spawnSync(process.execPath, [path.join(ROOT, 'scripts/seed-styles.js')], { stdio: 'inherit' });
+  if (r2.status !== 0) console.warn('[geo] seed-styles exited non-zero');
+  const r3 = spawnSync(process.execPath, [path.join(ROOT, 'scripts/flip-avpn-visible.js')], { stdio: 'inherit' });
+  if (r3.status !== 0) console.warn('[geo] flip-trusted-visible exited non-zero');
 }
 
 (async () => {
