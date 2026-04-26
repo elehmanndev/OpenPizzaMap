@@ -41,6 +41,7 @@ const SOURCES = [
   { file: 'tasteatlas-traditional-italian-pizza.json',source: 'tasteatlas',     style: 'italian',             shape: 'tasteatlas' },
   { file: 'avpn-scrape.json',                         source: 'avpn',           style: 'neapolitan',          shape: 'avpn' },
   { file: 'eater-scrape.json',                        source: 'eater',          style: null,                  shape: 'eater' },
+  { file: '50toppizza-scrape.json',                   source: '50toppizza',     style: null,                  shape: '50tp' },
 ];
 
 // ----- canonicalisation tables -----
@@ -176,6 +177,10 @@ const COUNTRY_TO_CODE = {
   'macedonia': 'MK', 'repubblica di macedonia': 'MK', 'north macedonia': 'MK',
   'taiwan': 'TW',
   'corea del sud': 'KR', 'repubblica di corea': 'KR', 'repubblica di corea (corea del sud)': 'KR',
+  // 50 Top Pizza Europe ranking quirks
+  'england': 'GB', 'wales': 'GB', 'northern ireland': 'GB',
+  'the netherlands': 'NL',
+  'republic of north macedonia': 'MK',
 };
 
 const CODE_TO_COUNTRY_NAME = {
@@ -336,6 +341,40 @@ function normalizeEater(rec) {
   };
 }
 
+// 50 Top Pizza ranking pages give name + city + (region or country) + image + rank.
+// Italy lists: descLine2 is the Italian region ("Campania", "Lazio"). Country = Italy.
+// Europe lists: descLine2 is the country in English ("Spain", "England"). Region unknown.
+function normalize50TopPizza(rec) {
+  const isItaly = rec.list_scope === 'italy';
+  let countryRaw;
+  let region;
+  if (isItaly) {
+    countryRaw = rec.default_country || 'Italy';
+    region = rec.descLine2 || null;
+  } else {
+    countryRaw = rec.descLine2 || rec.default_country || null;
+    region = null;
+  }
+  const code = canonCountryCode(countryRaw, null);
+  const city = canonCityName(rec.descLine1, null);
+  return {
+    name: decodeEntities(rec.name || '').trim(),
+    addressLine: null, // unknown — geocoder will fall back to city + country
+    city,
+    region,
+    postalCode: null,
+    countryCode: code,
+    countryName: code ? CODE_TO_COUNTRY_NAME[code] : countryRaw,
+    phone: null,
+    websiteUrl: null,
+    priceLevel: 2,
+    heroImageUrl: rec.heroImageUrl || null,
+    rank: typeof rec.rank === 'number' ? rec.rank : null,
+    lat: null,
+    lng: null,
+  };
+}
+
 function normalizeAvpn(rec) {
   // rec shape: { name, city, province, region, country, detail: { addressLine, postalCode, cityFull, countryFull, phone, website, heroImageUrl, lat, lng, ... } }
   const d = rec.detail || {};
@@ -399,6 +438,7 @@ function loadAll() {
       if (cfg.shape === 'great') norm = normalizeGreat(rec);
       else if (cfg.shape === 'avpn') norm = normalizeAvpn(rec);
       else if (cfg.shape === 'eater') norm = normalizeEater(rec);
+      else if (cfg.shape === '50tp') norm = normalize50TopPizza(rec);
       else norm = normalizeTasteatlas(rec);
       if (!norm.name || !norm.city || !norm.countryCode) {
         // can't dedupe / locate without these

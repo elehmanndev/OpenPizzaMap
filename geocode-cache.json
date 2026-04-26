@@ -1024,5 +1024,140 @@
     "lat": 41.9066975,
     "lng": 12.4466606,
     "display": "Bonci Pizzarium, 43, Via della Meloria, Municipio Roma I, Roma, Roma Capitale, Lazio, 00136, Italia"
+  },
+  "Via Pellegrino Matteucci, 20, 00154 Roma Italia": {
+    "lat": 41.8718042,
+    "lng": 12.4834919,
+    "display": "Via Pellegrino Matteucci, Municipio Roma VIII, Roma, Roma Capitale, Lazio, 00154, Italia"
+  },
+  "Viale della Piramide Cestia, 25, 00153 Roma Italia": {
+    "lat": 41.8785849,
+    "lng": 12.4829522,
+    "display": "Baccio e i gradini, 25, Viale della Piramide Cestia, San Saba, Municipio Roma I, Roma, Roma Capitale, Lazio, 00153, Italia"
+  },
+  "Via di Poneta, 44, 50022 Il Ferrone FI, Italy": null,
+  "Via di Poneta, 44, Florence, Italy": null,
+  "Florence, Italy": {
+    "lat": 43.7697955,
+    "lng": 11.2556404,
+    "display": "Firenze, Toscana, Italia"
+  },
+  "Via de' Bardi, 54 R, 50125 Firenze FI": {
+    "lat": 43.7672102,
+    "lng": 11.2535313,
+    "display": "54 R, Via dei Bardi, Oltrarno, Quartiere 1, Firenze, Toscana, 50125, Italia"
+  },
+  "Via del Pozzo, 13, 50031 Barberino di Mugello FI": {
+    "lat": 44.0069189,
+    "lng": 11.2385869,
+    "display": "Via del Pozzo, Barberino di Mugello, Unione Montana dei Comuni del Mugello, Firenze, Toscana, 50031, Italia"
+  },
+  "Via del Cronaca, 16r, 50142 Firenze FI": {
+    "lat": 43.7715802,
+    "lng": 11.2188284,
+    "display": "16 R, Via del Cronaca, Isolotto, Quartiere 4, Firenze, Toscana, 50143, Italia"
+  },
+  "Viale Ludovico Ariosto, 1r, 50124 Firenze FI": {
+    "lat": 43.7702702,
+    "lng": 11.2402971,
+    "display": "1 R, Viale Ludovico Ariosto, San Frediano, Quartiere 1, Firenze, Toscana, 50100, Italia"
+  },
+  "Via Vincenzo Gioberti, 170, 50121 Firenze FI": {
+    "lat": 43.7706254,
+    "lng": 11.2720214,
+    "display": "170 R, Via Vincenzo Gioberti, Bellariva, Quartiere 2, Firenze, Toscana, 50132, Italia"
+  },
+  "Piazza De Nerli 5, Via dell'Orto, 12, 50124 Firenze FI": null,
+  "Piazza De Nerli 5, Via dell'Orto, 12, 50124 Firenze FI, Italy": null,
+  "Piazza De Nerli 5, Via dell'Orto, Florence, Italy": null,
+  "Via S. Gervasio, 1-3, 40121 Bologna BO": {
+    "lat": 44.4968096,
+    "lng": 11.3382059,
+    "display": "Via San Gervasio, Marconi, Porto-Saragozza, Bologna, Emilia-Romagna, 40122, Italia"
+  },
+  "Via Maurizio Padoa, 6h, 40138 Bologna BO": {
+    "lat": 44.485655,
+    "lng": 11.3730028,
+    "display": "Via Maurizio Padoa, Cirenaica, San Donato-San Vitale, Bologna, Emilia-Romagna, 40137, Italia"
+  },
+  "Galleria Falcone e Borsellino, 2b, 40123 Bologna BO": {
+    "lat": 44.4928857,
+    "lng": 11.3407219,
+    "display": "Galleria Falcone e Borsellino, Malpighi, Porto-Saragozza, Bologna, Emilia-Romagna, 40123, Italia"
+  },
+  "Via Mazzini, 170, 40139 Bologna BO": {
+    "lat": 44.4847636,
+    "lng": 11.3716623,
+    "display": "170, Via Giuseppe Mazzini, Cirenaica, San Donato-San Vitale, Bologna, Emilia-Romagna, 40139, Italia"
+  },
+  "Via Franco Basaglia, 3, 40131 Bologna BO": {
+    "lat": 44.5140781,
+    "lng": 11.3180609,
+    "display": "3, Via Franco Basaglia, Lazzaretto, Quartiere Navile, Bologna, Emilia-Romagna, 40131, Italia"
+  },
+  "Via Cairoli, 16, 40121 Bologna BO": {
+    "lat": 44.5035613,
+    "lng": 11.3386922,
+    "display": "Pizzeria la Verace, 16, Via Cairoli, Marconi, Porto-Saragozza, Bologna, Emilia-Romagna, 40121, Italia"
+  },
+  "Via Garibaldi, 5/H, 40124 Bologna BO": {
+    "lat": 44.3969759,
+    "lng": 11.2471548,
+    "display": "Via Garibaldi, Sasso Marconi, Unione dei comuni Valli del Reno, Lavino e Samoggia, Bologna, Emilia-Romagna, 40037, Italia"
+  },
+  "Via Guerrazzi, 11b, 40125 Bologna BO": {
+    "lat": 44.4910139,
+    "lng": 11.351104,
+    "display": "Via Guerrazzi, Galvani, Santo Stefano, Bologna, Emilia-Romagna, 40125, Italia"
+  },
+  "Piazza S. Martino, 3/b, 40126 Bologna BO": {
+    "lat": 44.4966589,
+    "lng": 11.3464405,
+    "display": "Piazza San Martino, Ghetto ebraico, Santo Stefano, Bologna, Emilia-Romagna, 40100, Italia"
+  },
+  "Via S Paolo, 12/A, 10138 Torino TO": {
+    "lat": 45.0643804,
+    "lng": 7.6530492,
+    "display": "12a, Via San Paolo, Cenisia, Circoscrizione 3, Torino, Piemonte, 10138, Italia"
+  },
+  "Via Berthollet 20, 10125 Torino": {
+    "lat": 45.0585482,
+    "lng": 7.6824602,
+    "display": "20d, Via Claudio Luigi Berthollet, San Salvario, Circoscrizione 8, Torino, Piemonte, 10125, Italia"
+  },
+  "Via Tepice, 8, 10126 Torino TO": {
+    "lat": 45.039468,
+    "lng": 7.670802,
+    "display": "8, Via Tepice, Molinette, Nizza Millefonti, Circoscrizione 8, Cavoretto, Torino, Piemonte, 10126, Italia"
+  },
+  "Via Stampatori, 6, 10122 Torino TO": {
+    "lat": 45.0728187,
+    "lng": 7.6785764,
+    "display": "6, Via Stampatori, Quadrilatero Romano, Centro, Circoscrizione 1, Torino, Piemonte, 10122, Italia"
+  },
+  "Via Camillo Finocchiaro Aprile, 34 R, 16129 Genova GE": {
+    "lat": 44.3991874,
+    "lng": 8.9462968,
+    "display": "34r, Via Camillo Finocchiaro Aprile, Foce, Medio Levante, Genova, Liguria, 16129, Italia"
+  },
+  "Corso Valparaiso, 34, 16043 Chiavari GE": {
+    "lat": 44.3163408,
+    "lng": 9.3176118,
+    "display": "Corso Valparaiso, Sampierdicanne, Chiavari, Genova, Liguria, 16043, Italia"
+  },
+  "Via Gabriele d'Annunzio, 8, 16121 Genova GE": {
+    "lat": 44.404846,
+    "lng": 8.9356149,
+    "display": "Via Gabriele D'Annunzio, Sant'Andrea, Portoria, Centro Est, Genova, Liguria, 16128, Italia"
+  },
+  "Via Mantova, 1, 37069 Villafranca di Verona VR": {
+    "lat": 45.3476554,
+    "lng": 10.8410116,
+    "display": "Locanda del Viandante, 1, Via Mantova, Brocciolo, Villafranca di Verona, Verona, Veneto, 37069, Italia"
+  },
+  "Piazza Roma, 15, 37066 Sommacampagna VR": {
+    "lat": 45.4077379,
+    "lng": 10.8426813,
+    "display": "Piazza Roma, Sommacampagna, Verona, Veneto, 37066, Italia"
   }
 }
