@@ -1,143 +1,122 @@
-# OpenPizzaMap — Session Handoff (2026-04-26, end of day)
+# OpenPizzaMap — Session Handoff (2026-04-26, end of evening)
 
-## Vision recap
-- Community pizza map; alternative to thegreat.pizza.
-- Anti-"Karen reviews" — protect good places from bad-faith ratings.
-- Plan: scrape curated sources + user submissions + reddit-style profile karma.
-- **Hard budget:** domain + Hostinger hosting only. No paid APIs, SaaS, or tile keys, ever.
+## Prod state right now
+- **~1,130 places, ~1,117 visible** on the map across **60+ countries** and **549+ cities**.
+- All visible places have hero images served from **Hostinger's own filesystem** (`/uploads/places/{id}.{ext}`) — no more cross-origin Referer leak. 935 images, ~200 MB total.
+- API: `https://openpizzamap.com/api/places` returns the full set as JSON.
+- Maintenance gate at `/` still in place. Map + style pages reachable but unlinked from the front door — Eric's call to keep it that way.
 
-## What changed today (the late session)
+## Source breakdown (PlaceSource counts)
+| Source | Count | Visibility | Notes |
+|---|---|---|---|
+| `avpn` | 752 | auto-flipped visible | AVPN-certified Neapolitan, 60+ countries |
+| `eater` | 203 | auto-flipped visible | 13 city pages, US + London |
+| `tasteatlas` | 81 | mixed | original seed, 7 pizza styles |
+| `thegreat.pizza` | 99 | mixed | original seed, 16 EU+US cities |
+| `50toppizza` | **0** | — | scraped (306 venues) but **import pending** — see Open Items |
 
-### Map is no longer empty
-- **167 places live** across 34 cities, 6 countries (IT 113, US 44, FR 9, GB ~, ES, AT). All `isVisible: true`.
-- Top cities: Rome 26, Naples 21, NYC 14, Florence 11, Milan 11, Bologna 9, Verona 9, Paris 9, Chicago 8, Catania 7.
-- Source breakdown via `PlaceSource`: 99 thegreat.pizza, 68 tasteatlas (one Trianon-style entry collapses two TasteAtlas lists into a single source row, but its `Place.stylesJson` carries both styles).
+## What changed this session
 
-### Importer landed: `scripts/import-places.js`
-- Reads 8 JSON files (`scrape-result.json` + 7 `tasteatlas-*.json`), normalizes per-shape, dedupes by `slugify(name)+'|'+slugify(canonicalCity)`.
-- Country/city canonicalization tables baked in (Italia→Italy/IT, Roma→Rome, Wien→Vienna, Regno Unito→GB, etc.). City matching is by canonical English name.
-- Geocoding: Nominatim, 1.1s/req, multi-strategy fallback per place (try `addressLine` alone → `addressLine + country` → `head + city + country` → `city + country`). User-Agent set per their TOS.
-- Cache file: `geocode-cache.json` (committed, useful for reproducibility — 229 entries currently). Errors → `import-errors.json` (gitignored).
-- Idempotent on re-run: slug `name-city` is stable; existing rows are upsert-no-op.
-- Flags: `--dry-run`, `--no-geocode`, `--limit N`.
+### 1. AVPN — 860 scraped, 636 imported, 752 PlaceSource entries
+- `scripts/scrape-avpn.js` walks `https://www.pizzanapoletana.org/it/associati` (single ~860-row server-rendered table) + each detail page.
+- **Coordinates come for free** from the Google Maps `embed` iframe URL — pattern `!2d{lng}!3d{lat}`. ~73% hit rate on first scrape.
+- 132 HTTP-429 failures during the original concurrent scrape; the enricher retries those serial @ 2s delay (it ran once but pass-2 had a Prisma bug — fixed).
+- Importer extended for global country names (Italian + English + parenthetical/dash-suffix forms; hex HTML entities).
 
-### Bug fixed: map crashed on country names
-- `formatAddress` in [public/js/map.js:109](public/js/map.js:109) called `Intl.DisplayNames({type:'region'}).of(p.country)` which throws on non-ISO strings. Both the seed AND every imported row store country as a name (`"Italy"`, `"United States"`), so the popup card never rendered → API errors → markers never drew.
-- Fix: only call `.of()` when `p.country` matches `^[A-Za-z]{2}$`.
+### 2. Eater — 227 venues across 13 city pages
+- `scripts/scrape-eater.js` reads `<script id="__NEXT_DATA__">` and walks to `props.pageProps.hydration.responses[*].data.node.mapPoints`.
+- 100% of records have name + address + lat/lng + phone + website inline. Image URL coverage 130/227 (rest are Instagram embeds).
+- Style hints carried per-page (Chicago has thin-crust/deep-dish/Detroit-square sub-pages; Eater Detroit map). Per-record `extraStyles` merged via dedupe.
+- US-only + London. NYC subdomain returned 404 (retired). International expansion: try `vancouver.eater.com`, `montreal.eater.com`, `toronto.eater.com` next.
 
-### Maintenance / housekeeping
-- Scratch JSON files deleted (`chicago-extract*.json`, `chicago-raw.json`, `tasteatlas-traditional-italian-raw.json`).
-- `.gitignore` now excludes `import-errors.json` and `import-log.txt`.
+### 3. 50 Top Pizza — 306 scraped, **import incomplete**
+- `scripts/scrape-50toppizza.js` parses ranking pages (Italia 2024, Italia 2023, Europe 2024, Europe 2023). Each card: rank + name + city + (region for IT lists / country for EU lists) + image.
+- **No address or coords** — needs Nominatim. The local import attempt hung silently on a Nominatim request after writing the cache for ~3 min, then sat dead for 11 min before I killed it. **0 50TP places landed.**
+- Importer normalizer + country table extensions are committed; just needs another import run with reliable Nominatim. Try `node scripts/import-places.js` again with retries-on-timeout on the `nominatimLookup` function (current code has none).
 
-### Pizza styles became real categories
-The bigger structural addition this session.
+### 4. Image migration to Hostinger
+- `scripts/download-images.js` walks every Place row, downloads remote images to `public/uploads/places/{id}.{ext}`, rewrites `Place.heroImageUrl` to local path. Idempotent (skips rows already on `/uploads/`).
+- Eric ran this on Hostinger via SSH. Result: 935/935 ok, 199.9 MB. Map is now self-hosted.
+- 5 places (DB ids 42–46) have `heroImageUrl=NULL` from a botched 5-row test before the local-vs-Hostinger architecture was settled. Run `download-images.js` again on Hostinger to recover them — the scrape-image lookup now covers all five sources.
+- `public/uploads/` is gitignored (lives only on Hostinger).
 
-**Schema (`prisma db push`, additive):**
-- New `Style` model — `id, slug (unique, varchar 40), name, shortLabel, introHtml, heroImageUrl, seoTitle, seoDescription, isVisible, sortOrder, createdAt, updatedAt`.
-- New `PlaceStyle` join — `(placeId, styleId)` composite PK, cascade on either side. Many-to-many.
-- `Place.styles PlaceStyle[]` relation added.
+### 5. Trust-flip auto-visibility
+- `scripts/flip-avpn-visible.js` (yes, still that name — accepts arbitrary trusted-source list) flips any place with a PlaceSource matching `['avpn','eater','50toppizza']` to `isVisible=true`. Curated lists stand in for our manual moderation.
 
-**Taxonomy (12 styles, 11 visible + `italian` deprecated/hidden):**
-`neapolitan, romana, contemporanea, ny, new-haven, detroit, chicago, al-taglio, sicilian, apulian, padellino, focaccia-recco`.
+## Open items / next-session priorities
 
-Distribution after re-tagging: neapolitan 47, contemporanea 33, ny 20, romana 17, detroit 10, apulian 9, chicago 9, sicilian 7, al-taglio 6, new-haven 5, padellino 4, focaccia-recco 0 (slot reserved). Total 167 PlaceStyle rows / 167 places.
+### High priority
+1. **Finish 50 Top Pizza import** — re-run `node scripts/import-places.js` (without `--no-geocode`). Add retry-with-timeout to the `nominatimLookup` function in `scripts/import-places.js` so a single hung request doesn't tank the whole pass.
+2. **Re-run downloader on Hostinger after that** — to grab images for the new 50TP places.
+3. **Fix the 5 NULL-image places** (ids 42–46) — same downloader run will pick them up.
 
-**Migration scripts (in `scripts/`):**
-- `seed-styles.js` — upserts the 7 original styles + walks `Place.stylesJson` → creates `PlaceStyle` rows. Idempotent.
-- `tag-thegreat-styles.js` — first-pass heuristic for the 99 untagged thegreat.pizza places (city + name regex; default `italian`).
-- `retag-italian-specific.js` — adds the 6 new styles, walks every place currently `italian`, replaces with regional/specific tag (Rome → romana, Catania/Palermo → sicilian, Bari/Lecce → apulian, Turin → padellino, Genoa → neapolitan, Florence/Bologna/Milan/Verona → contemporanea, with per-ID overrides). Hides `italian` style at end.
+### Medium priority
+4. **Eater international** — probe `vancouver.eater.com`, `montreal.eater.com`, `toronto.eater.com` for `/maps/best-pizza-*`. If alive, add to `CITY_PAGES` in `scripts/scrape-eater.js`.
+5. **Editing UI on both sides** — Eric's morning brief still applies. Admin needs `admin_styles.ejs` / `admin_style_edit.ejs`, bulk visibility toggle on `admin_places.ejs`. User side needs audit of `add.ejs`, `suggest_edit.ejs`, `me.ejs`.
 
-**Routes / API:**
-- `GET /styles` — index page listing all visible styles + place counts. Card grid.
-- `GET /style/:slug` — landing page for one style: title, intro, list of places. Mirrors `/country/:code/city/:slug` pattern.
-- `GET /api/places?style=<slug>` — filters places by style relation.
-- `/api/places` and `/api/places/:id` now also include a flat `styles[]` array on each place: `[{ slug, name, shortLabel }, ...]`. Take limit bumped 200 → 1000.
+### Lower priority (queued sources from research)
+6. **The Infatuation** — Next.js `__NEXT_DATA__` shape, ~10 cities × 20 places. Fast adaptation of `scrape-eater.js`.
+7. **Michelin pizza filter** — Cloudflare-gated (HTTP 202 empty body). Needs Playwright. ~400 places worldwide with Bib Gourmand badge.
+8. **OSM Overpass** — biggest single volume play (5000+). Free, OdbL. Best as fill-in layer.
+9. **CT Pizza Trail** — fills the empty `new-haven` style page (currently 5 places).
 
-**UI:**
-- Map popup card now shows clickable green chips per style (e.g. `[Neapolitan]`) under the address line, linking to `/style/<slug>`. CSS in `public/css/styles.css` (`.ppc-styles`, `.ppc-style-chip`).
-- `summaryFor` simplified — style is now in the chip, no longer in the prose summary.
+### Deferred (don't bring up unless Eric asks)
+- Replacing the maintenance gate at `/`.
+- AI-generated style/city intros.
+- Reviews / karma / anti-Karen schema.
+- MapLibre GL + OpenFreeMap migration.
+- ISO-2 standardisation of `Place.country` (currently free text).
 
-**EJS views added:**
-- `src/views/styles.ejs` — index.
-- `src/views/style.ejs` — single style.
+## Hostinger ops cheat sheet
 
-**Known minor follow-ups specific to styles:**
-- No admin CMS yet for editing `Style.introHtml`, `seoTitle`, `seoDescription`, `heroImageUrl`. Mirrors City CMS; ~30-min follow-up.
-- A few `sortOrder` collisions (e.g. al-taglio + romana both at 3) make the index alphabetic-as-tiebreaker. Tweak when it matters.
-- Verona modern spots (i Tigli, Saporè) all currently `contemporanea`. Could split out `gourmet`/`degustazione` later.
-- `Place.stylesJson` column kept as denormalized cache; can be dropped once nothing reads it (map.js still falls back to it but only if `p.styles` is empty).
+```bash
+# SSH in
+ssh -p 65002 u975898812@92.113.28.98
 
-## Known issues / debt
+# Get to the app
+cd /home/u975898812/domains/openpizzamap.com/nodejs
 
-### Address display is ugly for some imports
-Popup address rows for thegreat.pizza imports often double-print the city/postal because the raw `addressLine` already contains them, e.g.:
+# Node lives at /opt/alt/alt-nodejs22/root/usr/bin/node
+export PATH=/opt/alt/alt-nodejs22/root/usr/bin:$PATH
+
+# DATABASE_URL is NOT in interactive shell env — copy from hPanel → Node.js → Env Vars
+export DATABASE_URL='mysql://...'
+
+# Run any script
+node scripts/download-images.js                # full
+nohup node scripts/<script>.js > /tmp/x.log 2>&1 &   # background-safe
 ```
-Via Alessandro Scarlatti, 84, 80129 Napoli NA, 80141 Naples NA, Italy
+
+**Security debt:** the prod DB password was pasted into the assistant's chat history during the SSH session. Eric chose not to rotate. Worth flagging in the next session if it bothers him.
+
+## How a new source lands (the pipeline)
+
 ```
-Pre-existing display logic in `formatAddress` joins `addressLine + cityLine + country` with no de-dup. Worth a small rewrite of `formatAddress` to detect when `addressLine` already contains the postal/city tokens.
+1. Scraper (scripts/scrape-<source>.js) → JSON file at repo root
+2. Add entry to SOURCES in scripts/import-places.js + write normalize<Source> function
+3. node scripts/import-places.js                      # geocodes + upserts
+4. node scripts/seed-styles.js                        # wires Place.stylesJson → PlaceStyle
+5. node scripts/flip-avpn-visible.js                  # flips trusted-source places visible
+6. SSH to Hostinger → node scripts/download-images.js # de-hotlinks new images
+7. git add + commit + push                            # auto-deploys
+```
 
-### Country stored as name, not ISO code
-Schema-wise `Place.country` is free text and we now have a mix of `"Italy"`, `"United States"`, etc. Nothing else uses it for routing (city→country via `City.countryCode`), but it's inconsistent with `City.countryCode` and creates the `Intl.DisplayNames` footgun. If we standardise: also rewrite the seed Sorbillo row and rerun importer (idempotent — won't dup).
-
-### 26 ungeocoded places
-Full list in `import-errors.json`. Mostly TasteAtlas Italian small-town entries with sparse street data (e.g. `"Via Cesare Sersale"` no number). Options:
-- Hand-fix obvious ones in Prisma Studio.
-- Add a TasteAtlas detail-page scrape pass (the slug → detail page may have lat/lng or richer address).
-- Try Nominatim with the place name as a "named POI" search (`q=Trianon Naples Italy`, `featuretype=settlement`).
-
-### `prisma db push` vs migrations
-Schema diverged from migration history (NewsletterSignup + PlaceSource were `db push`-ed). Hostinger's MariaDB user can't create the shadow DB `migrate dev` needs. Either get a DDL-capable user, or keep evolving via `db push`.
-
-## What's still pending from before today
-
-### Product
-- **Replace maintenance gate at `/`** — landing actively turns away visitors while `/map` works *and* now has real data. A landing with map peek + CTA would unblock SEO + traffic. Eric still wants maintenance for now, but the gate is more wasteful than it was 24h ago.
-- **Imagery sourcing** for places without `heroImageUrl` — TasteAtlas-only imports are missing them. Mapillary (free w/ key), Wikimedia Commons, manual upload all on the table.
-- **AI summary inference** — Gemini free tier or Groq for `descriptionHtml` generation at moderation time. Hallucination risk → only feed structured facts, allow admin edit.
-- **MapLibre GL + OpenFreeMap** migration for vector tiles (custom water color, Outfit font on labels). Bigger refactor, deferred.
-
-### Data quality next steps
-- **Fix the popup address de-duplication** (cleanup item above).
-- **Standardise `Place.country`** to ISO2 (decision: do it or leave alone).
-- **Backfill the 26 missed geocodes**.
-- **Style CMS** — admin views to edit Style intro/SEO/hero (mirrors `admin_city_edit.ejs`). The 11 visible styles all have empty intro HTML right now.
-- **Per-place style refinement** — current tags came from heuristics; user-suggested edits via existing submission flow could let the community correct them.
-
-### Reviews / karma
-- Schema still not extended. Reddit-style karma + anti-Karen design rules still unspecified.
+Steps 1-5 run on local laptop against prod DB (`.env` points there). Step 6 runs on Hostinger filesystem.
 
 ## Useful pointers
-- Layout: `src/views/layout.ejs`
-- Map view: `src/views/map.ejs` + `public/js/map.js`
-- Auth view: `src/views/auth.ejs`
-- Maintenance: `src/views/maintenance.ejs`
-- Places API: `src/routes/api.places.js`
-- Auth API: `src/routes/api.auth.js`
-- Notify API: `src/routes/api.notify.js`
-- Email service: `src/services/email.js`
 - Schema: `prisma/schema.prisma`
-- Page routes (incl. /style, /styles, /city, /country): `src/routes/pages.js`
-- Style index view: `src/views/styles.ejs`
-- Single-style view: `src/views/style.ejs`
-- **Importer: `scripts/import-places.js`** — re-runnable; reads cache, won't re-hit Nominatim or duplicate rows.
-- **Style migration: `scripts/seed-styles.js`** + **`scripts/tag-thegreat-styles.js`** + **`scripts/retag-italian-specific.js`** — run in that order on a fresh DB.
-- **Errors file: `import-errors.json`** at repo root (gitignored) — review-and-fix list.
-- **Cache file: `geocode-cache.json`** at repo root (committed) — 229 query→coord entries.
+- Importer: `scripts/import-places.js` (normalizers per shape; country tables; geocode multi-strategy)
+- Scrapers: `scripts/scrape-{avpn,eater,50toppizza}.js`
+- Image downloader: `scripts/download-images.js`
+- Trust-flip: `scripts/flip-avpn-visible.js` (accepts source-list arg)
+- Enricher (AVPN re-scrape + delegated geocode): `scripts/enrich-places.js`
+- Map view: `src/views/map.ejs` + `public/js/map.js`
+- Style pages: `src/views/styles.ejs`, `src/views/style.ejs`
+- Admin views: `src/views/admin_*.ejs` — Style admin still missing, see open item #5
+- Geocode cache: `geocode-cache.json` (committed, ~1100 entries)
+- Scrape outputs at repo root: `avpn-scrape.json`, `eater-scrape.json`, `50toppizza-scrape.json`, `scrape-result.json`, `tasteatlas-*.json`
 
-## Auth + maintenance landing reference (unchanged, here for continuity)
-
-### Auth — single magic-link flow
-- One entry: **`/auth`** (email + Google OAuth). Old routes (`/login`, `/register`, `/forgot`, `/reset`, `/set-password`) all 301 to `/auth`.
-- Token TTL 30 min, sha256-hashed at rest. Magic-link copy diverges for new vs returning.
-- Email template: brand green CTA, no decorative bar, no outer cream panel.
-
-### Maintenance landing (`/`)
-- Animated pizza-slice background, collision-detected, 9–18s float loop, `prefers-reduced-motion` respected.
-- Card: warm off-white (`#fdfaf3`), green outline, green-tinted shadow.
-- Pill email form → POST `/api/notify` → upserts `NewsletterSignup` (`email` unique, `source = "maintenance"`).
-
-### Map (`/map`)
-- Three Leaflet raster basemaps in top-right layer picker: Voyager (default), Positron, Esri Satellite.
-- Marker cluster group (leaflet.markercluster). Pizza emoji 🍕 markers scale with zoom (22px → 56px).
-- Place card popup: hero image with rating chip overlay, name, directions link, summary, full-width green CTA to the place profile.
-- Loads from `/api/places` (no params → returns all `status=active, isVisible=true`).
+## Vision (unchanged)
+- Community pizza map. Anti-"Karen reviews".
+- Plan: curated scrape + user submissions + reddit-style karma.
+- **Hard budget:** domain + Hostinger only. No paid APIs/SaaS/tile keys, ever.

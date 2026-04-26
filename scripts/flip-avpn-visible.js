@@ -12,7 +12,7 @@ require('dotenv').config();
 const { PrismaClient } = require('@prisma/client');
 
 const argSources = process.argv.slice(2).filter(Boolean);
-const TRUSTED_SOURCES = argSources.length ? argSources : ['avpn', 'eater'];
+const TRUSTED_SOURCES = argSources.length ? argSources : ['avpn', 'eater', '50toppizza'];
 
 (async () => {
   const prisma = new PrismaClient();

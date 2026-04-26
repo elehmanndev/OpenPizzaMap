@@ -1159,5 +1159,73 @@
     "lat": 45.4077379,
     "lng": 10.8426813,
     "display": "Piazza Roma, Sommacampagna, Verona, Veneto, 37066, Italia"
-  }
+  },
+  "Catania, Italy": {
+    "lat": 37.5023612,
+    "lng": 15.0873718,
+    "display": "Catania, Sicilia, Italia"
+  },
+  "Via Monfalcone, 2, 95127 Catania CT": {
+    "lat": 37.5162411,
+    "lng": 15.1015642,
+    "display": "2, Via Monfalcone, Guardia, Picanello, Picanello-Ognina-Barriera-Canalicchio, Catania, Sicilia, 95127, Italia"
+  },
+  "Largo Paisiello, 95124 Catania CT": {
+    "lat": 37.5091893,
+    "lng": 15.0841832,
+    "display": "Largo Giovanni Paisiello, Antico Corso, Centro storico, Catania, Sicilia, 95124, Italia"
+  },
+  "Via Quintino Sella 14 - ang, Via Mario Sangiorgi, 24, 95129 Catania CT": null,
+  "Via Quintino Sella 14 - ang, Via Mario Sangiorgi, 24, 95129 Catania CT, Italy": null,
+  "Via Quintino Sella 14 - ang, Via Mario Sangiorgi, Catania, Italy": null,
+  "Viale Artale Alagona, 27, 95126 Catania CT": {
+    "lat": 37.5251382,
+    "lng": 15.1157963,
+    "display": "27l, Viale Artale Alagona, Ognina, Picanello-Ognina-Barriera-Canalicchio, Catania, Sicilia, 95126, Italia"
+  },
+  "Via Pietra dell'Ova, 209, 95125 Catania CT": {
+    "lat": 37.5442335,
+    "lng": 15.0895882,
+    "display": "209, Via Pietra dell'Ova / Via Madonna di Fatima, Picanello-Ognina-Barriera-Canalicchio, Catania, Sicilia, 95125, Italia"
+  },
+  "Via Sisto, 56, 95129 Catania CT": {
+    "lat": 37.5123725,
+    "lng": 15.0867007,
+    "display": "56, Via Sisto, Monserrato, Borgo, Borgo-Sanzio, Catania, Sicilia, 95129, Italia"
+  },
+  "Via Giovanni Squicciarini, 8, 70021 Acquaviva delle Fonti BA": {
+    "lat": 40.8975929,
+    "lng": 16.8424869,
+    "display": "Via Giovanni Squicciarini, Acquaviva delle Fonti, Bari, Puglia, 70021, Italia"
+  },
+  "Via Ludovico I D'Angiò, 121, 70032 Bitonto BA": {
+    "lat": 41.1132717,
+    "lng": 16.6869263,
+    "display": "Via Ludovico I D'Angiò, Bitonto, Bari, Puglia, 70032, Italia"
+  },
+  "Via Giovinazzo, 122, 70056 Molfetta BA": {
+    "lat": 41.1998524,
+    "lng": 16.6087299,
+    "display": "Via Giovinazzo, Villaggio Belgiovine, Molfetta, Bari, Puglia, 70056, Italia"
+  },
+  "Via 1' S.da a Denominarsi, 1B, 70038 Terlizzi BA": null,
+  "Via 1' S.da a Denominarsi, 1B, 70038 Terlizzi BA, Italy": null,
+  "Via 1' S.da a Denominarsi, 1B, Bari, Italy": null,
+  "Bari, Italy": {
+    "lat": 41.1257843,
+    "lng": 16.8620293,
+    "display": "Bari, Puglia, Italia"
+  },
+  "Largo Martellotta, 75, 70011 Alberobello BA": {
+    "lat": 40.7831241,
+    "lng": 17.2369026,
+    "display": "Largo Martellotta, Alberobello, Bari, Puglia, 70011, Italia"
+  },
+  "Via Roma, 70, 70023 Gioia del Colle BA": {
+    "lat": 40.7976113,
+    "lng": 16.9195508,
+    "display": "Via Roma, Gioia del Colle, Bari, Puglia, 70023, Italia"
+  },
+  "Viale Martiri del 1799, 94-96, 70022 Altamura BA": null,
+  "Viale Martiri del 1799, 94-96, 70022 Altamura BA, Italy": null
 }
