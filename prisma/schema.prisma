@@ -129,6 +129,13 @@ model Faq {
   @@index([isVisible])
 }
 
+model NewsletterSignup {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  source    String?  @db.VarChar(40)
+  createdAt DateTime @default(now())
+}
+
 model Page {
   id            Int      @id @default(autoincrement())
   key           String   @unique @db.VarChar(60)

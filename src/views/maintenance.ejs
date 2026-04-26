@@ -5,39 +5,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OpenPizzaMap | Coming Soon</title>
-    <script>
-        (function () {
-            try {
-                var theme = localStorage.getItem("theme");
-                if (theme === "light" || theme === "dark") {
-                    document.documentElement.setAttribute("data-theme", theme);
-                }
-            } catch (err) {
-                // ignore storage errors
-            }
-        })();
-    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@400&display=swap" rel="stylesheet">
     <style>
         :root {
-            --c-accent: #c0392b;
-            --c-accent-strong: #a93226;
-            --c-accent-rgb: 192, 57, 43;
+            --c-accent: #2bb673;
+            --c-accent-strong: #239d61;
             --c-text: #1e1e1e;
             --c-bg: #faf7f2;
-            --c-surface: #faf7f2;
-            --c-border: #d6d3ce;
+            --c-surface: #fdfaf3;
+            --c-border: #e5e2dc;
             --c-muted: rgba(30, 30, 30, 0.6);
-            --c-shadow: 0 25px 60px rgba(30, 30, 30, 0.12);
-            --pattern-opacity: 0.85;
+            --c-shadow: 0 25px 60px rgba(43, 182, 115, 0.14);
+            --pattern-opacity: 0.32;
         }
 
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         body {
             margin: 0;
@@ -46,43 +30,59 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-direction: column;
-            gap: 0;
             font-family: 'Outfit', sans-serif;
             background-color: var(--c-bg);
             color: var(--c-text);
-            overflow: hidden;
             position: relative;
+            overflow: hidden;
         }
 
         .pattern-bg {
             position: absolute;
             inset: 0;
-            opacity: var(--pattern-opacity);
             pointer-events: none;
-            background-image: url("data:image/svg+xml,%3Csvg width='240' height='240' viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cstyle%3E .s %7B fill: none; stroke: %232b2b2b; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; %7D %3C/style%3E%3Cg class='s'%3E%3C!-- Slice 1 --%3E%3Cg transform='translate(40,30) rotate(-10) scale(0.7)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Cpath d='M35 60 q 0 20 8 20 t 8 -20' /%3E%3Ccircle cx='50' cy='45' r='7' /%3E%3Ccircle cx='75' cy='65' r='6' /%3E%3C/g%3E%3C!-- Slice 2 --%3E%3Cg transform='translate(170,50) rotate(140) scale(0.5)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Ccircle cx='60' cy='50' r='8' /%3E%3C/g%3E%3C!-- Slice 3 --%3E%3Cg transform='translate(80,160) rotate(45) scale(0.6)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Cpath d='M30 55 q 0 15 5 15 t 5 -15' /%3E%3Ccircle cx='50' cy='40' r='6' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-            background-repeat: repeat;
-            -webkit-mask-image: radial-gradient(circle, transparent 10%, black 80%);
-            mask-image: radial-gradient(circle, transparent 10%, black 80%);
+            overflow: hidden;
             z-index: 1;
         }
 
-        .stack {
-            position: relative;
-            z-index: 2;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        .slice {
+            position: absolute;
+            left: var(--x);
+            top: var(--y);
+            width: var(--size);
+            height: var(--size);
+            opacity: var(--pattern-opacity);
+            transform: rotate(var(--rot));
+            animation: float var(--d) ease-in-out var(--delay) infinite;
+            will-change: transform;
+        }
+
+        .slice svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(var(--rot)); }
+            25% { transform: translate(var(--dx), calc(var(--dy) * -1)) rotate(calc(var(--rot) + 6deg)); }
+            50% { transform: translate(calc(var(--dx) * 0.5), var(--dy)) rotate(calc(var(--rot) - 4deg)); }
+            75% { transform: translate(calc(var(--dx) * -1), calc(var(--dy) * 0.4)) rotate(calc(var(--rot) + 3deg)); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .slice { animation: none; }
         }
 
         .content {
             position: relative;
             z-index: 2;
             text-align: center;
-            max-width: 640px;
-            padding: 44px 48px;
+            max-width: 540px;
+            padding: 48px 44px;
+            margin: 24px;
             background: var(--c-surface);
-            border: 1px solid var(--c-border);
+            border: 1.5px solid var(--c-accent);
             border-radius: 24px;
             box-shadow: var(--c-shadow);
             animation: fadeIn 0.9s ease-out;
@@ -93,37 +93,13 @@
             letter-spacing: 0.3rem;
             font-size: 0.75rem;
             font-weight: 600;
-            margin-bottom: 1rem;
+            margin-bottom: 1.2rem;
             color: var(--c-muted);
             display: block;
         }
 
-        .status-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 12px;
-            border-radius: 999px;
-            border: 1px solid var(--c-accent);
-            background: var(--c-accent);
-            color: #fff;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.14em;
-            margin-top: 18px;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #fff;
-            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.25);
-        }
-
         h1 {
-            font-size: clamp(2rem, 6vw, 3.2rem);
+            font-size: clamp(2rem, 5.5vw, 2.8rem);
             font-weight: 700;
             line-height: 1.1;
             margin: 0;
@@ -131,113 +107,210 @@
         }
 
         .tagline {
-            margin-top: 1.2rem;
-            font-size: 1.05rem;
+            margin-top: 1.1rem;
+            font-size: 1rem;
             color: var(--c-muted);
-            letter-spacing: 0.02rem;
+            line-height: 1.5;
         }
+
+        .notify {
+            margin-top: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0;
+            padding: 4px 4px 4px 18px;
+            background: #ffffff;
+            border: 1px solid var(--c-border);
+            border-radius: 999px;
+            box-shadow: 0 1px 2px rgba(30, 30, 30, 0.04);
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .notify:focus-within {
+            border-color: var(--c-accent);
+            box-shadow: 0 0 0 3px rgba(43, 182, 115, 0.15);
+        }
+
+        .notify .mail-icon {
+            flex: 0 0 auto;
+            width: 18px;
+            height: 18px;
+            margin-right: 10px;
+            color: var(--c-muted);
+        }
+
+        .notify input[type="email"] {
+            flex: 1 1 auto;
+            min-width: 0;
+            height: 48px;
+            padding: 0;
+            margin: 0;
+            border: none;
+            background: transparent;
+            color: var(--c-text);
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 500;
+            line-height: normal;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .notify input[type="email"]::placeholder {
+            color: var(--c-muted);
+            opacity: 0.7;
+        }
+
+        .notify button {
+            flex: 0 0 auto;
+            height: 44px;
+            margin-left: 8px;
+            padding: 0 22px;
+            border: none;
+            border-radius: 999px;
+            background: var(--c-accent);
+            color: #fff;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            line-height: normal;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: background 0.15s ease;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .notify button:hover { background: var(--c-accent-strong); }
+        .notify button:disabled { opacity: 0.6; cursor: default; }
+
+        .notify-msg {
+            margin-top: 12px;
+            min-height: 1.2em;
+            font-size: 0.85rem;
+            color: var(--c-muted);
+        }
+
+        .notify-msg.ok { color: var(--c-accent-strong); }
+        .notify-msg.err { color: #c0392b; }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(16px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .content::after {
-            content: '';
-            display: block;
-            width: 48px;
-            height: 2px;
-            background: var(--c-accent);
-            margin: 2rem auto 0;
-            border-radius: 999px;
-        }
-@media (max-width: 600px) {
-            body {
-                padding: 20px;
-            }
-
-            .content {
-                padding: 32px 24px;
-            }
-
-            .title-pre {
-                letter-spacing: 0.2rem;
-            }
-        }
-
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --c-accent: #30d158;
-                --c-accent-strong: #30d158;
-                --c-accent-rgb: 48, 209, 88;
-                --c-text: #faf7f2;
-                --c-bg: #1e1e1e;
-                --c-surface: #242424;
-                --c-border: #3a3a3a;
-                --c-muted: rgba(250, 247, 242, 0.6);
-                --c-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
-                --pattern-opacity: 0.6;
-            }
-
-            .pattern-bg {
-                background-image: url("data:image/svg+xml,%3Csvg width='240' height='240' viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cstyle%3E .s %7B fill: none; stroke: %23f2efe7; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; %7D %3C/style%3E%3Cg class='s'%3E%3C!-- Slice 1 --%3E%3Cg transform='translate(40,30) rotate(-10) scale(0.7)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Cpath d='M35 60 q 0 20 8 20 t 8 -20' /%3E%3Ccircle cx='50' cy='45' r='7' /%3E%3Ccircle cx='75' cy='65' r='6' /%3E%3C/g%3E%3C!-- Slice 2 --%3E%3Cg transform='translate(170,50) rotate(140) scale(0.5)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Ccircle cx='60' cy='50' r='8' /%3E%3C/g%3E%3C!-- Slice 3 --%3E%3Cg transform='translate(80,160) rotate(45) scale(0.6)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Cpath d='M30 55 q 0 15 5 15 t 5 -15' /%3E%3Ccircle cx='50' cy='40' r='6' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-            }
-        }
-
-        html[data-theme="dark"] {
-            --c-accent: #30d158;
-            --c-accent-strong: #30d158;
-            --c-accent-rgb: 48, 209, 88;
-            --c-text: #faf7f2;
-            --c-bg: #1e1e1e;
-            --c-surface: #242424;
-            --c-border: #3a3a3a;
-            --c-muted: rgba(250, 247, 242, 0.6);
-            --c-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
-            --pattern-opacity: 0.6;
-        }
-
-        html[data-theme="dark"] .pattern-bg {
-            background-image: url("data:image/svg+xml,%3Csvg width='240' height='240' viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cstyle%3E .s %7B fill: none; stroke: %23f2efe7; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; %7D %3C/style%3E%3Cg class='s'%3E%3C!-- Slice 1 --%3E%3Cg transform='translate(40,30) rotate(-10) scale(0.7)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Cpath d='M35 60 q 0 20 8 20 t 8 -20' /%3E%3Ccircle cx='50' cy='45' r='7' /%3E%3Ccircle cx='75' cy='65' r='6' /%3E%3C/g%3E%3C!-- Slice 2 --%3E%3Cg transform='translate(170,50) rotate(140) scale(0.5)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Ccircle cx='60' cy='50' r='8' /%3E%3C/g%3E%3C!-- Slice 3 --%3E%3Cg transform='translate(80,160) rotate(45) scale(0.6)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Cpath d='M30 55 q 0 15 5 15 t 5 -15' /%3E%3Ccircle cx='50' cy='40' r='6' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-        }
-
-        html[data-theme="light"] {
-            --c-accent: #c0392b;
-            --c-accent-strong: #a93226;
-            --c-accent-rgb: 192, 57, 43;
-            --c-text: #1e1e1e;
-            --c-bg: #faf7f2;
-            --c-surface: #faf7f2;
-            --c-border: #d6d3ce;
-            --c-muted: rgba(30, 30, 30, 0.6);
-            --c-shadow: 0 25px 60px rgba(30, 30, 30, 0.12);
-            --pattern-opacity: 0.85;
-        }
-
-        html[data-theme="light"] .pattern-bg {
-            background-image: url("data:image/svg+xml,%3Csvg width='240' height='240' viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cstyle%3E .s %7B fill: none; stroke: %232b2b2b; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; %7D %3C/style%3E%3Cg class='s'%3E%3C!-- Slice 1 --%3E%3Cg transform='translate(40,30) rotate(-10) scale(0.7)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Cpath d='M35 60 q 0 20 8 20 t 8 -20' /%3E%3Ccircle cx='50' cy='45' r='7' /%3E%3Ccircle cx='75' cy='65' r='6' /%3E%3C/g%3E%3C!-- Slice 2 --%3E%3Cg transform='translate(170,50) rotate(140) scale(0.5)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Ccircle cx='60' cy='50' r='8' /%3E%3C/g%3E%3C!-- Slice 3 --%3E%3Cg transform='translate(80,160) rotate(45) scale(0.6)'%3E%3Cpath d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10' /%3E%3Cpath d='M105 35 l -60 85 l -30 -85' /%3E%3Cpath d='M30 55 q 0 15 5 15 t 5 -15' /%3E%3Ccircle cx='50' cy='40' r='6' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        @media (max-width: 600px) {
+            .content { padding: 32px 24px; }
         }
     </style>
 </head>
 
 <body>
-  <div class="pattern-bg"></div>
+  <div class="pattern-bg" id="patternBg"></div>
 
-  <div class="stack">
-    <div class="content">
-      <span class="title-pre">OpenPizzaMap</span>
-      <h1>Something worth <br> waiting for.</h1>
-      <p class="tagline">We're heating up the ovens. Check back soon for the next slice.</p>
-      <span class="status-chip"><span class="status-dot"></span>Maintenance</span>
-    </div>
-</div>
+  <div class="content">
+    <span class="title-pre">OpenPizzaMap</span>
+    <h1>We're heating up<br>the ovens</h1>
+    <p class="tagline">The community pizza map, in the making. Drop your email — we'll save you the first slice.</p>
+    <form class="notify" id="notifyForm" novalidate>
+      <svg class="mail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="5" width="18" height="14" rx="2"/>
+        <path d="M3 7l9 6 9-6"/>
+      </svg>
+      <input type="email" name="email" placeholder="Drop your email" required autocomplete="email" aria-label="Email">
+      <button type="submit">Sign up</button>
+    </form>
+    <p class="notify-msg" id="notifyMsg" role="status" aria-live="polite"></p>
+  </div>
+
+  <script>
+    (function () {
+      var bg = document.getElementById('patternBg');
+      if (!bg) return;
+      var sliceSvg = '<svg viewBox="0 0 130 130" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#2b2b2b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10"/><path d="M105 35 l -60 85 l -30 -85"/><path d="M35 60 q 0 20 8 20 t 8 -20"/><circle cx="50" cy="45" r="7"/><circle cx="75" cy="65" r="6"/></g></svg>';
+      var rect = bg.getBoundingClientRect();
+      var W = rect.width;
+      var H = rect.height;
+      var target = window.innerWidth < 600 ? 14 : 24;
+      var rand = function (min, max) { return Math.random() * (max - min) + min; };
+      var maxFloat = 30; // matches --dx/--dy max
+      var placed = []; // { cx, cy, r }
+      var frag = document.createDocumentFragment();
+      var attemptsPerSlice = 40;
+      for (var i = 0; i < target; i++) {
+        var size = rand(56, 110);
+        var radius = size * 0.55 + maxFloat; // collision radius incl. rotation/float padding
+        var px = 0, py = 0, found = false;
+        for (var a = 0; a < attemptsPerSlice; a++) {
+          px = rand(radius, W - radius);
+          py = rand(radius, H - radius);
+          var ok = true;
+          for (var j = 0; j < placed.length; j++) {
+            var p = placed[j];
+            var dx = px - p.cx, dy = py - p.cy;
+            if ((dx * dx + dy * dy) < (radius + p.r) * (radius + p.r)) { ok = false; break; }
+          }
+          if (ok) { found = true; break; }
+        }
+        if (!found) continue;
+        placed.push({ cx: px, cy: py, r: radius });
+        var el = document.createElement('div');
+        el.className = 'slice';
+        el.style.setProperty('--x', (px - size / 2) + 'px');
+        el.style.setProperty('--y', (py - size / 2) + 'px');
+        el.style.setProperty('--size', size + 'px');
+        el.style.setProperty('--rot', rand(-180, 180) + 'deg');
+        el.style.setProperty('--dx', rand(-maxFloat, maxFloat) + 'px');
+        el.style.setProperty('--dy', rand(-maxFloat, maxFloat) + 'px');
+        el.style.setProperty('--d', rand(9, 18) + 's');
+        el.style.setProperty('--delay', rand(-12, 0) + 's');
+        el.innerHTML = sliceSvg;
+        frag.appendChild(el);
+      }
+      bg.appendChild(frag);
+    })();
+
+    (function () {
+      var form = document.getElementById('notifyForm');
+      var msg = document.getElementById('notifyMsg');
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var btn = form.querySelector('button');
+        var input = form.querySelector('input[name="email"]');
+        var email = (input.value || '').trim();
+        if (!email || !/.+@.+\..+/.test(email)) {
+          msg.textContent = 'Please enter a valid email.';
+          msg.className = 'notify-msg err';
+          return;
+        }
+        btn.disabled = true;
+        msg.textContent = '';
+        msg.className = 'notify-msg';
+        try {
+          var res = await fetch('/api/notify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, source: 'maintenance' })
+          });
+          var data = await res.json().catch(function () { return {}; });
+          if (res.ok && data.ok) {
+            msg.textContent = "You're on the list. We'll be in touch.";
+            msg.className = 'notify-msg ok';
+            input.value = '';
+          } else {
+            msg.textContent = data.error || 'Something went wrong. Try again.';
+            msg.className = 'notify-msg err';
+          }
+        } catch (err) {
+          msg.textContent = 'Network error. Try again.';
+          msg.className = 'notify-msg err';
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    })();
+  </script>
 </body>
 
 </html>
