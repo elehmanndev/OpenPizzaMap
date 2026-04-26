@@ -1,0 +1,18 @@
+<%- include("layout", { title: style && (style.seoTitle || style.name) ? `${style.seoTitle || style.name} pizza` : "Style", user, leaflet: false, body: String.raw`
+  <h1>${escapeHtml(style.name)}${" "}pizza</h1>
+  <p class="small">${places.length} place${places.length === 1 ? "" : "s"} in the OpenPizzaMap directory.</p>
+  ${style.introHtml ? `<div class="card">${style.introHtml}</div>` : ""}
+
+  <h2>Places</h2>
+  ${places && places.length ? `<div class="row">${places.map(p => `
+    <div class="card" style="flex:1; min-width: 220px;">
+      <div><strong>${escapeHtml(p.name)}</strong></div>
+      <div class="small">${escapeHtml(p.city)}${p.country ? ` · ${escapeHtml(p.country)}` : ""}</div>
+      <div style="margin-top:8px;">
+        <a class="btn primary" href="/place/${p.id}">View place</a>
+      </div>
+    </div>
+  `).join("")}</div>` : "<p class=\"small\">No places yet.</p>"}
+
+  <p style="margin-top:24px;"><a href="/styles">← All pizza styles</a></p>
+` }) %>

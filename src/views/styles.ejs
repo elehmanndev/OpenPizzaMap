@@ -1,0 +1,16 @@
+<%- include("layout", { title: "Pizza styles", user, leaflet: false, body: String.raw`
+  <h1>Pizza styles</h1>
+  <p class="small">Each style is a tradition with its own crust, fermentation, ingredients, and rules of the game.</p>
+
+  <div class="row" style="margin-top:16px;">
+    ${styles.map(s => `
+      <div class="card" style="flex:1; min-width: 220px;">
+        <div><strong>${escapeHtml(s.name)}</strong></div>
+        <div class="small">${s.placeCount} place${s.placeCount === 1 ? "" : "s"}</div>
+        <div style="margin-top:8px;">
+          <a class="btn primary" href="/style/${escapeHtml(s.slug)}">Browse</a>
+        </div>
+      </div>
+    `).join("")}
+  </div>
+` }) %>

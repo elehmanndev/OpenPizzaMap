@@ -1,0 +1,67 @@
+{
+  "source_url": "https://www.tasteatlas.com/pizza-al-taglio/wheretoeat",
+  "extracted_at": "2026-04-26",
+  "places": [
+    {
+      "rank": 1,
+      "name": "Pizzarium Bonci",
+      "city": "Rome",
+      "country": "Italy",
+      "street_address": "Via della Meloria, 43, 00136 Rome, Italy",
+      "rating": null,
+      "score_upvotes": 79,
+      "critic_count_in_text": 40,
+      "first_critic": "Anthony Bourdain",
+      "tasteatlas_url": "https://www.tasteatlas.com/PizzariumBonci/pizza-al-taglio"
+    },
+    {
+      "rank": 2,
+      "name": "Forno Campo de' Fiori",
+      "city": "Rome",
+      "country": "Italy",
+      "street_address": null,
+      "rating": null,
+      "score_upvotes": 58,
+      "critic_count_in_text": 31,
+      "first_critic": "Katie Parla",
+      "tasteatlas_url": "https://www.tasteatlas.com/FornoCampoDeFiori/pizza-al-taglio"
+    },
+    {
+      "rank": 3,
+      "name": "Antico Forno Roscioli",
+      "city": "Rome",
+      "country": "Italy",
+      "street_address": null,
+      "rating": null,
+      "score_upvotes": 53,
+      "critic_count_in_text": 27,
+      "first_critic": "Elizabeth Minchilli",
+      "tasteatlas_url": "https://www.tasteatlas.com/AnticoFornoRoscioli/pizza-al-taglio"
+    },
+    {
+      "rank": 4,
+      "name": "Pizzeria La Boccaccia",
+      "city": "Rome",
+      "country": "Italy",
+      "street_address": null,
+      "rating": null,
+      "score_upvotes": 26,
+      "critic_count_in_text": 12,
+      "first_critic": "Rick Steves",
+      "tasteatlas_url": "https://www.tasteatlas.com/pizzeria-la-boccaccia/pizza-al-taglio"
+    },
+    {
+      "rank": 5,
+      "name": "Pizzeria a Taglio Angelo e Simonetta",
+      "city": "Rome",
+      "country": "Italy",
+      "street_address": null,
+      "rating": null,
+      "score_upvotes": 23,
+      "critic_count_in_text": 11,
+      "first_critic": "Natalie Aldern Kennedy",
+      "tasteatlas_url": "https://www.tasteatlas.com/pizzeria-a-taglio-angelo-e-simonetta/pizza-al-taglio"
+    }
+  ],
+  "notes": "Page is JS-rendered Angular SPA with aggressive client-side redirect (it auto-rotates the URL through related pizza dish pages on load), so a plain DOM scrape returns the wrong dish. Data extracted from the JSON-LD (schema.org QAPage) embedded in the SSR HTML, which contains exactly 5 entries (matching answerCount: 5: one acceptedAnswer + four suggestedAnswer). The page lists only 5 places total. TasteAtlas does NOT publish a 1-5 score for this dish: aggregateRating is null in the JSON-LD; the ranking signal is critic upvoteCount (captured as score_upvotes) plus a critic_count visible in the answer text ('according to X and N more food critics'). Street addresses are not in the SSR HTML for individual listings (only Pizzarium Bonci's address bleeds through via a static page header). The dish-detail API at /api/v2/dishes/{id}/restaurants requires the numeric dish id, but the wheretoeat URL does not embed it (the call observed during page load was for a different dish, 264 = Apizza, because of the redirect). Restaurant detail pages are also JS-rendered shells with no per-restaurant address in raw HTML. All 5 places are in Rome, Italy. WebFetch was denied in this environment; extraction was done via Playwright + fetch() against the SSR HTML."
+}

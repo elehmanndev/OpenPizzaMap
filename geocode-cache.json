@@ -1,0 +1,1028 @@
+{
+  "Via Fuori Porta S. Gennaro, 13, 80137 Napoli NA, Naples, Italy": {
+    "lat": 40.8560041,
+    "lng": 14.2555831,
+    "display": "Via Fuori Porta San Gennaro, Rione Sanità, Stella, Municipalità 3, Napoli, Campania, 80137, Italia"
+  },
+  "Via Stanislao Manna, 30, 80126 Napoli NA, Naples, Italy": {
+    "lat": 40.8470125,
+    "lng": 14.1988856,
+    "display": "Via Stanislao Manna, Soccavo, Municipalità 9, Camaldoli, Napoli, Campania, 80126, Italia"
+  },
+  "Via Speranzella, 125, 80132 Napoli NA, Naples, Italy": {
+    "lat": 40.8388931,
+    "lng": 14.2474556,
+    "display": "Via Speranzella, San Ferdinando, Municipalità 1, Napoli, Campania, 80132, Italia"
+  },
+  "Via S. Mattia, 6, 80132 Napoli NA, Naples, Italy": {
+    "lat": 40.8387177,
+    "lng": 14.2465257,
+    "display": "Via San Mattia, San Ferdinando, Municipalità 1, Napoli, Campania, 80132, Italia"
+  },
+  "Via Alessandro Scarlatti, 84, 80129 Napoli NA, Naples, Italy": {
+    "lat": 40.843959,
+    "lng": 14.2311691,
+    "display": "Pizzeria Errico Porzio, 84, Via Alessandro Scarlatti, Rione Antignano, Vomero, Municipalità 5, Napoli, Campania, 80127, Italia"
+  },
+  "P.za Portanova, 9, 80138 Napoli NA, Naples, Italy": {
+    "lat": 40.8467063,
+    "lng": 14.2594147,
+    "display": "Piazza Portanova, Pendino, Municipalità 2, Napoli, Campania, Italia"
+  },
+  "Vico Lungo del Gelso, 20, 80134 Napoli NA, Naples, Italy": {
+    "lat": 40.8434261,
+    "lng": 14.2483742,
+    "display": "Vico Lungo del Gelso, Quartieri Spagnoli, Montecalvario, Municipalità 2, Napoli, Campania, 80134, Italia"
+  },
+  "P.za S. Domenico Maggiore, 5/6/7, 80134 Napoli NA, Naples, Italy": {
+    "lat": 40.8484967,
+    "lng": 14.2549043,
+    "display": "Piazza San Domenico Maggiore, Porto, Municipalità 2, Napoli, Campania, 80138, Italia"
+  },
+  "Via Lago Patria 170, 80014 Giugliano In Campania NA, Naples, Italy": {
+    "lat": 40.9189339,
+    "lng": 14.0575517,
+    "display": "Via Madonna Del Pantano, Varcaturo, Lago Patria, Mazzola, Giugliano in Campania, Napoli, Campania, 80072, Italia"
+  },
+  "Via Grande Archivio 23/24, 80138 Napoli, Naples, Italy": {
+    "lat": 40.847991,
+    "lng": 14.2597766,
+    "display": "Via Grande Archivio, Pendino, Municipalità 2, Napoli, Campania, 80138, Italia"
+  },
+  "Via Partenope 11/12, 80121 Napoli, Naples, Italy": {
+    "lat": 40.8304417,
+    "lng": 14.2446836,
+    "display": "Via Partenope, Pizzofalcone, San Ferdinando, Municipalità 1, Napoli, Campania, 80121, Italia"
+  },
+  "Via Luigi Palmieri 13 - 80133 Napoli, Naples, Italy": {
+    "lat": 40.8450633,
+    "lng": 14.258316,
+    "display": "Via Luigi Palmieri, Porto, Municipalità 2, Napoli, Campania, 80138, Italia"
+  },
+  "Via Poli, 27, 00187 Roma RM, Rome, Italy": {
+    "lat": 41.90248,
+    "lng": 12.4826266,
+    "display": "27, Via Poli, Trevi, Municipio Roma I, Roma, Roma Capitale, Lazio, 00187, Italia"
+  },
+  "Via Natale del Grande, 9, 00153 Roma RM, Rome, Italy": {
+    "lat": 41.8872979,
+    "lng": 12.4707092,
+    "display": "Via Natale del Grande, Trastevere, Municipio Roma I, Roma, Roma Capitale, Lazio, 00153, Italia"
+  },
+  "Via Enrico Giglioli 99-100, 00169 Roma, Rome, Italy": {
+    "lat": 41.866928,
+    "lng": 12.5974932,
+    "display": "Via Enrico Giglioli, Torre Maura, Municipio Roma VI, Torrenova, Roma, Roma Capitale, Lazio, 00169, Italia"
+  },
+  "Via Fiume delle Perle, 136-138, 00144 Roma RM, Rome, Italy": {
+    "lat": 41.8089927,
+    "lng": 12.4393464,
+    "display": "Via Fiume delle Perle, Torrino, Municipio Roma IX, Mostacciano, Roma, Roma Capitale, Lazio, 00128, Italia"
+  },
+  "Via Val Senio 18, 00141 Roma Italia, Rome, Italy": null,
+  "Via Valsavaranche 7, 00141 Roma Italia, Rome, Italy": null,
+  "Via Arrigo Davila 83, 00179 Roma Italia, Rome, Italy": null,
+  "Piazza Certaldo 12, 00146 Roma Italia, Rome, Italy": null,
+  "Piazza Lecce 9, 00161 Roma Italia, Rome, Italy": null,
+  "Via Pellegrino Matteucci, 20, 00154 Roma Italia, Rome, Italy": null,
+  "Viale della Piramide Cestia, 25, 00153 Roma Italia, Rome, Italy": null,
+  "Via Michelangelo Buonarroti, 32, 00185 Roma Italia, Rome, Italy": null,
+  "Via Giorgio Washington, 52, 20146 Milano MI, Milan, Italy": {
+    "lat": 45.4639992,
+    "lng": 9.1549944,
+    "display": "Via Giorgio Washington, Washington, Municipio 7, Milano, Lombardia, 20146, Italia"
+  },
+  "Via Alfredo Cappellini 18/A, 20124 Milano, Milan, Italy": {
+    "lat": 45.4812538,
+    "lng": 9.202862,
+    "display": "18/a, Via Alfredo Cappellini, Centrale, Municipio 2, Milano, Rodano, Milano, Lombardia, 20124, Italia"
+  },
+  "Via Andrea Solari 34, 20144 Milano, Milan, Italy": {
+    "lat": 45.4547992,
+    "lng": 9.1609843,
+    "display": "Pim's, 34, Via Andrea Solari, Tortona, Municipio 6, Milano, Lombardia, 20144, Italia"
+  },
+  "Via Spartaco, 16, 20135 Milano MI, Milan, Italy": {
+    "lat": 45.4593988,
+    "lng": 9.2081827,
+    "display": "Via Spartaco, XXII Marzo, Municipio 4, Milano, Rodano, Milano, Lombardia, 20135, Italia"
+  },
+  "Via Friuli, 46, 20135 Milano MI, Milan, Italy": {
+    "lat": 45.4542376,
+    "lng": 9.2133965,
+    "display": "46, Via Friuli, XXII Marzo, Municipio 4, Milano, Lombardia, 20135, Italia"
+  },
+  "Viale Coni Zugna, 60, 20144 Milano MI, Milan, Italy": {
+    "lat": 45.4556907,
+    "lng": 9.1714262,
+    "display": "Colorme nails&spa, 60, Viale Coni Zugna, Magenta - San Vittore, Municipio 6, Milano, Lombardia, 20144, Italia"
+  },
+  "Via Andrea Maffei, 12, 20135 Milano MI, Milan, Italy": {
+    "lat": 45.4577567,
+    "lng": 9.2079204,
+    "display": "Prog, 12, Via Andrea Maffei, XXII Marzo, Municipio 4, Milano, Rodano, Milano, Lombardia, 20135, Italia"
+  },
+  "Via Plinio, 6, 20129 Milano MI, Milan, Italy": {
+    "lat": 45.4794563,
+    "lng": 9.2119042,
+    "display": "6, Via Plinio, Buenos Aires - Venezia, Municipio 3, Milano, Lombardia, 20124, Italia"
+  },
+  "Via Correggio, 14, 20149 Milano MI, Milan, Italy": {
+    "lat": 45.4703772,
+    "lng": 9.1511393,
+    "display": "14, Via Correggio, De Angeli - Monte Rosa, Municipio 7, Milano, Lombardia, 20149, Italia"
+  },
+  "Piazza Cardinal Massaia, 20123 Milano MI, Milan, Italy": null,
+  "Via Antonio Pollaiuolo, 9, 20159 Milano MI, Milan, Italy": {
+    "lat": 45.4894776,
+    "lng": 9.1875487,
+    "display": "9, Via Antonio Pollaiuolo, Isola, Municipio 9, Milano, Lombardia, 20159, Italia"
+  },
+  "Via Pisana, 82 R, 50143 Firenze FI, Florence, Italy": {
+    "lat": 43.7711254,
+    "lng": 11.2371233,
+    "display": "82 R, Via Pisana, Pignone, Quartiere 4, Firenze, Toscana, 50100, Italia"
+  },
+  "Via Senese, 155r, 50124 Firenze FI, Florence, Italy": {
+    "lat": 43.7495928,
+    "lng": 11.2356458,
+    "display": "Giovanni Santarpia, 155r, Via Senese, Due Strade, Quartiere 3, Galluzzo, Firenze, Toscana, 50124, Italia"
+  },
+  "V. Dell Agnolo, 107R, 50122 Firenze FI, Florence, Italy": {
+    "lat": 43.7705457,
+    "lng": 11.2626173,
+    "display": "107 R, Via dell'Agnolo, Quartiere 1, Firenze, Toscana, 50122, Italia"
+  },
+  "Piazza Barberini, 5, 50021 Barberino Val D'elsa FI, Florence, Italy": {
+    "lat": 43.5434046,
+    "lng": 11.171963,
+    "display": "Picò, 5, Piazza Barberini, Spoiano, Barberino Val d'Elsa, Barberino Tavarnelle, Firenze, Toscana, 50021, Italia"
+  },
+  "Via di Poneta, 44, 50022 Il Ferrone FI, Florence, Italy": null,
+  "Via de' Bardi, 54 R, 50125 Firenze FI, Florence, Italy": {
+    "lat": 43.7672102,
+    "lng": 11.2535313,
+    "display": "54 R, Via dei Bardi, Oltrarno, Quartiere 1, Firenze, Toscana, 50125, Italia"
+  },
+  "Via del Pozzo, 13, 50031 Barberino di Mugello FI, Florence, Italy": {
+    "lat": 44.0087579,
+    "lng": 11.2387187,
+    "display": "Via del Pozzo, Casino, Barberino di Mugello, Unione Montana dei Comuni del Mugello, Firenze, Toscana, 50031, Italia"
+  },
+  "Via del Cronaca, 16r, 50142 Firenze FI, Florence, Italy": {
+    "lat": 43.7715802,
+    "lng": 11.2188284,
+    "display": "16 R, Via del Cronaca, Isolotto, Quartiere 4, Firenze, Toscana, 50143, Italia"
+  },
+  "Viale Ludovico Ariosto, 1r, 50124 Firenze FI, Florence, Italy": {
+    "lat": 43.7702702,
+    "lng": 11.2402971,
+    "display": "1 R, Viale Ludovico Ariosto, San Frediano, Quartiere 1, Firenze, Toscana, 50100, Italia"
+  },
+  "Via Vincenzo Gioberti, 170, 50121 Firenze FI, Florence, Italy": {
+    "lat": 43.7706254,
+    "lng": 11.2720214,
+    "display": "170 R, Via Vincenzo Gioberti, Quartiere 2, Firenze, Toscana, 50121, Italia"
+  },
+  "Piazza De Nerli 5, Via dell'Orto, 12, 50124 Firenze FI, Florence, Italy": null,
+  "Via Panzani, 57, 50123 Firenze FI, Florence, Italy": {
+    "lat": 43.7743977,
+    "lng": 11.2504247,
+    "display": "Pizzeria Giotto, 57 rosso, Via Panzani, Quartiere 1, Firenze, Toscana, 50123, Italia"
+  },
+  "Via S. Gervasio, 1-3, 40121 Bologna BO, Bologna, Italy": {
+    "lat": 44.4968096,
+    "lng": 11.3382059,
+    "display": "Via San Gervasio, Marconi, Porto-Saragozza, Bologna, Emilia-Romagna, 40122, Italia"
+  },
+  "Via Maurizio Padoa, 6h, 40138 Bologna BO, Bologna, Italy": {
+    "lat": 44.485655,
+    "lng": 11.3730028,
+    "display": "Via Maurizio Padoa, Cirenaica, San Donato-San Vitale, Bologna, Emilia-Romagna, 40137, Italia"
+  },
+  "Galleria Falcone e Borsellino, 2b, 40123 Bologna BO, Bologna, Italy": {
+    "lat": 44.4928857,
+    "lng": 11.3407219,
+    "display": "Galleria Falcone e Borsellino, Malpighi, Porto-Saragozza, Bologna, Emilia-Romagna, 40123, Italia"
+  },
+  "Via Mazzini, 170, 40139 Bologna BO, Bologna, Italy": {
+    "lat": 44.4847636,
+    "lng": 11.3716623,
+    "display": "170, Via Giuseppe Mazzini, Cirenaica, San Donato-San Vitale, Bologna, Emilia-Romagna, 40139, Italia"
+  },
+  "Via Franco Basaglia, 3, 40131 Bologna BO, Bologna, Italy": {
+    "lat": 44.5140781,
+    "lng": 11.3180609,
+    "display": "3, Via Franco Basaglia, Lazzaretto, Quartiere Navile, Bologna, Emilia-Romagna, 40131, Italia"
+  },
+  "Via Cairoli, 16, 40121 Bologna BO, Bologna, Italy": {
+    "lat": 44.5035613,
+    "lng": 11.3386922,
+    "display": "Pizzeria la Verace, 16, Via Cairoli, Manifattura delle Arti, Marconi, Porto-Saragozza, Bologna, Emilia-Romagna, 40121, Italia"
+  },
+  "Via Garibaldi, 5/H, 40124 Bologna BO, Bologna, Italy": {
+    "lat": 44.3969759,
+    "lng": 11.2471548,
+    "display": "Via Garibaldi, Fontana, Sasso Marconi, Unione dei comuni Valli del Reno, Lavino e Samoggia, Bologna, Emilia-Romagna, 40037, Italia"
+  },
+  "Via Guerrazzi, 11b, 40125 Bologna BO, Bologna, Italy": {
+    "lat": 44.4910139,
+    "lng": 11.351104,
+    "display": "Via Guerrazzi, Galvani, Santo Stefano, Bologna, Emilia-Romagna, 40125, Italia"
+  },
+  "Piazza S. Martino, 3/b, 40126 Bologna BO, Bologna, Italy": {
+    "lat": 44.4966589,
+    "lng": 11.3464405,
+    "display": "Piazza San Martino, Ghetto ebraico, Santo Stefano, Bologna, Emilia-Romagna, 40100, Italia"
+  },
+  "Via S Paolo, 12/A, 10138 Torino TO, Turin, Italy": {
+    "lat": 45.0643804,
+    "lng": 7.6530492,
+    "display": "12a, Via San Paolo, Cenisia, Circoscrizione 3, Torino, Piemonte, 10138, Italia"
+  },
+  "Via Berthollet 20, 10125 Torino, Turin, Italy": {
+    "lat": 45.0585674,
+    "lng": 7.6824067,
+    "display": "20c, Via Claudio Luigi Berthollet, San Salvario, Circoscrizione 8, Torino, Piemonte, 10125, Italia"
+  },
+  "Via Tepice, 8, 10126 Torino TO, Turin, Italy": {
+    "lat": 45.039468,
+    "lng": 7.670802,
+    "display": "8, Via Tepice, Molinette, Nizza Millefonti, Circoscrizione 8, Cavoretto, Torino, Piemonte, 10126, Italia"
+  },
+  "Via Stampatori, 6, 10122 Torino TO, Turin, Italy": {
+    "lat": 45.0728187,
+    "lng": 7.6785764,
+    "display": "6, Via Stampatori, Quadrilatero Romano, Centro, Circoscrizione 1, Torino, Piemonte, 10122, Italia"
+  },
+  "Via Camillo Finocchiaro Aprile, 34 R, 16129 Genova GE, Genoa, Italy": {
+    "lat": 44.3991874,
+    "lng": 8.9462968,
+    "display": "34r, Via Camillo Finocchiaro Aprile, Foce, Medio Levante, Genova, Liguria, 16129, Italia"
+  },
+  "Corso Valparaiso, 34, 16043 Chiavari GE, Genoa, Italy": {
+    "lat": 44.3163408,
+    "lng": 9.3176118,
+    "display": "Corso Valparaiso, Sampierdicanne, Chiavari, Genova, Liguria, 16043, Italia"
+  },
+  "Via Gabriele d'Annunzio, 8, 16121 Genova GE, Genoa, Italy": {
+    "lat": 44.404846,
+    "lng": 8.9356149,
+    "display": "Via Gabriele D'Annunzio, Sant'Andrea, Portoria, Centro Est, Genova, Liguria, 16128, Italia"
+  },
+  "Via Mantova, 1, 37069 Villafranca di Verona VR, Verona, Italy": {
+    "lat": 45.3476554,
+    "lng": 10.8410116,
+    "display": "Locanda del Viandante, 1, Via Mantova, Brocciolo, Villafranca di Verona, Verona, Veneto, 37069, Italia"
+  },
+  "Piazza Roma, 15, 37066 Sommacampagna VR, Verona, Italy": {
+    "lat": 45.4077379,
+    "lng": 10.8426813,
+    "display": "Piazza Roma, Sommacampagna, Verona, Veneto, 37066, Italia"
+  },
+  "Via Enrico Bernardi, 1, 37026 Pescantina VR, Verona, Italy": {
+    "lat": 45.4819061,
+    "lng": 10.9041268,
+    "display": "Via Enrico Bernardi, Zona industriale di Pescantina, Moro Freoni, Settimo, Pescantina, Verona, Veneto, 37026, Italia"
+  },
+  "Via Mario Todeschini, 19, 37126 Verona VR, Verona, Italy": {
+    "lat": 45.4457151,
+    "lng": 10.9871178,
+    "display": "Gemma Pizzeria, 19, Via Mario Todeschini, Borgo Trento, Nord-Ovest, Verona, Veneto, 37126, Italia"
+  },
+  "Via Valpantena, 94f, 37142 Marzana VR, Verona, Italy": {
+    "lat": 45.4993505,
+    "lng": 11.0177486,
+    "display": "Pizzeria Focacceria Quattrocento, 94f, Via Valpantena, Nord-Est, Marzana, Verona, Veneto, 37142, Italia"
+  },
+  "Via Pellicciai, 2, 37121 Verona VR, Verona, Italy": {
+    "lat": 45.442753,
+    "lng": 10.9967818,
+    "display": "2, Via Pellicciai, Città antica, Centro storico, Verona, Veneto, 37121, Italia"
+  },
+  "Piazza del Popolo, 46, 37036 San Martino Buon Albergo VR, Verona, Italy": {
+    "lat": 45.4224527,
+    "lng": 11.0931406,
+    "display": "Piazza del Popolo, Case Nuove, San Martino Buon Albergo, Verona, Veneto, 37036, Italia"
+  },
+  "Via Camporosolo, 11, 37047 San Bonifacio VR, Verona, Italy": {
+    "lat": 45.3950109,
+    "lng": 11.2706615,
+    "display": "Gini Fragranze, 11, Via Camporosolo, San Bonifacio, Verona, Veneto, 37047, Italia"
+  },
+  "Piazzetta Municipio, 10, 37121 Verona VR, Verona, Italy": {
+    "lat": 45.4378634,
+    "lng": 10.9946668,
+    "display": "Peperino Pizza&Grill, 10, Piazzetta Municipio, Cittadella, Centro storico, Verona, Veneto, 37121, Italia"
+  },
+  "Via Emanuele Notarbartolo, 2/F, 90149 Palermo PA, Palermo, Italy": {
+    "lat": 38.1324769,
+    "lng": 13.344945,
+    "display": "Via Emanuele Notarbartolo, VIII Circoscrizione, Palermo, Sicilia, 90143, Italia"
+  },
+  "Via Marina Della, Str. Litorale della Bruca, 1, 90010 Altavilla Milicia PA, Palermo, Italy": null,
+  "Via Vittorio Emanuele, 150, 90133 Palermo PA, Palermo, Italy": {
+    "lat": 38.1173898,
+    "lng": 13.3658733,
+    "display": "Cagliostro, 150, Via Vittorio Emanuele, La Loggia, I Circoscrizione, Palermo, Sicilia, 90133, Italia"
+  },
+  "Via Gulli 4 catania, 95131 Catania, Catania, Italy": {
+    "lat": 37.5049175,
+    "lng": 15.0948768,
+    "display": "4, Via Gulli, Civita, Centro storico, Catania, Sicilia, 95131, Italia"
+  },
+  "Via Mario Sangiorgi 55, 95129 Catania, Catania, Italy": {
+    "lat": 37.5150425,
+    "lng": 15.0980777,
+    "display": "Pizzeria Napulè, 55, Via Mario Sangiorgi, Picanello-Ognina-Barriera-Canalicchio, Catania, Sicilia, 95129, Italia"
+  },
+  "Via Monfalcone, 2, 95127 Catania CT, Catania, Italy": {
+    "lat": 37.5162411,
+    "lng": 15.1015642,
+    "display": "2, Via Monfalcone, Guardia, Picanello, Picanello-Ognina-Barriera-Canalicchio, Catania, Sicilia, 95127, Italia"
+  },
+  "Largo Paisiello, 95124 Catania CT, Catania, Italy": {
+    "lat": 37.5091893,
+    "lng": 15.0841832,
+    "display": "Largo Giovanni Paisiello, Antico Corso, Centro storico, Catania, Sicilia, 95124, Italia"
+  },
+  "Via Quintino Sella 14 - ang, Via Mario Sangiorgi, 24, 95129 Catania CT, Catania, Italy": null,
+  "Viale Artale Alagona, 27, 95126 Catania CT, Catania, Italy": {
+    "lat": 37.5251382,
+    "lng": 15.1157963,
+    "display": "27l, Viale Artale Alagona, Ognina, Picanello-Ognina-Barriera-Canalicchio, Catania, Sicilia, 95126, Italia"
+  },
+  "Via Pietra dell'Ova, 209, 95125 Catania CT, Catania, Italy": {
+    "lat": 37.5442335,
+    "lng": 15.0895882,
+    "display": "209, Via Pietra dell'Ova / Via Madonna di Fatima, Picanello-Ognina-Barriera-Canalicchio, Catania, Sicilia, 95125, Italia"
+  },
+  "Via Sisto, 56, 95129 Catania CT, Catania, Italy": {
+    "lat": 37.5123725,
+    "lng": 15.0867007,
+    "display": "56, Via Sisto, Monserrato, Borgo, Borgo-Sanzio, Catania, Sicilia, 95129, Italia"
+  },
+  "Via Giovanni Squicciarini, 8, 70021 Acquaviva delle Fonti BA, Bari, Italy": {
+    "lat": 40.8975929,
+    "lng": 16.8424869,
+    "display": "Via Giovanni Squicciarini, Acquaviva delle Fonti, Bari, Puglia, 70021, Italia"
+  },
+  "Via Ludovico I D'Angiò, 121, 70032 Bitonto BA, Bari, Italy": {
+    "lat": 41.1132717,
+    "lng": 16.6869263,
+    "display": "Via Ludovico I D'Angiò, Bitonto, Bari, Puglia, 70032, Italia"
+  },
+  "Via Giovinazzo, 122, 70056 Molfetta BA, Bari, Italy": {
+    "lat": 41.1998524,
+    "lng": 16.6087299,
+    "display": "Via Giovinazzo, Villaggio Belgiovine, Molfetta, Bari, Puglia, 70056, Italia"
+  },
+  "Via 1' S.da a Denominarsi, 1B, 70038 Terlizzi BA, Bari, Italy": null,
+  "Largo Martellotta, 75, 70011 Alberobello BA, Bari, Italy": {
+    "lat": 40.782966,
+    "lng": 17.2376343,
+    "display": "Largo Martellotta, Alberobello, Bari, Puglia, 70011, Italia"
+  },
+  "Via Roma, 70, 70023 Gioia del Colle BA, Bari, Italy": {
+    "lat": 40.7971778,
+    "lng": 16.9177838,
+    "display": "Via Roma, Gioia del Colle, Bari, Puglia, 70023, Italia"
+  },
+  "Viale Martiri del 1799, 94-96, 70022 Altamura BA, Bari, Italy": null,
+  "Contrada l'Assunta, 123, 70043 Sant'Antonio D'ascula BA, Bari, Italy": null,
+  "Via Robertini, 3, 73013 Galatina LE, Lecce, Italy": {
+    "lat": 40.1728086,
+    "lng": 18.1707509,
+    "display": "Via Robertini, Galatina, Lecce, Puglia, 73013, Italia"
+  },
+  "Via Don Luigi Sturzo, 28, 73100 Lecce LE, Lecce, Italy": {
+    "lat": 40.0114864,
+    "lng": 18.1796556,
+    "display": "28, Via Don Luigi Sturzo, Pàmpana, Casarano, Lecce, Puglia, 73042, Italia"
+  },
+  "Via Vito Mario Stampacchia, 9, 73100 Lecce LE, Lecce, Italy": {
+    "lat": 40.361042,
+    "lng": 18.1716354,
+    "display": "Via Vito Mario Stampacchia, Lecce, Puglia, 73100, Italia"
+  },
+  "Via del Delfino, 3, 73100 Lecce LE, Lecce, Italy": {
+    "lat": 40.3468703,
+    "lng": 18.1734964,
+    "display": "3, Via del Delfino, Lecce, Puglia, 73100, Italia"
+  },
+  "Corso Roma, 62, 73014 Gallipoli LE, Lecce, Italy": {
+    "lat": 40.0561175,
+    "lng": 17.9893694,
+    "display": "Lievita 72, 62,64, Corso Roma, Gallipoli, Lecce, Puglia, 73014, Italia"
+  },
+  "7 Northumberland Ave, Westminster, London WC2N 5BY, Regno Unito, London, United Kingdom": null,
+  "199 Baker St, Marylebone, London NW1 6UY, Regno Unito, London, United Kingdom": null,
+  "44 Old Compton St, Soho, London W1D 4TY, Regno Unito, London, United Kingdom": null,
+  "Newington Causeway, London SE1 6DR, Regno Unito, London, United Kingdom": null,
+  "658 Garratt Ln, London SW17 0NP, Regno Unito, London, United Kingdom": null,
+  "2 Grove Ln, Camberwell, London SE5 8SY, Regno Unito, London, United Kingdom": null,
+  "79 Brick Ln, Spitalfields, London E1 6QL, Regno Unito, London, United Kingdom": null,
+  "10 Crouch End Hill, Crouch End, London N8 8AA, Regno Unito, London, United Kingdom": null,
+  "43 Greenwich Church St, Greenwich, London SE10 9BL, Regno Unito, London, United Kingdom": null,
+  "19-21 Notting Hill Gate, London W11 3JQ, Regno Unito, London, United Kingdom": null,
+  "45 Chamberlayne Rd, Kensal Green, London NW10 3NB, Regno Unito, London, United Kingdom": null,
+  "The Duke, 125 Creek Rd, London SE8 3BU, Regno Unito, London, United Kingdom": null,
+  "153 Quai de Valmy, 75010 Paris, France, Paris, France": {
+    "lat": 48.8780195,
+    "lng": 2.3655773,
+    "display": "153, Quai de Valmy, Quartier de l'Hôpital Saint-Louis, Paris 10e Arrondissement, Paris, Île-de-France, France métropolitaine, 75010, France"
+  },
+  "48 Rue Notre Dame de Lorette, 75009 Paris, France, Paris, France": {
+    "lat": 48.879628,
+    "lng": 2.3362429,
+    "display": "Gili-Gili, 48, Rue Notre-Dame-de-Lorette, Quartier Saint-Georges, Paris 9e Arrondissement, Paris, Île-de-France, France métropolitaine, 75009, France"
+  },
+  "83 Rue de Longchamp, 75116 Paris, France, Paris, France": {
+    "lat": 48.8653029,
+    "lng": 2.2843614,
+    "display": "83, Rue de Longchamp, Quartier de la Porte-Dauphine, Paris 16e Arrondissement, Paris, Île-de-France, France métropolitaine, 75116, France"
+  },
+  "111 Rue Réaumur, 75002 Paris, France, Paris, France": {
+    "lat": 48.8681334,
+    "lng": 2.3433222,
+    "display": "111, Rue Réaumur, Quartier du Mail, Paris 2e Arrondissement, Paris, Île-de-France, France métropolitaine, 75002, France"
+  },
+  "37 Rue Berger, 75001 Paris, France, Paris, France": {
+    "lat": 48.861827,
+    "lng": 2.3436366,
+    "display": "Bigo, 37, Rue Berger, Quartier Les Halles, Paris 1er Arrondissement, Paris, Île-de-France, France métropolitaine, 75001, France"
+  },
+  "42 Rue Tiquetonne, 75002 Paris, France, Paris, France": {
+    "lat": 48.8647787,
+    "lng": 2.3474984,
+    "display": "42, Rue Tiquetonne, Quartier de Bonne-Nouvelle, Paris 2e Arrondissement, Paris, Île-de-France, France métropolitaine, 75002, France"
+  },
+  "7Bis Rue du Colonel Driant, 75001 Paris, France e 27 Rue de Bretagne, 75003 Paris, France, Paris, France": null,
+  "8 Rue Tiquetonne, 75002 Paris, France, Paris, France": {
+    "lat": 48.8644866,
+    "lng": 2.3494552,
+    "display": "8, Rue Tiquetonne, Quartier de Bonne-Nouvelle, Paris 2e Arrondissement, Paris, Île-de-France, France métropolitaine, 75002, France"
+  },
+  "32 Quai de la Marne, 75019 Paris, France, Paris, France": {
+    "lat": 48.8902013,
+    "lng": 2.3840185,
+    "display": "Simonetta, 32, Quai de la Marne, Quartier du Pont-de-Flandre, Paris 19e Arrondissement, Paris, Île-de-France, France métropolitaine, 75019, France"
+  },
+  "10 Rue Dancourt, 75018 Paris, France, Paris, France": {
+    "lat": 48.8831365,
+    "lng": 2.3418983,
+    "display": "Popine, 10, Rue Dancourt, Quartier de Clignancourt, Paris 18e Arrondissement, Paris, Île-de-France, France métropolitaine, 75018, France"
+  },
+  "Universitätsring 14, 1010 Wien, Austria, Vienna, Austria": null,
+  "C/ de Provença, 330, 08037 Barcelona, Spagna, Barcelona, Spain": null,
+  "Rambla del Poblenou, 20, 08005 Barcelona, Spagna, Barcelona, Spain": null,
+  "Ronda de Sant Pau, 59, 08015 Barcelona, Spagna, Barcelona, Spain": null,
+  "Av. del Paral·lel, 15, 08004 Barcelona, Spagna, Barcelona, Spain": null,
+  "Carrer de Manso, 22, 08015 Barcelona, Spagna, Barcelona, Spain": null,
+  "Via Cesare Sersale, Naples, Italy": {
+    "lat": 40.8501471,
+    "lng": 14.2630976,
+    "display": "Via Cesare Sersale, Pendino, Municipalità 2, Napoli, Campania, 80139, Italia"
+  },
+  "Via dei Tribunali, Naples, Italy": {
+    "lat": 40.8521688,
+    "lng": 14.2608287,
+    "display": "Via dei Tribunali, Rione Forcella, San Lorenzo, Municipalità 4, Napoli, Campania, 80138, Italia"
+  },
+  "Via dei Tribunali 94, Naples, Italy": {
+    "lat": 40.8512861,
+    "lng": 14.2580195,
+    "display": "Antica Pizzeria Di Matteo, 94, Via dei Tribunali, Rione Forcella, San Lorenzo, Municipalità 4, Napoli, Campania, 80138, Italia"
+  },
+  "Piazza Sannazzaro, Naples, Italy": null,
+  "Via Materdei 27, Naples, Italy": {
+    "lat": 40.8560381,
+    "lng": 14.2470107,
+    "display": "Via Materdei, Rione Sanità, Stella, Municipalità 3, Napoli, Campania, 80136, Italia"
+  },
+  "Via Pietro Colletta 44/46, Naples, Italy": {
+    "lat": 40.8507157,
+    "lng": 14.2636465,
+    "display": "Via Pietro Colletta, Rione Forcella, San Lorenzo, Municipalità 4, Napoli, Campania, 80139, Italia"
+  },
+  "Via Maggio, Florence, Italy": {
+    "lat": 43.7667344,
+    "lng": 11.2489439,
+    "display": "Via Maggio, Oltrarno, Quartiere 1, Firenze, Toscana, 50125, Italia"
+  },
+  "Via Michelangelo da Caravaggio 53, Naples, Italy": {
+    "lat": 40.8356722,
+    "lng": 14.2097953,
+    "display": "La Notizia, 53, Via Michelangelo da Caravaggio, Rione Piave, Fuorigrotta, Municipalità 10, Napoli, Campania, 80126, Italia"
+  },
+  "Salita S. Anna di Palazzo, Naples, Italy": null,
+  "1524 Neptune Ave, Brooklyn, NY 11224, USA, New York City, United States": null,
+  "2287 1st Avenue, New York, NY 10035, USA, New York City, United States": null,
+  "235 Mulberry St, New York, NY 10012, USA, New York City, United States": null,
+  "7 Carmine Street, New York, NY 10014, USA, New York City, United States": null,
+  "1424 Avenue J, Brooklyn, NY 11230, USA, New York City, United States": null,
+  "19 Old Fulton St, Brooklyn, NY 11201, USA, New York City, United States": null,
+  "278 Bleecker St, New York, NY 10014, USA, New York City, United States": null,
+  "1758 Victory Blvd, Staten Island, NY 10314, USA, New York City, United States": null,
+  "69 Salem St, Boston, MA 02113, USA, Boston, United States": null,
+  "1300 Crosby Ave, Bronx, NY 10461, USA, New York City, United States": null,
+  "32 Spring St, New York, NY 10012, USA, New York City, United States": null,
+  "1415 S Congress Ave, Austin, TX 78704, USA, Austin, United States": null,
+  "1919 Hyde St, San Francisco, CA 94109, USA, San Francisco, United States": null,
+  "1 Front St, Brooklyn, NY 11201, USA, New York City, United States": null,
+  "178 Lexington Ave, New York, NY 10016, USA, New York City, United States": null,
+  "575 Henry St, Brooklyn, NY 11231, USA, New York City, United States": null,
+  "617 Piety St, New Orleans, LA 70117, USA, New Orleans, United States": null,
+  "100 N Main St #212, Breckenridge, CO 80424, USA, Breckenridge, United States": null,
+  "2671 Broadway, New York, NY 10025, USA, New York City, United States": null,
+  "254 S 2nd St, Brooklyn, NY 11211, USA, New York City, United States": null,
+  "1454 E Sunshine St, Springfield, MO 65804, USA, Springfield, United States": null,
+  "23141 Dequindre Rd, Hazel Park, MI 48030, USA, Hazel Park, United States": null,
+  "735 Beaubien St, Detroit, MI 48226, USA, Detroit, United States": null,
+  "28630 Harper Ave, St. Clair Shores, MI 48081, USA, St. Clair Shores, United States": null,
+  "364 Grand St, Brooklyn, NY 11211, USA, Brooklyn, United States": null,
+  "1111 E 6th St, Austin, TX 78702, USA, Austin, United States": null,
+  "110 E Colorado Ave, Telluride, CO 81435, USA, Telluride, United States": null,
+  "3930 W 32nd Ave, Denver, CO 80212, USA, Denver, United States": null,
+  "24443 Gratiot Ave, Eastpointe, MI 48021, USA, Eastpointe, United States": null,
+  "17125 Conant St, Detroit, MI 48212, USA, Detroit, United States": null,
+  "1361 E McDevitt Ave, Jackson, MI 49203, USA, Jackson, United States": null,
+  "958 W Wrightwood Ave, Chicago, United States": {
+    "lat": 41.9291497,
+    "lng": -87.6535647,
+    "display": "Lou Malnati's Pizzeria, 958, West Wrightwood Avenue, Wrightwood Neighbors, Lincoln Park, Chicago, Lake View Township, Cook County, Illinois, 60614, United States"
+  },
+  "2207 N Clybourn Ave, Chicago, United States": {
+    "lat": 41.9219163,
+    "lng": -87.6643863,
+    "display": "2207, North Clybourn Avenue, Lincoln Park, Chicago, North Chicago Township, Cook County, Illinois, 60614, United States"
+  },
+  "61 E Madison St, Chicago, United States": {
+    "lat": 41.8819751,
+    "lng": -87.6256688,
+    "display": "Pizano's Pizza & Pasta, 61, East Madison Street, Jewelers Row, Loop, Chicago, South Chicago Township, Cook County, Illinois, 60603, United States"
+  },
+  "1955 W Addison St, Chicago, United States": {
+    "lat": 41.9466348,
+    "lng": -87.6782939,
+    "display": "1955, West Addison Street, Roscoe Village, North Center, Chicago, Lake View Township, Cook County, Illinois, 60613, United States"
+  },
+  "The Shops at North Bridge, Chicago, United States": {
+    "lat": 41.891426,
+    "lng": -87.6249707,
+    "display": "The Shops at North Bridge, 520, North Michigan Avenue, Magnificent Mile, Near North Side, Chicago, North Chicago Township, Cook County, Illinois, 60611, United States"
+  },
+  "3033 N Ashland Ave, Chicago, United States": {
+    "lat": 41.9371747,
+    "lng": -87.6681016,
+    "display": "The Art of Pizza, 3033, North Ashland Avenue, Lake View, Chicago, Lake View Township, Cook County, Illinois, 60657, United States"
+  },
+  "14025 S Cicero Ave, Crestwood, United States": null,
+  "162 E Superior St, Chicago, United States": {
+    "lat": 41.8960074,
+    "lng": -87.6230535,
+    "display": "Gino's East, 162, East Superior Street, Magnificent Mile, Near North Side, Chicago, North Chicago Township, Cook County, Illinois, 60611, United States"
+  },
+  "3038 E Irving Park Rd, Chicago, United States": {
+    "lat": 41.95402,
+    "lng": -87.6638686,
+    "display": "Lakeview Post Office, 1343, West Irving Park Road, Graceland West, Lake View, Chicago, Lake View Township, Cook County, Illinois, 60613, United States"
+  },
+  "157 Wooster St, New Haven, United States": {
+    "lat": 41.3029646,
+    "lng": -72.9169577,
+    "display": "Frank Pepe Pizzeria Napoletana, 157, Wooster Street, Wooster Square, Barnesville, New Haven, Connecticut, 06511, United States"
+  },
+  "237 Wooster St, New Haven, United States": {
+    "lat": 41.3030568,
+    "lng": -72.9200769,
+    "display": "Sally's Apizza, 237, Wooster Street, Wooster Square, Barnesville, New Haven, South Central Connecticut Planning Region, Connecticut, 06511, United States"
+  },
+  "179 Union Ave, West Haven, United States": {
+    "lat": 41.2735689,
+    "lng": -72.9445152,
+    "display": "179, Union Avenue, Savin Rock, West Haven, South Central Connecticut Planning Region, Connecticut, 06516, United States"
+  },
+  "874 State St, New Haven, United States": {
+    "lat": 41.3138251,
+    "lng": -72.9128344,
+    "display": "Modern Apizza, 874, State Street, Upper State Street Historic District, East Rock, New Haven, Connecticut, 06511, United States"
+  },
+  "740 Silver Bluff Rd, Aiken, United States": {
+    "lat": 33.5134185,
+    "lng": -81.7337805,
+    "display": "Apizza di Napoli, 740, Silver Bluff Road, Silver Bluff Estates, Aiken, Aiken County, South Carolina, 29803, United States"
+  },
+  "Via della Meloria, 43, 00136 Rome, Italy, Rome, Italy": null,
+  "Rome, Italy": {
+    "lat": 41.8933203,
+    "lng": 12.4829321,
+    "display": "Roma, Roma Capitale, Lazio, Italia"
+  },
+  "Viale di Trastevere, Rome, Italy": {
+    "lat": 41.883943,
+    "lng": 12.4698474,
+    "display": "Viale di Trastevere, Municipio Roma XII, Roma, Roma Capitale, Lazio, 00153, Italia"
+  },
+  "Via dei SS. Quattro, Rome, Italy": {
+    "lat": 41.8876467,
+    "lng": 12.5009113,
+    "display": "Via dei Santi Quattro, Celio, Municipio Roma I, Roma, Roma Capitale, Lazio, 00185, Italia"
+  },
+  "Piazza di Santa Maria Liberatrice, Rome, Italy": {
+    "lat": 41.8802877,
+    "lng": 12.4753994,
+    "display": "Piazza di Santa Maria Liberatrice, Testaccio, Municipio Roma I, Roma, Roma Capitale, Lazio, Italia"
+  },
+  "Via del Governo Vecchio, Rome, Italy": {
+    "lat": 41.8991649,
+    "lng": 12.4690963,
+    "display": "Via del Governo Vecchio, Parione, Municipio Roma I, Roma, Roma Capitale, Lazio, 00186, Italia"
+  },
+  "Via di S. Francesco a Ripa 158, Rome, Italy": {
+    "lat": 41.8881254,
+    "lng": 12.4710895,
+    "display": "Ivo a Trastevere, 158, Via di San Francesco a Ripa, Trastevere, Municipio Roma I, Roma, Roma Capitale, Lazio, 00153, Italia"
+  },
+  "Piazza del Fico, Rome, Italy": {
+    "lat": 41.8994192,
+    "lng": 12.4705431,
+    "display": "Piazza del Fico, Parione, Municipio Roma I, Roma, Roma Capitale, Lazio, Italia"
+  },
+  "Vicolo Savelli 13, Rome, Italy": {
+    "lat": 41.8976167,
+    "lng": 12.4707703,
+    "display": "Pizzeria La Montecarlo, 13, Vicolo Savelli, Parione, Municipio Roma I, Roma, Roma Capitale, Lazio, 00186, Italia"
+  },
+  "Via Genazzano 32, Rome, Italy": {
+    "lat": 41.8912049,
+    "lng": 12.5529631,
+    "display": "180Grammi, 32, Via Genazzano, Municipio Roma V, Roma, Roma Capitale, Lazio, 00177, Italia"
+  },
+  "Via Amerigo Vespucci, Rome, Italy": {
+    "lat": 41.8813374,
+    "lng": 12.4749672,
+    "display": "Via Amerigo Vespucci, Testaccio, Municipio Roma I, Roma, Roma Capitale, Lazio, 00153, Italia"
+  },
+  "Via Fuori Porta S. Gennaro, 13, 80137 Napoli NA": {
+    "lat": 40.8560041,
+    "lng": 14.2555831,
+    "display": "Via Fuori Porta San Gennaro, Rione Sanità, Stella, Municipalità 3, Napoli, Campania, 80137, Italia"
+  },
+  "Via Stanislao Manna, 30, 80126 Napoli NA": {
+    "lat": 40.8470125,
+    "lng": 14.1988856,
+    "display": "Via Stanislao Manna, Soccavo, Municipalità 9, Camaldoli, Napoli, Campania, 80126, Italia"
+  },
+  "Via Speranzella, 125, 80132 Napoli NA": {
+    "lat": 40.8388931,
+    "lng": 14.2474556,
+    "display": "Via Speranzella, San Ferdinando, Municipalità 1, Napoli, Campania, 80132, Italia"
+  },
+  "Via S. Mattia, 6, 80132 Napoli NA": {
+    "lat": 40.8387177,
+    "lng": 14.2465257,
+    "display": "Via San Mattia, San Ferdinando, Municipalità 1, Napoli, Campania, 80132, Italia"
+  },
+  "Via Alessandro Scarlatti, 84, 80129 Napoli NA": {
+    "lat": 40.843959,
+    "lng": 14.2311691,
+    "display": "Pizzeria Errico Porzio, 84, Via Alessandro Scarlatti, Rione Antignano, Vomero, Municipalità 5, Napoli, Campania, 80127, Italia"
+  },
+  "P.za Portanova, 9, 80138 Napoli NA": {
+    "lat": 40.8467063,
+    "lng": 14.2594147,
+    "display": "Piazza Portanova, Pendino, Municipalità 2, Napoli, Campania, Italia"
+  },
+  "Vico Lungo del Gelso, 20, 80134 Napoli NA": {
+    "lat": 40.8434261,
+    "lng": 14.2483742,
+    "display": "Vico Lungo del Gelso, Quartieri Spagnoli, Montecalvario, Municipalità 2, Napoli, Campania, 80134, Italia"
+  },
+  "P.za S. Domenico Maggiore, 5/6/7, 80134 Napoli NA": {
+    "lat": 40.8484967,
+    "lng": 14.2549043,
+    "display": "Piazza San Domenico Maggiore, Porto, Municipalità 2, Napoli, Campania, 80138, Italia"
+  },
+  "Via Lago Patria 170, 80014 Giugliano In Campania NA": {
+    "lat": 40.9335396,
+    "lng": 14.0619364,
+    "display": "Via Circumvallazione Esterna di Napoli, Lago Patria, Mazzola, Giugliano in Campania, Napoli, Campania, Italia"
+  },
+  "Via Grande Archivio 23/24, 80138 Napoli": {
+    "lat": 40.847991,
+    "lng": 14.2597766,
+    "display": "Via Grande Archivio, Pendino, Municipalità 2, Napoli, Campania, 80138, Italia"
+  },
+  "Via Partenope 11/12, 80121 Napoli": {
+    "lat": 40.8304417,
+    "lng": 14.2446836,
+    "display": "Via Partenope, Pizzofalcone, San Ferdinando, Municipalità 1, Napoli, Campania, 80121, Italia"
+  },
+  "Via Poli, 27, 00187 Roma RM": {
+    "lat": 41.90248,
+    "lng": 12.4826266,
+    "display": "27, Via Poli, Trevi, Municipio Roma I, Roma, Roma Capitale, Lazio, 00187, Italia"
+  },
+  "Via Natale del Grande, 9, 00153 Roma RM": {
+    "lat": 41.8872979,
+    "lng": 12.4707092,
+    "display": "Via Natale del Grande, Trastevere, Municipio Roma I, Roma, Roma Capitale, Lazio, 00153, Italia"
+  },
+  "Via Enrico Giglioli 99-100, 00169 Roma": {
+    "lat": 41.866928,
+    "lng": 12.5974932,
+    "display": "Via Enrico Giglioli, Torre Maura, Municipio Roma VI, Roma, Roma Capitale, Lazio, 00169, Italia"
+  },
+  "Via Fiume delle Perle, 136-138, 00144 Roma RM": {
+    "lat": 41.8089927,
+    "lng": 12.4393464,
+    "display": "Via Fiume delle Perle, Torrino, Municipio Roma IX, Mostacciano, Roma, Roma Capitale, Lazio, 00128, Italia"
+  },
+  "Via Val Senio 18, 00141 Roma Italia": {
+    "lat": 41.9402652,
+    "lng": 12.527367,
+    "display": "Via Val Senio, Monte Sacro, Municipio Roma III, Roma, Roma Capitale, Lazio, 00141, Italia"
+  },
+  "Via Valsavaranche 7, 00141 Roma Italia": {
+    "lat": 41.9444897,
+    "lng": 12.5152308,
+    "display": "Via Valsavaranche, Monte Sacro, Municipio Roma III, Roma, Roma Capitale, Lazio, 00141, Italia"
+  },
+  "Via Arrigo Davila 83, 00179 Roma Italia": {
+    "lat": 41.868477,
+    "lng": 12.5279111,
+    "display": "Via Arrigo Davila, Municipio Roma VII, Roma, Roma Capitale, Lazio, 00179, Italia"
+  },
+  "Piazza Certaldo 12, 00146 Roma Italia": {
+    "lat": 41.845297,
+    "lng": 12.4595232,
+    "display": "Piazza Certaldo, Municipio Roma XI, Roma, Roma Capitale, Lazio, 00149, Italia"
+  },
+  "Piazza Lecce 9, 00161 Roma Italia": {
+    "lat": 41.9111113,
+    "lng": 12.5166334,
+    "display": "Fornace Stella, 9, Piazza Lecce, Nomentano, Municipio Roma II, Roma, Roma Capitale, Lazio, 00161, Italia"
+  },
+  "Viale della Piramide Cestia, 25, Rome, Italy": {
+    "lat": 41.8785849,
+    "lng": 12.4829522,
+    "display": "Baccio e i gradini, 25, Viale della Piramide Cestia, San Saba, Municipio Roma I, Roma, Roma Capitale, Lazio, 00153, Italia"
+  },
+  "Via Michelangelo Buonarroti, 32, 00185 Roma Italia": {
+    "lat": 41.999859,
+    "lng": 12.6214235,
+    "display": "Via Michelangelo Buonarroti, Tor Lupara, Fonte Nuova, Roma Capitale, Lazio, 00010, Italia"
+  },
+  "Via Giorgio Washington, 52, 20146 Milano MI": {
+    "lat": 45.4554639,
+    "lng": 9.1546383,
+    "display": "Via Giorgio Washington, Tortona, Municipio 6, Milano, Lombardia, 20146, Italia"
+  },
+  "Via Alfredo Cappellini 18/A, 20124 Milano": {
+    "lat": 45.4812538,
+    "lng": 9.202862,
+    "display": "18/a, Via Alfredo Cappellini, Centrale, Municipio 2, Milano, Rodano, Milano, Lombardia, 20124, Italia"
+  },
+  "Via Andrea Solari 34, 20144 Milano": {
+    "lat": 45.4547992,
+    "lng": 9.1609843,
+    "display": "Pim's, 34, Via Andrea Solari, Tortona, Municipio 6, Milano, Lombardia, 20144, Italia"
+  },
+  "Via Spartaco, 16, 20135 Milano MI": {
+    "lat": 45.4587812,
+    "lng": 9.2099274,
+    "display": "Via Spartaco, XXII Marzo, Municipio 4, Milano, Lombardia, 20135, Italia"
+  },
+  "Via Friuli, 46, 20135 Milano MI": {
+    "lat": 45.4542376,
+    "lng": 9.2133965,
+    "display": "46, Via Friuli, XXII Marzo, Municipio 4, Milano, Lombardia, 20135, Italia"
+  },
+  "Viale Coni Zugna, 60, 20144 Milano MI": {
+    "lat": 45.4557062,
+    "lng": 9.1713981,
+    "display": "Mozzafiato pizzeria, 60, Viale Coni Zugna, Magenta - San Vittore, Municipio 6, Milano, Lombardia, 20144, Italia"
+  },
+  "Via Andrea Maffei, 12, 20135 Milano MI": {
+    "lat": 45.4577567,
+    "lng": 9.2079204,
+    "display": "Prog, 12, Via Andrea Maffei, XXII Marzo, Municipio 4, Milano, Lombardia, 20135, Italia"
+  },
+  "Via Plinio, 6, 20129 Milano MI": {
+    "lat": 45.4794563,
+    "lng": 9.2119042,
+    "display": "6, Via Plinio, Buenos Aires - Venezia, Municipio 3, Milano, Lombardia, 20124, Italia"
+  },
+  "Via Correggio, 14, 20149 Milano MI": {
+    "lat": 45.4703772,
+    "lng": 9.1511393,
+    "display": "14, Via Correggio, La Maddalena, De Angeli - Monte Rosa, Municipio 7, Milano, Lombardia, 20149, Italia"
+  },
+  "Piazza Cardinal Massaia, 20123 Milano MI": null,
+  "Piazza Cardinal Massaia, 20123 Milano MI, Italy": null,
+  "Milan, Italy": {
+    "lat": 45.4641943,
+    "lng": 9.1896346,
+    "display": "Milano, Rodano, Milano, Lombardia, Italia"
+  },
+  "Via Antonio Pollaiuolo, 9, 20159 Milano MI": {
+    "lat": 45.4894776,
+    "lng": 9.1875487,
+    "display": "9, Via Antonio Pollaiuolo, Isola, Municipio 9, Milano, Lombardia, 20159, Italia"
+  },
+  "Via Pisana, 82 R, 50143 Firenze FI": {
+    "lat": 43.7711254,
+    "lng": 11.2371233,
+    "display": "82 R, Via Pisana, Pignone, Quartiere 4, Firenze, Toscana, 50100, Italia"
+  },
+  "Via Senese, 155r, 50124 Firenze FI": {
+    "lat": 43.7495928,
+    "lng": 11.2356458,
+    "display": "Giovanni Santarpia, 155r, Via Senese, Due Strade, Quartiere 3, Galluzzo, Firenze, Toscana, 50124, Italia"
+  },
+  "V. Dell Agnolo, 107R, 50122 Firenze FI": {
+    "lat": 43.7705457,
+    "lng": 11.2626173,
+    "display": "107 R, Via dell'Agnolo, Quartiere 1, Firenze, Toscana, 50122, Italia"
+  },
+  "Piazza Barberini, 5, 50021 Barberino Val D'elsa FI": {
+    "lat": 43.5434046,
+    "lng": 11.171963,
+    "display": "Picò, 5, Piazza Barberini, Spoiano, Barberino Val d'Elsa, Barberino Tavarnelle, Firenze, Toscana, 50021, Italia"
+  },
+  "Via di Poneta, 44, 50022 Il Ferrone FI": null,
+  "Carrer de Manso, 22, 08015 Barcelona, Spagna, Spain": null,
+  "Carrer de Manso, 22, Barcelona, Spain": {
+    "lat": 41.3761712,
+    "lng": 2.1602583,
+    "display": "22, Carrer de Manso, Sant Antoni, l'Eixample, Barcelona, Barcelonès, Barcelona, Catalunya, 08015, España"
+  },
+  "Naples, Italy": {
+    "lat": 40.8358846,
+    "lng": 14.2487679,
+    "display": "Napoli, Campania, Italia"
+  },
+  "1524 Neptune Ave, Brooklyn, NY 11224, USA": {
+    "lat": 40.5787862,
+    "lng": -73.9838026,
+    "display": "Totonno's Pizzeria Napolitana, 1524, Neptune Avenue, Coney Island, Brooklyn, Kings County, New York, 11224, United States"
+  },
+  "2287 1st Avenue, New York, NY 10035, USA": {
+    "lat": 40.7971206,
+    "lng": -73.9348001,
+    "display": "Patsy's Pizzeria, 2287, 1st Avenue, Manhattan Community Board 11, Manhattan, New York County, New York, 10035, United States"
+  },
+  "235 Mulberry St, New York, NY 10012, USA": {
+    "lat": 40.7227175,
+    "lng": -73.9961473,
+    "display": "235, Mulberry Street, Little Italy, Lower Manhattan, Manhattan, New York County, New York, 10012, United States"
+  },
+  "7 Carmine Street, New York, NY 10014, USA": {
+    "lat": 40.7305467,
+    "lng": -74.0020629,
+    "display": "Joe's Pizza, 7, Carmine Street, University Village, Manhattan, New York County, New York, 10014, United States"
+  },
+  "1424 Avenue J, Brooklyn, NY 11230, USA": {
+    "lat": 40.625047,
+    "lng": -73.9614948,
+    "display": "Di Fara Pizza, 1424, Avenue J, Brooklyn, Kings County, New York, 11230, United States"
+  },
+  "19 Old Fulton St, Brooklyn, NY 11201, USA": {
+    "lat": 40.7027428,
+    "lng": -73.9934333,
+    "display": "Juliana's Pizza, 19, Old Fulton Street, Dumbo, Brooklyn, Kings County, New York, 11201, United States"
+  },
+  "278 Bleecker St, New York, NY 10014, USA": {
+    "lat": 40.7316098,
+    "lng": -74.0033416,
+    "display": "John's of Bleecker St, 278, Bleecker Street, West Village, Manhattan, New York County, New York, 10014, United States"
+  },
+  "1758 Victory Blvd, Staten Island, NY 10314, USA": {
+    "lat": 40.6130177,
+    "lng": -74.1222465,
+    "display": "1758, Victory Boulevard, Castleton Corners, Staten Island, Richmond County, New York, 10314, United States"
+  },
+  "69 Salem St, Boston, MA 02113, USA": {
+    "lat": 42.3633537,
+    "lng": -71.0558396,
+    "display": "69, Salem Street, Government Center/Faneuil Hall, North End, Boston, Suffolk County, Massachusetts, 02113, United States"
+  },
+  "1300 Crosby Ave, Bronx, NY 10461, USA": {
+    "lat": 40.8382542,
+    "lng": -73.8286679,
+    "display": "1300, Crosby Avenue, Middletown, The Bronx, Bronx County, New York, 10461, United States"
+  },
+  "32 Spring St, New York, NY 10012, USA": {
+    "lat": 40.7215933,
+    "lng": -73.9956147,
+    "display": "Lombardi's Pizza, 32, Spring Street, Little Italy, Lower Manhattan, Manhattan, New York County, New York, 10012, United States"
+  },
+  "1415 S Congress Ave, Austin, TX 78704, USA": {
+    "lat": 30.2492288,
+    "lng": -97.7495206,
+    "display": "1415, South Congress Avenue, South River City, Austin, Travis County, Texas, 78704, United States"
+  },
+  "1919 Hyde St, San Francisco, CA 94109, USA": {
+    "lat": 37.7985495,
+    "lng": -122.4191325,
+    "display": "1919;1921;1923;1925;1927;1929, Hyde Street, Russian Hill, Nob Hill, South of Market, San Francisco, California, 90214, United States"
+  },
+  "1 Front St, Brooklyn, NY 11201, USA": {
+    "lat": 40.702708,
+    "lng": -73.99241,
+    "display": "1, Front Street, Dumbo, Brooklyn, Kings County, New York, 11201, United States"
+  },
+  "New York City, United States": {
+    "lat": 40.7127281,
+    "lng": -74.0060152,
+    "display": "New York, United States"
+  },
+  "617 Piety St, New Orleans, LA 70117, USA": {
+    "lat": 29.9623763,
+    "lng": -90.0426562,
+    "display": "617, Piety Street, Bywater, New Orleans, Orleans Parish, Louisiana, 70117, United States"
+  },
+  "100 N Main St #212, Breckenridge, CO 80424, USA": null,
+  "100 N Main St #212, Breckenridge, CO 80424, USA, United States": null,
+  "100 N Main St #212, Breckenridge, Breckenridge, United States": {
+    "lat": 39.4827076,
+    "lng": -106.0459684,
+    "display": "Björn's Colorado Honey, 100, North Main Street, Breckenridge, Summit County, Colorado, 80424, United States"
+  },
+  "2671 Broadway, New York, NY 10025, USA": {
+    "lat": 40.7983365,
+    "lng": -73.9694327,
+    "display": "Sal & Carmine Pizza, 2671, Broadway, Manhattan Valley, Manhattan Community Board 7, Manhattan, New York County, New York, 10025, United States"
+  },
+  "254 S 2nd St, Brooklyn, NY 11211, USA": {
+    "lat": 40.7116097,
+    "lng": -73.9578261,
+    "display": "254, South 2nd Street, Williamsburg, Brooklyn, Kings County, New York, 11211, United States"
+  },
+  "1454 E Sunshine St, Springfield, MO 65804, USA": {
+    "lat": 37.1814196,
+    "lng": -93.2693161,
+    "display": "The Big Slice, 1454, East Sunshine Street, Meador Park, Springfield, Greene County, Missouri, 65897, United States"
+  },
+  "23141 Dequindre Rd, Hazel Park, MI 48030, USA": {
+    "lat": 42.4637969,
+    "lng": -83.0844306,
+    "display": "23141, Dequindre Road, Hazel Park, Oakland County, Michigan, 48030, United States"
+  },
+  "735 Beaubien St, Detroit, MI 48226, USA": {
+    "lat": 42.333652,
+    "lng": -83.0419421,
+    "display": "Nikki's Pizzeria, 735, Beaubien Street, Greektown, Midtown, Detroit, Wayne County, Michigan, 48226, United States"
+  },
+  "28630 Harper Ave, St. Clair Shores, MI 48081, USA": {
+    "lat": 42.504235,
+    "lng": -82.8979476,
+    "display": "28630, Harper Avenue, Saint Clair Shores, Macomb County, Michigan, 48081, United States"
+  },
+  "364 Grand St, Brooklyn, NY 11211, USA": {
+    "lat": 40.7122344,
+    "lng": -73.9556656,
+    "display": "Emmy squared, 364, Grand Street, Williamsburg, Brooklyn, Kings County, New York, 11211, United States"
+  },
+  "1111 E 6th St, Austin, TX 78702, USA": {
+    "lat": 30.264226,
+    "lng": -97.7307763,
+    "display": "Violet Crown Social Club, 1111, East 6th Street, East Cesar Chavez, Austin, Travis County, Texas, 78702, United States"
+  },
+  "110 E Colorado Ave, Telluride, CO 81435, USA": {
+    "lat": 37.9368296,
+    "lng": -107.810647,
+    "display": "Brown Dog Pizza, 110, East Colorado Avenue, Telluride, San Miguel County, Colorado, 81435, United States"
+  },
+  "3930 W 32nd Ave, Denver, CO 80212, USA": {
+    "lat": 39.7619728,
+    "lng": -105.0389716,
+    "display": "Bautsch Building, 3930, West 32nd Avenue, West Highland, Denver, Colorado, 80212, United States"
+  },
+  "24443 Gratiot Ave, Eastpointe, MI 48021, USA": {
+    "lat": 42.4746432,
+    "lng": -82.9521028,
+    "display": "Cloverleaf Pizza, 24443, Gratiot Avenue, Eastpointe, Macomb County, Michigan, 48021, United States"
+  },
+  "17125 Conant St, Detroit, MI 48212, USA": {
+    "lat": 42.4189365,
+    "lng": -83.0641087,
+    "display": "Buddy's Pizza, 17125, Conant Street, Detroit, Wayne County, Michigan, 48212, United States"
+  },
+  "1361 E McDevitt Ave, Jackson, MI 49203, USA": {
+    "lat": 42.1968042,
+    "lng": -84.3739643,
+    "display": "1361, East McDevitt Avenue, Summit Township, Jackson County, Michigan, 49203, United States"
+  },
+  "Crestwood, United States": {
+    "lat": 41.6611444,
+    "lng": -87.7525511,
+    "display": "Crestwood, Worth Township, Cook County, Illinois, United States"
+  },
+  "Via della Meloria, 43, 00136 Rome, Italy": {
+    "lat": 41.9066975,
+    "lng": 12.4466606,
+    "display": "Bonci Pizzarium, 43, Via della Meloria, Municipio Roma I, Roma, Roma Capitale, Lazio, 00136, Italia"
+  }
+}

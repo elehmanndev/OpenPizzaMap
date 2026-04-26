@@ -1,0 +1,2867 @@
+{
+  "count": 124,
+  "errors": [],
+  "data": [
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/naples/la-campagnola/",
+      "citySlug": "naples",
+      "slug": "la-campagnola",
+      "name": "La Campagnola",
+      "priceRange": "€",
+      "telephone": "+39 081 457663",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Fuori Porta S. Gennaro, 13, 80137 Napoli NA",
+        "locality": "Napoli",
+        "region": "NA",
+        "postalCode": "80137",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2023/12/7B10754B-F28E-46C5-A2D2-5FEF233742D8-1-2560x2560.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 17:00 18:30 &#8211; 23:30 Closed on Mondays",
+      "title": "La Campagnola, Pizza Place in Naples - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/naples/gigino-figli/",
+      "citySlug": "naples",
+      "slug": "gigino-figli",
+      "name": "Gigino &#038; Figli",
+      "priceRange": "€",
+      "telephone": "+39 081 767 9645",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Stanislao Manna, 30, 80126 Napoli NA",
+        "locality": "Napoli",
+        "region": "NA",
+        "postalCode": "80126",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2026/01/IMG_2520.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 – 15:30 19:00 – 00:00",
+      "title": "Gigino &amp; Figli, Pizza Place in Naples - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/naples/pizzeria-laezza/",
+      "citySlug": "naples",
+      "slug": "pizzeria-laezza",
+      "name": "Pizzeria Laezza",
+      "priceRange": "€",
+      "telephone": "+39 081 1932 2748",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Speranzella, 125, 80132 Napoli NA",
+        "locality": "Napoli",
+        "region": "NA",
+        "postalCode": "80132",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2026/01/IMG_6487.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "11:30 &#8211; 15:30 18:30 &#8211; 23:30 Closed on Wednesdays",
+      "title": "Pizza Place Laezza in Naples - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/naples/pizzeria-speranzella/",
+      "citySlug": "naples",
+      "slug": "pizzeria-speranzella",
+      "name": "Pizzeria Speranzella",
+      "priceRange": "€",
+      "telephone": "+39 081 1819 6384",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via S. Mattia, 6, 80132 Napoli NA",
+        "locality": "Napoli",
+        "region": "NA",
+        "postalCode": "80132",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2026/01/IMG_6462.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "10:30 &#8211; 16:00 18:30 &#8211; 00:00",
+      "title": "Pizza Place Speranzella in Naples - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/naples/errico-porzio-vomero/",
+      "citySlug": "naples",
+      "slug": "errico-porzio-vomero",
+      "name": "Errico Porzio Vomero",
+      "priceRange": "€",
+      "telephone": "+39 081 051 3311",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Alessandro Scarlatti, 84, 80129 Napoli NA",
+        "locality": "Napoli",
+        "region": "NA",
+        "postalCode": "80141",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/12/IMG_6187.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:30 &#8211; 15:30 19:30 &#8211; 23:30",
+      "title": "Errico Porzio Vomero, Pizza Place in Naples - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/naples/pizzeria-gennaro-rallo/",
+      "citySlug": "naples",
+      "slug": "pizzeria-gennaro-rallo",
+      "name": "Pizzeria Gennaro Rallo",
+      "priceRange": "€",
+      "telephone": "+39 081 213 6306",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "P.za Portanova, 9, 80138 Napoli NA",
+        "locality": "Napoli",
+        "region": "NA",
+        "postalCode": "80138",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2026/01/IMG_3307-2160x2880.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 15:30 19:00 &#8211; 23:30 Closed on Mondays",
+      "title": "Pizza Place Gennaro Rallo in Naples - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/naples/da-carme/",
+      "citySlug": "naples",
+      "slug": "da-carme",
+      "name": "Da Carmè",
+      "priceRange": "€",
+      "telephone": "+39 081 1882 4828",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Vico Lungo del Gelso, 20, 80134 Napoli NA",
+        "locality": "Napoli",
+        "region": "NA",
+        "postalCode": "80134",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2026/01/IMG_3251-1-2159x2880.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "11:30 &#8211; 16:00 18:30 &#8211; 23:30 Closed on Tuesdays",
+      "title": "Da Carmé, Pizza Place in Naples - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/naples/palazzo-petrucci-pizzeria/",
+      "citySlug": "naples",
+      "slug": "palazzo-petrucci-pizzeria",
+      "name": "Palazzo Petrucci Pizzeria",
+      "priceRange": "€",
+      "telephone": "+39 081 551 2460",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "P.za S. Domenico Maggiore, 5/6/7, 80134 Napoli NA",
+        "locality": "Napoli",
+        "region": "NA",
+        "postalCode": "80134",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/12/IMG_7611.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:30 &#8211; 16:00 19:30 &#8211; 23:30",
+      "title": "Palazzo Petrucci, Pizza Place in Naples - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/naples/alma-pizzeria-gourmet/",
+      "citySlug": "naples",
+      "slug": "alma-pizzeria-gourmet",
+      "name": "Alma Pizzeria Gourmet",
+      "priceRange": "€",
+      "telephone": "+39 081 304 7878",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Lago Patria 170, 80014 Giugliano In Campania NA",
+        "locality": "Lago Patria",
+        "region": "NA",
+        "postalCode": "80014",
+        "country": "Italia"
+      },
+      "image": "https://assets.thegreat.pizza/images/2025/12/IMG_1132.jpeg?w=1200&h=630",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "18:30 &#8211; 00:00 Closed on Tuesdays",
+      "title": "Alma Pizza Place Gourmet in Giugliano (NA) - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/naples/la-figlia-del-presidente/",
+      "citySlug": "naples",
+      "slug": "la-figlia-del-presidente",
+      "name": "La Figlia del Presidente (Napoli)",
+      "priceRange": "€",
+      "telephone": "+39 081 286738",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Grande Archivio 23/24, 80138 Napoli ",
+        "locality": "Napoli",
+        "region": "NA",
+        "postalCode": "80138",
+        "country": "Italia"
+      },
+      "image": "https://assets.thegreat.pizza/images/2023/12/IMG_1479-1-scaled.jpeg?w=1200&h=630",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "",
+      "title": "La Figlia del Presidente, Pizza Place in Naples - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/naples/pizzeria-errico-porzio-lungomare/",
+      "citySlug": "naples",
+      "slug": "pizzeria-errico-porzio-lungomare",
+      "name": "Pizzeria Errico Porzio (Lungomare Napoli)",
+      "priceRange": "€",
+      "telephone": "+39 081 051 3666",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Partenope 11/12, 80121 Napoli ",
+        "locality": "Napoli",
+        "region": "NA",
+        "postalCode": "80121",
+        "country": "Italia"
+      },
+      "image": "https://assets.thegreat.pizza/images/2025/12/IMG_6093.jpeg?w=1200&h=630",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 16:00 19:00 &#8211; 00:00",
+      "title": "Pizzeria Errico Porzio (Lungomare Napoli) - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/naples/antica-pizzeria-del-borgo-orefici/",
+      "citySlug": "naples",
+      "slug": "antica-pizzeria-del-borgo-orefici",
+      "name": "Antica Pizzeria del Borgo Orefici",
+      "priceRange": "€",
+      "telephone": "+39 081 552 0996",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Luigi Palmieri 13 - 80133 Napoli ",
+        "locality": "Napoli",
+        "region": "NA",
+        "postalCode": "80133",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/12/IMG_2582-1.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:30 &#8211; 15:00 19:30 &#8211; 22:30 Closed on Sundays",
+      "title": "Antica Pizzeria del Borgo Orefici in Naples - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/rome/deroma/",
+      "citySlug": "rome",
+      "slug": "deroma",
+      "name": "Deroma",
+      "priceRange": "€",
+      "telephone": "+39 06 6936 9190",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Poli, 27, 00187 Roma RM",
+        "locality": "Roma",
+        "region": "RM",
+        "postalCode": "00187",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2026/02/IMG_0062.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "08:00 &#8211; 00:00",
+      "title": "Deroma, Pizza Place in Roma"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/rome/peppo-al-cosimato/",
+      "citySlug": "rome",
+      "slug": "peppo-al-cosimato",
+      "name": "Peppo al Cosimato",
+      "priceRange": "€",
+      "telephone": "+39 06 581 2048",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Natale del Grande, 9, 00153 Roma RM",
+        "locality": "Roma",
+        "region": "RM",
+        "postalCode": "00153",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2026/01/IMG_8186.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 00:00",
+      "title": "Pizza Place Peppo al Cosimato in Rome, Trastevere - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/rome/golfo-di-napoli-ristorante-pizzeria/",
+      "citySlug": "rome",
+      "slug": "golfo-di-napoli-ristorante-pizzeria",
+      "name": "Golfo Di Napoli Ristorante Pizzeria",
+      "priceRange": "€",
+      "telephone": "+39 06 261873",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Enrico Giglioli 99-100, 00169 Roma",
+        "locality": "Roma",
+        "region": "RM",
+        "postalCode": "00169",
+        "country": "Italia"
+      },
+      "image": "https://assets.thegreat.pizza/images/2025/12/IMG_3348.jpeg?w=1200&h=630",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 15:00 19:00 &#8211; 22:30 Closed on Mondays",
+      "title": "Golfo di Napoli, Pizza Place in Rome - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/rome/tac-thin-and-crunchy/",
+      "citySlug": "rome",
+      "slug": "tac-thin-and-crunchy",
+      "name": "TAC Thin and Crunchy",
+      "priceRange": "€",
+      "telephone": "+39 06 4565 2738",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Fiume delle Perle, 136-138, 00144 Roma RM",
+        "locality": "Roma",
+        "region": "RM",
+        "postalCode": "00144",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/09/IMG_1406.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "19:00 &#8211; 00:00 Closed on Mondays",
+      "title": "TAC Thin and Crunchy, Pizza Place in Rome - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/rome/svario-pizza-bar/",
+      "citySlug": "rome",
+      "slug": "svario-pizza-bar",
+      "name": "Svario Pizza Bar",
+      "priceRange": "€€",
+      "telephone": "+39 329 929 9705",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Val Senio 18, 00141 Roma Italia",
+        "locality": "Roma",
+        "region": "RM",
+        "postalCode": "00141",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/04/IMG_8902-1707x2560.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "18:00-23:30 Closed on Mondays",
+      "title": "Svario Pizza Bar, Pizza Place in Rome - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/rome/sua-maesta-la-pizzeria-la-filetteria/",
+      "citySlug": "rome",
+      "slug": "sua-maesta-la-pizzeria-la-filetteria",
+      "name": "Sua Maestà La Pizzeria &#038; La Filetteria",
+      "priceRange": "€€",
+      "telephone": "+39 0669347396",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Valsavaranche 7, 00141 Roma Italia",
+        "locality": "Roma",
+        "region": "RM",
+        "postalCode": "00141",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/04/IMG_4355-2160x2880.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "17:30-23:00 Closed on Mondays",
+      "title": "Sua Maestà La Pizzeria &amp; La Filetteria in Rome - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/rome/finafina/",
+      "citySlug": "rome",
+      "slug": "finafina",
+      "name": "FinaFina",
+      "priceRange": "€",
+      "telephone": "+39 06 7834 5173",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Arrigo Davila 83, 00179 Roma Italia",
+        "locality": "Roma",
+        "region": "RM",
+        "postalCode": "00179",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/03/IMG_4187-1920x2560.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 15:00 19:30 &#8211; 23:00",
+      "title": "FinaFina, Pizza Place in Rome (Colli Albani) - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/rome/santa-romana-pizzeria-di-quartiere/",
+      "citySlug": "rome",
+      "slug": "santa-romana-pizzeria-di-quartiere",
+      "name": "Santa Romana Pizzeria di Quartiere",
+      "priceRange": "€€",
+      "telephone": "39 06 6931 7674",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Piazza Certaldo 12, 00146 Roma Italia",
+        "locality": "Roma",
+        "region": "RM",
+        "postalCode": "00146",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/04/IMG_8993-1707x2560.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "19:00-22:30 Closed on Tuesdays",
+      "title": "Santa Romana Pizzeria di Quartiere in Rome - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/rome/fornace-stella-muscas/",
+      "citySlug": "rome",
+      "slug": "fornace-stella-muscas",
+      "name": "Fornace Stella &#038; Muscas",
+      "priceRange": "€€",
+      "telephone": "39 06 4754 9953",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Piazza Lecce 9, 00161 Roma Italia",
+        "locality": "Roma",
+        "region": "RM",
+        "postalCode": "00146",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/04/172AF03E-5E5F-4080-9BB7-DFA4DEDE79AA.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:30-15:00 (Sundays only) 19:00-23:00",
+      "title": "Fornace Stella &amp; Muscas, Pizza Place in Rome - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/rome/donna-cira-ostiense/",
+      "citySlug": "rome",
+      "slug": "donna-cira-ostiense",
+      "name": "Donna Cira (Ostiense)",
+      "priceRange": "€€",
+      "telephone": "+39 06 9970 1942",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Pellegrino Matteucci, 20, 00154 Roma Italia",
+        "locality": "Roma",
+        "region": "RM",
+        "postalCode": "00154",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/04/IMG_4495-scaled.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:30-15:30 19:00-23:30",
+      "title": "Donna Cira (Ostiense), Pizza Place in Rome - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/rome/baccio-e-i-gradini/",
+      "citySlug": "rome",
+      "slug": "baccio-e-i-gradini",
+      "name": "Baccio e i Gradini",
+      "priceRange": "€€",
+      "telephone": "+39 351 882 3737",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Viale della Piramide Cestia, 25, 00153 Roma Italia",
+        "locality": "Roma",
+        "region": "RM",
+        "postalCode": "00153",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/04/IMG_4285-2160x2880.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 15:00 (Sunday) 19:00 &#8211; 23:00",
+      "title": "Baccio e i Gradini, Pizza Place in Rome - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/rome/ardecore/",
+      "citySlug": "rome",
+      "slug": "ardecore",
+      "name": "ARDECORE",
+      "priceRange": "€€",
+      "telephone": "+390669271955",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Michelangelo Buonarroti, 32, 00185 Roma Italia",
+        "locality": "Roma",
+        "region": "RM",
+        "postalCode": "00185",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/04/IMG_8899-1707x2560.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "19:00-23:30 Closed on Mondays",
+      "title": "ARDECORE, Pizza Place in Rome - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/milan/sciue-washington/",
+      "citySlug": "milan",
+      "slug": "sciue-washington",
+      "name": "Sciuè Washington",
+      "priceRange": "€",
+      "telephone": "+39 02 3651 2814",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Giorgio Washington, 52, 20146 Milano MI",
+        "locality": "Milano",
+        "region": "MI",
+        "postalCode": "20146",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/12/e5979338-25c3-4eb7-b967-07e795280bef.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 15:00 19:00 &#8211; 23:45",
+      "title": "Pizza Place Sciuè Washington in Milan - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/milan/berbere-pizzeria-stazione-centrale-milano/",
+      "citySlug": "milan",
+      "slug": "berbere-pizzeria-stazione-centrale-milano",
+      "name": "Berberè Pizzeria (Stazione Centrale Milano)",
+      "priceRange": "€",
+      "telephone": "+39 02 4945 9250",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Alfredo Cappellini 18/A, 20124 Milano",
+        "locality": "Milano",
+        "region": "MI",
+        "postalCode": "",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/12/IMG_3906.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:30 &#8211; 14:30 19:00 &#8211; 23:30",
+      "title": "Berberè Pizza Place in Milan - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/milan/pizzeria-errico-porzio-milano/",
+      "citySlug": "milan",
+      "slug": "pizzeria-errico-porzio-milano",
+      "name": "Pizzeria Errico Porzio (Milano)",
+      "priceRange": "€",
+      "telephone": "+39 02 8087 3022",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Andrea Solari 34, 20144 Milano",
+        "locality": "Milano",
+        "region": "MI",
+        "postalCode": "20144",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/12/IMG_0106.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 15:00 19:00 &#8211; 23:30",
+      "title": "Pizza Place Errico Porzio a Milano - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/milan/santa-margherita/",
+      "citySlug": "milan",
+      "slug": "santa-margherita",
+      "name": "Santa Margherita",
+      "priceRange": "€€",
+      "telephone": "+390223057031",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Spartaco, 16, 20135 Milano MI",
+        "locality": "Milano",
+        "region": "MI",
+        "postalCode": "20135",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2024/04/IMG_3421-2560x2560.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 15:00 (Excluding Sunday) 19:00 &#8211; 23:00 Closed on Mondays",
+      "title": "Santa Margherita, Pizza Place in Milan (Porta Romana) - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/milan/pizzeria-da-lioniello-milano/",
+      "citySlug": "milan",
+      "slug": "pizzeria-da-lioniello-milano",
+      "name": "Da Lioniello (Milano)",
+      "priceRange": "€€",
+      "telephone": "+390272199211",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Friuli, 46, 20135 Milano MI",
+        "locality": "Milano",
+        "region": "MI",
+        "postalCode": "20135",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2024/04/IMG_6771-2560x2560.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00–15:00 19:00–23:00 &nbsp;",
+      "title": "Da Lioniello, Pizza Place in Milan - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/milan/mozzafiato/",
+      "citySlug": "milan",
+      "slug": "mozzafiato",
+      "name": "Mozzafiato",
+      "priceRange": "€€",
+      "telephone": "+393518441972",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Viale Coni Zugna, 60, 20144 Milano MI",
+        "locality": "Milano",
+        "region": "MI",
+        "postalCode": "",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2024/04/IMG_6995-2560x2560.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "11:30 &#8211; 14:30 19:00 &#8211; 23:00 Closed on Mondays",
+      "title": "Mozzafiato, Pizza Place in Milan - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/milan/modus/",
+      "citySlug": "milan",
+      "slug": "modus",
+      "name": "Modus",
+      "priceRange": "€€€",
+      "telephone": "+39 0282860006",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Andrea Maffei, 12, 20135 Milano MI",
+        "locality": "Milano",
+        "region": "MI",
+        "postalCode": "20135",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2022/08/Terra-a-Confine-1920x2560.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:30 &#8211; 14:30 19:00 &#8211; 23:30",
+      "title": "Modus, Pizza Place in Milan - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/milan/marghe-milano-plinio/",
+      "citySlug": "milan",
+      "slug": "marghe-milano-plinio",
+      "name": "Marghe (Milano, Plinio)",
+      "priceRange": "€€",
+      "telephone": "+39022047117",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Plinio, 6, 20129 Milano MI",
+        "locality": "Milano",
+        "region": "MI",
+        "postalCode": "20129",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2023/12/IMG_1806-2560x2560.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:30 &#8211; 14:30 19:30 &#8211; 23:30",
+      "title": "Pizzeria Marghe (Milano, Plinio) - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/milan/glory-pop/",
+      "citySlug": "milan",
+      "slug": "glory-pop",
+      "name": "Glory Pop",
+      "priceRange": "€€",
+      "telephone": "+39 0247707717",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Correggio, 14, 20149 Milano MI",
+        "locality": "Milano",
+        "region": "MI",
+        "postalCode": "20149",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2024/04/IMG_7027-2560x2560.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 14:30 19:00 &#8211; 23:00",
+      "title": "Glory Pop in Milan - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/milan/confine-pizza-e-cantina/",
+      "citySlug": "milan",
+      "slug": "confine-pizza-e-cantina",
+      "name": "Confine &#8211; Pizza e Cantina",
+      "priceRange": "€€€",
+      "telephone": "+393755426086",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Piazza Cardinal Massaia, 20123 Milano MI",
+        "locality": "Milano",
+        "region": "MI",
+        "postalCode": "20123",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2023/12/IMG_6286.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 15:00 (Saturdays and Sundays) 19:00 &#8211; 00:00 Closed on Mondays",
+      "title": "Pizza place Confine - Pizza e Cantina in Milan - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/milan/biga-milano-isola/",
+      "citySlug": "milan",
+      "slug": "biga-milano-isola",
+      "name": "Biga (Isola)",
+      "priceRange": "€€",
+      "telephone": "+390270012362",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Antonio Pollaiuolo, 9, 20159 Milano MI",
+        "locality": "Milano",
+        "region": "MI",
+        "postalCode": "20159",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2024/04/IMG_6833-2560x2560.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:30 &#8211; 14:30 19:00 &#8211; 23:00",
+      "title": "Biga (Isola), Pizza place in Milan - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/florence/zanfa-bros/",
+      "citySlug": "florence",
+      "slug": "zanfa-bros",
+      "name": "Zanfa Bros",
+      "priceRange": "€",
+      "telephone": "055 986 4853",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Pisana, 82 R, 50143 Firenze FI",
+        "locality": "Firenze",
+        "region": "FI",
+        "postalCode": "50143",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/06/IMG_7544-2880x2160.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "18:30 &#8211; 23:30 Closed on Mondays",
+      "title": "Zanfa Bros, Pizza Place in Florence - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/florence/pizzeria-giovanni-santarpia/",
+      "citySlug": "florence",
+      "slug": "pizzeria-giovanni-santarpia",
+      "name": "Pizzeria Giovanni Santarpia",
+      "priceRange": "€€",
+      "telephone": "055 936 0052",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Senese, 155r, 50124 Firenze FI",
+        "locality": "Firenze",
+        "region": "FI",
+        "postalCode": "50124",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/06/IMG_7774-2880x2160.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "19:15 &#8211; 23:00",
+      "title": "Pizzeria Giovanni Santarpia in Florence - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/florence/pizzagnolo/",
+      "citySlug": "florence",
+      "slug": "pizzagnolo",
+      "name": "Pizzagnolo",
+      "priceRange": "€",
+      "telephone": "+39 055 248 0200",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "V. Dell Agnolo, 107R, 50122 Firenze FI ",
+        "locality": "Firenze",
+        "region": "FI",
+        "postalCode": "50122",
+        "country": "Italia"
+      },
+      "image": "https://assets.thegreat.pizza/images/2019/11/0O1A6680-1-scaled.jpeg?w=1200&h=630",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 14:30 18:00 &#8211; 22:30",
+      "title": "Pizzagnolo, Pizza Place in Florence - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/florence/pico/",
+      "citySlug": "florence",
+      "slug": "pico",
+      "name": "Picò",
+      "priceRange": "€",
+      "telephone": "+39 055 807 5509",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": " Piazza Barberini, 5, 50021 Barberino Val D'elsa FI",
+        "locality": "Barberino Val D'elsa",
+        "region": "FI",
+        "postalCode": "50021",
+        "country": "Italia"
+      },
+      "image": "https://assets.thegreat.pizza/images/2019/11/0O1A6680-1-scaled.jpeg?w=1200&h=630",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 14:30 18:30 &#8211; 23:00 Closed on Wednesdays",
+      "title": "Picò, Pizza Place in Florence - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/florence/lo-spela-naturalmente-pizza/",
+      "citySlug": "florence",
+      "slug": "lo-spela-naturalmente-pizza",
+      "name": "Lo Spela &#8211; Naturalmente Pizza",
+      "priceRange": "€€",
+      "telephone": "+39 055 850787",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via di Poneta, 44, 50022 Il Ferrone FI",
+        "locality": "Il Ferrone",
+        "region": "FI",
+        "postalCode": "50022",
+        "country": "Italia"
+      },
+      "image": "https://assets.thegreat.pizza/images/2019/11/0O1A6680-1-scaled.jpeg?w=1200&h=630",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "19:30 &#8211; 22:30",
+      "title": "Lo Spela - Naturalmente Pizza, Il Ferrone (Florence) - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/florence/forneria-firenze/",
+      "citySlug": "florence",
+      "slug": "forneria-firenze",
+      "name": "Forneria Firenze",
+      "priceRange": "€€",
+      "telephone": "055 796 5522",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via de' Bardi, 54 R, 50125 Firenze FI",
+        "locality": "Firenze",
+        "region": "FI",
+        "postalCode": "50125",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/06/IMG_7578-2880x2880.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "11:30 &#8211; 22:30",
+      "title": "Pizzeria Forneria Firenze - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/florence/elementi-cocktail-pizza-mugello/",
+      "citySlug": "florence",
+      "slug": "elementi-cocktail-pizza-mugello",
+      "name": "Elementi &#8211; Cocktail &#038; Pizza (Mugello)",
+      "priceRange": "€",
+      "telephone": "+39 351 685 8588",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": " Via del Pozzo, 13, 50031 Barberino di Mugello FI",
+        "locality": "Barberino di Mugello",
+        "region": "FI",
+        "postalCode": "50031",
+        "country": "Italia"
+      },
+      "image": "https://assets.thegreat.pizza/images/2019/11/0O1A6680-1-scaled.jpeg?w=1200&h=630",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "18:30 &#8211; 00-00 Closed on Mondays and Tuesdays",
+      "title": "Elementi - Cocktail &amp; Pizza (Mugello)"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/florence/cucina-conviviale/",
+      "citySlug": "florence",
+      "slug": "cucina-conviviale",
+      "name": "Cucina Conviviale",
+      "priceRange": "€",
+      "telephone": "+39 055 246 6318",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": " Via del Cronaca, 16r, 50142 Firenze FI",
+        "locality": "Firenze",
+        "region": "FI",
+        "postalCode": "50142",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/06/IMG_7405-1-2880x2160.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 14:30 19:00 &#8211; 23:00",
+      "title": "Cucina Conviviale, Pizza Place in Florence - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/florence/cipriano-pizzeria/",
+      "citySlug": "florence",
+      "slug": "cipriano-pizzeria",
+      "name": "Cipriano Pizzeria",
+      "priceRange": "€",
+      "telephone": "+39 055 760 5302",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": " Viale Ludovico Ariosto, 1r, 50124 Firenze FI",
+        "locality": "Firenze",
+        "region": "FI",
+        "postalCode": "50124",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/06/IMG_7657-2880x2160.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "19:00 &#8211; 23:00 Closed on Mondays",
+      "title": "Cipriano Pizzeria in Florence - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/florence/a-puteca/",
+      "citySlug": "florence",
+      "slug": "a-puteca",
+      "name": "&#8216;A Puteca",
+      "priceRange": "€",
+      "telephone": "055 202 5712",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": " Via Vincenzo Gioberti, 170, 50121 Firenze FI",
+        "locality": "Firenze",
+        "region": "FI",
+        "postalCode": "50121",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/06/IMG_9376-2011x2880.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 15:00 19:00 &#8211; 23:30",
+      "title": "&#039;A Puteca, Pizza Places in Florence - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/florence/al-solito-posto/",
+      "citySlug": "florence",
+      "slug": "al-solito-posto",
+      "name": "Al Solito Posto",
+      "priceRange": "€€",
+      "telephone": "+39 055 229593",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Piazza De Nerli 5, Via dell'Orto, 12, 50124 Firenze FI",
+        "locality": "Firenze",
+        "region": "FI",
+        "postalCode": "50123",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/06/IMG_9847-1-1920x2880.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "19:00 &#8211; 23:00 Closed on Mondays",
+      "title": "Al Solito Posto, Pizza Place in Florence - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/florence/giotto-pizzeria-bistrot/",
+      "citySlug": "florence",
+      "slug": "giotto-pizzeria-bistrot",
+      "name": "Giotto Pizzeria Bistrot",
+      "priceRange": "€€",
+      "telephone": "+39 055 212287",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": " Via Panzani, 57, 50123 Firenze FI",
+        "locality": "Firenze",
+        "region": "FI",
+        "postalCode": "50123",
+        "country": "Italia"
+      },
+      "image": "https://assets.thegreat.pizza/images/2025/04/IMG_7687-2160x2880.jpeg?w=1200&h=630",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 23:00",
+      "title": "Giotto Pizzeria Bistrot in Florence - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/bologna/mozzabella-street-food/",
+      "citySlug": "bologna",
+      "slug": "mozzabella-street-food",
+      "name": "Mozzabella Street Food",
+      "priceRange": "€",
+      "telephone": "",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via S. Gervasio, 1-3, 40121 Bologna BO",
+        "locality": "Bologna",
+        "region": "BO",
+        "postalCode": "40121",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2022/07/photo_2022-07-25-11.36.40.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 15:00 18:30 &#8211; 22:00",
+      "title": "Pizzeria Mozzabella Street Food in Bologna - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/bologna/storiedipinte/",
+      "citySlug": "bologna",
+      "slug": "storiedipinte",
+      "name": "StorieDiPinte",
+      "priceRange": "€€",
+      "telephone": "3756124850",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Maurizio Padoa, 6h, 40138 Bologna BO",
+        "locality": "Bologna",
+        "region": "BO",
+        "postalCode": "40138",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2022/06/photo_2022-06-20-13.13.27.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "18:30 – 23:30 Closed on Tuesday",
+      "title": "Pizzeria StorieDiPinte in Bologna - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/bologna/the-gallery-pizzart-food-drink/",
+      "citySlug": "bologna",
+      "slug": "the-gallery-pizzart-food-drink",
+      "name": "The Gallery Pizzart Food &#038; Drink",
+      "priceRange": "€€€",
+      "telephone": "0510561539",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Galleria Falcone e Borsellino, 2b, 40123 Bologna BO",
+        "locality": "Bologna",
+        "region": "BO",
+        "postalCode": "40123",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2022/03/IMG_2742-2560x1920.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "10:30 – 15:30 18:30 – 23:30 Closed on Monday",
+      "title": "Pizzeria The Gallery Pizzart Food &amp; Drink in Bologna - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/bologna/pinterre/",
+      "citySlug": "bologna",
+      "slug": "pinterre",
+      "name": "Pinterrè",
+      "priceRange": "€€",
+      "telephone": "051302661",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Mazzini, 170, 40139 Bologna BO",
+        "locality": "Bologna",
+        "region": "BO",
+        "postalCode": "40137",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2022/03/IMG_2708-2560x2134.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 – 14:30 19:00 – 23:30 Closed on Monday",
+      "title": "Pizzeria Pinterrè in Bologna - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/bologna/papeo/",
+      "citySlug": "bologna",
+      "slug": "papeo",
+      "name": "Papeo",
+      "priceRange": "€€",
+      "telephone": "0516340973",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Franco Basaglia, 3, 40131 Bologna BO",
+        "locality": "Bologna",
+        "region": "BO",
+        "postalCode": "40131",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2022/03/Ci-Ra-Bu-Sa-Verace-2560x1920.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 – 14:30 19:00 – 22:30 Closed on Sunday",
+      "title": "Pizzeria Papeo in Bologna - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/bologna/la-verace/",
+      "citySlug": "bologna",
+      "slug": "la-verace",
+      "name": "La Verace",
+      "priceRange": "€€",
+      "telephone": "+390515882700",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Cairoli, 16, 40121 Bologna BO",
+        "locality": "",
+        "region": "",
+        "postalCode": "",
+        "country": {
+          "@type": "Country",
+          "name": ""
+        }
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2021/11/photo_2021-11-28-15.50.16.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 – 15:00 18:30 – 00:00",
+      "title": "Pizzeria La Verace in Bologna - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/bologna/corten-3/",
+      "citySlug": "bologna",
+      "slug": "corten-3",
+      "name": "Corten",
+      "priceRange": "€€",
+      "telephone": "+390514852898",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Garibaldi, 5/H, 40124 Bologna BO",
+        "locality": "Bologna",
+        "region": "BO",
+        "postalCode": "40124",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2021/11/IMG_2097-2560x1920.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "19:00 – 23:30 Weekend: 12:00 &#8211; 00:00",
+      "title": "Pizzeria Corten in Bologna - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/bologna/steccapara-pizza-e-suppli/",
+      "citySlug": "bologna",
+      "slug": "steccapara-pizza-e-suppli",
+      "name": "Steccapara Pizza e Supplì",
+      "priceRange": "€",
+      "telephone": "+390510954562",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Guerrazzi, 11b, 40125 Bologna BO",
+        "locality": "Bologna",
+        "region": "BO",
+        "postalCode": "40125",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2021/07/IMG_0417-2560x1920.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 15:00 19:00 – 22:00 Closed on weekdays",
+      "title": "Steccapara Pizza e Supplì in Bologna - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/bologna/lantica-pizzeria-da-michele-bologna/",
+      "citySlug": "bologna",
+      "slug": "lantica-pizzeria-da-michele-bologna",
+      "name": "L’Antica Pizzeria Da Michele Bologna",
+      "priceRange": "€€",
+      "telephone": "+390510400752",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Piazza S. Martino, 3/b, 40126 Bologna BO",
+        "locality": "Bologna",
+        "region": "BO",
+        "postalCode": "40126",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2021/06/IMG_9691-2-2560x2560.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 – 16:00 18:00 – 23:30 Weekend: 12:00 &#8211; 23:30",
+      "title": "L’Antica Pizzeria Da Michele Bologna"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/torino/briks/",
+      "citySlug": "torino",
+      "slug": "briks",
+      "name": "Briks",
+      "priceRange": "€",
+      "telephone": "+39 011 248 8249",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via S Paolo, 12/A, 10138 Torino TO",
+        "locality": "Torino",
+        "region": "TO",
+        "postalCode": "10138",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2026/01/IMG_4672.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "8:00 &#8211; 22:30 17:00 &#8211; 22:30 (Saturdays and Sundays)",
+      "title": "Briks, Pizza Place in Turin - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/torino/uao-pizza-pizzeria/",
+      "citySlug": "torino",
+      "slug": "uao-pizza-pizzeria",
+      "name": "UÁO PIZZA",
+      "priceRange": "€",
+      "telephone": "+39 349 075 695",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Berthollet 20, 10125 Torino ",
+        "locality": "Torino",
+        "region": "TO",
+        "postalCode": "10125",
+        "country": "Italia"
+      },
+      "image": "https://assets.thegreat.pizza/images/2025/12/IMG_2359.jpeg?w=1200&h=630",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "Monday 12:30-15:00, 19:00-23:30 Tuesday 12:30-15:00, 19:00-23:30 Wednesday 12:30-15:00, 19:00-23:30 Thursday 12:30-15:00, 19:00-23:30 Friday 12:30-15:00, 18:30-00:00 Saturday 12:30-15:00, 18:30-00:00 Sunday 12:30-15:00, 18:30-23:30",
+      "title": "UÁO PIZZA, Pizza Place in Turin - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/torino/laforisma/",
+      "citySlug": "torino",
+      "slug": "laforisma",
+      "name": "L&#8217;Aforisma",
+      "priceRange": "€",
+      "telephone": "+39 011 569 4315",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Tepice, 8, 10126 Torino TO",
+        "locality": "Torino",
+        "region": "TO",
+        "postalCode": "10126",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/11/IMG_2339.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "19:00 &#8211; 23:30 Closed on Tuesdays",
+      "title": "L&#039;Aforisma, Pizza Place in Turin - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/torino/sestogusto-stampatori/",
+      "citySlug": "torino",
+      "slug": "sestogusto-stampatori",
+      "name": "Sestogusto (Stampatori)",
+      "priceRange": "€€€",
+      "telephone": "+390110600532",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Stampatori, 6, 10122 Torino TO",
+        "locality": "Torino",
+        "region": "TO",
+        "postalCode": "10122",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2023/12/IMG_4819-2560x2560.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 14:00 (except on Tuesdays) 19:00 &#8211; 23:00 Closed on Mondays)",
+      "title": "Sestogusto (Stampatori), Pizza Place in Turin - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/genova/da-luigi-pizza-fatta-a-mano/",
+      "citySlug": "genova",
+      "slug": "da-luigi-pizza-fatta-a-mano",
+      "name": "Da Luigi &#8211; Pizza Fatta a Mano",
+      "priceRange": "€",
+      "telephone": "+39 010 869 6190",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Camillo Finocchiaro Aprile, 34 R, 16129 Genova GE",
+        "locality": "Genova",
+        "region": "GE",
+        "postalCode": "16129",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/11/IMG_2905.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "18:30 – 23:30",
+      "title": "Da Luigi - Pizza Fatta a Mano, Pizza Place in Genova - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/genova/il-datterino/",
+      "citySlug": "genova",
+      "slug": "il-datterino",
+      "name": "Il Datterino",
+      "priceRange": "€",
+      "telephone": "+39 380 742 9834",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Corso Valparaiso, 34, 16043 Chiavari GE",
+        "locality": "Chiavari",
+        "region": "GE",
+        "postalCode": "16043",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/11/IMG_2565.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 15:00 19:00 &#8211; 23:30 Closed on Mondays",
+      "title": "Il Datterino, Pizza Place in Chiavari (GE) - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/genova/marco-papa-pizzeria/",
+      "citySlug": "genova",
+      "slug": "marco-papa-pizzeria",
+      "name": "Marco Papa Pizzeria",
+      "priceRange": "€",
+      "telephone": "+39 010 092 1094",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Gabriele d'Annunzio, 8, 16121 Genova GE",
+        "locality": "Genova",
+        "region": "GE",
+        "postalCode": "16121",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/11/IMG_2469.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 14:30 19:00 &#8211; 23:30",
+      "title": "Marco Papa Pizza Place in Genova - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/verona/locanda-del-viandante/",
+      "citySlug": "verona",
+      "slug": "locanda-del-viandante",
+      "name": "Locanda del Viandante",
+      "priceRange": "€",
+      "telephone": "+39 345 392 6788",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Mantova, 1, 37069 Villafranca di Verona VR",
+        "locality": "Villafranca di Verona",
+        "region": "VR",
+        "postalCode": "37069",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2026/02/P1100961.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 – 14:15 19:15 – 23:00",
+      "title": "Locanda del Viandante in Villafranca di Verona (VR)"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/verona/pizza-punto-e-a-capo/",
+      "citySlug": "verona",
+      "slug": "pizza-punto-e-a-capo",
+      "name": "Pizza Punto e a Capo",
+      "priceRange": "€",
+      "telephone": "+39 045 896 1266",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Piazza Roma, 15, 37066 Sommacampagna VR",
+        "locality": "Sommacampagna",
+        "region": "VR",
+        "postalCode": "37066",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2026/02/IMG_3114.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 – 14:15 (Wednesdays, Thursdays and Fridays) 18:30 – 22:30 Closed on Mondays",
+      "title": "Pizza Punto e a Capo in Sommacampagna (VR)"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/verona/settimo-cielo/",
+      "citySlug": "verona",
+      "slug": "settimo-cielo",
+      "name": "Settimo Cielo",
+      "priceRange": "€",
+      "telephone": "+39 045 670 3207",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Enrico Bernardi, 1, 37026 Pescantina VR",
+        "locality": "Settimo",
+        "region": "VR",
+        "postalCode": "37026",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2026/01/P1100866.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "11:00 – 15:00 (excluding Saturdays) 18:30 – 23:00 Closed on Mondays",
+      "title": "Settimo Cielo, Pizza Place in Pescantina (VR) - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/verona/gemma-pizzeria-verona-borgo-trento/",
+      "citySlug": "verona",
+      "slug": "gemma-pizzeria-verona-borgo-trento",
+      "name": "Gemma Pizzeria (Verona, Borgo Trento)",
+      "priceRange": "€",
+      "telephone": "+39 045 459 0777",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Mario Todeschini, 19, 37126 Verona VR",
+        "locality": "Verona",
+        "region": "VR",
+        "postalCode": "37126",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2026/01/IMG_7076.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 – 14:30 19:00 – 22:30",
+      "title": "Pizza Place Gemma in Verona - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/verona/pizzeria-focacceria-quattrocento/",
+      "citySlug": "verona",
+      "slug": "pizzeria-focacceria-quattrocento",
+      "name": "Pizzeria Focacceria Quattrocento",
+      "priceRange": "€",
+      "telephone": "+39 045 870 0593",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Valpantena, 94f, 37142 Marzana VR",
+        "locality": "Marzana",
+        "region": "VR",
+        "postalCode": "37142",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2026/01/P1100767.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "19:00 &#8211; 00:00 Closed on Mondays",
+      "title": "Pizzeria Focacceria Quattrocento in Verona - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/verona/berbere/",
+      "citySlug": "verona",
+      "slug": "berbere",
+      "name": "Berberè",
+      "priceRange": "€€",
+      "telephone": "+39 0452066922",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Pellicciai, 2, 37121 Verona VR",
+        "locality": "Verona",
+        "region": "VR",
+        "postalCode": "37121",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2020/10/DAV_8940-2560x2560.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 – 22:30",
+      "title": "Pizza Place Berberè in Verona - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/verona/sapore-renato-bosco/",
+      "citySlug": "verona",
+      "slug": "sapore-renato-bosco",
+      "name": "Saporè Renato Bosco",
+      "priceRange": "€€€",
+      "telephone": "+39 3319873375",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Piazza del Popolo, 46, 37036 San Martino Buon Albergo VR",
+        "locality": "San Martino Buon Albergo",
+        "region": "VR",
+        "postalCode": "37036",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2020/10/P1100710-2560x2560.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 – 14:30 18:00 – 22:30 Closed on Mondays.",
+      "title": "Pizza Place Saporè Renato Bosco in Verona - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/verona/i-tigli/",
+      "citySlug": "verona",
+      "slug": "i-tigli",
+      "name": "i Tigli",
+      "priceRange": "€€€",
+      "telephone": "+39 0456102606",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Camporosolo, 11, 37047 San Bonifacio VR",
+        "locality": "San Bonifacio",
+        "region": "VR",
+        "postalCode": "37047",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2020/10/P1100718-2560x2560.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 – 14:00 19:00 – 22:00 Closed on Tuesdays and Wednesdays",
+      "title": "Pizza Place i Tigli in San Bonifacio, Verona - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/verona/peperino-pizza-cucina-verace/",
+      "citySlug": "verona",
+      "slug": "peperino-pizza-cucina-verace",
+      "name": "Peperino (Verona)",
+      "priceRange": "€€",
+      "telephone": "+390458029016",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Piazzetta Municipio, 10, 37121 Verona VR",
+        "locality": "Verona",
+        "region": "VR",
+        "postalCode": "37121",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2019/11/IMG_4199-1080x1080.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 15:00 19:00 &#8211; 23:30",
+      "title": "Pizza Place Peperino in Verona - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/palermo/archestrato-di-gela/",
+      "citySlug": "palermo",
+      "slug": "archestrato-di-gela",
+      "name": "Archestrato di Gela",
+      "priceRange": "€",
+      "telephone": "+39 091 625 8983",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Emanuele Notarbartolo, 2/F, 90149 Palermo PA",
+        "locality": "Palermo",
+        "region": "PA",
+        "postalCode": "90141",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/12/IMG_2579.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "19:00 – 23:30",
+      "title": "Archestrato di Gela, Pizza Place in Palermo - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/palermo/saccharum-pizzeria/",
+      "citySlug": "palermo",
+      "slug": "saccharum-pizzeria",
+      "name": "Saccharum Pizzeria",
+      "priceRange": "€",
+      "telephone": "+39 091 910 3210",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Marina Della, Str. Litorale della Bruca, 1, 90010 Altavilla Milicia PA",
+        "locality": "",
+        "region": "PA",
+        "postalCode": "90010",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/11/IMG_2479.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "19:00 &#8211; 00:00 Closed on Mondays",
+      "title": "Saccharum Pizza Place in Altavilla Milicia (PA) - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/palermo/cagliostro/",
+      "citySlug": "palermo",
+      "slug": "cagliostro",
+      "name": "Cagliostro",
+      "priceRange": "€",
+      "telephone": "+39 091 332818",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Vittorio Emanuele, 150, 90133 Palermo PA",
+        "locality": "",
+        "region": "",
+        "postalCode": "",
+        "country": {
+          "@type": "Country",
+          "name": ""
+        }
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/11/IMG_2368.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 15:00 (Sunday only) 19:00 &#8211; 23:00 Closed on Wednesdays",
+      "title": "Cagliostro, Pizza Place in Palermo - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/catania/le-tre-farine/",
+      "citySlug": "catania",
+      "slug": "le-tre-farine",
+      "name": "Le Tre Farine",
+      "priceRange": "€",
+      "telephone": "+39 345 022 4290",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Gulli 4 catania, 95131 Catania",
+        "locality": "Catania",
+        "region": "CT",
+        "postalCode": "95131",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/09/IMG_4257.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "19:30-23:30 Closed on Mondays",
+      "title": "Le Tre Farine, Pizza place in Catania - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/catania/pizzeria-napule/",
+      "citySlug": "catania",
+      "slug": "pizzeria-napule",
+      "name": "Pizzeria Napulè",
+      "priceRange": "€",
+      "telephone": "+39 095 722 6157",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Mario Sangiorgi 55, 95129 Catania",
+        "locality": "Catania",
+        "region": "CT",
+        "postalCode": "95129",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/09/IMG_3125.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "19:00-23:00 Closed Mondays",
+      "title": "Pizzeria Napulè in Catania - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/catania/frizzi-pizza/",
+      "citySlug": "catania",
+      "slug": "frizzi-pizza",
+      "name": "Frizzi Pizza",
+      "priceRange": "€",
+      "telephone": "+39 327 107 4308",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Monfalcone, 2, 95127 Catania CT",
+        "locality": "Catania",
+        "region": "CT",
+        "postalCode": "95127",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/08/IMG_0464-2160x2880.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "19:00 &#8211; 00:00",
+      "title": "Frizzi Pizza, Pizza Place in Catania - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/catania/crazy-pizza-2/",
+      "citySlug": "catania",
+      "slug": "crazy-pizza-2",
+      "name": "Crazy Pizza",
+      "priceRange": "€€€",
+      "telephone": "+390957715985",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Largo Paisiello, 95124 Catania CT",
+        "locality": "Catania",
+        "region": "CT",
+        "postalCode": "95124",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2024/09/IMG_6117-1920x2560.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 15:00 (Saturdays and Sundays only) 19:00 &#8211; 01:00",
+      "title": "Crazy Pizza, Pizza Place in Catania - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/catania/levoluzione-pizza/",
+      "citySlug": "catania",
+      "slug": "levoluzione-pizza",
+      "name": "L&#8217;Evoluzione Pizza",
+      "priceRange": "€€€",
+      "telephone": "+39 095 229 2922",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Quintino Sella 14 - ang, Via Mario Sangiorgi, 24, 95129 Catania CT",
+        "locality": "Catania",
+        "region": "CT",
+        "postalCode": "95129",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2024/06/IMG_7550-2560x2560.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "18:00 &#8211; 00:00 Closed on Mondays",
+      "title": "L&#039;Evoluzione Pizza, Pizza Place in Catania - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/catania/sciara-pizzeria-vulcanica/",
+      "citySlug": "catania",
+      "slug": "sciara-pizzeria-vulcanica",
+      "name": "Sciara Pizzeria Vulcanica",
+      "priceRange": "€€",
+      "telephone": "+390958812834",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Viale Artale Alagona, 27, 95126 Catania CT",
+        "locality": "Catania",
+        "region": "CT",
+        "postalCode": "95126",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2023/12/IMG_1043-1-2560x2560.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "19:00 &#8211; 23:00",
+      "title": "Sciara Pizzeria Vulcanica in Catania - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/catania/botanike/",
+      "citySlug": "catania",
+      "slug": "botanike",
+      "name": "Botanike",
+      "priceRange": "€€",
+      "telephone": "+39095333546",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Pietra dell'Ova, 209, 95125 Catania CT",
+        "locality": "Catania",
+        "region": "CT",
+        "postalCode": "95125",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2019/11/P1110452-1080x1080.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "19:00 &#8211; 23:00",
+      "title": "Botanike"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/catania/volu/",
+      "citySlug": "catania",
+      "slug": "volu",
+      "name": "Volù",
+      "priceRange": "€€",
+      "telephone": "+393275761027",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Sisto, 56, 95129 Catania CT",
+        "locality": "Catania",
+        "region": "CT",
+        "postalCode": "95129",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2021/12/IMG_1738-2560x2560.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "19:30 &#8211; 00:00 Closed on Tuesday",
+      "title": "Pizzeria Volù in Catania - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/bari/la-tana-di-aldo-pizzeria-napoletana/",
+      "citySlug": "bari",
+      "slug": "la-tana-di-aldo-pizzeria-napoletana",
+      "name": "La Tana di Aldo &#8211; Pizzeria Napoletana",
+      "priceRange": "€",
+      "telephone": "+39 327 199 2923",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Giovanni Squicciarini, 8, 70021 Acquaviva delle Fonti BA",
+        "locality": "Acquaviva delle Fonti",
+        "region": "BA",
+        "postalCode": "70021",
+        "country": "Italia"
+      },
+      "image": "https://assets.thegreat.pizza/images/2019/11/0O1A6680-1-scaled.jpeg?w=1200&h=630",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "19:00 &#8211; 23:00 Closed on Tuesdays",
+      "title": "La Tana di Aldo - Pizzeria Napoletana in Acquaviva Delle Fonti - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/bari/frankinos/",
+      "citySlug": "bari",
+      "slug": "frankinos",
+      "name": "Frankino&#8217;s",
+      "priceRange": "€",
+      "telephone": "+39 392 152 5499",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Ludovico I D'Angiò, 121, 70032 Bitonto BA",
+        "locality": "Bitonto",
+        "region": "BA",
+        "postalCode": "70032",
+        "country": "Italia"
+      },
+      "image": "https://assets.thegreat.pizza/images/2019/11/0O1A6680-1-scaled.jpeg?w=1200&h=630",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "19:30 &#8211; 23:45 Closed on Tuesdays",
+      "title": "Frankino&#039;s, Pizza Place in Bitonto (BA) - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/bari/quattro-quarti-pizzeria-con-cucina/",
+      "citySlug": "bari",
+      "slug": "quattro-quarti-pizzeria-con-cucina",
+      "name": "Quattro Quarti &#8211; Pizzeria con Cucina",
+      "priceRange": "€",
+      "telephone": "+39 347 700 5705",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Giovinazzo, 122, 70056 Molfetta BA",
+        "locality": "",
+        "region": "",
+        "postalCode": "",
+        "country": {
+          "@type": "Country",
+          "name": ""
+        }
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/10/IMG_2098.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "19:30 &#8211; 00:00",
+      "title": "Quattro Quarti - Pizza Place con Cucina in Molfetta (BA) - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/bari/terra-mia/",
+      "citySlug": "bari",
+      "slug": "terra-mia",
+      "name": "Terra Mia",
+      "priceRange": "€",
+      "telephone": "+39 338 808 9926",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via 1' S.da a Denominarsi, 1B, 70038 Terlizzi BA",
+        "locality": "Terlizzi",
+        "region": "BA",
+        "postalCode": "70038",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/10/IMG_2101.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "19:30 &#8211; 00:00 Closed on Tuesdays",
+      "title": "Terra Mia, Pizza Place in Terlizzi (BA) - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/bari/sintesi-pizza-e-cucina-autentica/",
+      "citySlug": "bari",
+      "slug": "sintesi-pizza-e-cucina-autentica",
+      "name": "Sintesi &#8211; Pizza e Cucina Autentica",
+      "priceRange": "€",
+      "telephone": "+39 080 204 9507",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Largo Martellotta, 75, 70011 Alberobello BA",
+        "locality": "Alberobello",
+        "region": "BA",
+        "postalCode": "70011",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/10/IMG_0840.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 14:30 19:00 &#8211; 22:30 Closed on Tuesdays",
+      "title": "Sintesi - Pizza e Cucina Autentica, Pizza Place in Alberobello (BA) - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/bari/brando-pizza-bistrot/",
+      "citySlug": "bari",
+      "slug": "brando-pizza-bistrot",
+      "name": "Brando Pizza Bistrot",
+      "priceRange": "€",
+      "telephone": "+39 331 360 7916",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Roma, 70, 70023 Gioia del Colle BA",
+        "locality": "Gioia del Colle",
+        "region": "BA",
+        "postalCode": "70023",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/10/IMG_0387.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "19:00 &#8211; 01:00",
+      "title": "Brando Pizza Bistrot in Gioia del Colle (BA) - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/bari/pizzeria-levante/",
+      "citySlug": "bari",
+      "slug": "pizzeria-levante",
+      "name": "Levante",
+      "priceRange": "€",
+      "telephone": "+39 080 310 1051",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Viale Martiri del 1799, 94-96, 70022 Altamura BA",
+        "locality": "Altamura",
+        "region": "BA",
+        "postalCode": "70022",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/10/IMG_0348.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "19:00 &#8211; 00:00 Closed on Tuesdays",
+      "title": "Levante, Pizza Place in Altamura, Bari - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/bari/il-tronco/",
+      "citySlug": "bari",
+      "slug": "il-tronco",
+      "name": "Il Tronco",
+      "priceRange": "€",
+      "telephone": "+39 080 412 3394",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Contrada l'Assunta, 123, 70043 Sant'Antonio D'ascula BA",
+        "locality": "Sant'Antonio D'ascula",
+        "region": "BA",
+        "postalCode": "70043",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/10/IMG_0762.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "19:30 &#8211; 00:00 Closed on Mondays",
+      "title": "Il Tronco, Pizza Place in Monopoli (BA) - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/lecce/tipozero/",
+      "citySlug": "lecce",
+      "slug": "tipozero",
+      "name": "Tipozerø",
+      "priceRange": "€",
+      "telephone": "+39 0836 234401",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Robertini, 3, 73013 Galatina LE",
+        "locality": "Galatina",
+        "region": "LE",
+        "postalCode": "73013",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2026/02/IMG_4561.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 15:00 (Sundays only) 19:30 – 00:00",
+      "title": "Tipozerø, Pizza Place in Galatina (LE)"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/lecce/ueme/",
+      "citySlug": "lecce",
+      "slug": "ueme",
+      "name": "Uemé",
+      "priceRange": "€",
+      "telephone": "+39 353 423 5165",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Don Luigi Sturzo, 28, 73100 Lecce LE",
+        "locality": "Lecce",
+        "region": "LE",
+        "postalCode": "73100",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2026/01/IMG_4166.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "19:30 &#8211; 23:00 Closed on Mondays",
+      "title": "Uemé, Pizza Place in Lecce - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/lecce/loop-pizza-croccante/",
+      "citySlug": "lecce",
+      "slug": "loop-pizza-croccante",
+      "name": "Loop Pizza Croccante",
+      "priceRange": "€",
+      "telephone": "+39 392 550 2453",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via Vito Mario Stampacchia, 9, 73100 Lecce LE",
+        "locality": "Lecce",
+        "region": "LE",
+        "postalCode": "73100",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/12/IMG_3538.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "19:30 &#8211; 23:30",
+      "title": "Loop Pizza Croccante, Pizza Place in Lecce - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/lecce/la-rustika-lecce/",
+      "citySlug": "lecce",
+      "slug": "la-rustika-lecce",
+      "name": "La Rustika",
+      "priceRange": "€",
+      "telephone": "+39 0832 249419",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Via del Delfino, 3, 73100 Lecce LE",
+        "locality": "Lecce",
+        "region": "LE",
+        "postalCode": "73100",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/12/IMG_3540.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "19:00 &#8211; 00:00 Closed on Mondays",
+      "title": "La Rustika, Pizza Place in Lecce - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/lecce/lievita-72/",
+      "citySlug": "lecce",
+      "slug": "lievita-72",
+      "name": "Lievita 72",
+      "priceRange": "€",
+      "telephone": "+39 347 226 5994",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Corso Roma, 62, 73014 Gallipoli LE",
+        "locality": "Gallipoli",
+        "region": "LE",
+        "postalCode": "73014",
+        "country": "Italia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2025/11/IMG_0964.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 14:30 (only on Sundays ) 19:00 &#8211; 00:00 Closed on Wednesday",
+      "title": "Lievita 72, Pizza Place in Gallipoli (LE) - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/london/50-kalo-londra/",
+      "citySlug": "london",
+      "slug": "50-kalo-londra",
+      "name": "50 Kalò (Londra)",
+      "priceRange": "€€",
+      "telephone": "+442079309955",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "7 Northumberland Ave, Westminster, London WC2N 5BY, Regno Unito",
+        "locality": "",
+        "region": "",
+        "postalCode": "SW1A 2DB",
+        "country": "Regno Unito"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2021/04/Margherita-Pizzeria-50-Kalo-Londra-2560x1696.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 22:00",
+      "title": "Pizza Place 50 Kalò (Londra) - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/london/lantica-pizzeria-da-michele-london-baker-street/",
+      "citySlug": "london",
+      "slug": "lantica-pizzeria-da-michele-london-baker-street",
+      "name": "L’Antica Pizzeria Da Michele London (Baker Street)",
+      "priceRange": "€€",
+      "telephone": "+442079356458",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "199 Baker St, Marylebone, London NW1 6UY, Regno Unito",
+        "locality": "",
+        "region": "",
+        "postalCode": "NW1 6UY",
+        "country": "Regno Unito"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2021/03/L_Antica-Pizzeria-Da-Michele-03.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "Monday, Tuesday and Wednesday: 11:00 – 23:00 11:00 – 00:00",
+      "title": "L’Antica Pizzeria Da Michele London (Baker Street)"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/london/lantica-pizzeria-da-michele-london-soho/",
+      "citySlug": "london",
+      "slug": "lantica-pizzeria-da-michele-london-soho",
+      "name": "L&#8217;Antica Pizzeria Da Michele London (Soho)",
+      "priceRange": "€€",
+      "telephone": "+442074344563",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "44 Old Compton St, Soho, London W1D 4TY, Regno Unito",
+        "locality": "",
+        "region": "",
+        "postalCode": "W1D 4TY",
+        "country": "Regno Unito"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2021/03/L_Antica-Pizzeria-Da-Michele-01.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "Monday, Tuesday and Wednesday: 11:00 &#8211; 23:00 11:00 – 00:00",
+      "title": "L&#039;Antica Pizzeria Da Michele London (Soho)"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/london/fresco-mercato-metropolitano/",
+      "citySlug": "london",
+      "slug": "fresco-mercato-metropolitano",
+      "name": "Fresco (Mercato Metropolitano)",
+      "priceRange": "€",
+      "telephone": "+442074030930",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Newington Causeway, London SE1 6DR, Regno Unito",
+        "locality": "",
+        "region": "",
+        "postalCode": "SE1 6DR",
+        "country": "Regno Unito"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2021/03/Fresco-Mercato-Metropolitano-02.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "10:00 &#8211; 18:00",
+      "title": "Pizzeria Fresco (Mercato Metropolitano) in Southwark, London - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/london/figli-del-vesuvio/",
+      "citySlug": "london",
+      "slug": "figli-del-vesuvio",
+      "name": "Figli del Vesuvio",
+      "priceRange": "€€",
+      "telephone": "+442036091118",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "658 Garratt Ln, London SW17 0NP, Regno Unito",
+        "locality": "",
+        "region": "",
+        "postalCode": "SW17 0NP",
+        "country": "Regno Unito"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2021/03/Figli-del-Vesuvio-01.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 23:30 Closed on Tuesday",
+      "title": "Pizzeria Figli del Vesuvio in Wandsworth, London - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/london/theos/",
+      "citySlug": "london",
+      "slug": "theos",
+      "name": "Theo&#8217;s",
+      "priceRange": "€€",
+      "telephone": "+442030264224",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "2 Grove Ln, Camberwell, London SE5 8SY, Regno Unito",
+        "locality": "",
+        "region": "",
+        "postalCode": "SE5 8SY",
+        "country": "Regno Unito"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2021/03/Theo_s-01.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 23:00",
+      "title": "Pizzeria Theo&#039;s in Southwark, London - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/london/laboratorio-pizza/",
+      "citySlug": "london",
+      "slug": "laboratorio-pizza",
+      "name": "Laboratorio Pizza",
+      "priceRange": "€€",
+      "telephone": "+442073779086",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "79 Brick Ln, Spitalfields, London E1 6QL, Regno Unito",
+        "locality": "",
+        "region": "",
+        "postalCode": "E1 6QL",
+        "country": "Regno Unito"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2021/03/Laboratorio-Pizza-01.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 – 23:00 Weekend: 12:00 &#8211; 00:00",
+      "title": "Pizzeria Laboratorio Pizza in Tower Hamlets, London - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/london/sacro-cuore-haringey/",
+      "citySlug": "london",
+      "slug": "sacro-cuore-haringey",
+      "name": "Sacro Cuore (Haringey)",
+      "priceRange": "€€",
+      "telephone": "+442083488487",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "10 Crouch End Hill, Crouch End, London N8 8AA, Regno Unito",
+        "locality": "",
+        "region": "",
+        "postalCode": "N8 8AA",
+        "country": "Regno Unito"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2021/03/Sacro-Cuore-02.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 22:30 Venerdì e Sabato 12:00 &#8211; 23:00",
+      "title": "Pizzeria Sacro Cuore (Haringey) in London - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/london/bianco-43/",
+      "citySlug": "london",
+      "slug": "bianco-43",
+      "name": "Bianco 43",
+      "priceRange": "€€",
+      "telephone": "+442088582668",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "43 Greenwich Church St, Greenwich, London SE10 9BL, Regno Unito",
+        "locality": "",
+        "region": "",
+        "postalCode": "SE10 9BL",
+        "country": "Regno Unito"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2021/03/Bianco43-01.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "17:00 &#8211; 21:15 Closed on Monday and Tuesday",
+      "title": "Pizzeria Bianco 43 in Greenwich, London - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/london/farina/",
+      "citySlug": "london",
+      "slug": "farina",
+      "name": "Farina",
+      "priceRange": "€€",
+      "telephone": "+442077929463",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "19-21 Notting Hill Gate, London W11 3JQ, Regno Unito",
+        "locality": "",
+        "region": "",
+        "postalCode": "W11 3JQ",
+        "country": "Regno Unito"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2021/03/Farina-01.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 22:30",
+      "title": "Pizzeria Farina in Kensington and Chelsea, London - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/london/sacro-cuore-brent/",
+      "citySlug": "london",
+      "slug": "sacro-cuore-brent",
+      "name": "Sacro cuore (Brent)",
+      "priceRange": "€€",
+      "telephone": "+442089608558",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "45 Chamberlayne Rd, Kensal Green, London NW10 3NB, Regno Unito",
+        "locality": "",
+        "region": "",
+        "postalCode": "NW10 3NB",
+        "country": "Regno Unito"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2021/03/Sacro-Cuore-01.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 22:30",
+      "title": "Pizzeria Sacro cuore (Brent) in London - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/london/wandercrust-3/",
+      "citySlug": "london",
+      "slug": "wandercrust-3",
+      "name": "Wandercrust",
+      "priceRange": "€",
+      "telephone": "+442084698260",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "The Duke, 125 Creek Rd, London SE8 3BU, Regno Unito",
+        "locality": "",
+        "region": "",
+        "postalCode": "SE8 3BU",
+        "country": "Regno Unito"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2021/03/Wandercrust-02.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 – 15:00 18:00 – 21:30 Weekend: 12:00 &#8211; 21:30",
+      "title": "Pizzeria Wandercrust in Greenwich, London - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/paris/bricktop-pizza/",
+      "citySlug": "paris",
+      "slug": "bricktop-pizza",
+      "name": "Bricktop Pizza",
+      "priceRange": "€",
+      "telephone": "+33756799280",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "153 Quai de Valmy, 75010 Paris, France",
+        "locality": "Paris",
+        "region": "IDF",
+        "postalCode": "75010",
+        "country": "Francia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2021/01/Bricktop-Pizza-01.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 14:30 18:00 &#8211; 21:30 Weekend: 12:00 &#8211; 21:30",
+      "title": "Pizzeria Bricktop Pizza in Enclos-Saint-Laurent, Paris - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/paris/magna/",
+      "citySlug": "paris",
+      "slug": "magna",
+      "name": "Magnà",
+      "priceRange": "€€€",
+      "telephone": "",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "48 Rue Notre Dame de Lorette, 75009 Paris, France",
+        "locality": "Paris",
+        "region": "IDF",
+        "postalCode": "75009",
+        "country": "Francia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2021/01/Magna-02.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 14:30 18:30 &#8211; 22:00",
+      "title": "Pizzeria Magnà in Opéra, Paris - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/paris/ragazzi/",
+      "citySlug": "paris",
+      "slug": "ragazzi",
+      "name": "Ragazzi",
+      "priceRange": "€€",
+      "telephone": "+33171601112",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "83 Rue de Longchamp, 75116 Paris, France",
+        "locality": "Paris",
+        "region": "IDF",
+        "postalCode": "75116",
+        "country": "Francia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2021/01/Ragazzi-01.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 14:30 19:00 &#8211; 22:30",
+      "title": "Pizzeria Ragazzi in Passy, Parigi - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/paris/pizzeria-popolare/",
+      "citySlug": "paris",
+      "slug": "pizzeria-popolare",
+      "name": "Pizzeria Popolare",
+      "priceRange": "€€",
+      "telephone": "+33142213091",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "111 Rue Réaumur, 75002 Paris, France",
+        "locality": "Paris",
+        "region": "IDF",
+        "postalCode": "75002",
+        "country": "Francia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2021/01/Pizzeria-Popolare-01.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 14:30 18:00 &#8211; 22:15",
+      "title": "Pizzeria Popolare in Bourse, Paris - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/paris/uno/",
+      "citySlug": "paris",
+      "slug": "uno",
+      "name": "Uno",
+      "priceRange": "€€€",
+      "telephone": "+33142362047",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "37 Rue Berger, 75001 Paris, France",
+        "locality": "Paris",
+        "region": "IDF",
+        "postalCode": "75001",
+        "country": "Francia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2021/01/Uno-01.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 14:30 18:30 &#8211; 22:00 Weekend: 12:00 &#8211; 16:00 18:30 &#8211; 22:00",
+      "title": "Pizzeria Uno in Louvre, Paris - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/paris/oscia/",
+      "citySlug": "paris",
+      "slug": "oscia",
+      "name": "O&#8217;Scià",
+      "priceRange": "€€",
+      "telephone": "+33175772318",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "42 Rue Tiquetonne, 75002 Paris, France",
+        "locality": "Paris",
+        "region": "IDF",
+        "postalCode": "75002",
+        "country": "Francia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2021/01/O-Scia_-02.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "19:00 &#8211; 00:00 Closed on Tuesday.",
+      "title": "Pizzeria O&#039;Scià in Bourse, Paris - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/paris/iovines/",
+      "citySlug": "paris",
+      "slug": "iovines",
+      "name": "Iovine&#8217;s",
+      "priceRange": "€€",
+      "telephone": "33140334357",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "7Bis Rue du Colonel Driant, 75001 Paris, France e 27 Rue de Bretagne, 75003 Paris, France",
+        "locality": "Paris",
+        "region": "IDF",
+        "postalCode": "75003",
+        "country": "Francia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2021/01/Iovine_s-01.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 15:00 19:30 &#8211; 23:30",
+      "title": "Pizzeria Iovine&#039;s in Temple, Paris - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/paris/dalmata/",
+      "citySlug": "paris",
+      "slug": "dalmata",
+      "name": "Dalmata",
+      "priceRange": "€",
+      "telephone": "+33954591657",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "8 Rue Tiquetonne, 75002 Paris, France",
+        "locality": "Paris",
+        "region": "IDF",
+        "postalCode": "75002",
+        "country": "Francia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2021/01/Dalmata-01.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "Weekdays 12:15 &#8211; 14:45 19:00 &#8211; 22:45 Weekend 12:30 &#8211; 15:00 19:00 &#8211; 23:00",
+      "title": "Pizzeria Dalmata in Bourse, Paris - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/paris/simonetta/",
+      "citySlug": "paris",
+      "slug": "simonetta",
+      "name": "Simonetta",
+      "priceRange": "€€",
+      "telephone": "+33142813263",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "32 Quai de la Marne, 75019 Paris, France",
+        "locality": "Paris",
+        "region": "IDF",
+        "postalCode": "75019",
+        "country": "Francia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2021/01/Simonetta-01-2560x1696.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "Monday &#8211; Thursday 12:00 &#8211; 14:30 19:00 &#8211; 23:00 (on Friday at 23:30) Weekend: 12:00 &#8211; 23:00",
+      "title": "Pizzeria Simonetta in Buttes-Chaumont, Paris - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/paris/bijou/",
+      "citySlug": "paris",
+      "slug": "bijou",
+      "name": "Popine",
+      "priceRange": "€€€",
+      "telephone": "+33142574729",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "10 Rue Dancourt, 75018 Paris, France",
+        "locality": "Paris",
+        "region": "IDF",
+        "postalCode": "75018",
+        "country": "Francia"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2021/01/Bijou-Montmarte-01.jpg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 &#8211; 15:00 19:00 &#8211; 21:30",
+      "title": "Pizzeria Popine in Butte-Montmartre, Paris - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/vienna/pizzeria-enzo/",
+      "citySlug": "vienna",
+      "slug": "pizzeria-enzo",
+      "name": "Pizzeria Enzo",
+      "priceRange": "€€",
+      "telephone": "+4315323609",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Universitätsring 14, 1010 Wien, Austria",
+        "locality": "Wien",
+        "region": "",
+        "postalCode": "1010",
+        "country": "Austria"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2022/06/IMG_6697-2560x1921.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "12:00 – 23:00",
+      "title": "Pizzeria Enzo in Vienna - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/barcelona/sartoria-panatieri-eixample/",
+      "citySlug": "barcelona",
+      "slug": "sartoria-panatieri-eixample",
+      "name": "Sartoria Panatieri (Eixample)",
+      "priceRange": "€€€",
+      "telephone": "+34931055795",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "C/ de Provença, 330, 08037 Barcelona, Spagna",
+        "locality": "Barcelona",
+        "region": "CT",
+        "postalCode": "08037",
+        "country": "Spagna"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2022/02/IMG_5352-2560x2560.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "13:00 – 16:00 20:00 – 23:30",
+      "title": "Pizzeria Sartoria Panatieri (Eixample) in Barcelona - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/barcelona/pizzeria-da-nanni/",
+      "citySlug": "barcelona",
+      "slug": "pizzeria-da-nanni",
+      "name": "Pizzeria Da Nanni",
+      "priceRange": "€€",
+      "telephone": "+34930117166",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Rambla del Poblenou, 20, 08005 Barcelona, Spagna",
+        "locality": "Barcelona",
+        "region": "CT",
+        "postalCode": "08005",
+        "country": "Spagna"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2022/02/IMG_5403-1920x2560.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "13:00 – 16:00 20:00 – 00:00",
+      "title": "Pizzeria Da Nanni in Sant Martì, Barcelona - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/barcelona/pizzeria-napoletana-pummarola/",
+      "citySlug": "barcelona",
+      "slug": "pizzeria-napoletana-pummarola",
+      "name": "Pizzeria Napoletana Pummarola",
+      "priceRange": "€€",
+      "telephone": "+34931643460",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Ronda de Sant Pau, 59, 08015 Barcelona, Spagna",
+        "locality": "Barcelona",
+        "region": "CT",
+        "postalCode": "08015",
+        "country": "Spagna"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2022/02/IMG_5176-2560x1920.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "13:00 – 00:00",
+      "title": "Pizzeria Napoletana Pummarola in Barcelona - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/barcelona/listo/",
+      "citySlug": "barcelona",
+      "slug": "listo",
+      "name": "Listo",
+      "priceRange": "€€",
+      "telephone": "+34938074987",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Av. del Paral·lel, 15, 08004 Barcelona, Spagna",
+        "locality": "Barcelona",
+        "region": "CT",
+        "postalCode": "08004",
+        "country": "Spagna"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2022/02/IMG_4873-2560x2560.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "13:00 &#8211; 23:30",
+      "title": "Pizzeria Listo in Sants-Montjuïc, Barcelona - The Great Pizza"
+    },
+    {
+      "url": "https://thegreat.pizza/en/pizza-places/barcelona/pizzeria-napoletana-a33/",
+      "citySlug": "barcelona",
+      "slug": "pizzeria-napoletana-a33",
+      "name": "Pizzeria Napoletana A33",
+      "priceRange": "€€",
+      "telephone": "+34931575724",
+      "servesCuisine": [
+        "Pizzeria"
+      ],
+      "address": {
+        "street": "Carrer de Manso, 22, 08015 Barcelona, Spagna",
+        "locality": "Barcelona",
+        "region": "CT",
+        "postalCode": "08015",
+        "country": "Spagna"
+      },
+      "image": "https://thegreat.pizza/wp-content/uploads/2022/02/IMG_5031-2560x2560.jpeg",
+      "glutenFree": true,
+      "lactoseFree": true,
+      "openingHoursRaw": "13:00 – 16:00 19:30 – 23:45 Closed on Monday",
+      "title": "Pizzeria Napoletana A33 in Barcelona - The Great Pizza"
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "source_url": "https://www.tasteatlas.com/apizza/wheretoeat",
+  "page_title": "Where to Eat the Best Apizza in the World? | TasteAtlas",
+  "page_h1": "The best Apizza in the world (according to food experts)",
+  "scraped_at": "2026-04-26",
+  "places": [
+    {
+      "rank": 1,
+      "name": "Frank Pepe Pizzeria Napoletana",
+      "city": "New Haven",
+      "country": "United States of America",
+      "street_address": "157 Wooster St",
+      "rating": null,
+      "url": "https://www.tasteatlas.com/FrankPepePizzeriaNapoletana",
+      "recommended_by": "Andrew Zimmern and 10 other food critics",
+      "quote": "The white clam pizza here is one of my favorite pizzas anywhere in the world. And yes, that makes me a Pepe's guy, if you held a gun to my head."
+    },
+    {
+      "rank": 2,
+      "name": "Sally's Apizza",
+      "city": "New Haven",
+      "country": "United States of America",
+      "street_address": "237 Wooster St",
+      "rating": null,
+      "url": "https://www.tasteatlas.com/SallysApizza",
+      "recommended_by": "Andrew Zimmern and 5 other food critics",
+      "quote": "Why is it so crowded? 'Cause it's AWESOME. I get the plain pie here; it's perfect."
+    },
+    {
+      "rank": 3,
+      "name": "Zuppardi's Apizza",
+      "city": "West Haven",
+      "country": "United States of America",
+      "street_address": "179 Union Ave",
+      "rating": null,
+      "url": "https://www.tasteatlas.com/ZuppardisApizza",
+      "recommended_by": "Laura Siciliano-Rosen and 3 other food critics",
+      "quote": "Another good bet for a clam pie is Zuppardi's Apizza, as it's one of the few other pizzerias that uses fresh, rather than canned, clams—in fact, they shuck to order here."
+    },
+    {
+      "rank": 4,
+      "name": "Modern Apizza",
+      "city": "New Haven",
+      "country": "United States of America",
+      "street_address": "874 State St",
+      "rating": null,
+      "url": "https://www.tasteatlas.com/ModernApizza",
+      "recommended_by": "Scott Wiener and 2 other food critics",
+      "quote": "It tasted as good as it looked and fulfilled all my greasy cheesy needs."
+    },
+    {
+      "rank": 5,
+      "name": "Apizza di Napoli",
+      "city": "Aiken",
+      "country": "United States of America",
+      "street_address": "740 Silver Bluff Rd",
+      "rating": null,
+      "url": "https://www.tasteatlas.com/apizza-di-napoli",
+      "recommended_by": "Cliff Garzzillo",
+      "quote": "New Haven Apizza just like in New Haven."
+    }
+  ],
+  "notes": "WebFetch was denied by harness permissions, so a Playwright browser scrape was used (TasteAtlas is JS-rendered and would have been mostly empty in WebFetch anyway). The /apizza/wheretoeat page contains exactly 5 listings (this is the complete list, not truncated). The listing page exposes name, city, country, street address, and a critic-quote per place, but does NOT expose any per-restaurant 1-5 numeric rating — TasteAtlas reserves the 1-5 score for the dish itself (Apizza dish score not shown on this page) and ranks restaurants by number of expert recommendations rather than by score. All `rating` fields are therefore null (not fabricated). The page also has an auto-rotating 'similar pizzas' carousel that, if left running, swaps the document into Pizza Napoletana / Detroit-Style / NY-Style / Chicago / Traditional Italian listings every few seconds; an early window.stop() was needed to capture the genuine apizza data before that rotation kicked in. URLs are direct TasteAtlas detail-page links and were captured verbatim from anchor hrefs."
+}

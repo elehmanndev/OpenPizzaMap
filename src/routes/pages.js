@@ -195,6 +195,40 @@ router.get("/country/:code", async (req, res) => {
     });
 });
 
+router.get("/styles", async (req, res) => {
+    const styles = await prisma.style.findMany({
+        where: { isVisible: true },
+        orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+    });
+    const counts = await prisma.placeStyle.groupBy({
+        by: ["styleId"],
+        _count: { _all: true },
+    });
+    const countMap = new Map(counts.map((r) => [r.styleId, r._count._all]));
+    res.render("styles", {
+        user: req.session.user || null,
+        styles: styles.map((s) => ({ ...s, placeCount: countMap.get(s.id) || 0 })),
+    });
+});
+
+router.get("/style/:slug", async (req, res) => {
+    const slug = String(req.params.slug || "").trim().toLowerCase();
+    const style = await prisma.style.findUnique({ where: { slug } });
+    if (!style || !style.isVisible) return res.status(404).send("Not found");
+
+    const places = await prisma.place.findMany({
+        where: {
+            status: "active",
+            isVisible: true,
+            styles: { some: { styleId: style.id } },
+        },
+        orderBy: [{ city: "asc" }, { name: "asc" }],
+        take: 1000,
+    });
+
+    res.render("style", { user: req.session.user || null, style, places });
+});
+
 router.get("/country/:code/city/:slug", async (req, res) => {
     const code = String(req.params.code || "").trim().toUpperCase();
     const slug = String(req.params.slug || "").trim().toLowerCase();

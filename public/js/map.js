@@ -77,12 +77,20 @@
         return "€".repeat(n);
     }
 
-    function styleLabel(stylesJson) {
+    function styleChips(p) {
+        // Prefer the relational styles list; fall back to legacy stylesJson.
+        const styles = Array.isArray(p.styles) && p.styles.length ? p.styles : null;
+        if (styles) {
+            return styles.map((s) =>
+                `<a class="ppc-style-chip" href="/style/${esc(s.slug)}">${esc(s.shortLabel || s.name)}</a>`
+            ).join("");
+        }
         try {
-            const arr = JSON.parse(stylesJson || "[]");
+            const arr = JSON.parse(p.stylesJson || "[]");
             if (!Array.isArray(arr) || !arr.length) return "";
-            const pretty = arr[0].replace(/(^|\s)\S/g, (c) => c.toUpperCase());
-            return `${pretty} pizza`;
+            return arr.map((slug) =>
+                `<a class="ppc-style-chip" href="/style/${esc(slug)}">${esc(slug.replace(/-/g, " "))}</a>`
+            ).join("");
         } catch {
             return "";
         }
@@ -97,8 +105,7 @@
     function summaryFor(p) {
         if (p.seoDescription) return p.seoDescription;
         if (p.descriptionHtml) return stripHtml(p.descriptionHtml);
-        const bits = [styleLabel(p.stylesJson), p.city, priceGlyph(p.priceLevel)].filter(Boolean);
-        return bits.join(" · ");
+        return [p.city, priceGlyph(p.priceLevel)].filter(Boolean).join(" · ");
     }
 
     let regionNames = null;
@@ -107,7 +114,10 @@
     } catch {}
 
     function formatAddress(p) {
-        const country = p.country && regionNames ? regionNames.of(p.country) || p.country : p.country;
+        let country = p.country;
+        if (country && regionNames && /^[A-Za-z]{2}$/.test(country)) {
+            try { country = regionNames.of(country.toUpperCase()) || country; } catch {}
+        }
         const cityLine = [p.postalCode, p.city, p.region].filter(Boolean).join(" ").replace(/\s+/g, " ");
         return [p.addressLine, cityLine, country].filter(Boolean).join(", ");
     }
@@ -125,12 +135,14 @@
             : `<div class="ppc-hero ppc-hero--fallback">${heroInner}<span class="ppc-hero-emoji">🍕</span></div>`;
         const address = formatAddress(p);
 
+        const chips = styleChips(p);
         return `
 <article class="ppc">
   ${hero}
   <div class="ppc-body">
     <h2 class="ppc-name">${esc(p.name)}</h2>
     <a class="ppc-directions" href="${esc(directions)}" target="_blank" rel="noopener">${esc(address)}</a>
+    ${chips ? `<div class="ppc-styles">${chips}</div>` : ""}
     <p class="ppc-summary">${esc(summaryFor(p))}</p>
     <a class="ppc-cta" href="/place/${p.id}">View profile</a>
   </div>
