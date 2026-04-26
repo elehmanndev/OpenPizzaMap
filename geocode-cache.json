@@ -2556,5 +2556,85 @@
     "lat": 59.437242,
     "lng": 24.7572693,
     "display": "Tallinn, Harju maakond, Eesti"
+  },
+  "Esch-sur-Alzette, Luxembourg": {
+    "lat": 49.4959628,
+    "lng": 5.9850306,
+    "display": "Esch-sur-Alzette, Canton Esch-sur-Alzette, Lëtzebuerg"
+  },
+  "Bucharest, Romania": {
+    "lat": 44.4361414,
+    "lng": 26.102684,
+    "display": "București, România"
+  },
+  "Santa Cruz de Tenerife, Spain": {
+    "lat": 28.467178,
+    "lng": -16.2507843,
+    "display": "Santa Cruz de Tenerife, Canarias, España"
+  },
+  "Alicante, Spain": {
+    "lat": 38.3436365,
+    "lng": -0.4881708,
+    "display": "Alacant / Alicante, l'Alacantí, Alacant / Alicante, Comunitat Valenciana, España"
+  },
+  "Cecina (LI), Italy": {
+    "lat": 43.3113449,
+    "lng": 10.5173443,
+    "display": "Cecina, Livorno, Toscana, 57023, Italia"
+  },
+  "Chieti, Italy": {
+    "lat": 42.1026929,
+    "lng": 14.4159053,
+    "display": "Chieti, Abruzzo, Italia"
+  },
+  "Rizziconi (RC), Italy": {
+    "lat": 38.4119961,
+    "lng": 15.9592404,
+    "display": "Rizziconi, Reggio Calabria, Calabria, 89016, Italia"
+  },
+  "Alano di Piave (BL), Italy": {
+    "lat": 45.9078199,
+    "lng": 11.9080775,
+    "display": "Alano di Piave, Setteville, Belluno, Veneto, 32038, Italia"
+  },
+  "Imperia, Italy": {
+    "lat": 43.9583753,
+    "lng": 7.8667427,
+    "display": "Provincia di Imperia, Liguria, Italia"
+  },
+  "Zurich, Switzerland": {
+    "lat": 47.3744489,
+    "lng": 8.5410422,
+    "display": "Zürich, Bezirk Zürich, Zürich, Schweiz/Suisse/Svizzera/Svizra"
+  },
+  "Ankara, Türkiye": {
+    "lat": 39.9207759,
+    "lng": 32.8540497,
+    "display": "Ankara, Çankaya, Ankara, İç Anadolu Bölgesi, 06420, Türkiye"
+  },
+  "Iași, Romania": {
+    "lat": 47.1615598,
+    "lng": 27.5837814,
+    "display": "Iași, Zona Metropolitană Iași, Iași, România"
+  },
+  "Mannheim, Germany": {
+    "lat": 49.4892913,
+    "lng": 8.4673098,
+    "display": "Mannheim, Baden-Württemberg, Deutschland"
+  },
+  "Krefeld, Germany": {
+    "lat": 51.3331205,
+    "lng": 6.5623343,
+    "display": "Krefeld, Nordrhein-Westfalen, Deutschland"
+  },
+  "Dortmund, Germany": {
+    "lat": 51.5142273,
+    "lng": 7.4652789,
+    "display": "Dortmund, Nordrhein-Westfalen, Deutschland"
+  },
+  "Gdańsk, Poland": {
+    "lat": 54.4288032,
+    "lng": 18.798327,
+    "display": "Gdańsk, województwo pomorskie, Polska"
   }
 }
