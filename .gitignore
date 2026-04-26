@@ -11,3 +11,7 @@ import-errors.json
 import-log*.txt
 .claude/
 .playwright-mcp/
+
+# Downloaded place images live on Hostinger's filesystem, not in git.
+# Run scripts/download-images.js on the server (via SSH) to populate this dir.
+public/uploads/

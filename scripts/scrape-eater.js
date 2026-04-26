@@ -34,6 +34,7 @@ const CITY_PAGES = [
   { url: 'https://twincities.eater.com/maps/best-pizza-minneapolis-st-paul-twin-cities',             cityHint: 'Minneapolis',         style: null },
   { url: 'https://austin.eater.com/maps/best-pizza-austin-pizzerias-restaurants',                    cityHint: 'Austin',              style: null },
   { url: 'https://dallas.eater.com/maps/best-pizza-places-dallas-restaurants',                       cityHint: 'Dallas',              style: null },
+  { url: 'https://london.eater.com/maps/best-pizza-london',                                          cityHint: 'London',              style: null },
 ];
 
 async function fetchHtml(url, attempt = 1) {
@@ -71,11 +72,25 @@ function findMapPoints(obj) {
 
 function extractImage(ledeMedia) {
   if (!ledeMedia || typeof ledeMedia !== 'object') return null;
-  // Vox Chorus shapes — try the obvious shapes
+  // Vox Chorus LedeMediaImageType shape:
+  //   ledeMedia.image.thumbnails.{horizontal|square|vertical}.url
+  // The horizontal crop is the most useful for a card hero image.
+  if (ledeMedia.__typename === 'LedeMediaImageType' && ledeMedia.image) {
+    const t = ledeMedia.image.thumbnails;
+    if (t) {
+      if (t.horizontal && t.horizontal.url) return t.horizontal.url;
+      if (t.square && t.square.url) return t.square.url;
+      if (t.vertical && t.vertical.url) return t.vertical.url;
+    }
+    if (ledeMedia.image.url) return ledeMedia.image.url;
+  }
+  // Embed types (Instagram, YouTube) have no static image we can pull —
+  // they require the third-party SDK to render. Skip.
+  if (ledeMedia.__typename === 'LedeMediaEmbedType') return null;
+  // Fallback: try the obvious flat shapes in case Vox added another type.
   if (typeof ledeMedia.url === 'string') return ledeMedia.url;
   if (ledeMedia.image && typeof ledeMedia.image.url === 'string') return ledeMedia.image.url;
   if (ledeMedia.asset && typeof ledeMedia.asset.url === 'string') return ledeMedia.asset.url;
-  // Sometimes there's a chorus_asset id we can't resolve without the CDN base — skip
   return null;
 }
 
