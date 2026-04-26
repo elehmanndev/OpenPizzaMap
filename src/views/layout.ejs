@@ -9,18 +9,6 @@
       ? title
       : (title ? `${title} | OpenPizzaMap` : "OpenPizzaMap") %>
   </title>
-  <script>
-    (function () {
-      try {
-        var theme = localStorage.getItem("theme");
-        if (theme === "light" || theme === "dark") {
-          document.documentElement.setAttribute("data-theme", theme);
-        }
-      } catch (err) {
-        // ignore storage errors
-      }
-    })();
-  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
@@ -28,7 +16,10 @@
   <link rel="stylesheet" href="<%= asset("/public/css/styles.css") %>" />
   <% if (leaflet) { %>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
     <% } %>
 </head>
 
@@ -57,12 +48,6 @@
               <% } %>
             <% } %>
           </nav>
-          <div class="menu-section">
-            <button type="button" class="theme-toggle-btn" data-theme-toggle aria-pressed="false">
-              <span class="material-symbols-rounded" aria-hidden="true" data-theme-icon>dark_mode</span>
-              <span data-theme-label>Switch to dark mode</span>
-            </button>
-          </div>
           <% if (user) { %>
             <form method="post" action="/logout">
               <button type="submit" class="menu-logout">Logout</button>
@@ -87,44 +72,6 @@
       <%- body %>
     <% } %>
   </main>
-  <script>
-    (function () {
-      var toggles = Array.from(document.querySelectorAll("[data-theme-toggle]"));
-      if (!toggles.length) return;
-      var root = document.documentElement;
-      var getCurrent = function () {
-        var current = root.getAttribute("data-theme");
-        if (current === "light" || current === "dark") return current;
-        return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
-          ? "dark"
-          : "light";
-      };
-      var updateLabel = function () {
-        var current = getCurrent();
-        var isDark = current === "dark";
-        toggles.forEach(function (toggle) {
-          var icon = toggle.querySelector("[data-theme-icon]");
-          var label = toggle.querySelector("[data-theme-label]");
-          if (icon) icon.textContent = isDark ? "light_mode" : "dark_mode";
-          if (label) label.textContent = isDark ? "Switch to light mode" : "Switch to dark mode";
-          toggle.setAttribute("aria-pressed", isDark ? "true" : "false");
-        });
-      };
-      toggles.forEach(function (toggle) {
-        toggle.addEventListener("click", function () {
-          var next = getCurrent() === "dark" ? "light" : "dark";
-          root.setAttribute("data-theme", next);
-          try {
-            localStorage.setItem("theme", next);
-          } catch (err) {
-            // ignore storage errors
-          }
-          updateLabel();
-        });
-      });
-      updateLabel();
-    })();
-  </script>
 </body>
 
 </html>

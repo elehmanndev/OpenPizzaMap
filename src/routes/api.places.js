@@ -59,7 +59,12 @@ router.get("/", async (req, res) => {
         return res.json({ ok: true, places: withDist });
     }
 
-    res.json({ ok: true, places: [] });
+    const places = await prisma.place.findMany({
+        where: { status: "active", isVisible: true },
+        orderBy: { updatedAt: "desc" },
+        take: 200,
+    });
+    res.json({ ok: true, places });
 });
 
 router.get("/:id", async (req, res) => {
