@@ -11,6 +11,7 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const { PrismaClient } = require('@prisma/client');
+const { decodeEntities } = require('./lib/utils');
 
 const ROOT = path.resolve(__dirname, '..');
 const CACHE_FILE = path.join(ROOT, 'geocode-cache.json');
@@ -206,19 +207,7 @@ const CODE_TO_COUNTRY_NAME = {
   AI: 'Anguilla', AM: 'Armenia', BO: 'Bolivia', PY: 'Paraguay', MK: 'North Macedonia',
 };
 
-// ----- helpers -----
-function decodeEntities(s) {
-  if (typeof s !== 'string') return s;
-  return s
-    .replace(/&#x([0-9a-fA-F]+);/g, (_, n) => String.fromCharCode(parseInt(n, 16)))
-    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(parseInt(n, 10)))
-    .replace(/&amp;/g, '&')
-    .replace(/&quot;/g, '"')
-    .replace(/&apos;/g, "'")
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&nbsp;/g, ' ');
-}
+// ----- helpers (decodeEntities lives in lib/utils.js so the enricher can share it) -----
 
 function slugify(s) {
   return String(s)

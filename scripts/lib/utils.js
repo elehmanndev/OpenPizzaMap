@@ -18,6 +18,40 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
 const isEmpty = (v) => v == null || (typeof v === 'string' && v.trim() === '');
 
+// HTML entity decoder — covers numeric (&#NNN;, &#xHEX;) plus the named
+// entities scrapers actually pull through: smart quotes, dashes, and the
+// Western-European accents that show up in pizzeria names + cities.
+// Anything not in the table is left as-is.
+const NAMED_ENTITIES = {
+  amp: '&', quot: '"', apos: "'", lt: '<', gt: '>', nbsp: ' ', shy: '',
+  rsquo: '’', lsquo: '‘', rdquo: '”', ldquo: '“',
+  sbquo: '‚', bdquo: '„', mdash: '—', ndash: '–',
+  hellip: '…', bull: '•', middot: '·', deg: '°',
+  copy: '©', reg: '®', trade: '™', laquo: '«', raquo: '»',
+  // Italian / Spanish / Portuguese / French
+  agrave: 'à', aacute: 'á', acirc: 'â', atilde: 'ã', auml: 'ä', aring: 'å',
+  Agrave: 'À', Aacute: 'Á', Acirc: 'Â', Atilde: 'Ã', Auml: 'Ä', Aring: 'Å',
+  egrave: 'è', eacute: 'é', ecirc: 'ê', euml: 'ë',
+  Egrave: 'È', Eacute: 'É', Ecirc: 'Ê', Euml: 'Ë',
+  igrave: 'ì', iacute: 'í', icirc: 'î', iuml: 'ï',
+  Igrave: 'Ì', Iacute: 'Í', Icirc: 'Î', Iuml: 'Ï',
+  ograve: 'ò', oacute: 'ó', ocirc: 'ô', otilde: 'õ', ouml: 'ö', oslash: 'ø',
+  Ograve: 'Ò', Oacute: 'Ó', Ocirc: 'Ô', Otilde: 'Õ', Ouml: 'Ö', Oslash: 'Ø',
+  ugrave: 'ù', uacute: 'ú', ucirc: 'û', uuml: 'ü',
+  Ugrave: 'Ù', Uacute: 'Ú', Ucirc: 'Û', Uuml: 'Ü',
+  ntilde: 'ñ', Ntilde: 'Ñ',
+  ccedil: 'ç', Ccedil: 'Ç',
+  szlig: 'ß',
+  yacute: 'ý', yuml: 'ÿ', Yacute: 'Ý',
+};
+function decodeEntities(s) {
+  if (typeof s !== 'string') return s;
+  return s
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, n) => { try { return String.fromCodePoint(parseInt(n, 16)); } catch { return _; } })
+    .replace(/&#(\d+);/g, (_, n) => { try { return String.fromCodePoint(parseInt(n, 10)); } catch { return _; } })
+    .replace(/&([a-zA-Z]+);/g, (m, name) => Object.prototype.hasOwnProperty.call(NAMED_ENTITIES, name) ? NAMED_ENTITIES[name] : m);
+}
+
 function normalizeName(s) {
   return String(s || '').toLowerCase()
     .normalize('NFD').replace(/[̀-ͯ]/g, '')
@@ -300,6 +334,7 @@ module.exports = {
   DEFAULT_UA,
   sleep,
   isEmpty,
+  decodeEntities,
   normalizeName,
   jaroWinkler,
   haversineM,
