@@ -205,6 +205,15 @@ model Page {
   @@index([isVisible])
 }
 
+model Session {
+  id        String   @id
+  sid       String   @unique
+  data      String   @db.LongText
+  expiresAt DateTime
+
+  @@index([expiresAt])
+}
+
 model Submission {
   id               Int              @id @default(autoincrement())
   userId           Int

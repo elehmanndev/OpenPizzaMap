@@ -120,6 +120,7 @@ if (maintenanceMode) {
     });
 } else {
     const session = require("express-session");
+    const { PrismaSessionStore } = require("@quixo3/prisma-session-store");
     const cookieParser = require("cookie-parser");
 
     const pages = require("./routes/pages");
@@ -174,6 +175,10 @@ if (maintenanceMode) {
             secret: process.env.SESSION_SECRET || "dev-secret-change-me",
             resave: false,
             saveUninitialized: false,
+            store: new PrismaSessionStore(prisma, {
+                checkPeriod: 10 * 60 * 1000,
+                dbRecordIdIsSessionId: true,
+            }),
             cookie: {
                 httpOnly: true,
                 sameSite: "lax",
