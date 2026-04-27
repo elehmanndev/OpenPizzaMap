@@ -76,6 +76,98 @@ const UA = 'OpenPizzaMap-enricher/0.2 (eric@openpizzamap.com)';
 // Local fetch wrapper that pins the enricher's UA; keeps callers terse.
 const fetchUA = (url, opts = {}, timeoutMs) => fetchWithTimeout(url, { ...opts, userAgent: UA }, timeoutMs);
 
+// ─── PHASE backfill: reverse-geocode places that have lat/lng but no address ─
+// Different beast from dedup's text-search Nominatim: reverse geocoding takes
+// precise coords and returns the building-level address at that point. No
+// fuzzy matching, no wrong POIs. Targets the 200+ visible places where the
+// scraper got coords (from JSON-LD geo or AVPN's embed iframe) but never
+// captured the street string.
+async function nominatimReverse(lat, lng) {
+  const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}` +
+              `&format=json&addressdetails=1&zoom=18`;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 10000);
+  try {
+    const res = await fetch(url, {
+      headers: { 'User-Agent': UA, 'Accept': 'application/json' },
+      signal: ctrl.signal,
+    });
+    if (res.status === 429) throw new Error('429');
+    if (!res.ok) throw new Error(`http ${res.status}`);
+    const data = await res.json();
+    const a = data?.address;
+    if (!a) return null;
+    const houseNumber = a.house_number || null;
+    const road = a.road || a.pedestrian || a.footway || a.cycleway || null;
+    if (!road) return null;  // coords might be on a square or open ground
+    return {
+      addressLine: houseNumber ? `${road}, ${houseNumber}` : road,
+      postalCode: a.postcode || null,
+      region: a.state || a.region || a.province || null,
+      country: a.country || null,
+    };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function phaseBackfillAddress(prisma, report) {
+  console.log('\n[backfill] reverse-geocoding places with missing addresses…');
+  const places = await prisma.place.findMany({
+    where: { addressLine: '', isVisible: true },
+    select: { id: true, name: true, city: true, addressLine: true, postalCode: true, region: true, lat: true, lng: true },
+  });
+  console.log(`[backfill] ${places.length} visible places need reverse geocoding`);
+
+  const cachePath = path.join(ROOT, 'reverse-geocode-cache.json');
+  let cache = {};
+  try { cache = JSON.parse(fs.readFileSync(cachePath, 'utf8')); } catch {}
+
+  let queries = 0, hits = 0, updates = 0, fieldsFilled = 0;
+  for (const p of places) {
+    const key = `${parseFloat(p.lat).toFixed(5)},${parseFloat(p.lng).toFixed(5)}`;
+    let result = cache[key];
+    if (!result) {
+      if (queries >= RESOLVE_BUDGET) {
+        console.log(`[backfill] hit budget cap (${RESOLVE_BUDGET}); ${places.length - queries - hits} left for next run`);
+        break;
+      }
+      queries++;
+      try {
+        result = await nominatimReverse(p.lat, p.lng);
+        cache[key] = result || { addressLine: null, ts: Date.now() };
+        if (result) hits++;
+      } catch (e) {
+        cache[key] = { error: String(e.message || e), ts: Date.now() };
+        result = null;
+      }
+      if (queries % 10 === 0) {
+        fs.writeFileSync(cachePath, JSON.stringify(cache, null, 2));
+        console.log(`[backfill] ${queries}/${places.length} queried (hits: ${hits}, updates: ${updates})`);
+      }
+      await sleep(1100);  // Nominatim 1 req/sec
+    } else if (result.addressLine) {
+      hits++;
+    }
+
+    if (!result || !result.addressLine) continue;
+    const patch = {};
+    if (isEmpty(p.addressLine) && result.addressLine) { patch.addressLine = result.addressLine; fieldsFilled++; }
+    if (isEmpty(p.postalCode) && result.postalCode) { patch.postalCode = result.postalCode; fieldsFilled++; }
+    if (isEmpty(p.region) && result.region) { patch.region = result.region; fieldsFilled++; }
+    if (!Object.keys(patch).length) continue;
+    updates++;
+    if (DRY_RUN) {
+      console.log(`[backfill:DRY] #${p.id} "${p.name}" (${p.city}) → ${patch.addressLine || ''}`);
+    } else {
+      await prisma.place.update({ where: { id: p.id }, data: patch });
+    }
+  }
+  fs.writeFileSync(cachePath, JSON.stringify(cache, null, 2));
+  report.backfill = { processed: places.length, queries, hits, updates, fieldsFilled, dryRun: DRY_RUN };
+  console.log(`[backfill] done — ${queries} reverse-geocoded, ${updates} places updated (${fieldsFilled} fields)`);
+}
+
 // ─── PHASE 0: clean (decode lingering HTML entities in user-visible fields) ─
 // Earlier importers escaped &rsquo;, &uuml;, etc. Stale rows still carry them
 // (e.g. "Marco&rsquo;s Coal Fired", "Osnabr&uuml;ck"). This pass decodes them
@@ -878,7 +970,7 @@ async function phaseSearch(prisma, report) {
 async function main() {
   const prisma = new PrismaClient();
   const report = { startedAt: new Date().toISOString() };
-  const phases = ['clean', 'validate', 'dedup', 'overpass', 'web', 'search'];
+  const phases = ['clean', 'validate', 'dedup', 'backfill', 'overpass', 'web', 'search'];
   const toRun = PHASE && PHASE !== true ? [PHASE] : phases.filter(p => !SKIP.includes(p));
 
   console.log(`[enricher] running phases: ${toRun.join(', ')}${LIMIT ? ` (limit=${LIMIT} per phase)` : ''}`);
@@ -887,6 +979,7 @@ async function main() {
     if (toRun.includes('clean'))    await phaseClean(prisma, report);
     if (toRun.includes('validate')) await phaseValidate(prisma, report);
     if (toRun.includes('dedup'))    await phaseDedup(prisma, report);
+    if (toRun.includes('backfill')) await phaseBackfillAddress(prisma, report);
     if (toRun.includes('overpass')) await phaseOverpass(prisma, report);
     if (toRun.includes('web'))      await phaseWeb(prisma, report);
     if (toRun.includes('search'))   await phaseSearch(prisma, report);
