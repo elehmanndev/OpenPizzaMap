@@ -1,3 +1,5 @@
+const { alertError } = require("../services/errorAlert");
+
 // Centralised error handler. With express-async-errors loaded in app.js, any
 // thrown error or rejected promise inside a route handler reaches this
 // function instead of becoming an unhandled rejection that takes the worker
@@ -45,6 +47,15 @@ function errorHandler(err, req, res, next) {
     if (status >= 500) {
         console.error("[err]", logLine);
         if (err && err.stack) console.error(err.stack);
+        // Fire-and-forget webhook alert. No-op unless ERROR_WEBHOOK_URL is set.
+        alertError({
+            method: req.method,
+            path: req.originalUrl || req.url,
+            status,
+            errName: err && err.name,
+            errCode: code,
+            errMsg: err && err.message ? String(err.message).slice(0, 500) : null,
+        });
     } else {
         console.warn("[warn]", logLine);
     }

@@ -252,10 +252,21 @@ if (maintenanceMode) {
     app.use(express.json());
     app.use(cookieParser());
 
+    // Session secret. Hard-fail at boot if production has no SESSION_SECRET set
+    // — the placeholder makes session signatures forgeable, so we'd rather
+    // refuse to start than serve sessions that anyone can mint. Dev/test still
+    // get a sensible default so `npm run dev` works without env setup.
+    const isProd = process.env.NODE_ENV === "production";
+    const sessionSecret = process.env.SESSION_SECRET;
+    if (isProd && !sessionSecret) {
+        console.error("[fatal] SESSION_SECRET is required in production. Refusing to start.");
+        process.exit(1);
+    }
+
     app.use(
         session({
             name: "opm.sid",
-            secret: process.env.SESSION_SECRET || "dev-secret-change-me",
+            secret: sessionSecret || "dev-secret-change-me",
             resave: false,
             saveUninitialized: false,
             store: new PrismaSessionStore(prisma, {
@@ -265,7 +276,10 @@ if (maintenanceMode) {
             cookie: {
                 httpOnly: true,
                 sameSite: "lax",
-                secure: false // set true behind HTTPS in production if possible
+                // Auto-secure in production (Hostinger fronts via HTTPS).
+                // Override with COOKIE_SECURE=false if running prod behind a
+                // plain-HTTP gateway during a migration.
+                secure: isProd && process.env.COOKIE_SECURE !== "false",
             },
         })
     );

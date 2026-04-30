@@ -1,6 +1,7 @@
 const express = require("express");
 const crypto = require("crypto");
 const fs = require("fs");
+const fsPromises = require("fs/promises");
 const path = require("path");
 const { prisma } = require("../db");
 const { requireAuth, requireAdmin } = require("../middleware/auth");
@@ -783,29 +784,39 @@ router.post("/admin/sitemap/rebuild", requireAdmin, async (req, res) => {
     }
 });
 
-router.get("/sitemap.xml", async (req, res) => {
+// Single-flight build lock: if multiple crawler requests miss the cache at
+// the same instant, they share one DB scan instead of each spawning their own.
+let sitemapBuildInFlight = null;
+async function readOrBuildSitemap() {
     const sitemapPath = path.join(process.cwd(), "public", "sitemap.xml");
-    if (fs.existsSync(sitemapPath)) {
-        res.header("Content-Type", "application/xml");
-        return res.send(fs.readFileSync(sitemapPath, "utf8"));
+    try {
+        return await fsPromises.readFile(sitemapPath, "utf8");
+    } catch (err) {
+        if (err.code !== "ENOENT") throw err;
     }
-    const xml = await buildSitemapXml(prisma);
-    writeSitemapFiles(xml);
-    res.header("Content-Type", "application/xml");
-    return res.send(xml);
-});
+    if (!sitemapBuildInFlight) {
+        sitemapBuildInFlight = (async () => {
+            try {
+                const xml = await buildSitemapXml(prisma);
+                writeSitemapFiles(xml);
+                return xml;
+            } finally {
+                sitemapBuildInFlight = null;
+            }
+        })();
+    }
+    return sitemapBuildInFlight;
+}
 
-router.get("/sitemap", async (req, res) => {
-    const sitemapPath = path.join(process.cwd(), "public", "sitemap.xml");
-    if (fs.existsSync(sitemapPath)) {
-        res.header("Content-Type", "application/xml");
-        return res.send(fs.readFileSync(sitemapPath, "utf8"));
-    }
-    const xml = await buildSitemapXml(prisma);
-    writeSitemapFiles(xml);
+async function serveSitemap(req, res) {
+    const xml = await readOrBuildSitemap();
     res.header("Content-Type", "application/xml");
-    return res.send(xml);
-});
+    res.header("Cache-Control", "public, max-age=3600");
+    res.send(xml);
+}
+
+router.get("/sitemap.xml", serveSitemap);
+router.get("/sitemap", serveSitemap);
 
 router.get("/robots.txt", (req, res) => {
     const baseUrl = process.env.BASE_URL || "https://openpizzamap.com";

@@ -90,6 +90,7 @@ model Place {
   @@index([city])
   @@index([lat])
   @@index([lng])
+  @@index([lat, lng])
   @@index([tripadvisorLocationId])
 }
 
