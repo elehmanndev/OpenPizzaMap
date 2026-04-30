@@ -122,6 +122,18 @@
         return [p.addressLine, cityLine, country].filter(Boolean).join(", ");
     }
 
+    // Map a hero image URL to its 400 px -thumb.jpg variant produced by
+    // scripts/build-thumbs.js. Only rewrites our own /uploads/places/ paths;
+    // external URLs (legacy hotlinks) and unknown extensions pass through.
+    function thumbUrlFor(url) {
+        if (!url || typeof url !== "string") return url;
+        if (!url.startsWith("/uploads/places/")) return url;
+        const m = url.match(/^(.*)\.(jpe?g|png|webp|gif|avif)$/i);
+        if (!m) return url;
+        if (/-thumb$/.test(m[1])) return url;
+        return `${m[1]}-thumb.jpg`;
+    }
+
     function popupHtml(p) {
         const lat = Number(p.lat);
         const lng = Number(p.lng);
@@ -130,8 +142,15 @@
             : `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
         const rating = "9.7";
         const heroInner = `<span class="ppc-rating">${rating}</span>`;
+        // Prefer the small thumb (~30 KB) over the full-res original (often
+        // multi-MB). Render via <img> so onerror can fall back to the original
+        // if the thumb is missing (e.g. for the few AVIFs build-thumbs skipped).
+        const heroSrc = thumbUrlFor(p.heroImageUrl);
         const hero = p.heroImageUrl
-            ? `<div class="ppc-hero" style="background-image:url('${esc(p.heroImageUrl)}')">${heroInner}</div>`
+            ? `<div class="ppc-hero">
+    <img class="ppc-hero-img" src="${esc(heroSrc)}" data-fallback="${esc(p.heroImageUrl)}" alt="" loading="lazy" onerror="if(this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.remove()}" />
+    ${heroInner}
+  </div>`
             : `<div class="ppc-hero ppc-hero--fallback">${heroInner}<span class="ppc-hero-emoji">🍕</span></div>`;
         const address = formatAddress(p);
 

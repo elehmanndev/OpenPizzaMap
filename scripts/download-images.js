@@ -145,6 +145,22 @@ async function downloadOne(url, outBase) {
   const buf = Buffer.from(await res.arrayBuffer());
   const dest = `${outBase}.${ext}`;
   fs.writeFileSync(dest, buf);
+  // Build the 400 px popup thumbnail right next to the source. Best-effort:
+  // sharp can't decode some pathological AVIFs, in which case map.js falls
+  // back to the original via its onerror handler.
+  try {
+    const sharp = require('sharp');
+    const dir = path.dirname(dest);
+    const base = path.basename(dest, path.extname(dest));
+    const thumbPath = path.join(dir, `${base}-thumb.jpg`);
+    await sharp(dest)
+      .rotate()
+      .resize({ width: 400, withoutEnlargement: true })
+      .jpeg({ quality: 78, mozjpeg: true })
+      .toFile(thumbPath);
+  } catch (err) {
+    console.warn(`  thumb failed for ${dest}: ${err.message}`);
+  }
   return { path: dest, bytes: buf.length, ext };
 }
 

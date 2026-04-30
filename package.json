@@ -18,7 +18,8 @@
     "users:backfill": "node scripts/backfill-usernames.js",
     "admin:password": "node scripts/set-admin-password.js",
     "sitemap:build": "node scripts/build-sitemap.js",
-    "landing:recompute": "node scripts/recompute-landing.js"
+    "landing:recompute": "node scripts/recompute-landing.js",
+    "thumbs:build": "node scripts/build-thumbs.js"
   },
   "dependencies": {
     "@prisma/client": "^5.18.0",
@@ -39,6 +40,7 @@
   },
   "devDependencies": {
     "playwright": "^1.59.1",
-    "prisma": "^5.18.0"
+    "prisma": "^5.18.0",
+    "sharp": "^0.34.5"
   }
 }

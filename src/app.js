@@ -18,8 +18,11 @@ const morgan = require("morgan");
 
 const app = express();
 
-// Cache-bust static assets with a single version string that updates when public files change.
+// Cache-bust static assets with a single version string. Scan only the asset
+// dirs that ship with the app — never `uploads/`, which holds 1k+ user images
+// and would burn IOPS on every worker boot under shared hosting.
 const publicRoot = path.join(__dirname, "..", "public");
+const assetScanDirs = ["css", "js", "assets"];
 function getLatestMtimeMs(dir) {
     let latest = 0;
     const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -38,7 +41,13 @@ function getLatestMtimeMs(dir) {
 let assetVersion = String(process.env.ASSET_VERSION || "");
 if (!assetVersion) {
     try {
-        const latest = getLatestMtimeMs(publicRoot);
+        let latest = 0;
+        for (const sub of assetScanDirs) {
+            const subPath = path.join(publicRoot, sub);
+            if (fs.existsSync(subPath)) {
+                latest = Math.max(latest, getLatestMtimeMs(subPath));
+            }
+        }
         assetVersion = latest ? String(Math.floor(latest)) : String(Date.now());
     } catch (err) {
         console.warn("Could not compute public asset version:", err && err.message ? err.message : err);
@@ -108,8 +117,18 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use(morgan("dev"));
-app.use("/public", express.static(path.join(__dirname, "..", "public")));
+// In production keep request logging quiet — Passenger captures stdout to
+// disk, which adds writes per request. Skip 2xx/3xx noise.
+if (process.env.NODE_ENV === "production") {
+    app.use(morgan("combined", {
+        skip: (req, res) => res.statusCode < 400,
+    }));
+} else {
+    app.use(morgan("dev"));
+}
+const staticOpts = { maxAge: "30d", immutable: true, etag: true };
+app.use("/public", express.static(path.join(__dirname, "..", "public"), staticOpts));
+app.use("/uploads", express.static(path.join(__dirname, "..", "public", "uploads"), staticOpts));
 
 if (maintenanceMode) {
     // Maintenance-only mode: serve the maintenance page for all routes/methods.
