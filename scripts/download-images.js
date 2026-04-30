@@ -145,21 +145,21 @@ async function downloadOne(url, outBase) {
   const buf = Buffer.from(await res.arrayBuffer());
   const dest = `${outBase}.${ext}`;
   fs.writeFileSync(dest, buf);
-  // Build the 400 px popup thumbnail right next to the source. Best-effort:
-  // sharp can't decode some pathological AVIFs, in which case map.js falls
-  // back to the original via its onerror handler.
+  // Build the popup thumb (400 px) and the place-page large (1200 px) right
+  // next to the source. Delegates to scripts/build-thumbs.js so the Playwright
+  // fallback for sharp-incompatible AVIFs is reused. Best-effort: any failure
+  // is logged and map.js / place.ejs fall back to the original via onerror.
   try {
-    const sharp = require('sharp');
-    const dir = path.dirname(dest);
-    const base = path.basename(dest, path.extname(dest));
-    const thumbPath = path.join(dir, `${base}-thumb.jpg`);
-    await sharp(dest)
-      .rotate()
-      .resize({ width: 400, withoutEnlargement: true })
-      .jpeg({ quality: 78, mozjpeg: true })
-      .toFile(thumbPath);
+    const { spawnSync } = require('child_process');
+    const result = spawnSync(process.execPath, [
+      path.join(__dirname, 'build-thumbs.js'),
+      '--file', dest,
+    ], { encoding: 'utf8' });
+    if (result.status !== 0) {
+      console.warn(`  variants failed for ${dest}: ${result.stderr || result.stdout}`);
+    }
   } catch (err) {
-    console.warn(`  thumb failed for ${dest}: ${err.message}`);
+    console.warn(`  variants failed for ${dest}: ${err.message}`);
   }
   return { path: dest, bytes: buf.length, ext };
 }
