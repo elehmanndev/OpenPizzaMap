@@ -1,4 +1,5 @@
 const express = require("express");
+const { Prisma } = require("@prisma/client");
 const { prisma } = require("../db");
 const { boundingBox, haversineKm } = require("../services/geo");
 
@@ -24,28 +25,41 @@ function flattenStyles(p) {
     return { ...p, styles: p.styles.map((s) => s.style) };
 }
 
+// Hydrate places with public visit counts + per-viewer flags.
+//
+// Old shape: 1 sequential groupBy + (if auth) Promise.all([visits, favorites]) =
+// up to 3 round-trips per request, all serial-then-parallel.
+// New shape: groupBy in parallel with the user-specific lookup, and the
+// user-specific lookup itself is one combined raw UNION query instead of two
+// findMany. Net: 1 round-trip for anon, 2 parallel round-trips for auth.
 async function attachUserAndCounts(places, userId) {
     if (!places.length) return places;
     const ids = places.map((p) => p.id);
 
-    // Visit counts (everybody)
-    const visitGroups = await prisma.visit.groupBy({
+    const visitCountPromise = prisma.visit.groupBy({
         by: ["placeId"],
         where: { placeId: { in: ids } },
         _count: { _all: true },
     });
-    const visitCount = new Map(visitGroups.map((g) => [g.placeId, g._count._all]));
 
-    // Per-user flags
-    let visited = new Set();
-    let favorited = new Set();
-    if (userId) {
-        const [vs, fs] = await Promise.all([
-            prisma.visit.findMany({ where: { userId, placeId: { in: ids } }, select: { placeId: true } }),
-            prisma.favorite.findMany({ where: { userId, placeId: { in: ids } }, select: { placeId: true } }),
-        ]);
-        visited = new Set(vs.map((v) => v.placeId));
-        favorited = new Set(fs.map((f) => f.placeId));
+    const userFlagsPromise = userId
+        ? prisma.$queryRaw`
+            SELECT 'visit' AS kind, placeId FROM Visit
+              WHERE userId = ${userId} AND placeId IN (${Prisma.join(ids)})
+            UNION ALL
+            SELECT 'favorite' AS kind, placeId FROM Favorite
+              WHERE userId = ${userId} AND placeId IN (${Prisma.join(ids)})
+        `
+        : Promise.resolve([]);
+
+    const [visitGroups, userFlags] = await Promise.all([visitCountPromise, userFlagsPromise]);
+
+    const visitCount = new Map(visitGroups.map((g) => [g.placeId, g._count._all]));
+    const visited = new Set();
+    const favorited = new Set();
+    for (const row of userFlags) {
+        if (row.kind === "visit") visited.add(row.placeId);
+        else if (row.kind === "favorite") favorited.add(row.placeId);
     }
 
     return places.map((p) => ({
@@ -56,10 +70,43 @@ async function attachUserAndCounts(places, userId) {
     }));
 }
 
+// Resolve `?limit=` clamped to [1, 500]. Anon callers default to 200, auth to
+// 500. Old code unconditionally fetched 1000 rows even when the map only
+// renders a couple hundred — wasteful and a worker-killer under load.
+function resolveLimit(req, isAuth) {
+    const cap = isAuth ? 500 : 200;
+    const raw = Number(req.query.limit);
+    if (!Number.isFinite(raw) || raw <= 0) return cap;
+    return Math.min(cap, Math.max(1, Math.floor(raw)));
+}
+
+// Cache-Control: edge-cacheable for anon, no-store for authed.
+//
+// With express-session `saveUninitialized:false`, anon users send no Cookie
+// header at all — so all anon callers share one cache key at Cloudflare and
+// the second hit onwards is served from edge. Authed users carry opm.sid and
+// must always get fresh per-user flags.
+function applyCacheHeaders(req, res) {
+    const hasSession = !!(req.session && req.session.user);
+    const hasCookie = !!(req.headers.cookie && req.headers.cookie.includes("opm.sid"));
+    res.set("Vary", "Cookie");
+    if (hasSession || hasCookie) {
+        res.set("Cache-Control", "private, no-store");
+    } else {
+        // 60 s edge cache, plus 5 min serve-stale-while-revalidating. Even one
+        // viral spike will only land a single request on Node per minute.
+        res.set("Cache-Control", "public, max-age=30, s-maxage=60, stale-while-revalidate=300");
+    }
+}
+
 router.get("/", async (req, res) => {
     const { query, city, lat, lng, radius, style } = req.query;
     const styleSlug = (style || "").trim();
     const userId = req.session?.user?.id || null;
+    const isAuth = !!userId;
+    const limit = resolveLimit(req, isAuth);
+
+    applyCacheHeaders(req, res);
 
     const styleFilter = styleSlug
         ? { styles: { some: { style: { slug: styleSlug } } } }
@@ -82,7 +129,7 @@ router.get("/", async (req, res) => {
             },
             include: STYLE_INCLUDE,
             orderBy: { updatedAt: "desc" },
-            take: 1000,
+            take: limit,
         });
 
         const flat = places.map(flattenStyles);
@@ -107,7 +154,7 @@ router.get("/", async (req, res) => {
                 ...styleFilter,
             },
             include: STYLE_INCLUDE,
-            take: 1000,
+            take: limit,
         });
 
         const withDist = pre
@@ -117,7 +164,7 @@ router.get("/", async (req, res) => {
             }))
             .filter((p) => p.distance_km <= radiusKm)
             .sort((a, b) => a.distance_km - b.distance_km)
-            .slice(0, 500);
+            .slice(0, limit);
 
         const enriched = await attachUserAndCounts(withDist, userId);
         return res.json({ ok: true, places: enriched });
@@ -127,7 +174,7 @@ router.get("/", async (req, res) => {
         where: { status: "active", isVisible: true, ...styleFilter },
         include: STYLE_INCLUDE,
         orderBy: { updatedAt: "desc" },
-        take: 1000,
+        take: limit,
     });
     const flat = places.map(flattenStyles);
     const enriched = await attachUserAndCounts(flat, userId);

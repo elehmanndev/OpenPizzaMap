@@ -44,7 +44,21 @@ function getLatestMtimeMs(dir) {
     }
     return latest;
 }
+// Order of preference for the cache-bust string:
+//   1. ASSET_VERSION env var (explicit pin)
+//   2. .builds/asset-version.txt written at deploy time by
+//      scripts/build-asset-version.js (zero filesystem walk on boot)
+//   3. Live mtime walk (only happens if the manifest is missing — should
+//      not occur on Hostinger after the postinstall runs)
 let assetVersion = String(process.env.ASSET_VERSION || "");
+const manifestPath = path.join(__dirname, "..", ".builds", "asset-version.txt");
+if (!assetVersion && fs.existsSync(manifestPath)) {
+    try {
+        assetVersion = fs.readFileSync(manifestPath, "utf8").trim();
+    } catch (err) {
+        console.warn("Could not read asset-version manifest:", err && err.message);
+    }
+}
 if (!assetVersion) {
     try {
         let latest = 0;
@@ -193,19 +207,30 @@ if (maintenanceMode) {
     const passport = require("passport");
     const { configureGoogleAuth } = require("./services/googleAuth");
 
-    // Auto-seed if empty (Hostinger helper)
+    // Auto-seed if the DB is empty. Runs once per cold worker boot, fully
+    // non-blocking: count via prisma, if zero spawn the seed script as a
+    // detached child so the parent worker continues serving requests while
+    // it runs. Old code used execSync which blocked the entire worker for
+    // the seed duration on every cold start.
     let autoSeedScheduled = false;
     async function autoSeed() {
         try {
             const count = await prisma.place.count();
-            if (count === 0) {
-                console.log("Database empty, running auto-seed...");
-                const { execSync } = require("child_process");
-                execSync("node prisma/seed.js", { stdio: "inherit" });
-            }
+            if (count > 0) return;
+            console.log("Database empty, spawning auto-seed (non-blocking)...");
+            const { spawn } = require("child_process");
+            const child = spawn(process.execPath, ["prisma/seed.js"], {
+                stdio: ["ignore", "pipe", "pipe"],
+                detached: false,
+            });
+            child.stdout.on("data", (d) => process.stdout.write(`[seed] ${d}`));
+            child.stderr.on("data", (d) => process.stderr.write(`[seed:err] ${d}`));
+            child.on("exit", (code) => {
+                if (code === 0) console.log("[seed] completed");
+                else console.error(`[seed] exited with code ${code}`);
+            });
         } catch (e) {
             console.error("Auto-seed skipped/failed:", e.message);
-            // We don't crash the app here, just log it.
         }
     }
     postListenTasks = () => {
