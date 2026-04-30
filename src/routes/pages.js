@@ -32,6 +32,23 @@ router.get("/place/:id", async (req, res) => {
         },
     });
     if (!place || place.isVisible === false) return res.status(404).send("Not found");
+
+    const userId = req.session?.user?.id || null;
+    const visitCount = await prisma.visit.count({ where: { placeId: id } });
+    let viewerVisited = false;
+    let viewerFavorited = false;
+    if (userId) {
+        const [v, f] = await Promise.all([
+            prisma.visit.findUnique({ where: { userId_placeId: { userId, placeId: id } }, select: { id: true } }),
+            prisma.favorite.findUnique({ where: { userId_placeId: { userId, placeId: id } }, select: { id: true } }),
+        ]);
+        viewerVisited = !!v;
+        viewerFavorited = !!f;
+    }
+    place.visitCount = visitCount;
+    place.viewerVisited = viewerVisited;
+    place.viewerFavorited = viewerFavorited;
+
     res.render("place", { user: req.session.user || null, place });
 });
 
@@ -285,8 +302,21 @@ router.get("/me", requireAuth, async (req, res) => {
     res.render("me", { user: req.session.user, submissions: subs });
 });
 
-router.get("/favourites", requireAuth, (req, res) => {
-    res.render("favourites", { user: req.session.user });
+router.get("/favourites", requireAuth, async (req, res) => {
+    const userId = req.session.user.id;
+    const favs = await prisma.favorite.findMany({
+        where: { userId },
+        orderBy: { createdAt: "desc" },
+        include: {
+            place: {
+                include: { styles: { include: { style: true }, orderBy: { style: { sortOrder: "asc" } } } },
+            },
+        },
+    });
+    const places = favs
+        .filter((f) => f.place && f.place.isVisible !== false)
+        .map((f) => f.place);
+    res.render("favourites", { user: req.session.user, places });
 });
 
 // --------------------

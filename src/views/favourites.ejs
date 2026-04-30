@@ -1,6 +1,52 @@
-<%- include("layout", { title: "My favourites", user, leaflet: false, bodyClass: "favourites-page", body: `
+<%
+  function thumbVariant(url) {
+    if (!url || typeof url !== "string") return url;
+    if (!url.startsWith("/uploads/places/")) return url;
+    const m = url.match(/^(.*)\.(jpe?g|png|webp|gif|avif)$/i);
+    if (!m) return url;
+    if (/-thumb$/.test(m[1])) return url;
+    return `${m[1]}-thumb.jpg`;
+  }
+%>
+<%- include("layout", { title: "My favourites", user, leaflet: false, bodyClass: "favourites-page", body: String.raw`
   <h1>My favourites</h1>
-  <div class="card">
-    <p class="small">No favourites yet. Save a spot to see it here.</p>
-  </div>
+  ${(!places || !places.length) ? `
+    <div class="card">
+      <p class="small">No favourites yet. Tap the heart on a pizza spot to save it here.</p>
+      <p><a class="btn primary" href="/map">Browse the map</a></p>
+    </div>
+  ` : `
+    <div class="favourites-grid">
+      ${places.map((p) => `
+        <a class="fav-card" href="/place/${p.id}">
+          <div class="fav-card__hero">
+            ${p.heroImageUrl ? `<img src="${escapeAttr(thumbVariant(p.heroImageUrl))}" data-fallback="${escapeAttr(p.heroImageUrl)}" alt="" loading="lazy" onerror="if(this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.style.display='none'}" />` : `<span class="fav-card__emoji">🍕</span>`}
+            <button type="button" class="place-fav is-active" data-place-fav data-place-id="${p.id}" aria-pressed="true" aria-label="Remove from favourites">
+              <span class="material-symbols-rounded" aria-hidden="true">favorite</span>
+            </button>
+          </div>
+          <div class="fav-card__body">
+            <h3>${escapeHtml(p.name)}</h3>
+            <p class="small">${escapeHtml([p.city, p.country].filter(Boolean).join(", "))}</p>
+          </div>
+        </a>
+      `).join("")}
+    </div>
+    <script>
+      document.querySelectorAll("[data-place-fav]").forEach(btn => {
+        btn.addEventListener("click", async (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          const id = btn.dataset.placeId;
+          const card = btn.closest(".fav-card");
+          try {
+            const r = await fetch("/api/places/" + id + "/favorite", { method: "POST" });
+            if (!r.ok) throw new Error();
+            const d = await r.json();
+            if (!d.favorited && card) card.remove();
+          } catch {}
+        });
+      });
+    </script>
+  `}
 ` }) %>

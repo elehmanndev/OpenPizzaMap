@@ -25,6 +25,8 @@ model User {
   googleId     String?      @unique
   reviews      Submission[] @relation("ReviewedBy")
   submissions  Submission[] @relation("UserSubmissions")
+  visits       Visit[]
+  favorites    Favorite[]
 }
 
 model Place {
@@ -82,11 +84,40 @@ model Place {
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   styles        PlaceStyle[]
+  visits        Visit[]
+  favorites     Favorite[]
 
   @@index([city])
   @@index([lat])
   @@index([lng])
   @@index([tripadvisorLocationId])
+}
+
+model Visit {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  placeId   Int
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  place     Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, placeId])
+  @@index([placeId])
+}
+
+model Favorite {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  placeId   Int
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  place     Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, placeId])
+  @@index([placeId])
+  @@index([userId])
 }
 
 model Country {

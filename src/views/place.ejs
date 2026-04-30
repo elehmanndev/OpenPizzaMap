@@ -94,13 +94,29 @@
   ${place.heroImageUrl ? `
     <div class="place-hero">
       <img src="${escapeAttr(largeVariant(place.heroImageUrl))}" data-fallback="${escapeAttr(place.heroImageUrl)}" alt="${escapeAttr(place.name)}" loading="eager" onerror="if(this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.remove()}" />
+      <button type="button" class="place-visit-btn place-visit-btn--floating${place.viewerVisited ? " is-active" : ""}" data-place-visit data-place-id="${place.id}" aria-pressed="${place.viewerVisited ? "true" : "false"}">
+        <span class="material-symbols-rounded place-visit-btn__icon" aria-hidden="true">task_alt</span>
+        <span class="place-visit-btn__label">${place.viewerVisited ? "You've been here" : "I've been here"}</span>
+        <span class="place-visit-btn__count" data-visit-count>${place.visitCount > 0 ? place.visitCount : ""}</span>
+      </button>
     </div>
-  ` : ""}
+  ` : `
+    <button type="button" class="place-visit-btn place-visit-btn--floating${place.viewerVisited ? " is-active" : ""}" data-place-visit data-place-id="${place.id}" aria-pressed="${place.viewerVisited ? "true" : "false"}">
+      <span class="material-symbols-rounded place-visit-btn__icon" aria-hidden="true">task_alt</span>
+      <span class="place-visit-btn__label">${place.viewerVisited ? "You've been here" : "I've been here"}</span>
+      <span class="place-visit-btn__count" data-visit-count>${place.visitCount > 0 ? place.visitCount : ""}</span>
+    </button>
+  `}
 
   <article class="place-shell">
     <div class="place-header">
       <div class="place-header__main">
-        <h1 class="place-title">${escapeHtml(place.name)}</h1>
+        <div class="place-title-row">
+          <h1 class="place-title">${escapeHtml(place.name)}</h1>
+          <button type="button" class="place-fav place-fav--inline${place.viewerFavorited ? " is-active" : ""}" data-place-fav data-place-id="${place.id}" aria-pressed="${place.viewerFavorited ? "true" : "false"}" aria-label="${place.viewerFavorited ? "Remove from favourites" : "Add to favourites"}">
+            <span class="material-symbols-rounded" aria-hidden="true">favorite</span>
+          </button>
+        </div>
         <p class="place-address">${escapeHtml(place.addressLine || "")}${place.addressLine ? " · " : ""}${escapeHtml(place.city || "")}${place.country ? `, ${escapeHtml(place.country)}` : ""}</p>
 
         <div class="place-meta">
@@ -126,6 +142,62 @@
         </div>
       ` : ""}
     </div>
+    <script>
+      (function () {
+        const userIn = ${user ? "true" : "false"};
+        function toggleBtn(btn, on, labels) {
+          btn.classList.toggle("is-active", on);
+          btn.setAttribute("aria-pressed", String(on));
+          if (labels) {
+            const lbl = btn.querySelector(".place-visit-btn__label");
+            const ic = btn.querySelector(".place-visit-btn__icon");
+            if (lbl) lbl.textContent = on ? labels.onLabel : labels.offLabel;
+            if (ic) ic.textContent = on ? labels.onIcon : labels.offIcon;
+          }
+        }
+        const visitBtn = document.querySelector("[data-place-visit]");
+        if (visitBtn) {
+          visitBtn.addEventListener("click", async () => {
+            if (!userIn) { window.location.href = "/auth"; return; }
+            const id = visitBtn.dataset.placeId;
+            const wasOn = visitBtn.classList.contains("is-active");
+            toggleBtn(visitBtn, !wasOn, { onLabel: "You've been here", offLabel: "I've been here", onIcon: "task_alt", offIcon: "task_alt" });
+            try {
+              const r = await fetch("/api/places/" + id + "/visit", { method: "POST" });
+              if (!r.ok) throw new Error();
+              const d = await r.json();
+              toggleBtn(visitBtn, !!d.visited, { onLabel: "You've been here", offLabel: "I've been here", onIcon: "task_alt", offIcon: "task_alt" });
+              const c = visitBtn.querySelector("[data-visit-count]");
+              if (c) c.textContent = d.visitCount > 0 ? d.visitCount : "";
+            } catch {
+              toggleBtn(visitBtn, wasOn, { onLabel: "You've been here", offLabel: "I've been here", onIcon: "task_alt", offIcon: "task_alt" });
+            }
+          });
+        }
+        const favBtns = document.querySelectorAll("[data-place-fav]");
+        favBtns.forEach(btn => {
+          btn.addEventListener("click", async (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+            if (!userIn) { window.location.href = "/auth"; return; }
+            const id = btn.dataset.placeId;
+            const wasOn = btn.classList.contains("is-active");
+            btn.classList.toggle("is-active", !wasOn);
+            btn.setAttribute("aria-pressed", String(!wasOn));
+            try {
+              const r = await fetch("/api/places/" + id + "/favorite", { method: "POST" });
+              if (!r.ok) throw new Error();
+              const d = await r.json();
+              btn.classList.toggle("is-active", !!d.favorited);
+              btn.setAttribute("aria-pressed", String(!!d.favorited));
+            } catch {
+              btn.classList.toggle("is-active", wasOn);
+              btn.setAttribute("aria-pressed", String(wasOn));
+            }
+          });
+        });
+      })();
+    </script>
 
     ${hours ? `
       <section class="card place-hours">

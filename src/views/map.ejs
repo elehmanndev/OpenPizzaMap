@@ -1,4 +1,60 @@
 <%- include("layout", { title: "Map", user, leaflet: true, bodyClass: "map-page", body: `
-    <div id="map" aria-label="Pizza map"></div>
+    <div class="map-shell">
+      <aside class="map-sidebar" aria-label="Pizza spots">
+        <div class="map-sidebar-header">
+          <div class="map-search-wrap">
+            <form class="map-search" role="search" autocomplete="off">
+              <span class="material-symbols-rounded map-search-icon" aria-hidden="true">search</span>
+              <input type="search" name="q" class="map-search-input" placeholder="Search pizza, city…" aria-label="Search pizza spots" />
+              <button type="button" class="map-search-clear" aria-label="Clear" hidden>
+                <span class="material-symbols-rounded" aria-hidden="true">close</span>
+              </button>
+            </form>
+            <div class="map-search-suggest" hidden>
+              <section class="map-suggest-section" data-suggest-cities>
+                <h4 class="map-suggest-title">Cities</h4>
+                <ul class="map-suggest-list"></ul>
+              </section>
+              <section class="map-suggest-section" data-suggest-spots>
+                <h4 class="map-suggest-title">Spots</h4>
+                <ul class="map-suggest-list"></ul>
+              </section>
+              <div class="map-suggest-empty" hidden>No matches</div>
+            </div>
+          </div>
+          <div class="map-controls">
+            <label class="map-sort">
+              <span class="map-sort-label">Sort</span>
+              <select class="map-sort-select" aria-label="Sort by">
+                <option value="popular" selected>Popular</option>
+                <option value="rating">Rating</option>
+                <option value="distance-city">Distance from city</option>
+                <option value="distance-me">Near me</option>
+                <option value="price-asc">Price ↑</option>
+                <option value="price-desc">Price ↓</option>
+              </select>
+            </label>
+            <details class="map-style-dropdown">
+              <summary class="map-style-summary">
+                <span class="map-style-summary-label">Styles</span>
+                <span class="map-style-summary-count" hidden></span>
+                <span class="material-symbols-rounded map-style-caret" aria-hidden="true">expand_more</span>
+              </summary>
+              <div class="map-style-menu" role="group" aria-label="Filter by style"></div>
+            </details>
+          </div>
+          <div class="map-result-count" aria-live="polite"></div>
+        </div>
+        <div class="map-sidebar-list" role="list"></div>
+        <div class="map-sidebar-empty" hidden>
+          <p>No pizza spots in this area.</p>
+          <button type="button" class="map-zoom-out">Zoom out</button>
+        </div>
+      </aside>
+      <div class="map-canvas">
+        <div id="map" aria-label="Pizza map"></div>
+      </div>
+    </div>
+    <script>window.__OPM_USER__ = ${user ? "true" : "false"};</script>
     <script src="${asset("/public/js/map.js")}"></script>
 ` }) %>
