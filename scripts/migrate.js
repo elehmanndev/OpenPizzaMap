@@ -81,11 +81,15 @@ const result = spawnSync(
 
 if (result.status !== 0) {
     console.error("Prisma migrate deploy failed.");
-    if (String(process.env.MIGRATE_STRICT || "").toLowerCase() === "true") {
-        process.exit(result.status || 1);
+    // Strict-by-default: a failed migration must fail the deploy. Otherwise the
+    // app boots with a stale schema and starts 503-ing only the routes that
+    // touch the missing tables (we lost ~4h to this on 2026-04-30).
+    // Set MIGRATE_LENIENT=true to opt out (only for explicit recovery flows).
+    if (String(process.env.MIGRATE_LENIENT || "").toLowerCase() === "true") {
+        console.warn("MIGRATE_LENIENT=true — booting anyway with possibly-stale schema.");
+        process.exit(0);
     }
-    // Don't write the sentinel on failure — next boot will retry.
-    process.exit(0);
+    process.exit(result.status || 1);
 }
 
 if (currentHash) {

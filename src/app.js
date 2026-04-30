@@ -13,6 +13,12 @@ require("dotenv").config({
 console.log(
     `Startup env: NODE_ENV=${process.env.NODE_ENV || "unset"} DATABASE_URL=${process.env.DATABASE_URL ? "set" : "unset"} BASE_URL=${process.env.BASE_URL ? "set" : "unset"}`
 );
+// Patch Express 4 so async route errors reach the error handler instead of
+// becoming unhandled rejections that crash the worker. MUST come before any
+// `require("express")` and before any router is built. (One of the failure
+// modes that contributed to the 2026-04-30 outage.)
+require("express-async-errors");
+
 const express = require("express");
 const morgan = require("morgan");
 
@@ -78,7 +84,7 @@ app.set("views", path.join(__dirname, "views"));
 // Block common bot scans early (before any middleware/routes).
 app.use((req, res, next) => {
     const p = req.path.toLowerCase();
-    const allowedApiPrefixes = ["/api/auth", "/api/notify", "/api/places", "/api/submissions", "/api/admin"];
+    const allowedApiPrefixes = ["/api/auth", "/api/notify", "/api/places", "/api/submissions", "/api/admin", "/api/health"];
     const blockedPrefixes = [
         "/wp-",
         "/wp/",
@@ -129,6 +135,39 @@ if (process.env.NODE_ENV === "production") {
 const staticOpts = { maxAge: "30d", immutable: true, etag: true };
 app.use("/public", express.static(path.join(__dirname, "..", "public"), staticOpts));
 app.use("/uploads", express.static(path.join(__dirname, "..", "public", "uploads"), staticOpts));
+
+// Health endpoint. Always mounted (even in maintenance mode) so external
+// monitoring can distinguish "intentionally down" from "actually broken".
+// Touches Place, Visit, Favorite — the tables most likely to drift from the
+// schema (Visit/Favorite were exactly today's outage cause). Cheap queries.
+app.get("/api/health", async (req, res) => {
+    res.set("Cache-Control", "no-store");
+    if (maintenanceMode) {
+        return res.status(503).json({ ok: false, status: "maintenance" });
+    }
+    try {
+        const { prisma } = require("./db");
+        const [places, visits, favorites] = await Promise.all([
+            prisma.place.count(),
+            prisma.visit.count(),
+            prisma.favorite.count(),
+        ]);
+        return res.json({
+            ok: true,
+            status: "healthy",
+            counts: { places, visits, favorites },
+            uptimeSec: Math.round(process.uptime()),
+        });
+    } catch (err) {
+        console.error("[health] DB check failed:", err && err.message);
+        return res.status(503).json({
+            ok: false,
+            status: "unhealthy",
+            errCode: err && err.code,
+            errName: err && err.name,
+        });
+    }
+});
 
 if (maintenanceMode) {
     // Maintenance-only mode: serve the maintenance page for all routes/methods.
