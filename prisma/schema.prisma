@@ -42,6 +42,8 @@ model Place {
   dineIn        Boolean     @default(true)
   takeaway      Boolean     @default(true)
   delivery      Boolean     @default(false)
+  reservations  Boolean     @default(false)
+  outdoorSeating Boolean    @default(false)
   phone         String?
   websiteUrl    String?
   googleMapsUrl String?
@@ -56,6 +58,16 @@ model Place {
   tripadvisorRating       Decimal? @db.Decimal(2,1)
   tripadvisorReviewCount  Int?
   tripadvisorUrl          String?          // attribution link required by TA ToS
+  // External platform ratings — populated by Playwright-based enrichers.
+  googleRating            Decimal? @db.Decimal(2,1)
+  googleReviewCount       Int?
+  googleUrl               String?  @db.VarChar(500)
+  yelpRating              Decimal? @db.Decimal(2,1)
+  yelpReviewCount         Int?
+  yelpUrl                 String?  @db.VarChar(500)
+  // OpenPizzaMap composite score (1.0–10.0). Computed from external + community signals.
+  opmRating               Decimal? @db.Decimal(3,1)
+  opmRatingSource         String?  @db.VarChar(20)   // "external" | "community" | "blend"
   status        PlaceStatus @default(active)
   slug          String?     @unique
   cityId        Int?

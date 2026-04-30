@@ -25,6 +25,10 @@ router.get("/place/:id", async (req, res) => {
                 where: { isVisible: true, scope: "place" },
                 orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
             },
+            styles: {
+                include: { style: true },
+                orderBy: { style: { sortOrder: "asc" } },
+            },
         },
     });
     if (!place || place.isVisible === false) return res.status(404).send("Not found");
@@ -594,28 +598,97 @@ router.get("/admin/places", requireAdmin, async (req, res) => {
 
 router.get("/admin/places/:id", requireAdmin, async (req, res) => {
     const id = Number(req.params.id);
-    const place = await prisma.place.findUnique({ where: { id } });
+    const place = await prisma.place.findUnique({
+        where: { id },
+        include: { styles: { select: { styleId: true } } },
+    });
     if (!place) return res.redirect("/admin/places");
-    res.render("admin_place_edit", { user: req.session.user, place });
+    const allStyles = await prisma.style.findMany({ orderBy: { sortOrder: "asc" } });
+    const selectedStyleIds = new Set(place.styles.map((s) => s.styleId));
+    res.render("admin_place_edit", {
+        user: req.session.user,
+        place,
+        allStyles,
+        selectedStyleIds,
+    });
 });
 
 router.post("/admin/places/:id", requireAdmin, async (req, res) => {
     const { sanitizeRichText } = require("../services/sanitize");
     const id = Number(req.params.id);
-    const slug = String(req.body.slug || "").trim().slice(0, 191);
-    const heroImageUrl = String(req.body.heroImageUrl || "").trim();
-    const isVisible = !!req.body.isVisible;
-    const descriptionHtml = sanitizeRichText(String(req.body.descriptionHtml || ""));
+    const b = req.body || {};
 
-    await prisma.place.update({
-        where: { id },
-        data: {
-            slug: slug || null,
-            heroImageUrl: heroImageUrl || null,
-            descriptionHtml: descriptionHtml || null,
-            isVisible,
-        },
-    });
+    function s(v, max) {
+        const x = String(v == null ? "" : v).trim();
+        return max ? x.slice(0, max) : x;
+    }
+    function nullable(v, max) { const x = s(v, max); return x ? x : null; }
+
+    const name = s(b.name, 191);
+    const addressLine = s(b.addressLine, 191);
+    const city = s(b.city, 191);
+    const country = s(b.country, 191);
+
+    const priceLevelNum = Number(b.priceLevel);
+    const priceLevel = Number.isFinite(priceLevelNum) ? Math.min(4, Math.max(0, Math.trunc(priceLevelNum))) : 2;
+
+    const latRaw = s(b.lat);
+    const lngRaw = s(b.lng);
+    const lat = latRaw === "" ? null : Number(latRaw);
+    const lng = lngRaw === "" ? null : Number(lngRaw);
+
+    const data = {
+        name: name || undefined,
+        addressLine: addressLine || undefined,
+        city: city || undefined,
+        region: nullable(b.region, 191),
+        postalCode: nullable(b.postalCode, 40),
+        country: country || undefined,
+        priceLevel,
+        dineIn: !!b.dineIn,
+        takeaway: !!b.takeaway,
+        delivery: !!b.delivery,
+        reservations: !!b.reservations,
+        outdoorSeating: !!b.outdoorSeating,
+        phone: nullable(b.phone, 60),
+        websiteUrl: nullable(b.websiteUrl, 500),
+        googleMapsUrl: nullable(b.googleMapsUrl, 500),
+        instagramUrl: nullable(b.instagramUrl, 500),
+        openingHours: nullable(b.openingHours),
+        slug: nullable(b.slug, 191),
+        heroImageUrl: nullable(b.heroImageUrl, 500),
+        seoTitle: nullable(b.seoTitle, 191),
+        seoDescription: nullable(b.seoDescription, 200),
+        descriptionHtml: sanitizeRichText(String(b.descriptionHtml || "")) || null,
+        isVisible: !!b.isVisible,
+    };
+    if (Number.isFinite(lat)) data.lat = lat;
+    if (Number.isFinite(lng)) data.lng = lng;
+
+    // OPM rating: optional manual override. Blank clears it.
+    const opmRaw = s(b.opmRating);
+    if (opmRaw === "") {
+        data.opmRating = null;
+    } else {
+        const opm = Number(opmRaw);
+        if (Number.isFinite(opm)) data.opmRating = Math.min(10, Math.max(1, Math.round(opm * 10) / 10));
+    }
+
+    // Styles: replace PlaceStyle joins, mirror to legacy stylesJson.
+    const rawStyleIds = Array.isArray(b.styleIds) ? b.styleIds : (b.styleIds ? [b.styleIds] : []);
+    const styleIds = rawStyleIds.map(Number).filter((n) => Number.isFinite(n));
+    if (styleIds.length) {
+        const styles = await prisma.style.findMany({ where: { id: { in: styleIds } }, select: { slug: true } });
+        data.stylesJson = JSON.stringify(styles.map((s) => s.slug));
+    } else {
+        data.stylesJson = "[]";
+    }
+
+    await prisma.$transaction([
+        prisma.place.update({ where: { id }, data }),
+        prisma.placeStyle.deleteMany({ where: { placeId: id } }),
+        ...(styleIds.length ? [prisma.placeStyle.createMany({ data: styleIds.map((sid) => ({ placeId: id, styleId: sid })) })] : []),
+    ]);
 
     // Ensure city/country/thresholds are up to date after manual edits.
     try {

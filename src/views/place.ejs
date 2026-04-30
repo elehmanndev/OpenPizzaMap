@@ -1,37 +1,195 @@
-<%- include("layout", { title: place.name, user, leaflet: false, body: String.raw`
-  <h1>${escapeHtml(place.name)}</h1>
-  <p>${escapeHtml(place.addressLine)}, ${escapeHtml(place.city)}</p>
+<%
+  // Parse schema.org-style hours like "Mo 13:00-17:00; Tu 13:00-17:00; Tu 19:00-23:00".
+  // Returns rows that collapse runs of consecutive identical schedules into ranges.
+  function parseOpeningHours(raw) {
+    if (!raw) return null;
+    const dayLabels = { Mo: "Mon", Tu: "Tue", We: "Wed", Th: "Thu", Fr: "Fri", Sa: "Sat", Su: "Sun" };
+    const order = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+    const map = Object.fromEntries(order.map((d) => [d, []]));
+    const tokens = String(raw).split(/[;\n]/).map((s) => s.trim()).filter(Boolean);
+    let parsed = false;
+    for (const tok of tokens) {
+      const m = tok.match(/^(Mo|Tu|We|Th|Fr|Sa|Su)\s+(.+)$/);
+      if (!m) continue;
+      const range = m[2].replace(/-/g, "–");
+      map[m[1]].push(range);
+      parsed = true;
+    }
+    if (!parsed) return null;
 
-  ${place.descriptionHtml ? `<div class="card">${place.descriptionHtml}</div>` : ""}
+    // Collapse consecutive days with identical ranges.
+    const rows = [];
+    let i = 0;
+    while (i < order.length) {
+      const startCode = order[i];
+      const sig = map[startCode].join("|");
+      let j = i;
+      while (j + 1 < order.length && map[order[j + 1]].join("|") === sig) j++;
+      const startLabel = dayLabels[order[i]];
+      const endLabel = dayLabels[order[j]];
+      rows.push({
+        label: i === j ? startLabel : `${startLabel}–${endLabel}`,
+        ranges: map[startCode],
+      });
+      i = j + 1;
+    }
+    return rows;
+  }
 
-  <p class="small">Price: ${place.priceLevel ? "€".repeat(place.priceLevel) : "Unknown"} · Status: ${escapeHtml(place.status)}</p>
-  <p class="small">Styles: ${escapeHtml((() => { try { const a = JSON.parse(place.stylesJson || "[]"); return Array.isArray(a) && a.length ? a.join(", ") : "—"; } catch { return "—"; } })())}</p>
+  const hours = parseOpeningHours(place.openingHours);
 
-  <div class="card">
-    <div>Services:
-      ${place.dineIn ? "Dine-in " : ""}
-      ${place.takeaway ? "Takeaway " : ""}
-      ${place.delivery ? "Delivery " : ""}
+  // Reviews: only show platforms we have data for.
+  const reviews = [];
+  if (place.tripadvisorRating != null) {
+    reviews.push({
+      platform: "TripAdvisor",
+      rating: Number(place.tripadvisorRating),
+      max: 5,
+      count: place.tripadvisorReviewCount,
+      url: place.tripadvisorUrl,
+      ranking: place.tripadvisorRanking,
+    });
+  }
+  if (place.googleRating != null) {
+    reviews.push({
+      platform: "Google",
+      rating: Number(place.googleRating),
+      max: 5,
+      count: place.googleReviewCount,
+      url: place.googleUrl,
+    });
+  }
+  if (place.yelpRating != null) {
+    reviews.push({
+      platform: "Yelp",
+      rating: Number(place.yelpRating),
+      max: 5,
+      count: place.yelpReviewCount,
+      url: place.yelpUrl,
+    });
+  }
+
+  // Show highest-rated platform first; tiebreak on review count.
+  reviews.sort((a, b) => {
+    const aNorm = a.rating / (a.max || 5);
+    const bNorm = b.rating / (b.max || 5);
+    if (bNorm !== aNorm) return bNorm - aNorm;
+    return (b.count || 0) - (a.count || 0);
+  });
+%>
+<%- include("layout", { title: place.name, user, leaflet: false, bodyClass: "place-page", body: String.raw`
+  ${place.heroImageUrl ? `
+    <div class="place-hero">
+      <img src="${escapeAttr(place.heroImageUrl)}" alt="${escapeAttr(place.name)}" loading="eager" />
     </div>
-    <div class="small">
-      ${place.websiteUrl ? `Website: <a href="${escapeAttr(place.websiteUrl)}" target="_blank" rel="noopener">link</a><br />` : ""}
-      ${place.instagramUrl ? `Instagram: <a href="${escapeAttr(place.instagramUrl)}" target="_blank" rel="noopener">link</a><br />` : ""}
-      ${place.googleMapsUrl ? `Maps: <a href="${escapeAttr(place.googleMapsUrl)}" target="_blank" rel="noopener">link</a>` : ""}
-    </div>
-  </div>
-
-  ${place.faqs && place.faqs.length ? String.raw`
-    <h2>FAQs</h2>
-    ${place.faqs.map(f => `
-      <div class="card">
-        <strong>${escapeHtml(f.question)}</strong>
-        <div style="margin-top:8px;">${f.answerHtml}</div>
-      </div>
-    `).join("")}
   ` : ""}
 
-  <p>
-    <a href="/map">Back to map</a>
-    ${user ? ` · <a href="/place/${place.id}/suggest-edit">Suggest an edit</a>` : ""}
-  </p>
+  <article class="place-shell">
+    <div class="place-header">
+      <div class="place-header__main">
+        <h1 class="place-title">${escapeHtml(place.name)}</h1>
+        <p class="place-address">${escapeHtml(place.addressLine || "")}${place.addressLine ? " · " : ""}${escapeHtml(place.city || "")}${place.country ? `, ${escapeHtml(place.country)}` : ""}</p>
+
+        <div class="place-meta">
+          ${place.priceLevel ? `<span class="place-price"><span class="place-price__on">${"€".repeat(place.priceLevel)}</span><span class="place-price__off">${"€".repeat(Math.max(0, 4 - place.priceLevel))}</span></span>` : ""}
+          ${place.styles && place.styles.length ? place.styles.map(ps => `<span class="place-style-chip">${escapeHtml(ps.style.shortLabel || ps.style.name)}</span>`).join("") : ""}
+          ${(() => {
+            const pizzaBoxSvg = `<svg class="place-service__svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="3" width="15" height="3.4" rx="0.5"/><rect x="3" y="9" width="17" height="3.4" rx="0.5"/><rect x="5" y="15" width="16" height="3.4" rx="0.5"/></svg>`;
+            const ms = (n) => `<span class="material-symbols-rounded" aria-hidden="true">${n}</span>`;
+            const services = [];
+            if (place.dineIn)         services.push({ label: "Dine-in",         icon: ms("restaurant") });
+            if (place.takeaway)       services.push({ label: "Takeaway",        icon: pizzaBoxSvg });
+            if (place.delivery)       services.push({ label: "Delivery",        icon: ms("delivery_dining") });
+            if (place.reservations)   services.push({ label: "Reservations",    icon: ms("event_seat") });
+            if (place.outdoorSeating) services.push({ label: "Outdoor seating", icon: ms("deck") });
+            return services.map(s => `<span class="place-service">${s.icon}<span>${escapeHtml(s.label)}</span></span>`).join("");
+          })()}
+        </div>
+      </div>
+
+      ${place.opmRating != null ? `
+        <div class="place-rating-badge" title="OpenPizzaMap score">
+          <strong>${escapeHtml(Number(place.opmRating).toFixed(1))}</strong>
+        </div>
+      ` : ""}
+    </div>
+
+    ${hours ? `
+      <section class="card place-hours">
+        <h2 class="place-section-title">Opening hours</h2>
+        <ul class="place-hours__list">
+          ${hours.map((h) => `
+            <li class="place-hours__row">
+              <span class="place-hours__day">${escapeHtml(h.label)}</span>
+              <span class="place-hours__ranges">${h.ranges.length ? h.ranges.map(escapeHtml).join(", ") : "<em>Closed</em>"}</span>
+            </li>
+          `).join("")}
+        </ul>
+      </section>
+    ` : ""}
+
+    <section class="card place-description">
+      ${place.descriptionHtml || `
+        <p><em>(Auto-generated description placeholder — Gemini will fill this in.)</em></p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+        <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+      `}
+    </section>
+
+    ${(place.websiteUrl || place.instagramUrl || place.googleMapsUrl || place.phone) ? `
+      <section class="place-actions">
+        ${place.websiteUrl ? `<a class="place-action" href="${escapeAttr(place.websiteUrl)}" target="_blank" rel="noopener"><span class="material-symbols-rounded" aria-hidden="true">public</span><span>Website</span></a>` : ""}
+        ${place.instagramUrl ? `<a class="place-action place-action--instagram" href="${escapeAttr(place.instagramUrl)}" target="_blank" rel="noopener"><svg class="place-action__brand" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38a3.7 3.7 0 0 1-1.38.9c-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41a3.7 3.7 0 0 1-1.38-.9 3.7 3.7 0 0 1-.9-1.38c-.16-.42-.36-1.06-.41-2.23C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38a3.7 3.7 0 0 1 1.38-.9c.42-.16 1.06-.36 2.23-.41C8.42 2.17 8.8 2.16 12 2.16M12 0C8.74 0 8.33.01 7.05.07 5.78.13 4.9.34 4.14.63 3.36.93 2.7 1.34 2.04 2 1.39 2.66.97 3.32.67 4.1.38 4.86.17 5.74.11 7.01.05 8.29.04 8.7.04 11.96s.01 3.67.07 4.95c.06 1.27.27 2.15.56 2.91.3.78.71 1.44 1.37 2.1.66.66 1.32 1.07 2.1 1.37.76.29 1.64.5 2.91.56 1.28.06 1.69.07 4.95.07s3.67-.01 4.95-.07c1.27-.06 2.15-.27 2.91-.56.78-.3 1.44-.71 2.1-1.37.66-.66 1.07-1.32 1.37-2.1.29-.76.5-1.64.56-2.91.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95c-.06-1.27-.27-2.15-.56-2.91-.3-.78-.71-1.44-1.37-2.1A5.85 5.85 0 0 0 19.86.63C19.1.34 18.22.13 16.95.07 15.67.01 15.26 0 12 0Zm0 5.84a6.16 6.16 0 1 0 0 12.32 6.16 6.16 0 0 0 0-12.32M12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8m6.41-11.85a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88"/></svg><span>Instagram</span></a>` : ""}
+        ${place.googleMapsUrl ? `<a class="place-action" href="${escapeAttr(place.googleMapsUrl)}" target="_blank" rel="noopener"><span class="material-symbols-rounded" aria-hidden="true">directions</span><span>Directions</span></a>` : ""}
+        ${place.phone ? `<a class="place-action" href="tel:${escapeAttr(place.phone.replace(/\s+/g, ""))}"><span class="material-symbols-rounded" aria-hidden="true">call</span><span>${escapeHtml(place.phone)}</span></a>` : ""}
+      </section>
+    ` : ""}
+
+    ${reviews.length ? `
+      <section class="card place-reviews">
+        <h2 class="place-section-title">Reviews</h2>
+        <div class="place-reviews__grid">
+          ${reviews.map((r) => `
+            ${r.url ? `<a class="place-review" href="${escapeAttr(r.url)}" target="_blank" rel="noopener">` : `<div class="place-review">`}
+              <div class="place-review__platform">${escapeHtml(r.platform)}</div>
+              <div class="place-review__score">
+                <span class="material-symbols-rounded" aria-hidden="true">star</span>
+                <strong>${escapeHtml(r.rating.toFixed(1))}</strong>
+              </div>
+              <div class="place-review__count">${r.count != null ? `${r.count.toLocaleString()} reviews` : ""}</div>
+              ${r.ranking ? `<div class="place-review__ranking">${escapeHtml(r.ranking)}</div>` : ""}
+            ${r.url ? `</a>` : `</div>`}
+          `).join("")}
+        </div>
+      </section>
+    ` : ""}
+
+    ${place.faqs && place.faqs.length ? `
+      <section class="place-faqs">
+        <h2 class="place-section-title">FAQ</h2>
+        ${place.faqs.map(f => `
+          <details class="card place-faq">
+            <summary>${escapeHtml(f.question)}</summary>
+            <div class="place-faq__body">${f.answerHtml}</div>
+          </details>
+        `).join("")}
+      </section>
+    ` : ""}
+
+    <aside class="place-claim">
+      <div class="place-claim__icon">
+        <span class="material-symbols-rounded" aria-hidden="true">verified</span>
+      </div>
+      <div class="place-claim__body">
+        <h3>Are you the owner?</h3>
+        <p>Claim this listing to manage photos, opening hours and respond to visitors.</p>
+      </div>
+      <a class="btn primary" href="/place/${place.id}/suggest-edit">Claim this place</a>
+    </aside>
+
+    <footer class="place-footer">
+      <a class="btn" href="/map">← Back to map</a>
+      ${user ? `<a class="btn" href="/place/${place.id}/suggest-edit">Suggest an edit</a>` : ""}
+    </footer>
+  </article>
 ` }) %>
