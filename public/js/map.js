@@ -1,7 +1,7 @@
 (async function () {
     const FALLBACK_CENTER = [41.9, 12.5];
 
-    const map = L.map("map", { zoomControl: true, layers: [] }).setView(FALLBACK_CENTER, 5);
+    const map = L.map("map", { zoomControl: false, layers: [] }).setView(FALLBACK_CENTER, 5);
 
     const cartoAttr =
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors ' +
@@ -28,12 +28,6 @@
     const satellite = L.layerGroup([esriImagery, voyagerLabels]);
 
     voyager.addTo(map);
-
-    L.control.layers(
-        { Voyager: voyager, Positron: positron, Satellite: satellite },
-        {},
-        { position: "topright", collapsed: true }
-    ).addTo(map);
 
     function pizzaIconForZoom(zoom, highlighted = false) {
         const minZoom = 3;
@@ -233,7 +227,7 @@ ${fav}
     const resultCount = document.querySelector(".map-result-count");
     const searchInput = document.querySelector(".map-search-input");
     const searchClear = document.querySelector(".map-search-clear");
-    const sortSelect = document.querySelector(".map-sort-select");
+    const sortDropdown = document.querySelector(".map-sort-dropdown");
     const styleDropdown = document.querySelector(".map-style-dropdown");
     const styleMenuEl = document.querySelector(".map-style-menu");
     const styleSummaryCount = document.querySelector(".map-style-summary-count");
@@ -782,9 +776,16 @@ ${fav}
         renderSidebar();
     });
 
-    sortSelect.addEventListener("change", () => {
-        state.sort = sortSelect.value;
+    sortDropdown.addEventListener("change", (ev) => {
+        const t = ev.target;
+        if (!(t instanceof HTMLInputElement) || t.name !== "map-sort") return;
+        state.sort = t.value;
+        sortDropdown.open = false;
         renderSidebar();
+    });
+    document.addEventListener("click", (ev) => {
+        if (!sortDropdown.open) return;
+        if (!sortDropdown.contains(ev.target)) sortDropdown.open = false;
     });
 
     zoomOutBtn?.addEventListener("click", () => {
@@ -811,6 +812,96 @@ ${fav}
         });
     }
 
+    // -- Mobile bottom sheet -------------------------------------------------
+    const sheet = (() => {
+        const el = document.querySelector(".map-sidebar");
+        const handle = document.querySelector(".map-sheet-handle");
+        const COLLAPSED = 132;
+        let snaps = [COLLAPSED, 360, 600];
+
+        const mq = window.matchMedia("(max-width: 900px)");
+
+        function recalc() {
+            const vh = window.innerHeight;
+            snaps = [COLLAPSED, Math.round(vh * 0.45), Math.round(vh * 0.85)];
+        }
+        recalc();
+        window.addEventListener("resize", () => {
+            recalc();
+            if (mq.matches) snapTo(Number(el.dataset.snap || 0));
+        });
+
+        function setH(h) { el.style.setProperty("--sheet-h", `${h}px`); }
+        function snapTo(idx) {
+            const i = Math.max(0, Math.min(snaps.length - 1, idx));
+            setH(snaps[i]);
+            el.dataset.snap = String(i);
+        }
+        function nearest(h) {
+            let best = 0, bd = Infinity;
+            for (let i = 0; i < snaps.length; i++) {
+                const d = Math.abs(snaps[i] - h);
+                if (d < bd) { bd = d; best = i; }
+            }
+            return best;
+        }
+
+        if (mq.matches) snapTo(0);
+
+        let dragging = false, startY = 0, startH = 0, moved = false;
+        function onDown(ev) {
+            if (!mq.matches) return;
+            dragging = true;
+            moved = false;
+            startY = ev.clientY;
+            startH = el.getBoundingClientRect().height;
+            el.classList.add("is-dragging");
+            handle.setPointerCapture?.(ev.pointerId);
+        }
+        function onMove(ev) {
+            if (!dragging) return;
+            const dy = startY - ev.clientY;
+            if (Math.abs(dy) > 4) moved = true;
+            const h = Math.min(snaps[snaps.length - 1], Math.max(snaps[0], startH + dy));
+            setH(h);
+        }
+        function onUp() {
+            if (!dragging) return;
+            dragging = false;
+            el.classList.remove("is-dragging");
+            const h = el.getBoundingClientRect().height;
+            snapTo(nearest(h));
+        }
+        if (handle) {
+            handle.addEventListener("pointerdown", onDown);
+            window.addEventListener("pointermove", onMove);
+            window.addEventListener("pointerup", onUp);
+            window.addEventListener("pointercancel", onUp);
+            handle.addEventListener("click", () => {
+                if (!mq.matches || moved) return;
+                const cur = Number(el.dataset.snap || 0);
+                snapTo(cur === 0 ? 1 : 0);
+            });
+        }
+
+        mq.addEventListener?.("change", (e) => {
+            if (e.matches) snapTo(0);
+            else el.style.removeProperty("--sheet-h");
+        });
+
+        return {
+            collapse() { if (mq.matches) snapTo(0); },
+            peek() { if (mq.matches) snapTo(1); },
+            expand() { if (mq.matches) snapTo(2); },
+            isMobile: () => mq.matches,
+        };
+    })();
+
+    // Expand sheet when the user reaches for search; collapse on map tap.
+    searchInput.addEventListener("focus", () => sheet.expand());
+    map.on("click", () => sheet.collapse());
+    map.on("popupopen", () => sheet.collapse());
+
     // -- Boot ---------------------------------------------------------------
     let places = [];
     try {
@@ -820,6 +911,8 @@ ${fav}
     } catch (err) {
         console.error("Failed to load places", err);
     }
+
+    const isMobile = () => window.matchMedia("(max-width: 900px)").matches;
 
     for (const p of places) {
         const lat = Number(p.lat);
@@ -831,7 +924,12 @@ ${fav}
             maxWidth: 300,
             minWidth: 280,
             closeButton: true,
+            // Reserve room for the collapsed bottom sheet on mobile so popups
+            // don't autoPan behind it.
+            autoPanPaddingTopLeft: [16, 16],
+            autoPanPaddingBottomRight: [16, 160],
         });
+        marker.on("click", () => { if (isMobile()) sheet.collapse(); });
         cluster.addLayer(marker);
         allEntries.push({ place: p, marker });
     }

@@ -568,28 +568,12 @@ img.map-suggest-thumb { display: block; }
   gap: 12px;
   flex-wrap: wrap;
 }
-.map-sort {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: var(--c-muted, #666);
-}
-.map-sort-label { font-weight: 600; }
-.map-sort-select {
-  font: inherit;
-  font-size: 13px;
-  padding: 6px 26px 6px 10px;
-  border-radius: 8px;
-  border: 1px solid var(--c-border, #e2e2e2);
-  background: var(--c-surface, #fff);
-  color: var(--c-text);
-  cursor: pointer;
-}
+.map-sort-dropdown,
 .map-style-dropdown {
   position: relative;
-  margin-left: auto;
 }
+.map-style-dropdown { margin-left: auto; }
+.map-sort-dropdown > summary,
 .map-style-dropdown > summary {
   list-style: none;
   cursor: pointer;
@@ -605,8 +589,11 @@ img.map-suggest-thumb { display: block; }
   color: var(--c-text);
   user-select: none;
 }
+.map-sort-dropdown > summary::-webkit-details-marker,
 .map-style-dropdown > summary::-webkit-details-marker { display: none; }
+.map-sort-dropdown > summary:hover,
 .map-style-dropdown > summary:hover { border-color: var(--c-accent, #2bb673); }
+.map-sort-dropdown[open] > summary,
 .map-style-dropdown[open] > summary {
   border-color: var(--c-accent, #2bb673);
   background: rgba(43, 182, 115, 0.06);
@@ -625,17 +612,21 @@ img.map-suggest-thumb { display: block; }
   font-weight: 700;
 }
 .map-style-summary-count[hidden] { display: none; }
+.map-sort-caret,
 .map-style-caret {
   font-size: 18px;
   color: var(--c-muted, #888);
   transition: transform 0.15s;
 }
+.map-sort-dropdown[open] .map-sort-caret,
 .map-style-dropdown[open] .map-style-caret { transform: rotate(180deg); }
 
+.map-sort-menu { left: 0; }
+.map-style-menu { right: 0; }
+.map-sort-menu,
 .map-style-menu {
   position: absolute;
   top: calc(100% + 6px);
-  right: 0;
   z-index: 1000;
   min-width: 220px;
   max-height: 320px;
@@ -646,6 +637,7 @@ img.map-suggest-thumb { display: block; }
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
   padding: 6px;
 }
+.map-sort-opt,
 .map-style-opt {
   display: flex;
   align-items: center;
@@ -656,6 +648,7 @@ img.map-suggest-thumb { display: block; }
   font-size: 13px;
   color: var(--c-text);
 }
+.map-sort-opt:hover,
 .map-style-opt:hover { background: rgba(43, 182, 115, 0.08); }
 .map-style-opt input[type="checkbox"] {
   accent-color: var(--c-accent, #2bb673);
@@ -663,6 +656,19 @@ img.map-suggest-thumb { display: block; }
   height: 15px;
   cursor: pointer;
 }
+.map-sort-opt input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.map-sort-opt:has(input:checked) {
+  background: rgba(43, 182, 115, 0.1);
+  color: var(--c-accent, #2bb673);
+}
+.map-sort-opt:has(input:checked) .map-sort-opt-label {
+  font-weight: 700;
+}
+.map-sort-opt-label,
 .map-style-opt-label {
   flex: 1;
   font-weight: 500;
@@ -885,19 +891,62 @@ img.map-suggest-thumb { display: block; }
   transition: transform 0.12s;
 }
 
+.map-sheet-handle { display: none; }
+
 @media (max-width: 900px) {
   .map-shell {
     grid-template-columns: 1fr;
-    grid-template-rows: 50vh 1fr;
+    grid-template-rows: 1fr;
     height: calc(100vh - 64px);
-  }
-  .map-sidebar {
-    border-right: none;
-    border-top: 1px solid var(--c-border, #e5e5e5);
-    order: 2;
+    height: calc(100dvh - 64px);
+    position: relative;
   }
   .map-canvas {
     order: 1;
+    height: 100%;
+  }
+  .map-sidebar {
+    order: 2;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: var(--sheet-h, 132px);
+    max-height: 90vh;
+    max-height: 90dvh;
+    border-right: none;
+    border-top: 1px solid var(--c-border, #e5e5e5);
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.14);
+    z-index: 600;
+    transition: height 0.22s cubic-bezier(0.2, 0.7, 0.2, 1);
+    overflow: hidden;
+  }
+  .map-sidebar.is-dragging { transition: none; }
+  .map-sheet-handle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 8px 0 4px;
+    background: transparent;
+    border: 0;
+    cursor: grab;
+    touch-action: none;
+    flex-shrink: 0;
+  }
+  .map-sheet-handle:active { cursor: grabbing; }
+  .map-sheet-handle-grip {
+    width: 44px;
+    height: 5px;
+    border-radius: 999px;
+    background: var(--c-border, #cdcdcd);
+  }
+  .map-sidebar-header {
+    border-bottom: 1px solid var(--c-border, #ececec);
+  }
+  .map-sidebar-list {
+    -webkit-overflow-scrolling: touch;
   }
 }
 

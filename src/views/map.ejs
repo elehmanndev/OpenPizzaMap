@@ -1,6 +1,9 @@
 <%- include("layout", { title: "Map", user, leaflet: true, bodyClass: "map-page", body: `
     <div class="map-shell">
       <aside class="map-sidebar" aria-label="Pizza spots">
+        <button type="button" class="map-sheet-handle" aria-label="Drag to resize list">
+          <span class="map-sheet-handle-grip" aria-hidden="true"></span>
+        </button>
         <div class="map-sidebar-header">
           <div class="map-search-wrap">
             <form class="map-search" role="search" autocomplete="off">
@@ -23,17 +26,20 @@
             </div>
           </div>
           <div class="map-controls">
-            <label class="map-sort">
-              <span class="map-sort-label">Sort</span>
-              <select class="map-sort-select" aria-label="Sort by">
-                <option value="popular" selected>Popular</option>
-                <option value="rating">Rating</option>
-                <option value="distance-city">Distance from city</option>
-                <option value="distance-me">Near me</option>
-                <option value="price-asc">Price ↑</option>
-                <option value="price-desc">Price ↓</option>
-              </select>
-            </label>
+            <details class="map-sort-dropdown">
+              <summary class="map-sort-summary">
+                <span class="map-sort-summary-label">Sort</span>
+                <span class="material-symbols-rounded map-sort-caret" aria-hidden="true">expand_more</span>
+              </summary>
+              <div class="map-sort-menu" role="radiogroup" aria-label="Sort by">
+                <label class="map-sort-opt"><input type="radio" name="map-sort" value="popular" checked /><span class="map-sort-opt-label">Popular</span></label>
+                <label class="map-sort-opt"><input type="radio" name="map-sort" value="rating" /><span class="map-sort-opt-label">Rating</span></label>
+                <label class="map-sort-opt"><input type="radio" name="map-sort" value="distance-city" /><span class="map-sort-opt-label">Distance from city</span></label>
+                <label class="map-sort-opt"><input type="radio" name="map-sort" value="distance-me" /><span class="map-sort-opt-label">Near me</span></label>
+                <label class="map-sort-opt"><input type="radio" name="map-sort" value="price-asc" /><span class="map-sort-opt-label">Price ↑</span></label>
+                <label class="map-sort-opt"><input type="radio" name="map-sort" value="price-desc" /><span class="map-sort-opt-label">Price ↓</span></label>
+              </div>
+            </details>
             <details class="map-style-dropdown">
               <summary class="map-style-summary">
                 <span class="map-style-summary-label">Styles</span>
