@@ -68,6 +68,7 @@ const argMulti = (name) => {
 const PHASE = arg('--phase');               // null | 'clean' | 'validate' | 'dedup' | 'overpass' | 'web' | 'search'
 const SKIP = argMulti('--skip') || [];      // ['search', 'web']
 const LIMIT = (() => { const v = arg('--limit'); return v && v !== true ? parseInt(v, 10) : null; })();
+const SINCE_ID = (() => { const v = arg('--since-id'); return v && v !== true ? parseInt(v, 10) : null; })();
 const DRY_RUN = arg('--dry-run') === true;  // log proposed mutations without writing
 const NO_RESOLVE = arg('--no-resolve') === true; // skip web disambiguation in dedup
 const RESOLVE_BUDGET = (() => { const v = arg('--resolve-budget'); return v && v !== true ? parseInt(v, 10) : 200; })();
@@ -810,11 +811,13 @@ function parseCuisineToStyles(cuisine) {
 
 async function phaseOverpass(prisma, report) {
   console.log('\n[overpass] querying OSM for missing fields…');
+  const where = {
+    isVisible: true,
+    OR: [{ websiteUrl: null }, { phone: null }, { openingHours: null }],
+  };
+  if (SINCE_ID != null) where.id = { gte: SINCE_ID };
   const targets = await prisma.place.findMany({
-    where: {
-      isVisible: true,
-      OR: [{ websiteUrl: null }, { phone: null }, { openingHours: null }],
-    },
+    where,
     include: { sources: true, styles: { include: { style: true } } },
     orderBy: { id: 'asc' },
   });
@@ -878,12 +881,14 @@ async function phaseOverpass(prisma, report) {
 // ─── PHASE 4: web (parse the venue's own homepage) ──────────────────────────
 async function phaseWeb(prisma, report) {
   console.log('\n[web] fetching venue homepages for hours/style…');
+  const where = {
+    isVisible: true,
+    websiteUrl: { not: null },
+    OR: [{ openingHours: null }, { stylesJson: '[]' }],
+  };
+  if (SINCE_ID != null) where.id = { gte: SINCE_ID };
   const targets = await prisma.place.findMany({
-    where: {
-      isVisible: true,
-      websiteUrl: { not: null },
-      OR: [{ openingHours: null }, { stylesJson: '[]' }],
-    },
+    where,
     orderBy: { id: 'asc' },
   });
   let work = LIMIT ? targets.slice(0, LIMIT) : targets;

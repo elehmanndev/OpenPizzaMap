@@ -152,9 +152,29 @@ function parseDetail(html, id) {
         if (/^[+\d][\d\s().-]{7,}$/.test(t)) { phone = t.replace(/\s+/g, ''); break; }
     }
 
-    const heroMatch = html.match(/<img[^>]+src="(https:\/\/lamejorpizza\.es\/[^"]+)"[^>]*class="card-img-top"/i)
-        || html.match(/<img[^>]+src="(https:\/\/lamejorpizza\.es\/html5Upload\/[^"]+)"/i);
-    const heroImageUrl = heroMatch ? heroMatch[1] : null;
+    // The actual page markup uses `alt="Foto producto N"` on the food photos
+    // and references them via relative `../html5Upload/...` URLs. Earlier
+    // patterns (card-img-top, absolute https URLs) never matched anything,
+    // so 102/102 of the 2026-05-02 import landed with a null hero. The first
+    // `Foto producto` image is the signature pizza shot — that's our hero.
+    let heroImageUrl = null;
+    const heroPatterns = [
+        /<img[^>]+src="(\.\.\/html5Upload\/[^"]+)"[^>]*alt="Foto producto/i,
+        /<img[^>]+src="(https:\/\/lamejorpizza\.es\/html5Upload\/[^"]+)"[^>]*alt="Foto producto/i,
+        /<img[^>]+src="(\.\.\/html5Upload\/[^"]+)"[^>]*class="card-img-top"/i,
+        /<img[^>]+src="(https:\/\/lamejorpizza\.es\/html5Upload\/[^"]+)"/i,
+    ];
+    for (const re of heroPatterns) {
+        const m = html.match(re);
+        if (m) { heroImageUrl = m[1]; break; }
+    }
+    if (heroImageUrl) {
+        // Page src is `../html5Upload/...`; the file is served at the
+        // root-relative `/html5Upload/...` path. Normalise both forms to
+        // the absolute root URL.
+        const m = heroImageUrl.match(/(?:^\.\.\/|^https:\/\/lamejorpizza\.es\/(?:[^/]+\/)*)?(html5Upload\/.+)$/i);
+        if (m) heroImageUrl = `https://lamejorpizza.es/${m[1]}`;
+    }
 
     return { id, name, street, city, postalCode, province, community, lat, lng, phone, heroImageUrl };
 }
