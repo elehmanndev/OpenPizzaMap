@@ -44,6 +44,7 @@ const SOURCES = [
   { file: 'eater-scrape.json',                        source: 'eater',          style: null,                  shape: 'eater' },
   { file: '50toppizza-scrape.json',                   source: '50toppizza',     style: null,                  shape: '50tp' },
   { file: 'michelin-scrape.json',                     source: 'michelin',       style: null,                  shape: 'michelin' },
+  { file: 'lamejorpizza-scrape.json',                 source: 'lamejorpizza',   style: 'neapolitan',          shape: 'lamejorpizza' },
 ];
 
 // ----- canonicalisation tables -----
@@ -365,6 +366,33 @@ function normalize50TopPizza(rec) {
   };
 }
 
+// La Mejor Pizza (Spain championship 2025). The scraper writes one record
+// per venue with quality_pass already evaluated against an award list +
+// Google rating threshold. We honour that gate here by returning null for
+// quality_pass !== true so the dispatch loop skips them. Address parts come
+// out of the Spanish-format detail page and cover street + postal + region
+// (autonomous community) in addition to city; lat/lng are read directly from
+// the page's `mapInitPosition` JS literal so no geocoder call is needed.
+function normalizeLamejorpizza(rec) {
+  if (rec.quality_pass !== true) return null;
+  return {
+    name: decodeEntities(rec.name || '').trim(),
+    addressLine: rec.street || null,
+    city: rec.city || null,
+    region: rec.community || null,
+    postalCode: rec.postalCode || null,
+    countryCode: 'ES',
+    countryName: 'Spain',
+    phone: rec.phone || null,
+    websiteUrl: null,
+    priceLevel: 2,
+    heroImageUrl: rec.heroImageUrl || null,
+    rank: null,
+    lat: typeof rec.lat === 'number' ? rec.lat : null,
+    lng: typeof rec.lng === 'number' ? rec.lng : null,
+  };
+}
+
 // Michelin scraper output. Cards have lat/lng + country (ISO2) inline.
 // Distinction values: '' / 'bib' / '1 star' / '2 stars' / '3 stars'. We encode
 // these into PlaceSource.rank so the surface Place row stays clean and the
@@ -466,8 +494,11 @@ function loadAll() {
       else if (cfg.shape === 'eater') norm = normalizeEater(rec);
       else if (cfg.shape === '50tp') norm = normalize50TopPizza(rec);
       else if (cfg.shape === 'michelin') norm = normalizeMichelin(rec);
+      else if (cfg.shape === 'lamejorpizza') norm = normalizeLamejorpizza(rec);
       else norm = normalizeTasteatlas(rec);
-      if (!norm.name || !norm.city || !norm.countryCode) {
+      // normalizeLamejorpizza returns null for rows that didn't pass the
+      // scraper-side quality gate — silently skip them here.
+      if (!norm || !norm.name || !norm.city || !norm.countryCode) {
         // can't dedupe / locate without these
         continue;
       }
