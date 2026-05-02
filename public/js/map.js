@@ -848,35 +848,59 @@ ${fav}
 
         if (mq.matches) snapTo(0);
 
-        let dragging = false, startY = 0, startH = 0, moved = false;
+        const DRAG_THRESHOLD = 6;
+        let pending = false, dragging = false, startY = 0, startH = 0, moved = false, capturedOn = null;
+
+        function isInteractive(target) {
+            if (!target) return false;
+            // Anything inside the scrollable list keeps native scroll behavior.
+            if (target.closest(".map-sidebar-list")) return true;
+            // Form controls, links, dropdown summaries handle their own touch.
+            if (target.closest("input, button, select, textarea, label, summary, a")) return true;
+            return false;
+        }
         function onDown(ev) {
             if (!mq.matches) return;
-            dragging = true;
+            if (isInteractive(ev.target)) return;
+            pending = true;
+            dragging = false;
             moved = false;
             startY = ev.clientY;
             startH = el.getBoundingClientRect().height;
-            el.classList.add("is-dragging");
-            handle.setPointerCapture?.(ev.pointerId);
         }
         function onMove(ev) {
-            if (!dragging) return;
+            if (!pending && !dragging) return;
             const dy = startY - ev.clientY;
-            if (Math.abs(dy) > 4) moved = true;
+            if (!dragging) {
+                if (Math.abs(dy) < DRAG_THRESHOLD) return;
+                dragging = true;
+                el.classList.add("is-dragging");
+                (ev.target.setPointerCapture?.bind(ev.target) || (() => {}))(ev.pointerId);
+                capturedOn = ev.target;
+            }
+            moved = true;
             const h = Math.min(snaps[snaps.length - 1], Math.max(snaps[0], startH + dy));
             setH(h);
+            ev.preventDefault();
         }
         function onUp() {
-            if (!dragging) return;
+            const wasDragging = dragging;
+            pending = false;
             dragging = false;
+            if (!wasDragging) return;
             el.classList.remove("is-dragging");
+            capturedOn = null;
             const h = el.getBoundingClientRect().height;
             snapTo(nearest(h));
         }
+        // Drag from anywhere on the sheet (header, handle, padding) — not the
+        // scrollable list or interactive controls.
+        el.addEventListener("pointerdown", onDown);
+        window.addEventListener("pointermove", onMove, { passive: false });
+        window.addEventListener("pointerup", onUp);
+        window.addEventListener("pointercancel", onUp);
+        // Tap (no drag) on handle still toggles collapsed ↔ peek.
         if (handle) {
-            handle.addEventListener("pointerdown", onDown);
-            window.addEventListener("pointermove", onMove);
-            window.addEventListener("pointerup", onUp);
-            window.addEventListener("pointercancel", onUp);
             handle.addEventListener("click", () => {
                 if (!mq.matches || moved) return;
                 const cur = Number(el.dataset.snap || 0);

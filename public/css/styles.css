@@ -944,6 +944,7 @@ img.map-suggest-thumb { display: block; }
   }
   .map-sidebar-header {
     border-bottom: 1px solid var(--c-border, #ececec);
+    touch-action: none;
   }
   .map-sidebar-list {
     -webkit-overflow-scrolling: touch;
