@@ -911,15 +911,16 @@ img.map-suggest-thumb { display: block; }
     left: 0;
     right: 0;
     bottom: 0;
-    height: var(--sheet-h, 132px);
-    max-height: 90vh;
-    max-height: 90dvh;
+    height: 85vh;
+    height: 85dvh;
     border-right: none;
     border-top: 1px solid var(--c-border, #e5e5e5);
     border-radius: 18px 18px 0 0;
     box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.14);
     z-index: 600;
-    transition: height 0.22s cubic-bezier(0.2, 0.7, 0.2, 1);
+    transform: translateY(var(--sheet-offset, calc(100% - 132px)));
+    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+    will-change: transform;
     overflow: hidden;
   }
   .map-sidebar.is-dragging { transition: none; }
@@ -928,7 +929,7 @@ img.map-suggest-thumb { display: block; }
     justify-content: center;
     align-items: center;
     width: 100%;
-    padding: 8px 0 4px;
+    padding: 14px 0 10px;
     background: transparent;
     border: 0;
     cursor: grab;
@@ -948,6 +949,7 @@ img.map-suggest-thumb { display: block; }
   }
   .map-sidebar-list {
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
 }
 

@@ -813,93 +813,126 @@ ${fav}
     }
 
     // -- Mobile bottom sheet -------------------------------------------------
+    // Translate-based (GPU-accelerated) bottom sheet. Sheet is fixed height
+    // (~85dvh); we slide it up and down via transform: translateY. Snap points
+    // are stored as Y-offsets in px (0 = fully expanded, large = collapsed).
     const sheet = (() => {
         const el = document.querySelector(".map-sidebar");
         const handle = document.querySelector(".map-sheet-handle");
-        const COLLAPSED = 132;
-        let snaps = [COLLAPSED, 360, 600];
-
+        const list = document.querySelector(".map-sidebar-list");
+        const COLLAPSED_VISIBLE = 132; // px of sheet showing when collapsed
         const mq = window.matchMedia("(max-width: 900px)");
 
+        // Offsets in px from the fully-expanded position (0). snaps[0] is the
+        // largest offset (collapsed = sheet pushed furthest down).
+        let snaps = [0, 0, 0];
+
         function recalc() {
-            const vh = window.innerHeight;
-            snaps = [COLLAPSED, Math.round(vh * 0.45), Math.round(vh * 0.85)];
+            const sheetH = el.offsetHeight || Math.round(window.innerHeight * 0.85);
+            const peekH = Math.round(window.innerHeight * 0.45);
+            snaps = [
+                Math.max(0, sheetH - COLLAPSED_VISIBLE), // collapsed
+                Math.max(0, sheetH - peekH),             // peek
+                0,                                        // expanded
+            ];
         }
+        function setOffset(off) { el.style.setProperty("--sheet-offset", `${off}px`); }
+        function snapTo(idx) {
+            const i = Math.max(0, Math.min(snaps.length - 1, idx));
+            setOffset(snaps[i]);
+            el.dataset.snap = String(i);
+        }
+        function nearest(off) {
+            let best = 0, bd = Infinity;
+            for (let i = 0; i < snaps.length; i++) {
+                const d = Math.abs(snaps[i] - off);
+                if (d < bd) { bd = d; best = i; }
+            }
+            return best;
+        }
+        function currentOffset() {
+            const v = el.style.getPropertyValue("--sheet-offset");
+            const n = parseFloat(v);
+            return Number.isFinite(n) ? n : snaps[0];
+        }
+
         recalc();
+        if (mq.matches) snapTo(0);
+
         window.addEventListener("resize", () => {
             recalc();
             if (mq.matches) snapTo(Number(el.dataset.snap || 0));
         });
 
-        function setH(h) { el.style.setProperty("--sheet-h", `${h}px`); }
-        function snapTo(idx) {
-            const i = Math.max(0, Math.min(snaps.length - 1, idx));
-            setH(snaps[i]);
-            el.dataset.snap = String(i);
-        }
-        function nearest(h) {
-            let best = 0, bd = Infinity;
-            for (let i = 0; i < snaps.length; i++) {
-                const d = Math.abs(snaps[i] - h);
-                if (d < bd) { bd = d; best = i; }
-            }
-            return best;
-        }
-
-        if (mq.matches) snapTo(0);
-
         const DRAG_THRESHOLD = 6;
-        let pending = false, dragging = false, startY = 0, startH = 0, moved = false, capturedOn = null;
+        let pending = false, dragging = false, fromList = false;
+        let startY = 0, startOffset = 0, lastDy = 0, moved = false;
+        let rafScheduled = false;
 
-        function isInteractive(target) {
-            if (!target) return false;
-            // Anything inside the scrollable list keeps native scroll behavior.
-            if (target.closest(".map-sidebar-list")) return true;
+        function isHardOptOut(target) {
             // Form controls, links, dropdown summaries handle their own touch.
-            if (target.closest("input, button, select, textarea, label, summary, a")) return true;
-            return false;
+            return !!target.closest("input, button, select, textarea, label, summary, a");
+        }
+        function applyOffset() {
+            rafScheduled = false;
+            const off = Math.max(0, Math.min(snaps[0], startOffset - lastDy));
+            setOffset(off);
         }
         function onDown(ev) {
             if (!mq.matches) return;
-            if (isInteractive(ev.target)) return;
+            if (isHardOptOut(ev.target)) return;
             pending = true;
             dragging = false;
             moved = false;
+            lastDy = 0;
+            fromList = !!ev.target.closest(".map-sidebar-list");
             startY = ev.clientY;
-            startH = el.getBoundingClientRect().height;
+            startOffset = currentOffset();
         }
         function onMove(ev) {
             if (!pending && !dragging) return;
-            const dy = startY - ev.clientY;
+            const dy = startY - ev.clientY; // up = positive
+
             if (!dragging) {
                 if (Math.abs(dy) < DRAG_THRESHOLD) return;
+                // If the gesture started inside the list, only steal it when:
+                //   - list is scrolled to the top, AND
+                //   - the user is pulling DOWN (dy < 0, i.e. would close).
+                // Otherwise let the list scroll natively.
+                if (fromList) {
+                    if (list.scrollTop > 0 || dy >= 0) {
+                        pending = false;
+                        return;
+                    }
+                }
                 dragging = true;
                 el.classList.add("is-dragging");
-                (ev.target.setPointerCapture?.bind(ev.target) || (() => {}))(ev.pointerId);
-                capturedOn = ev.target;
             }
             moved = true;
-            const h = Math.min(snaps[snaps.length - 1], Math.max(snaps[0], startH + dy));
-            setH(h);
+            lastDy = dy;
             ev.preventDefault();
+            if (!rafScheduled) {
+                rafScheduled = true;
+                requestAnimationFrame(applyOffset);
+            }
         }
         function onUp() {
             const wasDragging = dragging;
             pending = false;
             dragging = false;
+            fromList = false;
             if (!wasDragging) return;
             el.classList.remove("is-dragging");
-            capturedOn = null;
-            const h = el.getBoundingClientRect().height;
-            snapTo(nearest(h));
+            // Settle to the nearest snap based on the most recent visual offset.
+            const off = Math.max(0, Math.min(snaps[0], startOffset - lastDy));
+            snapTo(nearest(off));
         }
-        // Drag from anywhere on the sheet (header, handle, padding) — not the
-        // scrollable list or interactive controls.
+        // Drag listeners attached to the sheet element so pointerdown fires on
+        // any descendant via bubbling. We bail in onDown for hard opt-outs.
         el.addEventListener("pointerdown", onDown);
         window.addEventListener("pointermove", onMove, { passive: false });
         window.addEventListener("pointerup", onUp);
         window.addEventListener("pointercancel", onUp);
-        // Tap (no drag) on handle still toggles collapsed ↔ peek.
         if (handle) {
             handle.addEventListener("click", () => {
                 if (!mq.matches || moved) return;
@@ -910,7 +943,7 @@ ${fav}
 
         mq.addEventListener?.("change", (e) => {
             if (e.matches) snapTo(0);
-            else el.style.removeProperty("--sheet-h");
+            else el.style.removeProperty("--sheet-offset");
         });
 
         return {
