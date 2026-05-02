@@ -960,9 +960,11 @@ ${fav}
     map.on("popupopen", () => sheet.collapse());
 
     // -- Boot ---------------------------------------------------------------
+    // Hits the slim /markers endpoint so every place (~1500) renders as a
+    // marker. Popup-heavy fields are fetched on demand by ensureFullPlace.
     let places = [];
     try {
-        const res = await fetch("/api/places");
+        const res = await fetch("/api/places/markers");
         const data = await res.json();
         places = (data && data.places) || [];
     } catch (err) {
@@ -971,12 +973,47 @@ ${fav}
 
     const isMobile = () => window.matchMedia("(max-width: 900px)").matches;
 
+    // Lazy-load full place details when a popup opens. Cached per id so
+    // re-opening the same popup is instant.
+    const fullPlaceCache = new Map();
+    const fullPlaceInflight = new Map();
+    async function ensureFullPlace(slim) {
+        if (fullPlaceCache.has(slim.id)) return fullPlaceCache.get(slim.id);
+        if (fullPlaceInflight.has(slim.id)) return fullPlaceInflight.get(slim.id);
+        const p = (async () => {
+            try {
+                const res = await fetch(`/api/places/${slim.id}`);
+                if (!res.ok) throw new Error("place fetch failed");
+                const data = await res.json();
+                const full = (data && data.place) || slim;
+                fullPlaceCache.set(slim.id, full);
+                return full;
+            } catch (err) {
+                console.error("Failed to load place details", err);
+                return slim;
+            } finally {
+                fullPlaceInflight.delete(slim.id);
+            }
+        })();
+        fullPlaceInflight.set(slim.id, p);
+        return p;
+    }
+    function placeholderPopupHtml(slim) {
+        return `
+<article class="ppc">
+  <div class="ppc-body">
+    <h2 class="ppc-name">${esc(slim.name)}</h2>
+    <p class="ppc-summary">Loading…</p>
+  </div>
+</article>`.trim();
+    }
+
     for (const p of places) {
         const lat = Number(p.lat);
         const lng = Number(p.lng);
         if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
         const marker = L.marker([lat, lng], { icon: pizzaIconForZoom(map.getZoom()) });
-        marker.bindPopup(popupHtml(p), {
+        marker.bindPopup(placeholderPopupHtml(p), {
             className: "ppc-popup",
             maxWidth: 300,
             minWidth: 280,
@@ -985,6 +1022,16 @@ ${fav}
             // don't autoPan behind it.
             autoPanPaddingTopLeft: [16, 16],
             autoPanPaddingBottomRight: [16, 160],
+        });
+        marker.on("popupopen", async () => {
+            const full = await ensureFullPlace(p);
+            // Bail if the popup was closed before the fetch resolved.
+            if (!marker.isPopupOpen()) {
+                // Still cache the rendered html for next open.
+                marker.setPopupContent(popupHtml(full));
+                return;
+            }
+            marker.setPopupContent(popupHtml(full));
         });
         marker.on("click", () => { if (isMobile()) sheet.collapse(); });
         cluster.addLayer(marker);

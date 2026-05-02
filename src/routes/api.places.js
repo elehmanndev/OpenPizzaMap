@@ -181,6 +181,48 @@ router.get("/", async (req, res) => {
     res.json({ ok: true, places: enriched });
 });
 
+// GET /api/places/markers — slim payload for rendering every visible place on
+// the map. Returns only the fields the marker + sidebar card need; popup-heavy
+// fields (descriptionHtml, addressLine, postalCode, phone, websiteUrl, etc.)
+// are lazy-loaded by the client via /api/places/:id when a popup opens.
+//
+// Why a separate endpoint: GET /api/places caps results at 200/500 to protect
+// the worker pool, but the map needs every marker (~1500 today) so cluster
+// counts and famous spots like Sorbillo / 50 Kalò aren't silently dropped.
+// Per-row payload here is ~10x smaller, so the full set comfortably fits in
+// one cacheable response.
+router.get("/markers", async (req, res) => {
+    const userId = req.session?.user?.id || null;
+    applyCacheHeaders(req, res);
+
+    const places = await prisma.place.findMany({
+        where: { status: "active", isVisible: true },
+        select: {
+            id: true,
+            name: true,
+            lat: true,
+            lng: true,
+            city: true,
+            country: true,
+            priceLevel: true,
+            heroImageUrl: true,
+            opmRating: true,
+            googleRating: true,
+            tripadvisorRating: true,
+            yelpRating: true,
+            styles: {
+                select: {
+                    style: { select: { slug: true, name: true, shortLabel: true } },
+                },
+            },
+        },
+    });
+
+    const flat = places.map(flattenStyles);
+    const enriched = await attachUserAndCounts(flat, userId);
+    res.json({ ok: true, places: enriched });
+});
+
 // GET /api/places/favorites — places the current user has hearted (for /favourites page)
 router.get("/favorites", requireApiAuth, async (req, res) => {
     const userId = req.session.user.id;
