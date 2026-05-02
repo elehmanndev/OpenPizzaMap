@@ -99,6 +99,40 @@ Commit `107145e`. Verified in mobile preview by simulating a 240 px upward
 swipe from `.map-result-count` — sheet height moved 132 → 472 px before
 the snap.
 
+## Hot fix #2 (later same day) — GPU-smooth + pull-down from list
+
+Eric reported the drag worked but felt finicky: not smooth, no way to pull
+down once expanded, and the grab area felt narrow.
+
+**Switched from `height` animation to `transform: translateY`.** Animating
+height forces a layout pass every frame; transform is GPU-accelerated and
+silky. The sheet is now a fixed `85dvh` tall, pinned `bottom: 0`, and slid
+in/out of view by `--sheet-offset` (0 = fully expanded, large = collapsed).
+Snap points are stored as offsets in px:
+
+- collapsed: `sheetH - 132`
+- peek:      `sheetH - round(vh * 0.45)`
+- expanded:  `0`
+
+**`requestAnimationFrame` batching.** Pointermove updates write to a
+`lastDy` ref and schedule a single rAF callback that calls `setOffset`.
+Coalesces high-rate touch events into one frame, no jitter when fingers
+move faster than 60 Hz.
+
+**Pull-down from the list when at top.** The `isHardOptOut` helper no
+longer treats `.map-sidebar-list` as a hard opt-out. Instead, on pointer
+down inside the list, we record `fromList = true` and let onMove decide:
+if the list's `scrollTop > 0` OR the gesture is upward (would scroll the
+list further down), bail and let native scroll happen. Only pulls down
+from a scrolled-top list — the standard iOS bottom-sheet pattern. Added
+`overscroll-behavior: contain` on the list so iOS doesn't chain a bounce.
+
+**Bigger handle hit area.** Padding bumped from 8/4 px to 14/10 px (roughly
+28 px tall hit zone vs. the previous 17). The grip indicator stays the
+same size; just more comfortable forgiveness around it.
+
+Commit `aa32b8c`.
+
 ## Follow-ups (not done this session)
 
 - The rest of the site (place page, admin grids, profile, filters) was
