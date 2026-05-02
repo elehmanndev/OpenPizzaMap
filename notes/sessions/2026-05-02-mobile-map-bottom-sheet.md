@@ -77,6 +77,28 @@ pattern (pill button, caret rotates on open, menu pops below).
   "verify the mobile preview before reporting done" clause.
 - Indexed in `MEMORY.md`.
 
+## Hot fix (later same day) — drag from anywhere on the header
+
+Eric reported the sheet only opened by tapping the handle, not by sliding.
+The handle was too small to be a natural drag target.
+
+- Moved the `pointerdown` listener from `.map-sheet-handle` to `.map-sidebar`,
+  so any swipe on the sheet (handle, search row, sort/styles bar, result
+  count, padding) starts a drag.
+- Added a 6 px movement threshold before promoting `pending` → `dragging` so
+  taps still work — the handle's tap-to-toggle keeps firing because we don't
+  `preventDefault` until we're sure it's a drag.
+- Bail-out list inside the new `isInteractive(target)` helper:
+  `.map-sidebar-list` (let the list scroll natively), and any
+  `input, button, select, textarea, label, summary, a` (form controls and
+  dropdown summaries handle their own touch).
+- `.map-sidebar-header` got `touch-action: none` so iOS Safari doesn't
+  interpret a swipe as native scroll/zoom and steal the gesture.
+
+Commit `107145e`. Verified in mobile preview by simulating a 240 px upward
+swipe from `.map-result-count` — sheet height moved 132 → 472 px before
+the snap.
+
 ## Follow-ups (not done this session)
 
 - The rest of the site (place page, admin grids, profile, filters) was
