@@ -27,10 +27,18 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 // Ranking pages — Italy/Europe focus. Country is the geographic scope of the
 // list, NOT the per-venue country (Europe 2024 has venues from many countries
 // — those need to be inferred from the city/region or geocoded out).
+//
+// Both standard ranking pages and the article-format "Excellent Pizzerias"
+// list use the same `<a id="scheda" href="…/referenza/…">` card markup.
+// Difference: ranked cards have descLine1=city + descLine2=region|country
+// (br-separated); Excellent cards have descLine1="city, country" on a single
+// line (no rank, no descLine2). The parser detects the comma form and splits.
 const RANKINGS = [
   // Most recent Italia ranking served by the homepage
   { url: 'https://www.50toppizza.it/50-top-pizza-italia-2024/', scope: 'italy',  defaultCountry: 'Italy',  year: 2024, listName: 'Italia 2024' },
   { url: 'https://www.50toppizza.it/50-top-italia-2023',         scope: 'italy',  defaultCountry: 'Italy',  year: 2023, listName: 'Italia 2023' },
+  { url: 'https://www.50toppizza.it/50-top-europe-2025/',        scope: 'europe', defaultCountry: null,     year: 2025, listName: 'Europe 2025' },
+  { url: 'https://www.50toppizza.it/50-top-pizza-europa-2025-excellent-pizzerias/', scope: 'europe', defaultCountry: null, year: 2025, listName: 'Europe 2025 Excellent Pizzerias' },
   { url: 'https://www.50toppizza.it/50-top-europe-2024/',        scope: 'europe', defaultCountry: null,     year: 2024, listName: 'Europe 2024' },
   { url: 'https://www.50toppizza.it/50-top-europa-2023/',        scope: 'europe', defaultCountry: null,     year: 2023, listName: 'Europe 2023' },
   { url: 'https://www.50toppizza.it/italian-special-awards-2023/', scope: 'italy',  defaultCountry: 'Italy',  year: 2023, listName: 'Italian Special Awards 2023' },
@@ -89,13 +97,26 @@ function parseRanking(html) {
         .map(s => decodeEntities(s.replace(/<[^>]+>/g, '').trim()))
         .filter(Boolean);
     }
+    let descLine1 = descLines[0] || null;
+    let descLine2 = descLines[1] || null;
+    // "Excellent Pizzerias" pages use a single comma-separated line:
+    // "Tirana, Albania" instead of "Tirana<br>Albania". Split so the
+    // downstream importer's normalize50TopPizza can read country from
+    // descLine2 like the ranked-page case.
+    if (descLine1 && !descLine2 && descLine1.includes(',')) {
+      const parts = descLine1.split(',').map((s) => s.trim()).filter(Boolean);
+      if (parts.length >= 2) {
+        descLine1 = parts[0];
+        descLine2 = parts.slice(1).join(', ');
+      }
+    }
     out.push({
       detailUrl,
       name,
       rank: rankNum ? parseInt(rankNum, 10) : null,
       rankRaw: posRaw || null,
-      descLine1: descLines[0] || null,
-      descLine2: descLines[1] || null,
+      descLine1,
+      descLine2,
       heroImageUrl: imgMatch ? imgMatch[1] : null,
     });
   }
