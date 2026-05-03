@@ -3049,3 +3049,67 @@ a.place-review:hover {
 
 @keyframes opm-fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes opm-slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+/* "He estado aquí" pill in the title row — replaces where the heart used to live. */
+.place-rate-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.2;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--c-border, rgba(0,0,0,.15));
+    background: #b91c1c;
+    color: #fff;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: background .12s, transform .08s;
+}
+.place-rate-btn:hover { background: #991414; }
+.place-rate-btn:active { transform: scale(0.97); }
+.place-rate-btn .material-symbols-rounded {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+}
+.place-rate-btn.is-active {
+    background: #1e1e1e;
+    border-color: #1e1e1e;
+}
+.place-rate-btn.is-active:hover { background: #000; }
+.place-rate-btn__label { white-space: nowrap; }
+
+/* Heart on the hero — same position the visit button used to occupy. */
+.place-fav--floating {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 2;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,.08);
+    background: rgba(255,255,255,.92);
+    color: #1e1e1e;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,.18);
+    transition: background .12s, color .12s, transform .08s;
+}
+.place-fav--floating:hover { background: #fff; }
+.place-fav--floating:active { transform: scale(0.95); }
+.place-fav--floating .material-symbols-rounded {
+    font-size: 24px;
+    font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+}
+.place-fav--floating.is-active { color: #e63946; }
+.place-fav--floating.is-active .material-symbols-rounded {
+    font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+}

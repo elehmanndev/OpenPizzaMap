@@ -211,6 +211,9 @@
   ${place.heroImageUrl ? `
     <div class="place-hero">
       <img src="${escapeAttr(largeVariant(place.heroImageUrl))}" data-fallback="${escapeAttr(place.heroImageUrl)}" alt="${escapeAttr(place.name)}" loading="eager" onerror="if(this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.remove()}" />
+      <button type="button" class="place-fav place-fav--floating${place.viewerFavorited ? " is-active" : ""}" data-place-fav data-place-id="${place.id}" aria-pressed="${place.viewerFavorited ? "true" : "false"}" aria-label="${place.viewerFavorited ? "Remove from favourites" : "Add to favourites"}">
+        <span class="material-symbols-rounded" aria-hidden="true">favorite</span>
+      </button>
     </div>
   ` : ""}
 
@@ -219,8 +222,9 @@
       <div class="place-header__main">
         <div class="place-title-row">
           <h1 class="place-title">${escapeHtml(place.name)}</h1>
-          <button type="button" class="place-fav place-fav--inline${place.viewerFavorited ? " is-active" : ""}" data-place-fav data-place-id="${place.id}" aria-pressed="${place.viewerFavorited ? "true" : "false"}" aria-label="${place.viewerFavorited ? "Remove from favourites" : "Add to favourites"}">
-            <span class="material-symbols-rounded" aria-hidden="true">favorite</span>
+          <button type="button" class="place-rate-btn${place.viewerReview ? " is-active" : ""}" data-open-review data-place-id="${place.id}" aria-haspopup="dialog" aria-label="${place.viewerReview ? "Editar review" : "He estado aquí"}">
+            <span class="material-symbols-rounded" aria-hidden="true">${place.viewerReview ? "edit" : "task_alt"}</span>
+            <span class="place-rate-btn__label">${place.viewerReview ? "Editar review" : "He estado aquí"}</span>
           </button>
         </div>
         <p class="place-address">${escapeHtml(place.addressLine || "")}${place.addressLine ? " · " : ""}${escapeHtml(place.city || "")}${place.country ? `, ${escapeHtml(place.country)}` : ""}</p>
@@ -275,17 +279,6 @@
         });
       })();
     </script>
-
-    <aside class="place-claim place-rate">
-      <div class="place-claim__icon">
-        <span class="material-symbols-rounded" aria-hidden="true">${place.viewerReview ? "edit" : "task_alt"}</span>
-      </div>
-      <div class="place-claim__body">
-        <h3>${place.viewerReview ? "Edita tu review" : "¿Has estado aquí?"}</h3>
-        <p>${place.viewerReview ? "Actualiza tu valoración si has vuelto a probarla." : "Deja una valoración rápida para ayudar a la comunidad."}</p>
-      </div>
-      <button type="button" class="btn primary" data-open-review data-place-id="${place.id}" aria-haspopup="dialog">${place.viewerReview ? "Editar review" : "He estado aquí"}</button>
-    </aside>
 
     ${hours ? `
       <section class="card place-hours">
