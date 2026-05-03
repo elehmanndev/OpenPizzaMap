@@ -26,6 +26,7 @@ scripts/lib/.tripadvisor-budget.json
 /dedup-*.json
 /*-report.json
 /*-audit.json
+/*-debug.html
 /scrape-result.json
 /tasteatlas-*.json
 
