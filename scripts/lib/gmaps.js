@@ -136,6 +136,69 @@ async function lookup(page, name, city) {
         return out;
     }).catch(() => ({ phone: null, websiteUrl: null, openingHours: null }));
 
+    // GMaps sometimes renders the today-only summary ("Cerrado · Apertura:
+    // 18:30·Ver más horarios") instead of the full week aria-label. Two-stage
+    // expansion: click the [oh] button to open the hours flyout, then click
+    // the "Ver más horarios" link inside it to expand the full week. Re-read
+    // from the expanded table. If neither surfaces a real week (≥4 distinct
+    // days), null out the field — better no data than misleading half-data.
+    const TRUNC_RE = /Ver más horarios|See more times|Vedi altri orari|Voir plus d'horaires|Weitere Öffnungszeiten/i;
+    if (meta.openingHours && TRUNC_RE.test(meta.openingHours)) {
+        try {
+            await page.click('[data-item-id="oh"]', { timeout: 2000 }).catch(() => {});
+            await page.waitForTimeout(700);
+            // Click the "Ver más horarios" element (it's inside a span; walk
+            // up to find a clickable ancestor).
+            await page.evaluate((reSrc) => {
+                const re = new RegExp(reSrc, 'i');
+                for (const el of document.querySelectorAll('button, a, [role="button"], span, div')) {
+                    const t = (el.textContent || '').trim();
+                    if (!t || t.length > 60 || !re.test(t)) continue;
+                    let click = el;
+                    for (let depth = 0; click && depth < 5; depth++) {
+                        if (['BUTTON', 'A'].includes(click.tagName) || click.getAttribute('role') === 'button') break;
+                        click = click.parentElement;
+                    }
+                    if (click) { click.click(); return true; }
+                }
+                return false;
+            }, TRUNC_RE.source).catch(() => {});
+            await page.waitForTimeout(1100);
+
+            const dayCodes = { domingo: 'Su', lunes: 'Mo', martes: 'Tu', miércoles: 'We', miercoles: 'We', jueves: 'Th', viernes: 'Fr', sábado: 'Sa', sabado: 'Sa', sunday: 'Su', monday: 'Mo', tuesday: 'Tu', wednesday: 'We', thursday: 'Th', friday: 'Fr', saturday: 'Sa', domenica: 'Su', lunedì: 'Mo', lunedi: 'Mo', martedì: 'Tu', martedi: 'Tu', mercoledì: 'We', mercoledi: 'We', giovedì: 'Th', giovedi: 'Th', venerdì: 'Fr', venerdi: 'Fr', sonntag: 'Su', montag: 'Mo', dienstag: 'Tu', mittwoch: 'We', donnerstag: 'Th', freitag: 'Fr', samstag: 'Sa', dimanche: 'Su', lundi: 'Mo', mardi: 'Tu', mercredi: 'We', jeudi: 'Th', vendredi: 'Fr', samedi: 'Sa' };
+            const expanded = await page.evaluate((dayCodesObj) => {
+                const stripAcc = (x) => x.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+                // Walk every element looking for a "<day><time-range>"
+                // pattern. Dedup by (day → first occurrence) so we don't
+                // double-count nested wrappers.
+                const found = new Map();
+                for (const el of document.querySelectorAll('tr, li, div, span')) {
+                    const t = (el.textContent || '').replace(/\s+/g, ' ').trim();
+                    if (!t || t.length > 100) continue;
+                    const m = t.match(/^([A-Za-zÀ-ÿ]+)\s*[:.]?\s*(\d{1,2}:\d{2}\s*[-–—]\s*\d{1,2}:\d{2}.*)$/);
+                    if (m) {
+                        const code = dayCodesObj[stripAcc(m[1])];
+                        if (code && !found.has(code)) found.set(code, m[2].trim());
+                        continue;
+                    }
+                    // Closed pattern: "lunes Cerrado" / "Monday Closed"
+                    const c = t.match(/^([A-Za-zÀ-ÿ]+)\s*[:.]?\s*(Cerrado|Closed|Chiuso|Fermé|Geschlossen|Fechado)$/i);
+                    if (c) {
+                        const code = dayCodesObj[stripAcc(c[1])];
+                        if (code && !found.has(code)) found.set(code, 'Cerrado');
+                    }
+                }
+                if (found.size < 4) return null;
+                const order = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+                const labels = { Mo: 'lunes', Tu: 'martes', We: 'miércoles', Th: 'jueves', Fr: 'viernes', Sa: 'sábado', Su: 'domingo' };
+                return order.filter((c) => found.has(c)).map((c) => `${labels[c]}: ${found.get(c)}`).join('; ');
+            }, dayCodes);
+            meta.openingHours = expanded || null;
+        } catch {
+            meta.openingHours = null;
+        }
+    }
+
     // Forward-geocode address → coords via Nominatim.
     let lat = null, lng = null;
     try {
