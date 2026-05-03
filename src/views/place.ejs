@@ -351,7 +351,7 @@
               </div>
               <ul class="opm-review__cats">
                 <li><span class="opm-review__cat">Pizza</span>${renderStars(r.pizza, "stars--sm")}</li>
-                <li><span class="opm-review__cat">Vibe</span>${renderStars(r.local, "stars--sm")}</li>
+                <li><span class="opm-review__cat">Setting</span>${renderStars(r.local, "stars--sm")}</li>
                 <li><span class="opm-review__cat">Service</span>${renderStars(r.servicio, "stars--sm")}</li>
                 <li><span class="opm-review__cat">Value</span>${renderStars(r.precio, "stars--sm")}</li>
               </ul>
@@ -411,7 +411,7 @@
             <div class="star-input" data-star-input data-name="pizza"></div>
           </div>
           <div class="review-row" data-review-cat="local">
-            <span class="review-row__label">Vibe <span class="review-row__emoji" aria-hidden="true">🏠</span></span>
+            <span class="review-row__label">Setting <span class="review-row__emoji" aria-hidden="true">🏠</span></span>
             <div class="star-input" data-star-input data-name="local"></div>
           </div>
           <div class="review-row" data-review-cat="servicio">
@@ -424,7 +424,7 @@
           </div>
         </fieldset>
         <label class="review-modal__comment-wrap">
-          <span class="review-modal__comment-label">Anything else? (optional)</span>
+          <span class="review-modal__comment-label">Tell us about your visit (optional)</span>
           <textarea class="review-modal__comment" data-review-comment maxlength="500" rows="3" placeholder="Tell us about it…">${place.viewerReview && place.viewerReview.comment ? escapeHtml(place.viewerReview.comment) : ""}</textarea>
           <span class="review-modal__counter" data-review-counter>0 / 500</span>
         </label>

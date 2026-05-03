@@ -298,7 +298,7 @@
             </div>
             <ul class="opm-review__cats">
                 <li><span class="opm-review__cat">Pizza</span>${starsHtml(r.pizza, "stars--sm")}</li>
-                <li><span class="opm-review__cat">Vibe</span>${starsHtml(r.local, "stars--sm")}</li>
+                <li><span class="opm-review__cat">Setting</span>${starsHtml(r.local, "stars--sm")}</li>
                 <li><span class="opm-review__cat">Service</span>${starsHtml(r.servicio, "stars--sm")}</li>
                 <li><span class="opm-review__cat">Value</span>${starsHtml(r.precio, "stars--sm")}</li>
             </ul>
