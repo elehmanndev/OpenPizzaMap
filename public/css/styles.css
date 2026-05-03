@@ -2110,6 +2110,41 @@ img.map-suggest-thumb { display: block; }
   border-radius: 0 0 10px 10px;
 }
 
+/* Admin table */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+.admin-table th {
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--c-muted);
+  border-bottom: 1px solid var(--c-border);
+  background: var(--c-input-bg);
+  white-space: nowrap;
+}
+.admin-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--c-border);
+  vertical-align: middle;
+}
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.admin-table tbody tr:hover td {
+  background: rgba(var(--c-accent-rgb), 0.04);
+}
+.admin-table .muted {
+  color: var(--c-muted);
+}
+.admin-table .mono {
+  font-family: monospace;
+  font-size: 0.8rem;
+}
+
 /* Public place page. */
 .place-page::before {
   display: none;

@@ -605,25 +605,42 @@ router.post("/admin/cities/:id/toggle-visible", requireAdmin, async (req, res) =
 
 router.get("/admin/places", requireAdmin, async (req, res) => {
     const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
-    const cityId = typeof req.query.cityId === "string" ? Number(req.query.cityId) : null;
+    const country = typeof req.query.country === "string" ? req.query.country.trim() : "";
+    const vis = req.query.vis; // "visible" | "hidden" | undefined
+    const styleId = typeof req.query.styleId === "string" ? Number(req.query.styleId) : null;
+    const needs = typeof req.query.needs === "string" ? req.query.needs : "";
 
     const where = {};
     if (q) where.name = { contains: q };
-    if (Number.isFinite(cityId) && cityId) where.cityId = cityId;
+    if (country) where.country = { contains: country };
+    if (vis === "visible") where.isVisible = true;
+    if (vis === "hidden") where.isVisible = false;
+    if (Number.isFinite(styleId) && styleId) where.styles = { some: { styleId } };
+    if (needs === "no-hero") where.heroImageUrl = null;
+    if (needs === "no-phone") where.phone = null;
+    if (needs === "no-website") where.websiteUrl = null;
+    if (needs === "no-hours") where.openingHours = null;
 
-    const places = await prisma.place.findMany({
-        where,
-        orderBy: { updatedAt: "desc" },
-        take: 200,
-    });
+    const [places, allStyles] = await Promise.all([
+        prisma.place.findMany({
+            where,
+            orderBy: { id: "desc" },
+            take: 300,
+            select: {
+                id: true, name: true, city: true, country: true,
+                isVisible: true, heroImageUrl: true, phone: true,
+                websiteUrl: true, openingHours: true,
+                styles: { select: { style: { select: { name: true } } } },
+            },
+        }),
+        prisma.style.findMany({ orderBy: { sortOrder: "asc" }, select: { id: true, name: true } }),
+    ]);
 
     res.render("admin_places", {
         user: req.session.user,
         places,
-        filters: {
-            q,
-            cityId: Number.isFinite(cityId) && cityId ? String(cityId) : "",
-        },
+        allStyles,
+        filters: { q, country, vis: vis || "", styleId: styleId || "", needs },
     });
 });
 
@@ -739,6 +756,76 @@ router.post("/admin/places/:id/toggle-visible", requireAdmin, async (req, res) =
     if (!place) return res.redirect("/admin/places");
     await prisma.place.update({ where: { id }, data: { isVisible: !place.isVisible } });
     res.redirect("/admin/places");
+});
+
+// --- Styles CMS ---
+router.get("/admin/styles", requireAdmin, async (req, res) => {
+    const styles = await prisma.style.findMany({
+        orderBy: { sortOrder: "asc" },
+        include: { _count: { select: { places: true } } },
+    });
+    res.render("admin_styles", { user: req.session.user, styles });
+});
+
+router.get("/admin/styles/new", requireAdmin, (req, res) => {
+    res.render("admin_style_edit", { user: req.session.user, style: null });
+});
+
+router.post("/admin/styles", requireAdmin, async (req, res) => {
+    const b = req.body || {};
+    function s(v, max) { const x = String(v == null ? "" : v).trim(); return max ? x.slice(0, max) : x; }
+    function nullable(v, max) { const x = s(v, max); return x || null; }
+    await prisma.style.create({
+        data: {
+            slug: s(b.slug, 40),
+            name: s(b.name, 80),
+            shortLabel: nullable(b.shortLabel, 40),
+            heroImageUrl: nullable(b.heroImageUrl, 500),
+            introHtml: nullable(b.introHtml),
+            seoTitle: nullable(b.seoTitle, 191),
+            seoDescription: nullable(b.seoDescription, 200),
+            isVisible: !!b.isVisible,
+            sortOrder: Number.isFinite(Number(b.sortOrder)) ? Math.trunc(Number(b.sortOrder)) : 0,
+        },
+    });
+    res.redirect("/admin/styles");
+});
+
+router.get("/admin/styles/:id", requireAdmin, async (req, res) => {
+    const id = Number(req.params.id);
+    const style = await prisma.style.findUnique({ where: { id } });
+    if (!style) return res.redirect("/admin/styles");
+    res.render("admin_style_edit", { user: req.session.user, style });
+});
+
+router.post("/admin/styles/:id", requireAdmin, async (req, res) => {
+    const id = Number(req.params.id);
+    const b = req.body || {};
+    function s(v, max) { const x = String(v == null ? "" : v).trim(); return max ? x.slice(0, max) : x; }
+    function nullable(v, max) { const x = s(v, max); return x || null; }
+    await prisma.style.update({
+        where: { id },
+        data: {
+            slug: s(b.slug, 40),
+            name: s(b.name, 80),
+            shortLabel: nullable(b.shortLabel, 40),
+            heroImageUrl: nullable(b.heroImageUrl, 500),
+            introHtml: nullable(b.introHtml),
+            seoTitle: nullable(b.seoTitle, 191),
+            seoDescription: nullable(b.seoDescription, 200),
+            isVisible: !!b.isVisible,
+            sortOrder: Number.isFinite(Number(b.sortOrder)) ? Math.trunc(Number(b.sortOrder)) : 0,
+        },
+    });
+    res.redirect("/admin/styles");
+});
+
+router.post("/admin/styles/:id/toggle-visible", requireAdmin, async (req, res) => {
+    const id = Number(req.params.id);
+    const style = await prisma.style.findUnique({ where: { id } });
+    if (!style) return res.redirect("/admin/styles");
+    await prisma.style.update({ where: { id }, data: { isVisible: !style.isVisible } });
+    res.redirect("/admin/styles");
 });
 
 router.get("/admin/submissions", requireAdmin, async (req, res) => {

@@ -1,0 +1,41 @@
+<%- include("layout", { title: "Admin · Styles", user, leaflet: false, body: String.raw`
+  <h1>Pizza Styles <a class="btn primary" href="/admin/styles/new" style="margin-left:12px;font-size:0.85rem;vertical-align:middle;">+ New style</a></h1>
+
+  <div class="card" style="padding:0; overflow:hidden;">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th style="width:48px;">Order</th>
+          <th>Slug</th>
+          <th>Name</th>
+          <th>Short label</th>
+          <th style="width:72px; text-align:center;">Places</th>
+          <th style="width:72px; text-align:center;">Visible</th>
+          <th style="width:120px;"></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${styles.length ? styles.map(s => `
+          <tr>
+            <td class="small muted">${s.sortOrder}</td>
+            <td class="small mono">${escapeHtml(s.slug)}</td>
+            <td><strong>${escapeHtml(s.name)}</strong></td>
+            <td class="small">${s.shortLabel ? escapeHtml(s.shortLabel) : '<span class="muted">—</span>'}</td>
+            <td style="text-align:center;" class="small">${s._count.places}</td>
+            <td style="text-align:center;">${s.isVisible ? "✓" : '<span class="muted">—</span>'}</td>
+            <td>
+              <div class="row" style="gap:6px; justify-content:flex-end;">
+                <a class="btn primary" href="/admin/styles/${s.id}">Edit</a>
+                <form method="post" action="/admin/styles/${s.id}/toggle-visible">
+                  <button type="submit">${s.isVisible ? "Hide" : "Show"}</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        `).join("") : `
+          <tr><td colspan="7" class="small muted" style="text-align:center; padding:24px;">No styles yet.</td></tr>
+        `}
+      </tbody>
+    </table>
+  </div>
+` }) %>

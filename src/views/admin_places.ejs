@@ -2,32 +2,87 @@
   <h1>Places</h1>
 
   <div class="card">
-    <form method="get" action="/admin/places" class="row">
-      <div style="flex:2; min-width:220px;">
-        <label>Name contains</label>
+    <form method="get" action="/admin/places" class="row" style="flex-wrap:wrap; gap:10px;">
+      <div style="flex:2; min-width:180px;">
+        <label>Name</label>
         <input name="q" value="${escapeAttr(filters.q || "")}" placeholder="Sorbillo" />
       </div>
-      <div style="flex:1; min-width:160px;">
-        <label>City ID</label>
-        <input name="cityId" value="${escapeAttr(filters.cityId || "")}" placeholder="123" />
+      <div style="flex:1; min-width:120px;">
+        <label>Country</label>
+        <input name="country" value="${escapeAttr(filters.country || "")}" placeholder="Italy" />
       </div>
-      <div style="flex:1; align-self:end;">
+      <div style="flex:1; min-width:110px;">
+        <label>Visibility</label>
+        <select name="vis">
+          <option value="">All</option>
+          <option value="visible" ${filters.vis === "visible" ? "selected" : ""}>Visible</option>
+          <option value="hidden" ${filters.vis === "hidden" ? "selected" : ""}>Hidden</option>
+        </select>
+      </div>
+      <div style="flex:1; min-width:140px;">
+        <label>Style</label>
+        <select name="styleId">
+          <option value="">Any style</option>
+          ${allStyles.map(s => `<option value="${s.id}" ${String(filters.styleId) === String(s.id) ? "selected" : ""}>${escapeHtml(s.name)}</option>`).join("")}
+        </select>
+      </div>
+      <div style="flex:1; min-width:140px;">
+        <label>Needs</label>
+        <select name="needs">
+          <option value="">Anything</option>
+          <option value="no-hero" ${filters.needs === "no-hero" ? "selected" : ""}>No hero image</option>
+          <option value="no-phone" ${filters.needs === "no-phone" ? "selected" : ""}>No phone</option>
+          <option value="no-website" ${filters.needs === "no-website" ? "selected" : ""}>No website</option>
+          <option value="no-hours" ${filters.needs === "no-hours" ? "selected" : ""}>No hours</option>
+        </select>
+      </div>
+      <div style="flex:0; align-self:end; min-width:80px;">
         <button type="submit">Filter</button>
       </div>
     </form>
   </div>
 
-  ${places && places.length ? places.map(p => `
-    <div class="card">
-      <div><strong>${escapeHtml(p.name)}</strong> ${p.isVisible ? "" : "<span class='small'>(hidden)</span>"}</div>
-      <div class="small">${escapeHtml(p.city)} · ${escapeHtml(p.country)} ${p.cityId ? `· cityId=${p.cityId}` : ""}</div>
-      <div style="margin-top:8px;" class="row">
-        <a class="btn primary" href="/admin/places/${p.id}">Edit</a>
-        <a class="btn" href="/place/${p.id}">View</a>
-        <form method="post" action="/admin/places/${p.id}/toggle-visible">
-          <button type="submit">${p.isVisible ? "Hide" : "Make visible"}</button>
-        </form>
-      </div>
-    </div>
-  `).join("") : "<p class=\"small\">No places found.</p>"}
+  <p class="small muted" style="margin:0 0 8px;">${places.length} result${places.length === 1 ? "" : "s"}${places.length === 300 ? " (capped at 300)" : ""}</p>
+
+  ${places.length ? `
+  <div class="card" style="padding:0; overflow:hidden;">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th style="width:52px;">ID</th>
+          <th>Name</th>
+          <th>City · Country</th>
+          <th>Styles</th>
+          <th style="width:36px; text-align:center;" title="Visible">👁</th>
+          <th style="width:36px; text-align:center;" title="Hero">🖼</th>
+          <th style="width:36px; text-align:center;" title="Phone">📞</th>
+          <th style="width:36px; text-align:center;" title="Website">🌐</th>
+          <th style="width:36px; text-align:center;" title="Hours">🕒</th>
+          <th style="width:110px;"></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${places.map(p => `
+          <tr>
+            <td class="small muted">${p.id}</td>
+            <td><strong>${escapeHtml(p.name)}</strong></td>
+            <td class="small">${escapeHtml(p.city || "—")} · ${escapeHtml(p.country || "—")}</td>
+            <td class="small">${p.styles.length ? p.styles.map(s => escapeHtml(s.style.name)).join(", ") : '<span class="muted">—</span>'}</td>
+            <td style="text-align:center;" class="small">${p.isVisible ? "✓" : '<span class="muted">—</span>'}</td>
+            <td style="text-align:center;" class="small">${p.heroImageUrl ? "✓" : '<span class="muted">—</span>'}</td>
+            <td style="text-align:center;" class="small">${p.phone ? "✓" : '<span class="muted">—</span>'}</td>
+            <td style="text-align:center;" class="small">${p.websiteUrl ? "✓" : '<span class="muted">—</span>'}</td>
+            <td style="text-align:center;" class="small">${p.openingHours ? "✓" : '<span class="muted">—</span>'}</td>
+            <td>
+              <div class="row" style="gap:6px; justify-content:flex-end;">
+                <a class="btn primary" href="/admin/places/${p.id}">Edit</a>
+                <a class="btn" href="/place/${p.id}" target="_blank">↗</a>
+              </div>
+            </td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  </div>
+  ` : "<p class=\"small muted\">No places found.</p>"}
 ` }) %>
