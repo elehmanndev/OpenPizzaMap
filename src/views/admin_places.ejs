@@ -30,6 +30,7 @@
         <label>Needs</label>
         <select name="needs">
           <option value="">Anything</option>
+          <option value="no-style" ${filters.needs === "no-style" ? "selected" : ""}>No style</option>
           <option value="no-hero" ${filters.needs === "no-hero" ? "selected" : ""}>No hero image</option>
           <option value="no-phone" ${filters.needs === "no-phone" ? "selected" : ""}>No phone</option>
           <option value="no-website" ${filters.needs === "no-website" ? "selected" : ""}>No website</option>
@@ -46,9 +47,10 @@
 
   ${places.length ? `
   <div class="card" style="padding:0; overflow:hidden;">
-    <table class="admin-table">
+    <table class="admin-table" id="places-table">
       <thead>
         <tr>
+          <th style="width:36px; text-align:center;"><input type="checkbox" id="select-all" title="Select all" /></th>
           <th style="width:52px;">ID</th>
           <th>Name</th>
           <th>City · Country</th>
@@ -64,6 +66,7 @@
       <tbody>
         ${places.map(p => `
           <tr>
+            <td style="text-align:center;"><input type="checkbox" class="row-cb" value="${p.id}" /></td>
             <td class="small muted">${p.id}</td>
             <td><strong>${escapeHtml(p.name)}</strong></td>
             <td class="small">${escapeHtml(p.city || "—")} · ${escapeHtml(p.country || "—")}</td>
@@ -84,5 +87,69 @@
       </tbody>
     </table>
   </div>
+
+  <div id="bulk-bar" style="display:none; position:sticky; bottom:16px; margin-top:12px;">
+    <form method="post" action="/admin/places/bulk-style" id="bulk-form" class="card row" style="gap:12px; align-items:center; background:var(--c-surface); box-shadow:0 4px 20px rgba(0,0,0,0.15);">
+      <span id="bulk-count" class="small" style="white-space:nowrap; font-weight:600;"></span>
+      <select name="styleId" id="bulk-style-select" style="flex:1; min-width:160px;">
+        <option value="">— pick a style —</option>
+        ${allStyles.map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join("")}
+      </select>
+      <button type="submit" class="btn primary" id="bulk-submit" disabled>Assign style</button>
+      <button type="button" id="bulk-cancel" class="btn">Clear</button>
+      <div id="bulk-ids"></div>
+    </form>
+  </div>
+
+  <script>
+    (function () {
+      var selectAll = document.getElementById("select-all");
+      var bulkBar = document.getElementById("bulk-bar");
+      var bulkCount = document.getElementById("bulk-count");
+      var bulkIdsEl = document.getElementById("bulk-ids");
+      var bulkSubmit = document.getElementById("bulk-submit");
+      var bulkStyleSelect = document.getElementById("bulk-style-select");
+      var bulkCancel = document.getElementById("bulk-cancel");
+
+      function getChecked() {
+        return Array.from(document.querySelectorAll(".row-cb:checked"));
+      }
+
+      function updateBar() {
+        var checked = getChecked();
+        if (checked.length === 0) {
+          bulkBar.style.display = "none";
+          selectAll.indeterminate = false;
+          selectAll.checked = false;
+          return;
+        }
+        bulkBar.style.display = "";
+        var total = document.querySelectorAll(".row-cb").length;
+        selectAll.indeterminate = checked.length > 0 && checked.length < total;
+        selectAll.checked = checked.length === total;
+        bulkCount.textContent = checked.length + " selected";
+        bulkIdsEl.innerHTML = checked.map(cb => '<input type="hidden" name="ids" value="' + cb.value + '" />').join("");
+        bulkSubmit.disabled = !bulkStyleSelect.value;
+      }
+
+      document.querySelectorAll(".row-cb").forEach(function (cb) {
+        cb.addEventListener("change", updateBar);
+      });
+
+      selectAll.addEventListener("change", function () {
+        document.querySelectorAll(".row-cb").forEach(function (cb) { cb.checked = selectAll.checked; });
+        updateBar();
+      });
+
+      bulkStyleSelect.addEventListener("change", function () {
+        bulkSubmit.disabled = !this.value;
+      });
+
+      bulkCancel.addEventListener("click", function () {
+        document.querySelectorAll(".row-cb").forEach(function (cb) { cb.checked = false; });
+        updateBar();
+      });
+    })();
+  </script>
   ` : "<p class=\"small muted\">No places found.</p>"}
 ` }) %>

@@ -616,6 +616,7 @@ router.get("/admin/places", requireAdmin, async (req, res) => {
     if (vis === "visible") where.isVisible = true;
     if (vis === "hidden") where.isVisible = false;
     if (Number.isFinite(styleId) && styleId) where.styles = { some: { styleId } };
+    if (needs === "no-style") where.styles = { none: {} };
     if (needs === "no-hero") where.heroImageUrl = null;
     if (needs === "no-phone") where.phone = null;
     if (needs === "no-website") where.websiteUrl = null;
@@ -642,6 +643,36 @@ router.get("/admin/places", requireAdmin, async (req, res) => {
         allStyles,
         filters: { q, country, vis: vis || "", styleId: styleId || "", needs },
     });
+});
+
+router.post("/admin/places/bulk-style", requireAdmin, async (req, res) => {
+    const rawIds = Array.isArray(req.body.ids) ? req.body.ids : (req.body.ids ? [req.body.ids] : []);
+    const ids = rawIds.map(Number).filter(n => Number.isFinite(n) && n > 0);
+    const styleId = Number(req.body.styleId);
+    const back = req.headers.referer || "/admin/places";
+
+    if (!ids.length || !Number.isFinite(styleId)) return res.redirect(back);
+    const style = await prisma.style.findUnique({ where: { id: styleId } });
+    if (!style) return res.redirect(back);
+
+    await prisma.placeStyle.createMany({
+        data: ids.map(placeId => ({ placeId, styleId })),
+        skipDuplicates: true,
+    });
+
+    for (const placeId of ids) {
+        const place = await prisma.place.findUnique({
+            where: { id: placeId },
+            include: { styles: { include: { style: true } } },
+        });
+        if (!place) continue;
+        await prisma.place.update({
+            where: { id: placeId },
+            data: { stylesJson: JSON.stringify(place.styles.map(s => s.style.slug)) },
+        });
+    }
+
+    res.redirect(back);
 });
 
 router.get("/admin/places/:id", requireAdmin, async (req, res) => {
