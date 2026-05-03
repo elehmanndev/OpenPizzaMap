@@ -1,0 +1,130 @@
+#!/usr/bin/env node
+// One-off: build the manual-review file for the 12 medium-confidence
+// duplicate pairs surfaced by 2026-05-02-dedup-audit.md. Eric will
+// decide keep/drop per pair by hand — this script just gathers the
+// fields he needs side-by-side.
+//
+// Output: notes/sessions/2026-05-02-medium-dedup-review.md
+
+const fs = require("fs");
+const path = require("path");
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
+
+const PAIRS = [
+    [47, 1360],     // Giotto Pizzeria Bistrot / Giotto Pizzeria (Florence)
+    [421, 178],     // 50 Kalò di Ciro Salvo / 50 Kalò (Naples)
+    [286, 183],     // Pizzaria la Notizia / La Notizia (Naples)
+    [335, 1670],    // Pizzeria Gorizia / Pizzeria Gorizia 1916 (Naples)
+    [629, 1694],    // Pop's Place Pizza / Pop's Pizza (Ljubljana)
+    [919, 822],     // Prova- La Vera Pizza / Prova- La vera pizza napoletana (Caracas)
+    [1019, 1646],   // Pat's Pizza / Pat's Pizzeria & Ristorante (Chicago)
+    [1338, 1673],   // Diego Vitagliano Pizzeria / 10 Diego Vitagliano Pizzeria (Naples)
+    [1370, 1345],   // Francesco & Salvatore Salvo / Salvo (Naples)
+    [1377, 1362],   // Bro. Ciro e Antonio Tutino Pizzeria / Bro. (Naples)
+    [1444, 1408],   // Pizzeria Panetteria Bosco / Bosco (Tempio Pausania)
+    [1457, 1669],   // Bas & Co / Bas (Pesche)
+];
+
+function distM(a, b) {
+    const R = 6371000;
+    const toRad = (x) => x * Math.PI / 180;
+    const lat1 = toRad(Number(a.lat));
+    const lat2 = toRad(Number(b.lat));
+    const dLat = lat2 - lat1;
+    const dLng = toRad(Number(b.lng) - Number(a.lng));
+    const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+    return Math.round(2 * R * Math.asin(Math.sqrt(h)));
+}
+
+function fmt(v) {
+    if (v == null || v === "") return "_(null)_";
+    return String(v).replace(/\|/g, "\\|").slice(0, 80);
+}
+
+function ratingCell(rating, count) {
+    if (rating == null && count == null) return "_(none)_";
+    return `${rating != null ? rating : "—"} (${count != null ? count : "—"} reviews)`;
+}
+
+async function main() {
+    const blocks = [];
+    for (const [idA, idB] of PAIRS) {
+        const [a, b] = await Promise.all([
+            prisma.place.findUnique({
+                where: { id: idA },
+                include: { sources: true, styles: { include: { style: true } } },
+            }),
+            prisma.place.findUnique({
+                where: { id: idB },
+                include: { sources: true, styles: { include: { style: true } } },
+            }),
+        ]);
+        if (!a || !b) {
+            blocks.push(`### Pair ${idA} / ${idB} — MISSING ROW (a=${!!a}, b=${!!b})\n`);
+            continue;
+        }
+        const m = distM(a, b);
+
+        const sourceList = (row) =>
+            row.sources.length ? row.sources.map((s) => `${s.source}${s.rank ? `#${s.rank}` : ""}`).join(", ") : "_(no sources)_";
+        const styles = (row) =>
+            row.styles.length ? row.styles.map((s) => s.style.name).join(", ") : "_(none)_";
+
+        blocks.push(
+            [
+                `### Pair: id=${a.id} vs id=${b.id} — ${m} m apart`,
+                "",
+                `| field | id=${a.id} | id=${b.id} |`,
+                "|---|---|---|",
+                `| Name | ${fmt(a.name)} | ${fmt(b.name)} |`,
+                `| Address line | ${fmt(a.addressLine)} | ${fmt(b.addressLine)} |`,
+                `| City / Country | ${fmt(a.city)}, ${fmt(a.country)} | ${fmt(b.city)}, ${fmt(b.country)} |`,
+                `| Coords | (${a.lat}, ${a.lng}) | (${b.lat}, ${b.lng}) |`,
+                `| Google rating | ${ratingCell(a.googleRating, a.googleReviewCount)} | ${ratingCell(b.googleRating, b.googleReviewCount)} |`,
+                `| TripAdvisor rating | ${ratingCell(a.tripadvisorRating, a.tripadvisorReviewCount)} | ${ratingCell(b.tripadvisorRating, b.tripadvisorReviewCount)} |`,
+                `| Phone | ${fmt(a.phone)} | ${fmt(b.phone)} |`,
+                `| Website | ${fmt(a.websiteUrl)} | ${fmt(b.websiteUrl)} |`,
+                `| Hero image | ${fmt(a.heroImageUrl)} | ${fmt(b.heroImageUrl)} |`,
+                `| Styles | ${styles(a)} | ${styles(b)} |`,
+                `| Sources | ${sourceList(a)} | ${sourceList(b)} |`,
+                `| Created at | ${a.createdAt.toISOString()} | ${b.createdAt.toISOString()} |`,
+                `| Visible | ${a.isVisible} | ${b.isVisible} |`,
+                "",
+            ].join("\n")
+        );
+    }
+
+    const header = [
+        "# 2026-05-02 — Medium-confidence dedup review (manual)",
+        "",
+        "12 pairs flagged by `notes/sessions/2026-05-02-dedup-audit.md` Pass B",
+        "(≤150 m + similar name, but the names differ enough that the prefix-strip",
+        "heuristic alone isn't safe). **No drops applied** — Eric to decide",
+        "keep/drop per pair by hand.",
+        "",
+        "Generated by `scripts/dedup-medium-review.js`. Re-run after any DB",
+        "changes to refresh the snapshots.",
+        "",
+        "## How to read",
+        "",
+        "Each block compares two rows side by side. The richer side (more",
+        "non-null fields, more sources, real ratings) is usually the keep.",
+        "If the names actually refer to two different concepts (e.g. a",
+        "venue's standalone bar vs its sit-down pizzeria at the same",
+        "address), keep both — set a flag in the notes section below the",
+        "table.",
+        "",
+        "---",
+        "",
+    ].join("\n");
+
+    const out = header + blocks.join("\n---\n\n");
+    const target = path.resolve("notes/sessions/2026-05-02-medium-dedup-review.md");
+    fs.writeFileSync(target, out);
+    console.log(`wrote ${target}  (${out.length} chars, ${PAIRS.length} pairs)`);
+}
+
+main()
+    .catch((e) => { console.error(e); process.exit(1); })
+    .finally(async () => { await prisma.$disconnect(); });
