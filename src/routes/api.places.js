@@ -1,7 +1,9 @@
 const express = require("express");
+const { z } = require("zod");
 const { Prisma } = require("@prisma/client");
 const { prisma } = require("../db");
 const { boundingBox, haversineKm } = require("../services/geo");
+const { recalcPlaceOpmRating } = require("../services/opm-rating");
 
 const router = express.Router();
 
@@ -283,6 +285,134 @@ router.post("/:id/favorite", requireApiAuth, async (req, res) => {
         await prisma.favorite.create({ data: { userId, placeId } });
     }
     res.json({ ok: true, favorited: !existing });
+});
+
+// ---------- Reviews ----------
+
+// 0–5 in 0.5 steps. Reject anything that won't multiply cleanly to an
+// integer at *2 — the front-end can't submit invalid steps even if the
+// network layer lets them through.
+const ratingSchema = z.number().min(0).max(5).refine(
+    (n) => Number.isInteger(Math.round(n * 2)),
+    { message: "Rating must be in 0.5 steps" }
+);
+const reviewBodySchema = z.object({
+    pizza: ratingSchema,
+    local: ratingSchema,
+    servicio: ratingSchema,
+    precio: ratingSchema,
+    comment: z.string().trim().max(500).optional().or(z.literal("")),
+});
+
+function publicReviewShape(row) {
+    // Never expose email. displayName/username are user-controlled and
+    // safe to show. Avatar isn't on the User model — omit cleanly.
+    return {
+        id: row.id,
+        pizza: row.pizza,
+        local: row.local,
+        servicio: row.servicio,
+        precio: row.precio,
+        comment: row.comment,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+        userName: row.user
+            ? (row.user.username || row.user.displayName || "user")
+            : "user",
+        userId: row.userId,
+    };
+}
+
+// POST /api/places/:id/review — create or update the current user's
+// review for this place. Visit row is upserted alongside in the same
+// transaction so "I've been here" is implied by leaving a review (the
+// only way to mark a visit per the product spec).
+router.post("/:id/review", requireApiAuth, async (req, res) => {
+    const placeId = Number(req.params.id);
+    const userId = req.session.user.id;
+    if (!Number.isFinite(placeId)) return res.status(400).json({ ok: false, error: "Bad id" });
+
+    const parsed = reviewBodySchema.safeParse(req.body || {});
+    if (!parsed.success) {
+        return res.status(422).json({ ok: false, error: "Invalid review", details: parsed.error.flatten() });
+    }
+
+    const place = await prisma.place.findUnique({
+        where: { id: placeId },
+        select: { id: true, isVisible: true, status: true },
+    });
+    if (!place || place.isVisible === false || place.status !== "active") {
+        return res.status(404).json({ ok: false, error: "Not found" });
+    }
+
+    const data = {
+        pizza: parsed.data.pizza,
+        local: parsed.data.local,
+        servicio: parsed.data.servicio,
+        precio: parsed.data.precio,
+        comment: parsed.data.comment ? parsed.data.comment.trim() : null,
+    };
+
+    const review = await prisma.$transaction(async (tx) => {
+        const r = await tx.review.upsert({
+            where: { placeId_userId: { placeId, userId } },
+            create: { placeId, userId, ...data },
+            update: data,
+        });
+        // Visit is implied by review — create if missing, never duplicate.
+        await tx.visit.upsert({
+            where: { userId_placeId: { userId, placeId } },
+            create: { userId, placeId },
+            update: {},
+        });
+        return r;
+    });
+
+    const opmRating = await recalcPlaceOpmRating(prisma, placeId);
+
+    res.json({
+        ok: true,
+        review: publicReviewShape({
+            ...review,
+            user: {
+                username: req.session.user.username,
+                displayName: req.session.user.displayName,
+            },
+        }),
+        opmRating,
+    });
+});
+
+// GET /api/places/:id/reviews — paginated list of visible reviews,
+// newest first. Public — no auth needed to read.
+router.get("/:id/reviews", async (req, res) => {
+    const placeId = Number(req.params.id);
+    if (!Number.isFinite(placeId)) return res.status(400).json({ ok: false, error: "Bad id" });
+
+    const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 10));
+    const offset = Math.max(0, Number(req.query.offset) || 0);
+
+    const [reviews, total] = await Promise.all([
+        prisma.review.findMany({
+            where: { placeId, isVisible: true },
+            orderBy: { createdAt: "desc" },
+            skip: offset,
+            take: limit,
+            include: {
+                user: { select: { username: true, displayName: true } },
+            },
+        }),
+        prisma.review.count({ where: { placeId, isVisible: true } }),
+    ]);
+
+    res.set("Cache-Control", "private, no-cache");
+    res.json({
+        ok: true,
+        reviews: reviews.map(publicReviewShape),
+        total,
+        limit,
+        offset,
+    });
 });
 
 module.exports = router;

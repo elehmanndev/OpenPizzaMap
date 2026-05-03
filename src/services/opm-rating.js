@@ -72,9 +72,100 @@ function computeOpmRating(place, opmReviews, priorMean = PRIOR_MEAN) {
     return Math.round(raw * 100) / 100;
 }
 
+// ---------- DB-aware helpers (kept here so the route layer doesn't have
+// to know about the bayesian internals — but `computeOpmRating` itself
+// stays pure and unit-testable without a Prisma instance) ----------
+
+const PRIOR_MEAN_TTL_MS = 60 * 60 * 1000; // 1 h
+let cachedPriorMean = null;
+let priorMeanCachedAt = 0;
+
+// Recompute the dataset-wide priorMean from every external aggregator
+// signal in the Place table, count-weighted with the same cap as the
+// per-place algorithm. Cached for an hour: a single review submit
+// shouldn't trigger a full table scan.
+async function getPriorMean(prisma) {
+    if (cachedPriorMean != null && Date.now() - priorMeanCachedAt < PRIOR_MEAN_TTL_MS) {
+        return cachedPriorMean;
+    }
+    const rows = await prisma.place.findMany({
+        select: {
+            googleRating: true, googleReviewCount: true,
+            tripadvisorRating: true, tripadvisorReviewCount: true,
+            yelpRating: true, yelpReviewCount: true,
+        },
+    });
+    const pairs = [
+        ["googleRating", "googleReviewCount"],
+        ["tripadvisorRating", "tripadvisorReviewCount"],
+        ["yelpRating", "yelpReviewCount"],
+    ];
+    let totalWeight = 0, weighted = 0;
+    for (const p of rows) {
+        for (const [rf, cf] of pairs) {
+            const r = p[rf], c = p[cf];
+            if (r == null || c == null) continue;
+            const rn = Number(r), cn = Number(c);
+            if (!Number.isFinite(rn) || !Number.isFinite(cn) || cn <= 0) continue;
+            const w = Math.min(cn, CAP_PER_EXTERNAL_SOURCE);
+            weighted += rn * 2 * w;
+            totalWeight += w;
+        }
+    }
+    cachedPriorMean = totalWeight === 0 ? PRIOR_MEAN : Math.round((weighted / totalWeight) * 100) / 100;
+    priorMeanCachedAt = Date.now();
+    return cachedPriorMean;
+}
+
+// Convenience for tests / explicit recomputes.
+function clearPriorMeanCache() {
+    cachedPriorMean = null;
+    priorMeanCachedAt = 0;
+}
+
+// Recompute and persist a single place's opmRating after a review
+// write. Reads the place + its visible reviews, computes, updates if
+// the rounded value actually changed (saves an UPDATE on no-op).
+async function recalcPlaceOpmRating(prisma, placeId) {
+    const place = await prisma.place.findUnique({
+        where: { id: placeId },
+        select: {
+            id: true, opmRating: true,
+            googleRating: true, googleReviewCount: true,
+            tripadvisorRating: true, tripadvisorReviewCount: true,
+            yelpRating: true, yelpReviewCount: true,
+        },
+    });
+    if (!place) return null;
+    const reviews = await prisma.review.findMany({
+        where: { placeId, isVisible: true },
+        select: { pizza: true, local: true, servicio: true, precio: true },
+    });
+    const priorMean = await getPriorMean(prisma);
+    const next = computeOpmRating(place, reviews, priorMean);
+    const stored = place.opmRating == null ? null : Number(place.opmRating);
+    const changed = (next == null) !== (stored == null)
+        || (next != null && stored != null && Math.abs(next - stored) >= 0.005);
+    if (changed) {
+        await prisma.place.update({
+            where: { id: placeId },
+            data: {
+                opmRating: next,
+                opmRatingSource: next == null
+                    ? null
+                    : (reviews.length ? "blend" : "external"),
+            },
+        });
+    }
+    return next;
+}
+
 module.exports = {
     computeOpmRating,
     reviewAvg5,
+    getPriorMean,
+    clearPriorMeanCache,
+    recalcPlaceOpmRating,
     PRIOR_WEIGHT,
     PRIOR_MEAN,
     CAP_PER_EXTERNAL_SOURCE,

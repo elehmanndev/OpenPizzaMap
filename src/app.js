@@ -103,7 +103,7 @@ app.set("views", path.join(__dirname, "views"));
 // Block common bot scans early (before any middleware/routes).
 app.use((req, res, next) => {
     const p = req.path.toLowerCase();
-    const allowedApiPrefixes = ["/api/auth", "/api/notify", "/api/places", "/api/submissions", "/api/admin", "/api/health"];
+    const allowedApiPrefixes = ["/api/auth", "/api/notify", "/api/places", "/api/reviews", "/api/submissions", "/api/admin", "/api/health"];
     const blockedPrefixes = [
         "/wp-",
         "/wp/",
@@ -204,6 +204,7 @@ if (maintenanceMode) {
     const apiAuth = require("./routes/api.auth");
     const apiNotify = require("./routes/api.notify");
     const apiPlaces = require("./routes/api.places");
+    const apiReviews = require("./routes/api.reviews");
     const apiSubmissions = require("./routes/api.submissions");
     const apiAdmin = require("./routes/api.admin");
     const { errorHandler } = require("./middleware/error");
@@ -295,6 +296,7 @@ if (maintenanceMode) {
     app.use("/api/auth", apiAuth);
     app.use("/api/notify", apiNotify);
     app.use("/api/places", apiPlaces);
+    app.use("/api/reviews", apiReviews);
     app.use("/api/submissions", apiSubmissions);
     app.use("/api/admin", requireApiKey({ envKey: "ADMIN_API_KEYS" }), apiAdmin);
 
