@@ -29,7 +29,7 @@
             btn.type = "button";
             btn.className = "star-input__btn";
             btn.dataset.index = String(i);
-            btn.setAttribute("aria-label", `${i} estrella${i === 1 ? "" : "s"}`);
+            btn.setAttribute("aria-label", `${i} star${i === 1 ? "" : "s"}`);
             btn.innerHTML = `
                 <span class="star-input__half star-input__half--left" data-half="0.5"></span>
                 <span class="star-input__half star-input__half--right" data-half="1.0"></span>
@@ -153,7 +153,7 @@
             const comment = commentEl ? commentEl.value.trim() : "";
             submitBtn.disabled = true;
             const prevLabel = submitBtn.textContent;
-            submitBtn.textContent = "Enviando…";
+            submitBtn.textContent = "Sending…";
             errorEl.hidden = true; errorEl.textContent = "";
             try {
                 const resp = await fetch(`/api/places/${placeId}/review`, {
@@ -171,7 +171,7 @@
                     throw new Error(j.error || `HTTP ${resp.status}`);
                 }
                 const data = await resp.json();
-                showToast("¡Gracias por tu review!");
+                showToast("Thanks for the review!");
                 closeModal();
                 // Refresh the page so the new review + recomputed
                 // opmRating + button label are in sync. Could update
@@ -181,7 +181,7 @@
                 const primary = document.querySelector("[data-place-rating]");
                 if (primary && data.opmRating != null) primary.dataset.placeRating = String(data.opmRating);
             } catch (err) {
-                errorEl.textContent = err.message || "No se pudo enviar la review.";
+                errorEl.textContent = err.message || "Couldn't send your review.";
                 errorEl.hidden = false;
                 submitBtn.disabled = false;
                 submitBtn.textContent = prevLabel;
@@ -205,7 +205,7 @@
     // Relative-time refresh: server rendered Spanish via simple math; on the
     // client, override with Intl.RelativeTimeFormat using the user's locale.
     if ("RelativeTimeFormat" in Intl) {
-        const rtf = new Intl.RelativeTimeFormat(navigator.language || "es", { numeric: "auto" });
+        const rtf = new Intl.RelativeTimeFormat(navigator.language || "en", { numeric: "auto" });
         const fmt = (msAgo) => {
             const sec = Math.round(msAgo / 1000);
             const min = Math.round(sec / 60);
@@ -252,11 +252,11 @@
                     moreBtn.remove();
                 } else {
                     moreBtn.disabled = false;
-                    moreBtn.textContent = "Ver más reviews";
+                    moreBtn.textContent = "Show more";
                 }
             } catch (_e) {
                 moreBtn.disabled = false;
-                moreBtn.textContent = "Reintentar";
+                moreBtn.textContent = "Try again";
             }
         });
     }
@@ -264,7 +264,7 @@
     function starsHtml(value10, sizeClass) {
         const value5 = Number(value10) / 2;
         const cls = sizeClass || "stars--md";
-        let html = `<span class="stars ${cls}" role="img" aria-label="${value5.toFixed(1)} de 5">`;
+        let html = `<span class="stars ${cls}" role="img" aria-label="${value5.toFixed(1)} out of 5">`;
         for (let i = 1; i <= 5; i++) {
             let kind;
             if (value5 >= i) kind = "full";
@@ -283,7 +283,7 @@
         const iso = isNaN(dt) ? "" : dt.toISOString();
         let relText = "hace un momento";
         if (!isNaN(dt) && "RelativeTimeFormat" in Intl) {
-            const rtf = new Intl.RelativeTimeFormat(navigator.language || "es", { numeric: "auto" });
+            const rtf = new Intl.RelativeTimeFormat(navigator.language || "en", { numeric: "auto" });
             const ms = Date.now() - dt.getTime();
             const min = Math.round(ms / 60000), hr = Math.round(min / 60), day = Math.round(hr / 24);
             if (ms < 60000) relText = rtf.format(-Math.round(ms / 1000), "second");
@@ -298,9 +298,9 @@
             </div>
             <ul class="opm-review__cats">
                 <li><span class="opm-review__cat">Pizza</span>${starsHtml(r.pizza * 2, "stars--sm")}</li>
-                <li><span class="opm-review__cat">Local</span>${starsHtml(r.local * 2, "stars--sm")}</li>
-                <li><span class="opm-review__cat">Servicio</span>${starsHtml(r.servicio * 2, "stars--sm")}</li>
-                <li><span class="opm-review__cat">Precio</span>${starsHtml(r.precio * 2, "stars--sm")}</li>
+                <li><span class="opm-review__cat">Vibe</span>${starsHtml(r.local * 2, "stars--sm")}</li>
+                <li><span class="opm-review__cat">Service</span>${starsHtml(r.servicio * 2, "stars--sm")}</li>
+                <li><span class="opm-review__cat">Value</span>${starsHtml(r.precio * 2, "stars--sm")}</li>
             </ul>
             ${r.comment ? `<p class="opm-review__comment"></p>` : ""}
         `;

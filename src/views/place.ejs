@@ -155,17 +155,17 @@
     const d = new Date(date);
     const diffMs = Date.now() - d.getTime();
     const sec = Math.round(diffMs / 1000);
-    if (sec < 60) return "hace un momento";
+    if (sec < 60) return "just now";
     const min = Math.round(sec / 60);
-    if (min < 60) return `hace ${min} min`;
+    if (min < 60) return `${min}m ago`;
     const hr = Math.round(min / 60);
-    if (hr < 24) return `hace ${hr} h`;
+    if (hr < 24) return `${hr}h ago`;
     const day = Math.round(hr / 24);
-    if (day < 30) return `hace ${day} día${day === 1 ? "" : "s"}`;
+    if (day < 30) return `${day}d ago`;
     const mo = Math.round(day / 30);
-    if (mo < 12) return `hace ${mo} mes${mo === 1 ? "" : "es"}`;
+    if (mo < 12) return `${mo}mo ago`;
     const yr = Math.round(mo / 12);
-    return `hace ${yr} año${yr === 1 ? "" : "s"}`;
+    return `${yr}y ago`;
   }
 
   // External aggregator reviews — secondary section, below opmRating.
@@ -277,13 +277,13 @@
 
     <aside class="place-claim place-rate">
       <div class="place-claim__icon">
-        <span class="material-symbols-rounded" aria-hidden="true">${place.viewerReview ? "edit" : "task_alt"}</span>
+        <span class="material-symbols-rounded" aria-hidden="true">rate_review</span>
       </div>
       <div class="place-claim__body">
-        <h3>${place.viewerReview ? "Edita tu review" : "¿Has estado aquí?"}</h3>
-        <p>${place.viewerReview ? "Actualiza tu valoración si has vuelto a probarla." : "Deja una valoración rápida para ayudar a la comunidad."}</p>
+        <h3>${place.viewerReview ? "Update your review" : "Been here?"}</h3>
+        <p>${place.viewerReview ? "Tweak your rating if you've been back lately." : "Drop a quick rating and help the next slice-hunter out."}</p>
       </div>
-      <button type="button" class="btn primary" data-open-review data-place-id="${place.id}" aria-haspopup="dialog">${place.viewerReview ? "Editar review" : "He estado aquí"}</button>
+      <button type="button" class="btn primary" data-open-review data-place-id="${place.id}" aria-haspopup="dialog">${place.viewerReview ? "Edit review" : "Rate this place"}</button>
     </aside>
 
     ${hours ? `
@@ -319,7 +319,7 @@
 
     ${reviews.length ? `
       <section class="card place-reviews">
-        <h2 class="place-section-title">Reviews externas</h2>
+        <h2 class="place-section-title">Other ratings</h2>
         <div class="place-reviews__grid">
           ${reviews.map((r) => `
             ${r.url ? `<a class="place-review" href="${escapeAttr(r.url)}" target="_blank" rel="noopener">` : `<div class="place-review">`}
@@ -339,7 +339,7 @@
     ${place.reviewsTotal > 0 ? `
       <section class="card place-community-reviews">
         <div class="place-community-reviews__header">
-          <h2 class="place-section-title">Reviews de la comunidad</h2>
+          <h2 class="place-section-title">Community reviews</h2>
           <span class="place-community-reviews__count">${place.reviewsTotal}</span>
         </div>
         <ul class="place-community-reviews__list" data-reviews-list data-place-id="${place.id}" data-loaded-count="${place.reviewsFirstPage.length}" data-total="${place.reviewsTotal}" data-page-size="${place.reviewPageSize}">
@@ -351,16 +351,16 @@
               </div>
               <ul class="opm-review__cats">
                 <li><span class="opm-review__cat">Pizza</span>${renderStars(r.pizza * 2, "stars--sm")}</li>
-                <li><span class="opm-review__cat">Local</span>${renderStars(r.local * 2, "stars--sm")}</li>
-                <li><span class="opm-review__cat">Servicio</span>${renderStars(r.servicio * 2, "stars--sm")}</li>
-                <li><span class="opm-review__cat">Precio</span>${renderStars(r.precio * 2, "stars--sm")}</li>
+                <li><span class="opm-review__cat">Vibe</span>${renderStars(r.local * 2, "stars--sm")}</li>
+                <li><span class="opm-review__cat">Service</span>${renderStars(r.servicio * 2, "stars--sm")}</li>
+                <li><span class="opm-review__cat">Value</span>${renderStars(r.precio * 2, "stars--sm")}</li>
               </ul>
               ${r.comment ? `<p class="opm-review__comment">${escapeHtml(r.comment)}</p>` : ""}
             </li>
           `).join("")}
         </ul>
         ${place.reviewsTotal > place.reviewsFirstPage.length ? `
-          <button type="button" class="btn opm-reviews-more" data-load-more-reviews>Ver más reviews</button>
+          <button type="button" class="btn opm-reviews-more" data-load-more-reviews>Show more</button>
         ` : ""}
       </section>
     ` : ""}
@@ -399,10 +399,10 @@
     <div class="review-modal__backdrop" data-review-close></div>
     <div class="review-modal__sheet" role="dialog" aria-modal="true" aria-labelledby="review-modal-title">
       <header class="review-modal__head">
-        <button type="button" class="review-modal__close" data-review-close aria-label="Cerrar">
+        <button type="button" class="review-modal__close" data-review-close aria-label="Close">
           <span class="material-symbols-rounded" aria-hidden="true">close</span>
         </button>
-        <h2 class="review-modal__title" id="review-modal-title">¿Qué te ha parecido ${escapeHtml(place.name)}?</h2>
+        <h2 class="review-modal__title" id="review-modal-title">How was ${escapeHtml(place.name)}?</h2>
       </header>
       <form class="review-modal__form" data-review-form>
         <fieldset class="review-modal__rows">
@@ -411,25 +411,25 @@
             <div class="star-input" data-star-input data-name="pizza"></div>
           </div>
           <div class="review-row" data-review-cat="local">
-            <span class="review-row__label">Local <span class="review-row__emoji" aria-hidden="true">🏠</span></span>
+            <span class="review-row__label">Vibe <span class="review-row__emoji" aria-hidden="true">🏠</span></span>
             <div class="star-input" data-star-input data-name="local"></div>
           </div>
           <div class="review-row" data-review-cat="servicio">
-            <span class="review-row__label">Servicio <span class="review-row__emoji" aria-hidden="true">🤵</span></span>
+            <span class="review-row__label">Service <span class="review-row__emoji" aria-hidden="true">🤵</span></span>
             <div class="star-input" data-star-input data-name="servicio"></div>
           </div>
           <div class="review-row" data-review-cat="precio">
-            <span class="review-row__label">Precio <span class="review-row__emoji" aria-hidden="true">💶</span></span>
+            <span class="review-row__label">Value <span class="review-row__emoji" aria-hidden="true">💶</span></span>
             <div class="star-input" data-star-input data-name="precio"></div>
           </div>
         </fieldset>
         <label class="review-modal__comment-wrap">
-          <span class="review-modal__comment-label">¿Algo más? (opcional)</span>
-          <textarea class="review-modal__comment" data-review-comment maxlength="500" rows="3" placeholder="Cuenta tu experiencia…">${place.viewerReview && place.viewerReview.comment ? escapeHtml(place.viewerReview.comment) : ""}</textarea>
+          <span class="review-modal__comment-label">Anything else? (optional)</span>
+          <textarea class="review-modal__comment" data-review-comment maxlength="500" rows="3" placeholder="Tell us about it…">${place.viewerReview && place.viewerReview.comment ? escapeHtml(place.viewerReview.comment) : ""}</textarea>
           <span class="review-modal__counter" data-review-counter>0 / 500</span>
         </label>
         <div class="review-modal__error" data-review-error hidden></div>
-        <button type="submit" class="btn primary review-modal__submit" data-review-submit disabled>Enviar review</button>
+        <button type="submit" class="btn primary review-modal__submit" data-review-submit disabled>Submit</button>
       </form>
     </div>
   </div>

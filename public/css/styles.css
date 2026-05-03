@@ -299,6 +299,9 @@ button {
   text-decoration: none;
   border: 1px solid var(--c-border);
   background: var(--c-surface);
+  /* <button> elements default to the system UI font; force the page font
+   * so anchor-vs-button .btn instances render identically. */
+  font: inherit;
 }
 
 .btn.primary {
@@ -3115,11 +3118,17 @@ a.place-review:hover {
 }
 
 /* Inline variant of the rating badge — sits in the title row where the
- * heart used to live. Slightly smaller than the standalone badge so it
- * doesn't dwarf the title on mobile. */
+ * heart used to live. Smaller than the standalone badge so it doesn't
+ * dominate the title row on mobile. */
 .place-rating-badge--inline {
-    width: 56px;
-    height: 56px;
+    width: 44px;
+    height: 44px;
     flex-shrink: 0;
+    border-radius: 10px;
 }
-.place-rating-badge--inline strong { font-size: 22px; }
+.place-rating-badge--inline strong { font-size: 17px; }
+
+/* The aside CTA above opening hours is part of the same scroll group as
+ * the header card — tighten its top margin so the cards don't have an
+ * awkward 32 px gap on mobile. */
+.place-rate { margin-top: 16px; }
