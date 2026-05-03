@@ -2830,8 +2830,16 @@ a.place-review:hover {
 
 .place-rating-primary {
     display: inline-flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
     margin-left: auto;
+}
+.place-rating-primary__num {
+    font-size: 0.85rem;
+    color: var(--text-muted, #6b7280);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
 }
 @media (max-width: 767px) {
     .place-header { flex-direction: column; align-items: flex-start; gap: 8px; }
