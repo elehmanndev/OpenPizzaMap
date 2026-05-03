@@ -27,6 +27,7 @@ model User {
   submissions  Submission[] @relation("UserSubmissions")
   visits       Visit[]
   favorites    Favorite[]
+  placeReviews Review[]
 }
 
 model Place {
@@ -67,8 +68,10 @@ model Place {
   yelpRating              Decimal? @db.Decimal(2,1)
   yelpReviewCount         Int?
   yelpUrl                 String?  @db.VarChar(500)
-  // OpenPizzaMap composite score (1.0–10.0). Computed from external + community signals.
-  opmRating               Decimal? @db.Decimal(3,1)
+  // OpenPizzaMap composite score (0.00–10.00). Computed from external + community signals.
+  // Decimal(4,2) so the bayesian formula keeps 2 decimals — Decimal(3,1)
+  // collapsed 9.06 / 9.07 to the same stored value, masking algorithm changes.
+  opmRating               Decimal? @db.Decimal(4,2)
   opmRatingSource         String?  @db.VarChar(20)   // "external" | "community" | "blend"
   status        PlaceStatus @default(active)
   slug          String?     @unique
@@ -86,6 +89,7 @@ model Place {
   styles        PlaceStyle[]
   visits        Visit[]
   favorites     Favorite[]
+  reviews       Review[]
 
   @@index([city])
   @@index([lat])
@@ -119,6 +123,37 @@ model Favorite {
   @@unique([userId, placeId])
   @@index([placeId])
   @@index([userId])
+}
+
+// Community review of a Place. The four category scores are 0.0–5.0 in
+// 0.5 steps (validation enforced at the API layer, not the DB — the DB
+// just stores a Float). The OPM rating algorithm in
+// src/services/opm-rating.js consumes (avg of the 4 categories) × 2 to
+// get a 0–10 contribution, then bayesian-blends it with external signals.
+//
+// Unique (placeId, userId): one review per user per place. Re-submissions
+// edit the existing row instead of creating new ones, so a user can
+// adjust their rating after a return visit.
+model Review {
+  id        Int      @id @default(autoincrement())
+  placeId   Int
+  userId    Int
+  pizza     Float                       // 0.0–5.0 in 0.5 steps
+  local     Float                       // ditto
+  servicio  Float                       // ditto
+  precio    Float                       // ditto
+  comment   String?  @db.VarChar(500)
+  isVisible Boolean  @default(true)     // moderation hatch
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  place     Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([placeId, userId])
+  @@index([placeId])
+  @@index([userId])
+  @@index([createdAt])
 }
 
 model Country {
