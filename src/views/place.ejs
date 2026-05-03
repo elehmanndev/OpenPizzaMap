@@ -12,21 +12,99 @@
     return `${m[1]}-large.jpg`;
   }
 
-  // Parse schema.org-style hours like "Mo 13:00-17:00; Tu 13:00-17:00; Tu 19:00-23:00".
+  // Parse opening hours from any of the formats we end up with in the DB:
+  //   1. OSM-strict (legacy importer):  "Mo 13:00-17:00; Tu 19:00-23:00"
+  //   2. GMaps localised weekly:        "domingo: 19:30-23:30; lunes: Cerrado; ..."
+  //                                     also Italian/French/German/English/Portuguese
+  //   3. GMaps multi-shift glued:       "viernes: 12:30-16:0019:00-24:00"
+  //                                     (no separator between shifts in the source)
+  //   4. GMaps today-only summary:      "Cerrado · Apertura: 18:30·Ver más horarios"
+  //                                     → null, we don't have the full week
   // Returns rows that collapse runs of consecutive identical schedules into ranges.
   function parseOpeningHours(raw) {
     if (!raw) return null;
+    const s = String(raw).replace(/ /g, " ").trim();
+    if (!s) return null;
+    // Bail on the today-only abbreviated GMaps summary — no full week available.
+    if (/Ver más horarios|See more times|Vedi altri orari|Voir plus d'horaires|Weitere Öffnungszeiten/i.test(s)) return null;
+
     const dayLabels = { Mo: "Mon", Tu: "Tue", We: "Wed", Th: "Thu", Fr: "Fri", Sa: "Sat", Su: "Sun" };
     const order = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+
+    // Day-name dictionary: localised → ISO short code. Lower-cased lookup,
+    // accent-stripped to handle "miércoles" / "miercoles" / "Sábado" / "sabado".
+    const dayMap = {
+      // OSM-strict
+      mo: "Mo", tu: "Tu", we: "We", th: "Th", fr: "Fr", sa: "Sa", su: "Su",
+      // Spanish
+      lunes: "Mo", martes: "Tu", miercoles: "We", jueves: "Th",
+      viernes: "Fr", sabado: "Sa", domingo: "Su",
+      // Italian
+      lunedi: "Mo", martedi: "Tu", mercoledi: "We", giovedi: "Th",
+      venerdi: "Fr", sabato: "Sa", domenica: "Su",
+      // French
+      lundi: "Mo", mardi: "Tu", mercredi: "We", jeudi: "Th",
+      vendredi: "Fr", samedi: "Sa", dimanche: "Su",
+      // German
+      montag: "Mo", dienstag: "Tu", mittwoch: "We", donnerstag: "Th",
+      freitag: "Fr", samstag: "Sa", sonntag: "Su",
+      // English
+      monday: "Mo", tuesday: "Tu", wednesday: "We", thursday: "Th",
+      friday: "Fr", saturday: "Sa", sunday: "Su",
+      // Portuguese (segunda/terça/etc + the "feira" suffix is optional)
+      segunda: "Mo", terca: "Tu", quarta: "We", quinta: "Th", sexta: "Fr",
+    };
+    const closedRe = /^(cerrado|closed|chiuso|ferme|fermee|geschlossen|fechado|riposo)\b/i;
+    const stripAccents = (x) => x.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+
+    // Split a "12:30-16:0019:00-24:00" run into ["12:30-16:00", "19:00-24:00"].
+    // GMaps glues multi-shift days; we re-split on the second HH:MM start.
+    function splitShifts(rangeText) {
+      const cleaned = rangeText.replace(/[–—−]/g, "-");
+      // Match "HH:MM-HH:MM" runs greedily — one or many, possibly back-to-back.
+      const matches = cleaned.match(/\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}/g);
+      if (matches && matches.length) return matches.map((r) => r.replace(/\s+/g, "").replace("-", "–"));
+      return [cleaned.trim().replace(/-/g, "–")];
+    }
+
     const map = Object.fromEntries(order.map((d) => [d, []]));
-    const tokens = String(raw).split(/[;\n]/).map((s) => s.trim()).filter(Boolean);
+    const tokens = s.split(/[;\n]/).map((t) => t.trim()).filter(Boolean);
     let parsed = false;
     for (const tok of tokens) {
-      const m = tok.match(/^(Mo|Tu|We|Th|Fr|Sa|Su)\s+(.+)$/);
+      // OSM-strict day RANGE: "Mo-Su 19:00-22:30" / "Mo-Fr 11:00-15:00".
+      // Apply the same shifts to every day in the inclusive code range.
+      const range = tok.match(/^(Mo|Tu|We|Th|Fr|Sa|Su)\s*-\s*(Mo|Tu|We|Th|Fr|Sa|Su)\s+(.+)$/);
+      if (range) {
+        const a = order.indexOf(range[1]);
+        const b = order.indexOf(range[2]);
+        if (a !== -1 && b !== -1) {
+          const ranges = splitShifts(range[3]);
+          if (ranges.length) {
+            const lo = Math.min(a, b), hi = Math.max(a, b);
+            for (let k = lo; k <= hi; k++) map[order[k]].push(...ranges);
+            parsed = true;
+            continue;
+          }
+        }
+      }
+      // Single-day prefix — "domingo: 19:30-23:30", "Mo 13:00-17:00",
+      // "lunedì: 12:00-15:00, 19:00-23:00", etc.
+      const m = tok.match(/^([A-Za-zÀ-ÿ]+)(?:\s+|\s*:\s*)(.+)$/);
       if (!m) continue;
-      const range = m[2].replace(/-/g, "–");
-      map[m[1]].push(range);
-      parsed = true;
+      const dayKey = stripAccents(m[1]);
+      const code = dayMap[dayKey];
+      if (!code) continue;
+      const rest = m[2].trim();
+      if (closedRe.test(rest)) {
+        // Empty array means "Closed" — handled in the render path.
+        parsed = true;
+        continue;
+      }
+      const ranges = splitShifts(rest);
+      if (ranges.length) {
+        map[code].push(...ranges);
+        parsed = true;
+      }
     }
     if (!parsed) return null;
 
