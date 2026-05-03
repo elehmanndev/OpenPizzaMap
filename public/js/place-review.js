@@ -261,8 +261,8 @@
         });
     }
 
-    function starsHtml(value10, sizeClass) {
-        const value5 = Number(value10) / 2;
+    function starsHtml(value, sizeClass) {
+        const value5 = Number(value);
         const cls = sizeClass || "stars--md";
         let html = `<span class="stars ${cls}" role="img" aria-label="${value5.toFixed(1)} out of 5">`;
         for (let i = 1; i <= 5; i++) {
@@ -297,10 +297,10 @@
                 <time class="opm-review__time" datetime="${iso}"></time>
             </div>
             <ul class="opm-review__cats">
-                <li><span class="opm-review__cat">Pizza</span>${starsHtml(r.pizza * 2, "stars--sm")}</li>
-                <li><span class="opm-review__cat">Vibe</span>${starsHtml(r.local * 2, "stars--sm")}</li>
-                <li><span class="opm-review__cat">Service</span>${starsHtml(r.servicio * 2, "stars--sm")}</li>
-                <li><span class="opm-review__cat">Value</span>${starsHtml(r.precio * 2, "stars--sm")}</li>
+                <li><span class="opm-review__cat">Pizza</span>${starsHtml(r.pizza, "stars--sm")}</li>
+                <li><span class="opm-review__cat">Vibe</span>${starsHtml(r.local, "stars--sm")}</li>
+                <li><span class="opm-review__cat">Service</span>${starsHtml(r.servicio, "stars--sm")}</li>
+                <li><span class="opm-review__cat">Value</span>${starsHtml(r.precio, "stars--sm")}</li>
             </ul>
             ${r.comment ? `<p class="opm-review__comment"></p>` : ""}
         `;

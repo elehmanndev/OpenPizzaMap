@@ -6,8 +6,8 @@
 //
 // Two-pass:
 //   1. Compute global priorMean as the count-weighted average of every
-//      place's external rating (rating * 2, weighted by min(count, 100)).
-//      Falls back to PRIOR_MEAN constant if the dataset is empty.
+//      place's external rating (weighted by min(count, 100)). Falls back
+//      to PRIOR_MEAN constant if the dataset is empty.
 //   2. For each place, gather its external signals + any OPM reviews,
 //      run computeOpmRating with the dynamic priorMean, and update the
 //      row if the rounded value differs from what's stored.
@@ -39,7 +39,7 @@ function computePriorMean(places) {
             const rn = Number(r), cn = Number(c);
             if (!Number.isFinite(rn) || !Number.isFinite(cn) || cn <= 0) continue;
             const w = Math.min(cn, CAP_PER_EXTERNAL_SOURCE);
-            weighted += rn * 2 * w;
+            weighted += rn * w;
             totalWeight += w;
         }
     }
@@ -69,9 +69,9 @@ async function loadAllReviewsByPlaceId() {
 }
 
 function bucketHistogram(values) {
-    // Bucket of width 0.5 from 0 to 10.
+    // Bucket of width 0.5 from 0 to 5 (matches the new /5 scale).
     const buckets = new Map();
-    for (let b = 0; b <= 10; b += 0.5) buckets.set(b.toFixed(1), 0);
+    for (let b = 0; b <= 5; b += 0.5) buckets.set(b.toFixed(1), 0);
     for (const v of values) {
         if (v == null) continue;
         const b = (Math.floor(v * 2) / 2).toFixed(1);

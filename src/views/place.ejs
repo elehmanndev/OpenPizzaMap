@@ -129,12 +129,12 @@
 
   const hours = parseOpeningHours(place.openingHours);
 
-  // Stars-only rating display. Backend stores opmRating in /10; UI converts
-  // to /5 (value/2) and renders a 5-star row with halves. Eric's lock:
-  // never show the numeric value next to the stars in the place page UI.
-  function renderStars(value10, sizeClass) {
-    if (value10 == null) return "";
-    const value5 = Number(value10) / 2;
+  // Stars-only rating display. Backend now stores opmRating in /5
+  // directly (matching the externals + the per-category review scale),
+  // so we render the 5-star row with halves straight from `value`.
+  function renderStars(value, sizeClass) {
+    if (value == null) return "";
+    const value5 = Number(value);
     const cls = sizeClass || "stars--md";
     let html = `<span class="stars ${cls}" role="img" aria-label="${value5.toFixed(1)} out of 5 stars">`;
     for (let i = 1; i <= 5; i++) {
@@ -350,10 +350,10 @@
                 <time class="opm-review__time" datetime="${escapeAttr(new Date(r.createdAt).toISOString())}" data-rel-time>${escapeHtml(relTime(r.createdAt))}</time>
               </div>
               <ul class="opm-review__cats">
-                <li><span class="opm-review__cat">Pizza</span>${renderStars(r.pizza * 2, "stars--sm")}</li>
-                <li><span class="opm-review__cat">Vibe</span>${renderStars(r.local * 2, "stars--sm")}</li>
-                <li><span class="opm-review__cat">Service</span>${renderStars(r.servicio * 2, "stars--sm")}</li>
-                <li><span class="opm-review__cat">Value</span>${renderStars(r.precio * 2, "stars--sm")}</li>
+                <li><span class="opm-review__cat">Pizza</span>${renderStars(r.pizza, "stars--sm")}</li>
+                <li><span class="opm-review__cat">Vibe</span>${renderStars(r.local, "stars--sm")}</li>
+                <li><span class="opm-review__cat">Service</span>${renderStars(r.servicio, "stars--sm")}</li>
+                <li><span class="opm-review__cat">Value</span>${renderStars(r.precio, "stars--sm")}</li>
               </ul>
               ${r.comment ? `<p class="opm-review__comment">${escapeHtml(r.comment)}</p>` : ""}
             </li>
