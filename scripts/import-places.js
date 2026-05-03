@@ -12,6 +12,7 @@ const fs = require('fs');
 const path = require('path');
 const { PrismaClient } = require('@prisma/client');
 const { decodeEntities } = require('./lib/utils');
+const { boundingBox, haversineKm } = require('../src/services/geo');
 
 const ROOT = path.resolve(__dirname, '..');
 const CACHE_FILE = path.join(ROOT, 'geocode-cache.json');
@@ -220,6 +221,31 @@ function slugify(s) {
 
 function dedupKey(name, city) {
   return slugify(name) + '|' + slugify(city);
+}
+
+// Strip prefixes that import sources flip-flop on. Slug-based dedup misses
+// pairs like "Pizzeria Starita a Materdei" / "Starita a Materdei" because
+// the slug differs by one token. Normalising both sides catches those at
+// import time before they create a duplicate row. Loop until no further
+// prefix is removed so a row like "10 Antica Pizzeria Ciro" collapses to
+// "ciro" cleanly. Suffix words (`bistrot`, `restaurant`) are NOT stripped
+// — those frequently distinguish a venue's standalone bar from its main
+// pizzeria at the same address (see Pass B of the dedup audit).
+const NAME_PREFIX_RE = /^(pizzeria|pizzaria|antica|the|le|la|il|el|los|las|\d+\s+|–|—|-)\s*/i;
+function normalizeName(name) {
+  let s = String(name || '')
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')   // strip accents
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  // Loop because the same row can have stacked prefixes ("10 Pizzeria Diego").
+  for (let i = 0; i < 5; i++) {
+    const next = s.replace(NAME_PREFIX_RE, '').trim();
+    if (next === s) break;
+    s = next;
+  }
+  return s;
 }
 
 function priceLevelFromRange(range) {
@@ -734,7 +760,39 @@ async function main() {
     usedSlugs.add(placeSlug);
 
     const styles = [...entry.styles];
-    const existing = await prisma.place.findUnique({ where: { slug: placeSlug } });
+
+    // Dedup fallback: normalise the candidate name and search for an
+    // existing row in the same country within a 200 m bbox whose
+    // normalised name matches. Catches the slug-miss class (e.g.
+    // "Pizzeria Starita a Materdei" already in DB, incoming
+    // "Starita a Materdei" — different slug, same place). 200 m is
+    // generous enough to absorb the geocoder drift we saw between
+    // 50TP and AVPN imports without tripping on neighbouring shops.
+    const candidateCountry = p.countryName || CODE_TO_COUNTRY_NAME[p.countryCode] || p.countryCode;
+    let existing = null;
+    if (p.lat != null && p.lng != null && candidateCountry) {
+      const candidateNorm = normalizeName(p.name);
+      if (candidateNorm) {
+        const box = boundingBox(Number(p.lat), Number(p.lng), 0.2);
+        const nearby = await prisma.place.findMany({
+          where: {
+            country: candidateCountry,
+            lat: { gte: box.minLat, lte: box.maxLat },
+            lng: { gte: box.minLng, lte: box.maxLng },
+          },
+          select: { id: true, name: true, slug: true, lat: true, lng: true },
+        });
+        for (const row of nearby) {
+          if (normalizeName(row.name) !== candidateNorm) continue;
+          if (haversineKm(Number(row.lat), Number(row.lng), Number(p.lat), Number(p.lng)) > 0.2) continue;
+          // Fetch the full row so the enrichment branch sees every field.
+          existing = await prisma.place.findUnique({ where: { id: row.id } });
+          break;
+        }
+      }
+    }
+    // Fall through to the slug-based lookup if the normalised match missed.
+    if (!existing) existing = await prisma.place.findUnique({ where: { slug: placeSlug } });
 
     let place;
     if (!existing) {
