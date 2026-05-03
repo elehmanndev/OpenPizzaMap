@@ -24,11 +24,20 @@
 //                   DuckDuckGo HTML search to discover one, then re-run
 //                   the web phase on the discovered URL.
 //
+//   6. gmaps      — (OPT-IN, --phase=gmaps) Headless Playwright scrape of
+//                   the Google Maps place panel for any visible row missing
+//                   phone/website/hours. Higher hit rate than `search` +
+//                   `web` combined; not in the default phase list because
+//                   the run takes ~3s/row. Shares scripts/lib/gmaps.js
+//                   (and the gmaps-resolve-cache.json on-disk cache) with
+//                   scripts/resolve-via-gmaps.js.
+//
 // Usage:
-//   node scripts/enricher.js                       # all phases
+//   node scripts/enricher.js                       # all phases (NOT including gmaps)
 //   node scripts/enricher.js --phase=validate
 //   node scripts/enricher.js --phase=dedup
 //   node scripts/enricher.js --phase=overpass --limit 50
+//   node scripts/enricher.js --phase=gmaps --since-id=1603 --limit=200
 //   node scripts/enricher.js --skip=search         # all except search
 //
 // Self-paced: every external request is rate-limited and retried on transient
@@ -971,6 +980,88 @@ async function phaseSearch(prisma, report) {
   console.log(`[search] done — found=${found} none=${none} fail=${fail}`);
 }
 
+// ─── PHASE 6: gmaps (place-panel scrape via Playwright) ─────────────────────
+// Headless GMaps lookup that fills phone/website/openingHours from the place
+// panel for rows that overpass + web didn't cover. Higher hit rate than the
+// search phase (DDG → website → schema.org), at the cost of a Playwright
+// browser. Opt-in via --phase=gmaps; not in the default phase list because
+// the run takes ~3s/row and a full sweep can run 20+ minutes.
+//
+// Shares scripts/lib/gmaps.js with scripts/resolve-via-gmaps.js — same
+// scraping path, same on-disk cache (gmaps-resolve-cache.json).
+async function phaseGmaps(prisma, report) {
+  const { createGmapsPage, lookup, loadCache, saveCache } = require('./lib/gmaps');
+  console.log('\n[gmaps] querying Google Maps place panel for missing fields…');
+  const where = {
+    isVisible: true,
+    OR: [{ phone: null }, { websiteUrl: null }, { openingHours: null }],
+  };
+  if (SINCE_ID != null) where.id = { gte: SINCE_ID };
+  const targets = await prisma.place.findMany({
+    where,
+    select: { id: true, name: true, city: true, phone: true, websiteUrl: true, openingHours: true },
+    orderBy: { id: 'asc' },
+  });
+  const work = LIMIT ? targets.slice(0, LIMIT) : targets;
+  console.log(`[gmaps] ${work.length} candidates (of ${targets.length} missing 1+ field)`);
+
+  if (DRY_RUN) {
+    console.log('[gmaps] dry-run — would scrape the place panel for each candidate');
+    report.gmaps = { processed: 0, dryRun: true };
+    return;
+  }
+
+  const cache = loadCache();
+  const { browser, page } = await createGmapsPage();
+
+  let resolved = 0, missed = 0, fieldsFilled = 0;
+  let phones = 0, websites = 0, hours = 0;
+  try {
+    for (let i = 0; i < work.length; i++) {
+      const p = work[i];
+      const cacheKey = `${p.name}|${p.city || ''}`;
+      let r = cache[cacheKey];
+      // The cache pre-dates phone/website/hours fields — invalidate stale
+      // address-only entries so this phase re-fetches them.
+      if (r && !r.miss && !('phone' in r) && !('websiteUrl' in r) && !('openingHours' in r)) {
+        r = null;
+      }
+      if (!r) {
+        try {
+          r = await lookup(page, p.name, p.city);
+          cache[cacheKey] = r || { miss: true, ts: Date.now() };
+        } catch (e) {
+          cache[cacheKey] = { error: String(e.message || e), ts: Date.now() };
+          console.warn(`[gmaps] #${p.id} "${p.name}" ERROR: ${e.message || e}`);
+          continue;
+        }
+        saveCache(cache);
+        await sleep(800);
+      }
+      if (!r || r.miss || !r.address) { missed++; continue; }
+
+      const data = {};
+      if (!p.phone && r.phone) { data.phone = r.phone; phones++; }
+      if (!p.websiteUrl && r.websiteUrl) { data.websiteUrl = r.websiteUrl; websites++; }
+      if (!p.openingHours && r.openingHours) { data.openingHours = r.openingHours; hours++; }
+      if (Object.keys(data).length) {
+        data.enrichedAt = new Date();
+        await prisma.place.update({ where: { id: p.id }, data });
+        fieldsFilled += Object.keys(data).length - 1; // exclude enrichedAt
+        resolved++;
+      }
+      if ((i + 1) % 10 === 0 || i + 1 === work.length) {
+        console.log(`[gmaps] ${i + 1}/${work.length} resolved=${resolved} miss=${missed} fields=${fieldsFilled} (phone=${phones} web=${websites} hours=${hours})`);
+      }
+    }
+  } finally {
+    saveCache(cache);
+    await browser.close().catch(() => {});
+  }
+  report.gmaps = { processed: work.length, resolved, missed, fieldsFilled, phones, websites, hours };
+  console.log(`[gmaps] done — resolved=${resolved} miss=${missed} fields=${fieldsFilled} (phone=${phones} web=${websites} hours=${hours})`);
+}
+
 // ─── main ────────────────────────────────────────────────────────────────────
 async function main() {
   const prisma = new PrismaClient();
@@ -988,6 +1079,7 @@ async function main() {
     if (toRun.includes('overpass')) await phaseOverpass(prisma, report);
     if (toRun.includes('web'))      await phaseWeb(prisma, report);
     if (toRun.includes('search'))   await phaseSearch(prisma, report);
+    if (toRun.includes('gmaps'))    await phaseGmaps(prisma, report);
   } finally {
     report.finishedAt = new Date().toISOString();
     fs.writeFileSync(REPORT_FILE, JSON.stringify(report, null, 2));
