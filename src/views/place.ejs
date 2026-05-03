@@ -129,7 +129,46 @@
 
   const hours = parseOpeningHours(place.openingHours);
 
-  // Reviews: only show platforms we have data for.
+  // Stars-only rating display. Backend stores opmRating in /10; UI converts
+  // to /5 (value/2) and renders a 5-star row with halves. Eric's lock:
+  // never show the numeric value next to the stars in the place page UI.
+  function renderStars(value10, sizeClass) {
+    if (value10 == null) return "";
+    const value5 = Number(value10) / 2;
+    const cls = sizeClass || "stars--md";
+    let html = `<span class="stars ${cls}" role="img" aria-label="${value5.toFixed(1)} out of 5 stars">`;
+    for (let i = 1; i <= 5; i++) {
+      let kind;
+      if (value5 >= i) kind = "full";
+      else if (value5 >= i - 0.5) kind = "half";
+      else kind = "empty";
+      html += `<span class="star star--${kind}" aria-hidden="true"></span>`;
+    }
+    html += `</span>`;
+    return html;
+  }
+
+  // Relative-time formatter for review timestamps. Server-side gives us
+  // a plausible default; the client JS overrides on render with
+  // Intl.RelativeTimeFormat using the user's locale.
+  function relTime(date) {
+    const d = new Date(date);
+    const diffMs = Date.now() - d.getTime();
+    const sec = Math.round(diffMs / 1000);
+    if (sec < 60) return "hace un momento";
+    const min = Math.round(sec / 60);
+    if (min < 60) return `hace ${min} min`;
+    const hr = Math.round(min / 60);
+    if (hr < 24) return `hace ${hr} h`;
+    const day = Math.round(hr / 24);
+    if (day < 30) return `hace ${day} día${day === 1 ? "" : "s"}`;
+    const mo = Math.round(day / 30);
+    if (mo < 12) return `hace ${mo} mes${mo === 1 ? "" : "es"}`;
+    const yr = Math.round(mo / 12);
+    return `hace ${yr} año${yr === 1 ? "" : "s"}`;
+  }
+
+  // External aggregator reviews — secondary section, below opmRating.
   const reviews = [];
   if (place.tripadvisorRating != null) {
     reviews.push({
@@ -172,9 +211,9 @@
   ${place.heroImageUrl ? `
     <div class="place-hero">
       <img src="${escapeAttr(largeVariant(place.heroImageUrl))}" data-fallback="${escapeAttr(place.heroImageUrl)}" alt="${escapeAttr(place.name)}" loading="eager" onerror="if(this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.remove()}" />
-      <button type="button" class="place-visit-btn place-visit-btn--floating${place.viewerVisited ? " is-active" : ""}" data-place-visit data-place-id="${place.id}" aria-pressed="${place.viewerVisited ? "true" : "false"}">
-        <span class="material-symbols-rounded place-visit-btn__icon" aria-hidden="true">task_alt</span>
-        <span class="place-visit-btn__label">${place.viewerVisited ? "You've been here" : "I've been here"}</span>
+      <button type="button" class="place-visit-btn place-visit-btn--floating${place.viewerReview ? " is-active" : ""}" data-open-review data-place-id="${place.id}" aria-haspopup="dialog">
+        <span class="material-symbols-rounded place-visit-btn__icon" aria-hidden="true">${place.viewerReview ? "edit" : "task_alt"}</span>
+        <span class="place-visit-btn__label">${place.viewerReview ? "Editar review" : "He estado aquí"}</span>
         <span class="place-visit-btn__count" data-visit-count>${place.visitCount > 0 ? place.visitCount : ""}</span>
       </button>
     </div>
@@ -215,43 +254,14 @@
       </div>
 
       ${place.opmRating != null ? `
-        <div class="place-rating-badge" title="OpenPizzaMap score">
-          <strong>${escapeHtml(Number(place.opmRating).toFixed(1))}</strong>
+        <div class="place-rating-primary" data-place-rating="${escapeAttr(String(Number(place.opmRating)))}">
+          ${renderStars(Number(place.opmRating), "stars--lg")}
         </div>
       ` : ""}
     </div>
     <script>
       (function () {
         const userIn = ${user ? "true" : "false"};
-        function toggleBtn(btn, on, labels) {
-          btn.classList.toggle("is-active", on);
-          btn.setAttribute("aria-pressed", String(on));
-          if (labels) {
-            const lbl = btn.querySelector(".place-visit-btn__label");
-            const ic = btn.querySelector(".place-visit-btn__icon");
-            if (lbl) lbl.textContent = on ? labels.onLabel : labels.offLabel;
-            if (ic) ic.textContent = on ? labels.onIcon : labels.offIcon;
-          }
-        }
-        const visitBtn = document.querySelector("[data-place-visit]");
-        if (visitBtn) {
-          visitBtn.addEventListener("click", async () => {
-            if (!userIn) { window.location.href = "/auth"; return; }
-            const id = visitBtn.dataset.placeId;
-            const wasOn = visitBtn.classList.contains("is-active");
-            toggleBtn(visitBtn, !wasOn, { onLabel: "You've been here", offLabel: "I've been here", onIcon: "task_alt", offIcon: "task_alt" });
-            try {
-              const r = await fetch("/api/places/" + id + "/visit", { method: "POST" });
-              if (!r.ok) throw new Error();
-              const d = await r.json();
-              toggleBtn(visitBtn, !!d.visited, { onLabel: "You've been here", offLabel: "I've been here", onIcon: "task_alt", offIcon: "task_alt" });
-              const c = visitBtn.querySelector("[data-visit-count]");
-              if (c) c.textContent = d.visitCount > 0 ? d.visitCount : "";
-            } catch {
-              toggleBtn(visitBtn, wasOn, { onLabel: "You've been here", offLabel: "I've been here", onIcon: "task_alt", offIcon: "task_alt" });
-            }
-          });
-        }
         const favBtns = document.querySelectorAll("[data-place-fav]");
         favBtns.forEach(btn => {
           btn.addEventListener("click", async (ev) => {
@@ -310,7 +320,7 @@
 
     ${reviews.length ? `
       <section class="card place-reviews">
-        <h2 class="place-section-title">Reviews</h2>
+        <h2 class="place-section-title">Reviews externas</h2>
         <div class="place-reviews__grid">
           ${reviews.map((r) => `
             ${r.url ? `<a class="place-review" href="${escapeAttr(r.url)}" target="_blank" rel="noopener">` : `<div class="place-review">`}
@@ -324,6 +334,35 @@
             ${r.url ? `</a>` : `</div>`}
           `).join("")}
         </div>
+      </section>
+    ` : ""}
+
+    ${place.reviewsTotal > 0 ? `
+      <section class="card place-community-reviews">
+        <div class="place-community-reviews__header">
+          <h2 class="place-section-title">Reviews de la comunidad</h2>
+          <span class="place-community-reviews__count">${place.reviewsTotal}</span>
+        </div>
+        <ul class="place-community-reviews__list" data-reviews-list data-place-id="${place.id}" data-loaded-count="${place.reviewsFirstPage.length}" data-total="${place.reviewsTotal}" data-page-size="${place.reviewPageSize}">
+          ${place.reviewsFirstPage.map((r) => `
+            <li class="opm-review">
+              <div class="opm-review__head">
+                <span class="opm-review__user">${escapeHtml(r.userName)}</span>
+                <time class="opm-review__time" datetime="${escapeAttr(new Date(r.createdAt).toISOString())}" data-rel-time>${escapeHtml(relTime(r.createdAt))}</time>
+              </div>
+              <ul class="opm-review__cats">
+                <li><span class="opm-review__cat">Pizza</span>${renderStars(r.pizza * 2, "stars--sm")}</li>
+                <li><span class="opm-review__cat">Local</span>${renderStars(r.local * 2, "stars--sm")}</li>
+                <li><span class="opm-review__cat">Servicio</span>${renderStars(r.servicio * 2, "stars--sm")}</li>
+                <li><span class="opm-review__cat">Precio</span>${renderStars(r.precio * 2, "stars--sm")}</li>
+              </ul>
+              ${r.comment ? `<p class="opm-review__comment">${escapeHtml(r.comment)}</p>` : ""}
+            </li>
+          `).join("")}
+        </ul>
+        ${place.reviewsTotal > place.reviewsFirstPage.length ? `
+          <button type="button" class="btn opm-reviews-more" data-load-more-reviews>Ver más reviews</button>
+        ` : ""}
       </section>
     ` : ""}
 
@@ -355,4 +394,55 @@
       ${user ? `<a class="btn" href="/place/${place.id}/suggest-edit">Suggest an edit</a>` : ""}
     </footer>
   </article>
+
+  <!-- Review modal: bottom-sheet on mobile, centred dialog on desktop. -->
+  <div class="review-modal" data-review-modal data-place-id="${place.id}" data-place-name="${escapeAttr(place.name)}" data-has-existing="${place.viewerReview ? "1" : "0"}" hidden>
+    <div class="review-modal__backdrop" data-review-close></div>
+    <div class="review-modal__sheet" role="dialog" aria-modal="true" aria-labelledby="review-modal-title">
+      <header class="review-modal__head">
+        <button type="button" class="review-modal__close" data-review-close aria-label="Cerrar">
+          <span class="material-symbols-rounded" aria-hidden="true">close</span>
+        </button>
+        <h2 class="review-modal__title" id="review-modal-title">¿Qué te ha parecido ${escapeHtml(place.name)}?</h2>
+      </header>
+      <form class="review-modal__form" data-review-form>
+        <fieldset class="review-modal__rows">
+          <div class="review-row" data-review-cat="pizza">
+            <span class="review-row__label">Pizza <span class="review-row__emoji" aria-hidden="true">🍕</span></span>
+            <div class="star-input" data-star-input data-name="pizza"></div>
+          </div>
+          <div class="review-row" data-review-cat="local">
+            <span class="review-row__label">Local <span class="review-row__emoji" aria-hidden="true">🏠</span></span>
+            <div class="star-input" data-star-input data-name="local"></div>
+          </div>
+          <div class="review-row" data-review-cat="servicio">
+            <span class="review-row__label">Servicio <span class="review-row__emoji" aria-hidden="true">🤵</span></span>
+            <div class="star-input" data-star-input data-name="servicio"></div>
+          </div>
+          <div class="review-row" data-review-cat="precio">
+            <span class="review-row__label">Precio <span class="review-row__emoji" aria-hidden="true">💶</span></span>
+            <div class="star-input" data-star-input data-name="precio"></div>
+          </div>
+        </fieldset>
+        <label class="review-modal__comment-wrap">
+          <span class="review-modal__comment-label">¿Algo más? (opcional)</span>
+          <textarea class="review-modal__comment" data-review-comment maxlength="500" rows="3" placeholder="Cuenta tu experiencia…">${place.viewerReview && place.viewerReview.comment ? escapeHtml(place.viewerReview.comment) : ""}</textarea>
+          <span class="review-modal__counter" data-review-counter>0 / 500</span>
+        </label>
+        <div class="review-modal__error" data-review-error hidden></div>
+        <button type="submit" class="btn primary review-modal__submit" data-review-submit disabled>Enviar review</button>
+      </form>
+    </div>
+  </div>
+  ${place.viewerReview ? `
+    <script type="application/json" id="opm-existing-review">${JSON.stringify({
+      pizza: place.viewerReview.pizza,
+      local: place.viewerReview.local,
+      servicio: place.viewerReview.servicio,
+      precio: place.viewerReview.precio,
+      comment: place.viewerReview.comment || "",
+    })}</script>
+  ` : ""}
+  <div class="opm-toast" data-opm-toast hidden></div>
+  <script src="/public/js/place-review.js?v=${assetVersion || ''}" defer></script>
 ` }) %>

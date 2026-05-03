@@ -35,20 +35,53 @@ router.get("/place/:id", async (req, res) => {
     if (!place || place.isVisible === false) return res.status(404).send("Not found");
 
     const userId = req.session?.user?.id || null;
-    const visitCount = await prisma.visit.count({ where: { placeId: id } });
+    // Server-side render the first page of reviews so the section paints
+    // immediately. Client paginates from /api/places/:id/reviews after.
+    const REVIEW_PAGE_SIZE = 10;
+    const [visitCount, reviewsTotal, reviewsFirstPage] = await Promise.all([
+        prisma.visit.count({ where: { placeId: id } }),
+        prisma.review.count({ where: { placeId: id, isVisible: true } }),
+        prisma.review.findMany({
+            where: { placeId: id, isVisible: true },
+            orderBy: { createdAt: "desc" },
+            take: REVIEW_PAGE_SIZE,
+            include: { user: { select: { username: true, displayName: true } } },
+        }),
+    ]);
     let viewerVisited = false;
     let viewerFavorited = false;
+    let viewerReview = null;
     if (userId) {
-        const [v, f] = await Promise.all([
+        const [v, f, r] = await Promise.all([
             prisma.visit.findUnique({ where: { userId_placeId: { userId, placeId: id } }, select: { id: true } }),
             prisma.favorite.findUnique({ where: { userId_placeId: { userId, placeId: id } }, select: { id: true } }),
+            prisma.review.findUnique({
+                where: { placeId_userId: { placeId: id, userId } },
+                select: { id: true, pizza: true, local: true, servicio: true, precio: true, comment: true },
+            }),
         ]);
         viewerVisited = !!v;
         viewerFavorited = !!f;
+        viewerReview = r;
     }
     place.visitCount = visitCount;
     place.viewerVisited = viewerVisited;
     place.viewerFavorited = viewerFavorited;
+    place.reviewsTotal = reviewsTotal;
+    place.reviewsFirstPage = reviewsFirstPage.map((row) => ({
+        id: row.id,
+        pizza: row.pizza,
+        local: row.local,
+        servicio: row.servicio,
+        precio: row.precio,
+        comment: row.comment,
+        createdAt: row.createdAt,
+        userName: row.user
+            ? (row.user.username || row.user.displayName || "user")
+            : "user",
+    }));
+    place.viewerReview = viewerReview;
+    place.reviewPageSize = REVIEW_PAGE_SIZE;
 
     res.render("place", { user: req.session.user || null, place });
 });
