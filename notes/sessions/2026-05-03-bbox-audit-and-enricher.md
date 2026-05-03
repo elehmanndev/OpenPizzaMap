@@ -67,18 +67,41 @@ node scripts/enricher.js --phase=web --since-id=1603
 
 Modest gain — most LMP venues don't run their own website (Glovo / social-only), and many of the ones that do don't expose schema.org openingHours.
 
-### Search phase — skipped this session
+### Search phase — skipped
 
-DuckDuckGo HTML scraping is rate-limit-prone. Eric was AFK so I went with the safer overpass + web combo. Worth a dedicated future run.
+DuckDuckGo HTML scraping is rate-limit-prone. Decided against running it before checking whether the place-panel scrape on Google Maps could fill the same fields more reliably (it could — see below).
+
+## GMaps resolver: phone + website + hours
+
+The existing `scripts/resolve-via-gmaps.js` already opened the GMaps place panel on each row to read the address — every other field we wanted (phone, website, opening hours) is on the same panel, so reading them was a one-shot extension. Better hit rate than DDG-search-then-parse-the-website, no extra rate-limit surface, and the script's existing pacing + cache infrastructure carried over.
+
+Extended `lookup()` to pull:
+- **phone** from `button[data-item-id^="phone:tel:"]` (the data-item-id itself carries the canonical number; aria-label fallback for variants)
+- **websiteUrl** from `a[data-item-id="authority"]` (`href` value; skips FB/IG/Google authority links so they don't pollute the field)
+- **openingHours** from `[data-item-id="oh"]` aria-label first, with an hours-table fallback for cases where the panel is expanded by default
+
+New flags: `--need-meta` (target visible rows with null phone/website/hours), `--since-id N` (scope), `--limit N` (cap per run). Apply path is fill-only-if-null on the metadata trio — never overwrites existing values. Cache invalidates for entries that pre-date the new field shape (so the 27 ES+PT rows we resolved on 2026-05-02 re-fetch under `--need-meta`).
+
+### Run
+
+```
+node scripts/resolve-via-gmaps.js --need-meta --since-id=1603 --apply
+```
+
+`211 candidates → 203 resolved, 2 missed, 6 skipped — phone=94 website=147 hours=175`
+
+(212 rather than 242: ~30 of the recent imports already had complete metadata after the overpass+web pass.)
+
+Hours come back as a localised string (`domingo: 12:30–16:0018:30–24:00; lunes: ...`) rather than OSM-strict (`Mo-Fr 11:00-22:00`). Readable in the UI, not strictly parseable. Acceptable for now; a later pass can normalise to OSM format if a downstream consumer needs it.
 
 ## Final state of the 242 recent imports
 
-| field | before | after | delta |
-|---|---:|---:|---:|
-| no hero | 101 | 0 | **-101** |
-| no website | 238 | 181 | -57 |
-| no phone | 146 | 107 | -39 |
-| no openingHours | 242 | 190 | -52 |
+| field | at import | after enricher | after gmaps | total delta |
+|---|---:|---:|---:|---:|
+| no hero | 101 | 0 | 0 | **-101 (100%)** |
+| no website | 238 | 181 | **32** | -206 (87%) |
+| no phone | 146 | 107 | **11** | -135 (92%) |
+| no openingHours | 242 | 190 | **11** | -231 (95%) |
 
 ## Files touched
 
@@ -87,12 +110,14 @@ DuckDuckGo HTML scraping is rate-limit-prone. Eric was AFK so I went with the sa
 - `scripts/backfill-lmp-heroes.js` — new, one-shot to repair the 102 LMP heroes
 - `scripts/scrape-lamejorpizza.js` — hero regex fix (4 patterns + URL normalisation)
 - `scripts/enricher.js` — `--since-id` flag added to overpass + web phase queries
-- `.gitignore` — added `/*-audit.json` (matches the existing `/*-report.json` pattern)
-- DB: 3 country-field fixes, 101 heroImageUrl fills, ~150 fields filled by overpass + web phases
+- `scripts/resolve-via-gmaps.js` — pulls phone/website/hours from the place panel; new `--need-meta` / `--since-id` / `--limit` flags
+- `.gitignore` — added `/*-audit.json` and `/*-debug.html`
+- DB: 3 country-field fixes, 101 heroImageUrl fills, ~150 fields filled by overpass + web, 416 fields filled by gmaps resolver (94 phone + 147 web + 175 hours)
 
 ## Follow-ups
 
+- **32 recent rows still missing a website, 11 missing phone, 11 missing hours.** Mostly the GMaps "missed" or "skipped" rows where the place panel didn't load or the venue isn't on Maps. DDG search phase is the next lever for those.
 - **Vezzo L'Aljub** (LMP id=439) — scraper failed to parse address block, importer dropped row. Worth a one-off re-fetch + manual-import path, or a scraper fix for whatever variant markup that page uses.
-- **Search phase** — 181 recent rows still lack a websiteUrl. A bounded DDG search run (say 50/session, with backoff on 429s) would fill more, then web phase can extract hours/styles from the discovered URLs.
-- **No-hero singletons** in older scraping cohorts — the audit only counted hero gaps in the 2026-04-30+ window. The wider DB likely has more thin rows worth a sweep.
+- **Hours format** — GMaps returns a localised "domingo: 12:30–16:00…" string, readable but not OSM-strict. A later normaliser pass can convert to `Mo-Fr 11:00-22:00` style if a downstream consumer (e.g. a structured-hours UI) needs it.
+- **Older-cohort enrichment** — `--since-id 1603` scoped this pass to recent imports. Older cohorts (id < 1603) still have ~600 rows missing website + a similar count missing hours. Same `--need-meta` run without `--since-id` would tackle them; ~30-40 min runtime.
 - **TripAdvisor / Google enrichers** — out of scope per budget memory (free-tier rate caps must hold) but a metered run on starred-rating venues could add reviews + photo URLs.
