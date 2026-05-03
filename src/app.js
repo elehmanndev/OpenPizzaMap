@@ -19,6 +19,11 @@ console.log(
 // modes that contributed to the 2026-04-30 outage.)
 require("express-async-errors");
 
+// Bump on 2026-05-03 to force Passenger to respawn the worker after a deploy
+// — entry-point mtime change is the only restart trigger we can reach from a
+// git push when SSH and hPanel are unavailable. Don't remove without leaving
+// an equivalent restart mechanism in place.
+
 const express = require("express");
 const morgan = require("morgan");
 
