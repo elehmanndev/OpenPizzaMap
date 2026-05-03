@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-// Auto-classify pizza styles using Claude Haiku.
-// Fetches untagged places (or all with --all), queries the internet via
-// place website/name+city, then calls Claude to pick from the taxonomy.
+// Auto-classify pizza styles using Gemini 2.0 Flash (free tier).
+// Fetches untagged places (or all with --all), uses website text + name/city/country
+// as context, then asks Gemini to pick from the 14-style taxonomy.
+// Requires: GEMINI_API_KEY env var (free at https://aistudio.google.com/apikey)
 //
 // Usage:
 //   node scripts/classify-styles.js --dry-run          # print suggestions, no DB writes
@@ -77,25 +78,23 @@ function extractText(html) {
         .slice(0, 1500);
 }
 
-async function callClaude(prompt) {
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) throw new Error("ANTHROPIC_API_KEY not set");
+async function callGemini(prompt) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) throw new Error("GEMINI_API_KEY not set — get a free key at https://aistudio.google.com/apikey");
 
     const body = JSON.stringify({
-        model: "claude-haiku-4-5-20251001",
-        max_tokens: 256,
-        messages: [{ role: "user", content: prompt }],
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { maxOutputTokens: 256, temperature: 0.1 },
     });
 
     return new Promise((resolve, reject) => {
+        const path = `/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
         const req = https.request({
-            hostname: "api.anthropic.com",
-            path: "/v1/messages",
+            hostname: "generativelanguage.googleapis.com",
+            path,
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "x-api-key": apiKey,
-                "anthropic-version": "2023-06-01",
                 "Content-Length": Buffer.byteLength(body),
             },
         }, (res) => {
@@ -104,7 +103,7 @@ async function callClaude(prompt) {
             res.on("end", () => {
                 try {
                     const parsed = JSON.parse(data);
-                    resolve(parsed.content?.[0]?.text || "");
+                    resolve(parsed.candidates?.[0]?.content?.parts?.[0]?.text || "");
                 } catch (e) { reject(e); }
             });
         });
@@ -201,7 +200,7 @@ async function main() {
         let result = null;
         try {
             const prompt = buildPrompt(place, websiteText);
-            const response = await callClaude(prompt);
+            const response = await callGemini(prompt);
             result = parseResponse(response);
         } catch (err) {
             console.error(`[classify] #${place.id} Claude error: ${err.message}`);
