@@ -50,13 +50,15 @@ const STYLE_SLUGS = STYLES.map(s => s.slug);
 
 function fetchUrl(url, timeoutMs = 8000) {
     return new Promise((resolve) => {
+        try { new URL(url); } catch (_) { return resolve(""); }
         const lib = url.startsWith("https") ? https : http;
         const req = lib.get(url, {
             headers: { "User-Agent": "Mozilla/5.0 (compatible; OPM-classifier/1.0)" },
             timeout: timeoutMs,
         }, (res) => {
             if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-                return fetchUrl(res.headers.location, timeoutMs).then(resolve);
+                const next = new URL(res.headers.location, url).href;
+                return fetchUrl(next, timeoutMs).then(resolve);
             }
             let body = "";
             res.setEncoding("utf8");
