@@ -16,11 +16,14 @@ const fs = require('fs');
 const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const hostingerEnv = path.join(ROOT, '.builds', 'config', '.env');
+const hostingerEnv2 = path.resolve(ROOT, '..', 'public_html', '.builds', 'config', '.env');
 const localEnv = path.join(ROOT, '.env.local');
 const defaultEnv = path.join(ROOT, '.env');
 const envPath = fs.existsSync(hostingerEnv)
   ? hostingerEnv
-  : (fs.existsSync(localEnv) ? localEnv : defaultEnv);
+  : fs.existsSync(hostingerEnv2)
+    ? hostingerEnv2
+    : (fs.existsSync(localEnv) ? localEnv : defaultEnv);
 require('dotenv').config({ path: envPath });
 const { PrismaClient } = require('@prisma/client');
 const { getProvider, PIPELINE_VERSION } = require('../src/services/enrichment/providers');
