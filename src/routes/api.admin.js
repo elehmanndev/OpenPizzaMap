@@ -109,4 +109,76 @@ router.get("/test-enrichment", async (req, res) => {
     }
 });
 
+// Batch-enrich existing Place rows. Designed to be called by an external
+// cron service (cron-job.org). Processes up to `limit` rows (default 20)
+// per call and stops early on quota exceeded.
+//
+// GET /api/admin/batch-enrich?limit=20
+//   → { ok, enriched, skipped, dupes, errors, apiCalls, remaining }
+router.get("/batch-enrich", async (req, res) => {
+    const limit = Math.min(Math.max(parseInt(req.query.limit) || 20, 1), 155);
+    const { QuotaExceededError, PIPELINE_VERSION } = require("../services/enrichment/providers");
+
+    const isEmpty = (v) => v == null || (typeof v === "string" && v.trim() === "");
+    const rows = await prisma.place.findMany({
+        where: { enrichmentVersion: 0, googlePlaceId: null },
+        orderBy: [{ isVisible: "desc" }, { id: "asc" }],
+        take: limit,
+    });
+    const remaining = await prisma.place.count({
+        where: { enrichmentVersion: 0, googlePlaceId: null },
+    });
+
+    if (!rows.length) {
+        return res.json({ ok: true, enriched: 0, skipped: 0, dupes: 0, errors: 0, apiCalls: 0, remaining: 0, message: "backfill complete" });
+    }
+
+    const provider = getProvider({ prisma });
+    const stats = { enriched: 0, skipped: 0, dupes: 0, errors: 0 };
+    let quotaHit = false;
+
+    for (const row of rows) {
+        let resolved;
+        try {
+            resolved = await provider.findPlace(row.name, row.city, row.country);
+        } catch (err) {
+            if (err instanceof QuotaExceededError) {
+                quotaHit = true;
+                break;
+            }
+            stats.errors++;
+            continue;
+        }
+
+        if (!resolved) { stats.skipped++; continue; }
+
+        const patch = {};
+        if (resolved.googlePlaceId) patch.googlePlaceId = resolved.googlePlaceId;
+        if (resolved.googleMapsUrl) patch.googlePlaceUrl = resolved.googleMapsUrl;
+        patch.enrichmentVersion = PIPELINE_VERSION;
+        patch.enrichedAt = new Date();
+        if (isEmpty(row.phone) && resolved.phone) patch.phone = resolved.phone;
+        if (isEmpty(row.websiteUrl) && resolved.websiteUrl) patch.websiteUrl = resolved.websiteUrl;
+        if (isEmpty(row.openingHours) && resolved.openingHours) patch.openingHours = resolved.openingHours;
+        if (row.googleRating == null && resolved.rating != null) patch.googleRating = resolved.rating;
+        if (row.googleReviewCount == null && resolved.ratingCount != null) patch.googleReviewCount = resolved.ratingCount;
+
+        try {
+            await prisma.place.update({ where: { id: row.id }, data: patch });
+            stats.enriched++;
+        } catch (err) {
+            if (err.code === "P2002") { stats.dupes++; } else { stats.errors++; }
+        }
+    }
+
+    await provider.close().catch(() => {});
+    res.json({
+        ok: true,
+        ...stats,
+        apiCalls: provider.callsMade ?? 0,
+        remaining: remaining - stats.enriched,
+        quotaHit,
+    });
+});
+
 module.exports = router;
