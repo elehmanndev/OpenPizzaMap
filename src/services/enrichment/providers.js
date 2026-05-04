@@ -268,6 +268,22 @@ class GoogleApiProvider {
     await writeCache(this.prisma, this.name, hash, payload);
     return payload;
   }
+
+  // Fetch a photo URL for a known googlePlaceId. Uses Place Details (Basic)
+  // to get the photo reference, then Place Photos to get the CDN URL.
+  // Returns the URL string or null. 2 API calls.
+  async getPhoto(googlePlaceId) {
+    const detailJson = await this._get(
+      `https://places.googleapis.com/v1/places/${googlePlaceId}?fields=photos&key=${this.apiKey}`,
+    );
+    const photoRef = (detailJson.photos || [])[0];
+    if (!photoRef || !photoRef.name) return null;
+
+    const photoJson = await this._get(
+      `https://places.googleapis.com/v1/${photoRef.name}/media?maxWidthPx=800&skipHttpRedirect=true`,
+    );
+    return photoJson.photoUri || null;
+  }
 }
 
 // ─── Factory ────────────────────────────────────────────────────────────────

@@ -30,6 +30,7 @@ const { getProvider, QuotaExceededError, PIPELINE_VERSION } = require('../src/se
 
 const args = process.argv.slice(2);
 const DRY_RUN = args.includes('--dry-run');
+const PHOTOS_ONLY = args.includes('--photos-only');
 const LIMIT = (() => {
   const i = args.indexOf('--limit');
   if (i === -1) return 155;
@@ -43,10 +44,88 @@ const COUNTRY_FILTER = (() => {
 
 const isEmpty = (v) => v == null || (typeof v === 'string' && v.trim() === '');
 
+async function photosOnly(prisma) {
+  const where = {
+    googlePlaceId: { not: null },
+    OR: [{ heroImageUrl: null }, { heroImageUrl: '' }],
+  };
+  if (COUNTRY_FILTER) where.country = { contains: COUNTRY_FILTER };
+
+  const totalEligible = await prisma.place.count({ where });
+  const rows = await prisma.place.findMany({
+    where,
+    orderBy: [{ isVisible: 'desc' }, { id: 'asc' }],
+    take: LIMIT,
+    select: { id: true, name: true, city: true, country: true, googlePlaceId: true, heroImageUrl: true },
+  });
+
+  console.log(`[photos-only] ${totalEligible} rows missing photos, processing ${rows.length}`);
+  if (!rows.length) {
+    console.log('[photos-only] nothing to do');
+    await prisma.$disconnect();
+    return;
+  }
+
+  const provider = getProvider({ prisma });
+  if (!provider.getPhoto) {
+    console.error('[photos-only] provider does not support getPhoto — need google_api');
+    await prisma.$disconnect();
+    return;
+  }
+
+  const stats = { updated: 0, noPhoto: 0, errors: 0 };
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const label = `[${i + 1}/${rows.length}] #${row.id} "${row.name}" (${row.city})`;
+
+    let photoUrl;
+    try {
+      photoUrl = await provider.getPhoto(row.googlePlaceId);
+    } catch (err) {
+      if (err.name === 'QuotaExceededError') {
+        console.log(`${label} — QUOTA HIT, stopping early`);
+        break;
+      }
+      console.error(`${label} — ERROR: ${err.message}`);
+      stats.errors++;
+      continue;
+    }
+
+    if (!photoUrl) {
+      console.log(`${label} — no photo available`);
+      stats.noPhoto++;
+      continue;
+    }
+
+    if (DRY_RUN) {
+      console.log(`${label} — would set heroImageUrl`);
+      stats.updated++;
+      continue;
+    }
+
+    await prisma.place.update({ where: { id: row.id }, data: { heroImageUrl: photoUrl } });
+    console.log(`${label} — photo saved`);
+    stats.updated++;
+  }
+
+  console.log(`\n[photos-only] === SUMMARY ===`);
+  console.log(`  updated:    ${stats.updated}`);
+  console.log(`  no photo:   ${stats.noPhoto}`);
+  console.log(`  errors:     ${stats.errors}`);
+  console.log(`  API calls:  ${provider.callsMade ?? 0}`);
+
+  await provider.close().catch(() => {});
+  await prisma.$disconnect();
+}
+
 async function main() {
   const prisma = new PrismaClient();
   const providerName = process.env.ENRICHMENT_PROVIDER || 'playwright';
-  console.log(`[batch-enrich] dry-run=${DRY_RUN} limit=${LIMIT} country=${COUNTRY_FILTER || 'all'} provider=${providerName}`);
+  console.log(`[batch-enrich] mode=${PHOTOS_ONLY ? 'photos-only' : 'full'} dry-run=${DRY_RUN} limit=${LIMIT} country=${COUNTRY_FILTER || 'all'} provider=${providerName}`);
+
+  if (PHOTOS_ONLY) {
+    return photosOnly(prisma);
+  }
 
   const where = {
     enrichmentVersion: 0,
