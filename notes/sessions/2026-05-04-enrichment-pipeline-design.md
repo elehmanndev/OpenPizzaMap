@@ -78,6 +78,45 @@ Eric asked the GCP agent to audit. Agent couldn't read most state (Service Usage
 
 ## What did NOT happen today
 
-- No code in `scripts/` touched. No imports run. No DB writes. Zero API calls to Google (no key in use yet).
 - No legacy backfill of the ~1,500 existing rows. That's an explicit future-phase decision once we have per-row cost data from real usage.
-- No new sources added — the Spanish/Italian queue (Guía Repsol → Gambero Rosso → Pizzerías Top Spain) waits until the new pipeline is in place; otherwise we'd be adding more low-quality rows on top of the existing problem.
+- No new sources added — the Spanish/Italian queue (Guía Repsol → Gambero Rosso → Pizzerías Top Spain) waits until the new pipeline is in place.
+
+---
+
+## Phase 2 update (later in the same session)
+
+Phase 2 (implementation) shipped after Eric gave the go.
+
+### Code landed (commit [`84a2a0d`](https://github.com/ericll93/OpenPizzaMap/commit/84a2a0d))
+
+- **Schema**: 3 new columns on `Place` (`googlePlaceId @unique`, `googlePlaceUrl`, `enrichmentVersion`) + new `EnrichmentCache` table (provider response cache, 90-day TTL). Migration `20260504100000_enrichment_pipeline`.
+- **`src/services/enrichment/index.js`** — `enrichAndValidate(rawPlace)` orchestrator. Identity resolution → coord sanity → 3-layer dedup (`googlePlaceId` → bbox+name → slug) → verdict.
+- **`src/services/enrichment/providers.js`** — `PlaywrightProvider` (wraps existing `scripts/lib/gmaps.js`) and `GoogleApiProvider` (Places New Text Search with Essentials FieldMask). Auto-fallback to Playwright on `QuotaExceededError`. Both share `EnrichmentCache`.
+- **`src/services/normalize-place-name.js`** — extracted importer's local `normalizeName` so the dedup gate uses the exact same rule (smoke-tested c935e4c version).
+- **`scripts/import-places.js`** — dedup+insert block now calls `enrichAndValidate`, sharing one provider instance for the whole run (Playwright launch is ~2 s; would otherwise be per-row). New counter `flagged` for `manual_review` verdicts. New behaviour: log `[coord-drift]` when raw vs resolved differ > 1 km.
+- **`src/services/submissions.js`** — `new_place` approval calls `enrichAndValidate`; `merge_into` and `manual_review` verdicts throw with clear context so admin investigates rather than silently creating duplicates.
+- **`/api/admin/test-enrichment`** — GET endpoint for verifying the toggle after an env-var flip. Returns `{provider, callsMade, verdict}`. See [docs/phase3-smoke-test.md](../../docs/phase3-smoke-test.md).
+
+### Migration incident (resolved)
+
+When the push triggered Hostinger's auto-deploy, the migration appeared to fail invisibly because `MIGRATE_LENIENT=true` was still set in env from the 2026-04-30 outage recovery (per the runbook, it should have been removed). Symptoms: health 200 but `/place/178` and `/api/places` returned 500 — Prisma client knew about the new columns but the DB hadn't been migrated.
+
+Diagnosis took several SSH rounds:
+- First attempt at `node scripts/migrate.js` failed because Hostinger's directory layout is split: `~/domains/openpizzamap.com/nodejs/` has the runtime (with `scripts/`, `prisma/`), but `~/.../public_html/.builds/config/.env` has the env file. Migration script's relative `path.join(ROOT, ".builds", "config", ".env")` lookup didn't resolve.
+- Second attempt source-loaded the `.env` correctly but failed with `EACCES` on the schema-engine binary (mode 0644). `chmod-prisma-engines.js` runs from postinstall, but on Hostinger we've now seen deploys where postinstall apparently doesn't fire, leaving exec bits stripped.
+- After `chmod -R +x ...`, third attempt failed with `P1001: Can't reach database server`. Hostinger's MariaDB rejects connections from the SSH context (firewall) even though the live app reaches it fine.
+- Fallback: applied the migration manually via phpMyAdmin. Diagnostic SQL revealed all 5 schema elements (3 columns, 1 unique index, EnrichmentCache table) were already present — the original deploy's `migrate deploy` HAD applied them at 01:57 UTC and recorded the `_prisma_migrations` row. The 500s were a brief blip during the worker restart.
+
+By the time the diagnostic ran, prod was already 200 across the board. False alarm + valuable runbook update.
+
+### Hardening shipped (commit [`381c28a`](https://github.com/ericll93/OpenPizzaMap/commit/381c28a))
+
+- `scripts/migrate.js` now requires `chmod-prisma-engines.js` inline at the top, so even if Hostinger skips postinstall, migrations don't trip on EACCES.
+- [docs/phase3-smoke-test.md](../../docs/phase3-smoke-test.md) — click-by-click recipe for Eric to flip `ENRICHMENT_PROVIDER=google_api` on Hostinger and verify via `/api/admin/test-enrichment`. Pass criteria, cache verification, 20-row batch, troubleshooting, rollback.
+
+### Still pending (deliberately, end of session)
+
+- **Eric flips `ENRICHMENT_PROVIDER=google_api`** on Hostinger when ready. Pipeline stays on Playwright (free) until then; production unchanged.
+- **Rotate leaked Gemini key** — Eric deferred ("no te preocupes ahora"); see `project_gemini_key_rotation_pending` memory.
+- **`MIGRATE_LENIENT=true`** env var on Hostinger — should be removed (it's only meant for explicit recovery flows per the runbook). Worth checking next time Eric is in hPanel.
+- **E2E fixture test** for the enrichment pipeline (50 Kalò Piemonte, 7 Sensi Lanzarote, Starita prefix, Sevilla centroid) — descoped from MVP, useful for the next session.
