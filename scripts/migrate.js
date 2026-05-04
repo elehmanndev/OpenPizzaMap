@@ -21,6 +21,19 @@ const crypto = require("crypto");
 const dotenv = require("dotenv");
 const { spawnSync } = require("child_process");
 
+// Belt-and-braces chmod. The postinstall hook already runs
+// scripts/chmod-prisma-engines.js, but on Hostinger we've seen deploys
+// where postinstall apparently doesn't fire (file copy + restart only),
+// leaving the schema-engine binary at mode 0644 and `prisma migrate
+// deploy` failing with EACCES (2026-05-04 incident, see
+// notes/sessions/2026-05-04-enrichment-pipeline-design.md). Running it
+// inline here makes migrations resilient to whatever Hostinger does.
+try {
+    require("./chmod-prisma-engines");
+} catch (err) {
+    console.warn(`chmod-prisma-engines failed at boot: ${err && err.message}`);
+}
+
 const ROOT = process.cwd();
 const hostingerEnv = path.join(ROOT, ".builds", "config", ".env");
 const localEnv = path.join(ROOT, ".env.local");
