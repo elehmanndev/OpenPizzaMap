@@ -26,15 +26,15 @@ const envPath = fs.existsSync(hostingerEnv)
     : (fs.existsSync(localEnv) ? localEnv : defaultEnv);
 require('dotenv').config({ path: envPath });
 const { PrismaClient } = require('@prisma/client');
-const { getProvider, PIPELINE_VERSION } = require('../src/services/enrichment/providers');
+const { getProvider, QuotaExceededError, PIPELINE_VERSION } = require('../src/services/enrichment/providers');
 
 const args = process.argv.slice(2);
 const DRY_RUN = args.includes('--dry-run');
 const LIMIT = (() => {
   const i = args.indexOf('--limit');
-  if (i === -1) return 20;
+  if (i === -1) return 155;
   const n = parseInt(args[i + 1], 10);
-  return Number.isFinite(n) ? n : 20;
+  return Number.isFinite(n) ? n : 155;
 })();
 const COUNTRY_FILTER = (() => {
   const i = args.indexOf('--country');
@@ -84,6 +84,11 @@ async function main() {
     try {
       resolved = await provider.findPlace(row.name, row.city, row.country);
     } catch (err) {
+      if (err instanceof QuotaExceededError) {
+        console.log(`${label} — QUOTA HIT, stopping early`);
+        stats.errors++;
+        break;
+      }
       console.error(`${label} — ERROR: ${err.message}`);
       log.push({ id: row.id, name: row.name, status: 'error', error: err.message });
       stats.errors++;
