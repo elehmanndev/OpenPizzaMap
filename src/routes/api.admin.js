@@ -117,9 +117,52 @@ router.get("/test-enrichment", async (req, res) => {
 //   → { ok, enriched, skipped, dupes, errors, apiCalls, remaining }
 router.get("/batch-enrich", async (req, res) => {
     const limit = Math.min(Math.max(parseInt(req.query.limit) || 20, 1), 155);
+    const mode = req.query.mode === "photos" ? "photos" : "full";
     const { QuotaExceededError, PIPELINE_VERSION } = require("../services/enrichment/providers");
-
     const isEmpty = (v) => v == null || (typeof v === "string" && v.trim() === "");
+
+    if (mode === "photos") {
+        const where = {
+            googlePlaceId: { not: null },
+            OR: [{ heroImageUrl: null }, { heroImageUrl: "" }],
+        };
+        const remaining = await prisma.place.count({ where });
+        const rows = await prisma.place.findMany({
+            where,
+            orderBy: [{ isVisible: "desc" }, { id: "asc" }],
+            take: limit,
+            select: { id: true, name: true, city: true, googlePlaceId: true, heroImageUrl: true },
+        });
+
+        if (!rows.length) {
+            return res.json({ ok: true, mode: "photos", updated: 0, noPhoto: 0, errors: 0, apiCalls: 0, remaining: 0, message: "photo backfill complete" });
+        }
+
+        const provider = getProvider({ prisma });
+        if (!provider.getPhoto) {
+            return res.status(400).json({ ok: false, error: "provider does not support getPhoto — need google_api" });
+        }
+
+        const stats = { updated: 0, noPhoto: 0, errors: 0 };
+        let quotaHit = false;
+        for (const row of rows) {
+            let photoUrl;
+            try {
+                photoUrl = await provider.getPhoto(row.googlePlaceId);
+            } catch (err) {
+                if (err instanceof QuotaExceededError) { quotaHit = true; break; }
+                stats.errors++;
+                continue;
+            }
+            if (!photoUrl) { stats.noPhoto++; continue; }
+            await prisma.place.update({ where: { id: row.id }, data: { heroImageUrl: photoUrl } });
+            stats.updated++;
+        }
+
+        await provider.close().catch(() => {});
+        return res.json({ ok: true, mode: "photos", ...stats, apiCalls: provider.callsMade ?? 0, remaining: remaining - stats.updated, quotaHit });
+    }
+
     const rows = await prisma.place.findMany({
         where: { enrichmentVersion: 0, googlePlaceId: null },
         orderBy: [{ isVisible: "desc" }, { id: "asc" }],

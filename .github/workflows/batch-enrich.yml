@@ -10,7 +10,7 @@ jobs:
   enrich:
     runs-on: ubuntu-latest
     steps:
-      - name: Call batch-enrich endpoint
+      - name: Enrich new rows
         run: |
           response=$(curl -s -w "\n%{http_code}" \
             -H "x-api-key: ${{ secrets.ADMIN_API_KEY }}" \
@@ -21,4 +21,17 @@ jobs:
           echo "HTTP status: $http_code"
           if [ "$http_code" != "200" ]; then
             echo "::warning::HTTP $http_code — will retry next scheduled run"
+          fi
+
+      - name: Backfill photos for enriched rows missing images
+        run: |
+          response=$(curl -s -w "\n%{http_code}" \
+            -H "x-api-key: ${{ secrets.ADMIN_API_KEY }}" \
+            "https://openpizzamap.com/api/admin/batch-enrich?mode=photos&limit=20")
+          http_code=$(echo "$response" | tail -1)
+          body=$(echo "$response" | sed '$d')
+          echo "$body" | jq . 2>/dev/null || echo "$body"
+          echo "HTTP status: $http_code"
+          if [ "$http_code" != "200" ]; then
+            echo "::warning::Photos HTTP $http_code — will retry next scheduled run"
           fi
