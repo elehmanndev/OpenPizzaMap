@@ -61,13 +61,23 @@ router.get("/test-enrichment", async (req, res) => {
     try {
         // debug=1 skips cache + enrichAndValidate and returns the raw Google response
         if (debug && provider.findPlace) {
-            const resolved = await provider.findPlace(name, city, country, { skipCache: true });
+            let resolved = null;
+            let rawGoogle = null;
+            let debugError = null;
+            try {
+                resolved = await provider.findPlace(name, city, country, { skipCache: true });
+                rawGoogle = provider._lastRawResponse || null;
+            } catch (err) {
+                debugError = err.message;
+                rawGoogle = provider._lastRawResponse || null;
+            }
             return res.json({
                 ok: true,
                 provider: provider.name,
                 callsMade: typeof provider.callsMade === "number" ? provider.callsMade : null,
                 resolved,
-                rawGoogle: provider._lastRawResponse || null,
+                rawGoogle,
+                debugError,
             });
         }
 
@@ -92,6 +102,8 @@ router.get("/test-enrichment", async (req, res) => {
                 pipelineVersion: verdict.pipelineVersion,
             },
         });
+    } catch (err) {
+        res.status(500).json({ ok: false, error: err.message });
     } finally {
         await provider.close().catch(() => {});
     }
