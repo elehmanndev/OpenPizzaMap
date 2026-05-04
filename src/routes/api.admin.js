@@ -43,7 +43,7 @@ router.post("/submissions/:id/reject", requireAdmin, async (req, res) => {
 //
 // No DB writes other than the EnrichmentCache row the providers populate
 // on a real lookup. Cached responses cost zero API calls.
-router.get("/test-enrichment", requireAdmin, async (req, res) => {
+router.get("/test-enrichment", async (req, res) => {
     const schema = z.object({
         name: z.string().min(1).max(200),
         city: z.string().min(1).max(120),
