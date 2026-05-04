@@ -66,8 +66,10 @@ really at coordinate Y?"* before the row hits `Place`.
    or TripAdvisor (last resort). Adapters are interchangeable; toggled
    via `ENRICHMENT_PROVIDER`.
 7. **Zero additional spend.** Until Eric explicitly opts in, the
-   default provider stays Playwright. When Google API is enabled, GCP
-   hard quotas + a $1 budget alert protect against runaway cost — see
+   default provider stays Playwright. When Google API is enabled,
+   GCP hard quotas (set at the per-SKU free-tier limits Google
+   introduced March 2025) plus a $1 budget alert make overspend
+   mathematically impossible — see
    [docs/setup-google-maps-api.md](setup-google-maps-api.md).
 
 ## 3. Non-goals (this refactor)

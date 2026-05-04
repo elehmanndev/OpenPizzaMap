@@ -1,9 +1,23 @@
 # Setup: Google Maps API for OpenPizzaMap Enrichment
 
 A click-by-click punch list for Eric to enable Places API + Geocoding
-on a budget-capped GCP project. Goal: **never spend more than the
-$200/mo free credit**, and have a $1 budget alert as the safety net
-underneath the hard quotas.
+on a budget-capped GCP project. Goal: **never spend a cent**, by
+setting hard quotas at the free-tier limits Google introduced on
+2025-03-01, with a $1 budget alert as the tripwire underneath.
+
+> **Pricing model note:** the old "$200 monthly credit" was retired
+> on 2025-03-01. Google now offers **per-SKU monthly free calls**
+> (verify at <https://mapsplatform.google.com/pricing/>):
+>
+> | SKU                                | Free / month | Cost after |
+> |------------------------------------|--------------|------------|
+> | Places API (New) — Text Search     | 5,000        | $32/1k     |
+> | Places API (New) — Place Details Essentials | 10,000 | $5/1k      |
+> | Geocoding API                      | 10,000       | $5/1k      |
+>
+> 5,000 Text Search calls/month ≈ 5,000 fully-resolved place imports
+> per month. OpenPizzaMap's actual import rate is ~100–200 places/week,
+> so the free tier has ~25× headroom even on busy weeks.
 
 > **Read first:** the architectural background lives in
 > [docs/enrichment-pipeline.md](enrichment-pipeline.md). This file is
@@ -15,10 +29,10 @@ underneath the hard quotas.
 
 - A GCP project with **Places API (New)** + **Geocoding API** enabled.
 - One restricted API key (HTTP referrers + IP allowlist).
-- Hard daily quotas on each API such that **even at 100% utilisation,
-  the monthly bill cannot exceed the $200 free credit**.
-- A budget alert at $1 (yes, one dollar) as a tripwire in case any of
-  the above fails.
+- Hard daily quotas on each API such that **the monthly call total
+  cannot exceed the per-SKU free tier**, so the bill stays at $0.
+- A budget alert at $1 (yes, one dollar) as a tripwire in case any
+  of the above fails (quota edit pending, pricing change, etc.).
 - The key pasted into Hostinger env as `GOOGLE_MAPS_API_KEY`.
 - The toggle `ENRICHMENT_PROVIDER=google_api` enabled in Hostinger.
 
@@ -39,8 +53,9 @@ If you already have a project for OpenPizzaMap, skip to §2.
 6. **CREATE**. Wait ~30 s.
 7. Project selector → pick `openpizzamap-enrichment`.
 
-**Verify billing is attached** (the $200 free credit only applies to
-projects with billing enabled):
+**Verify billing is attached** (Google requires a billing account on
+file even though you stay inside the free tier — without it the
+APIs reject all calls):
 - Left menu → **Billing**.
 - If it says "This project has no billing account": click **LINK A
   BILLING ACCOUNT** and pick yours.
@@ -136,30 +151,37 @@ are the actual brake.
 
 ### 5a. The math
 
-Google's pricing (as of 2026; verify on
-<https://mapsplatform.google.com/pricing/>):
+Google's per-SKU free tier (verify on
+<https://mapsplatform.google.com/pricing/> — pricing model changed
+2025-03-01):
 
-| API                          | Cost per 1000 calls | Cost per 1 call |
-|------------------------------|---------------------|-----------------|
-| Places API (New) Text Search | $32                 | $0.032          |
-| Places API (New) Place Details — Essentials | $5  | $0.005          |
-| Geocoding API                | $5                  | $0.005          |
+| API                          | Free / month | Cost after free | Cost per 1 call |
+|------------------------------|--------------|-----------------|-----------------|
+| Places API (New) Text Search          | 5,000  | $32 / 1k  | $0.032 |
+| Places API (New) Place Details Essentials | 10,000 | $5 / 1k  | $0.005 |
+| Geocoding API                | 10,000       | $5 / 1k         | $0.005          |
 
-Free credit: **$200/mo**. To stay under that, with safety margin,
-target **$192/mo** (96% of credit) split across the APIs we use.
+**The plan:** cap each API's daily quota so the *monthly total can
+never exceed the free tier*. Then we literally cannot spend money,
+no matter what the code does.
 
-Suggested allocation (tune to taste — these are starting points):
+Daily caps with a small safety margin (≈ 5 %), assuming a 30-day
+month:
 
-| API                | $/mo budget | Calls/mo | Calls/day cap |
-|--------------------|-------------|----------|---------------|
-| Places Text Search | $96         | 3,000    | **100**       |
-| Places Details     | $48         | 9,600    | **320**       |
-| Geocoding          | $48         | 9,600    | **320**       |
+| API                | Free / month | Daily cap (free / 30 × 0.95) | Why this cap is enough |
+|--------------------|--------------|------------------------------|------------------------|
+| Places Text Search | 5,000        | **155**                      | ~155 new place imports/day. Real volume is 100–200/week — 25× headroom. |
+| Places Details     | 10,000       | **315**                      | ~2× the Text Search cap, since each place may need 1–2 detail calls. |
+| Geocoding          | 10,000       | **315**                      | Mostly a fallback; rarely hit if Places already returns coords. |
 
-100 Text Search calls per day is ~3,000 imports per month —
-comfortably above what we need given imports are bursty, not steady.
-If we ever burst higher, the cap forces us to reuse cached results or
-fall back to Playwright.
+If a burst import ever bumps the cap, the API returns 429
+(`RESOURCE_EXHAUSTED`) and our pipeline falls back to Playwright (free)
+for the rest of the day. No outage, no spend.
+
+> **If you'd rather have more daily headroom and accept some
+> spend-risk:** raise the caps to e.g. 300 / 600 / 600 and rely on
+> the budget alert (§6). Not recommended — sticking to the free tier
+> is the whole point.
 
 ### 5b. Apply the quotas
 
@@ -168,12 +190,12 @@ fall back to Playwright.
 3. Find **`Text search requests per day`** (or `Requests per day`
    depending on Google's labelling). Tick the row.
 4. Top bar → **EDIT QUOTAS**.
-5. Modal: set **New limit = 100**. Reason = "OpenPizzaMap free-tier
+5. Modal: set **New limit = 155**. Reason = "OpenPizzaMap free-tier
    cap". **SUBMIT REQUEST**.
 6. Repeat for **`Place Details (Essentials) requests per day`** → set
-   to **320**.
+   to **315**.
 7. Filter bar → `Geocoding API`. Find **`Requests per day`** → set to
-   **320**.
+   **315**.
 
 **Note:** some quotas can be edited instantly; others need Google's
 manual approval (24–48 h). If your edit shows "Pending", that's
@@ -203,9 +225,10 @@ is the tripwire.
 8. **FINISH**.
 
 If this email ever arrives, **stop the importer immediately** and
-investigate. The $1 cap is well below the $200 free credit, so a
-single alert email doesn't cost you anything — but it means the
-quotas aren't doing their job.
+investigate. A spend at all means the per-SKU free quota was
+already exceeded — i.e. the daily caps from §5 didn't apply (still
+pending approval, or a SKU was missed). Hitting $1 still doesn't
+hurt, but it's a sign the quota layer needs attention.
 
 ---
 
