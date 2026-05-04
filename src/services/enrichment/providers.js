@@ -186,10 +186,12 @@ class GoogleApiProvider {
   // we need. FieldMask trims the response (and the bill, since "Essentials"
   // SKU is what we're paying for). See:
   //   https://developers.google.com/maps/documentation/places/web-service/text-search
-  async findPlace(name, city, country) {
+  async findPlace(name, city, country, { skipCache = false } = {}) {
     const hash = queryHash(name, city, country);
-    const cached = await readCache(this.prisma, this.name, hash);
-    if (cached !== null) return cached.miss ? null : cached;
+    if (!skipCache) {
+      const cached = await readCache(this.prisma, this.name, hash);
+      if (cached !== null) return cached.miss ? null : cached;
+    }
 
     const textQuery = [name, city, country].filter(Boolean).join(", ");
     const body = {
@@ -222,9 +224,11 @@ class GoogleApiProvider {
       throw err;
     }
 
+    this._lastRawResponse = json;
+
     const place = (json.places || [])[0];
     if (!place) {
-      await writeCache(this.prisma, this.name, hash, { miss: true });
+      if (!skipCache) await writeCache(this.prisma, this.name, hash, { miss: true });
       return null;
     }
 

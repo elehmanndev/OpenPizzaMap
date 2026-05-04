@@ -49,41 +49,52 @@ router.get("/test-enrichment", async (req, res) => {
         city: z.string().min(1).max(120),
         country: z.string().min(1).max(80).optional(),
         provider: z.enum(["playwright", "google_api"]).optional(),
+        debug: z.coerce.boolean().optional(),
     });
     const parsed = schema.safeParse(req.query);
     if (!parsed.success) {
         return res.status(400).json({ ok: false, error: parsed.error.flatten() });
     }
-    const { name, city, country, provider: override } = parsed.data;
+    const { name, city, country, provider: override, debug } = parsed.data;
 
     const provider = getProvider({ prisma, override });
-    let verdict;
     try {
-        verdict = await enrichAndValidate(
+        // debug=1 skips cache + enrichAndValidate and returns the raw Google response
+        if (debug && provider.findPlace) {
+            const resolved = await provider.findPlace(name, city, country, { skipCache: true });
+            return res.json({
+                ok: true,
+                provider: provider.name,
+                callsMade: typeof provider.callsMade === "number" ? provider.callsMade : null,
+                resolved,
+                rawGoogle: provider._lastRawResponse || null,
+            });
+        }
+
+        const verdict = await enrichAndValidate(
             { name, city, country },
             { prisma, provider },
         );
+        res.json({
+            ok: true,
+            provider: provider.name,
+            callsMade: typeof provider.callsMade === "number" ? provider.callsMade : null,
+            verdict: {
+                action: verdict.action,
+                providerUsed: verdict.providerUsed,
+                reasons: verdict.reasons,
+                resolved: verdict.resolved,
+                coords: verdict.coords,
+                existing: verdict.existing
+                    ? { id: verdict.existing.id, name: verdict.existing.name, slug: verdict.existing.slug }
+                    : null,
+                candidateSlug: verdict.candidateSlug,
+                pipelineVersion: verdict.pipelineVersion,
+            },
+        });
     } finally {
         await provider.close().catch(() => {});
     }
-
-    res.json({
-        ok: true,
-        provider: provider.name,
-        callsMade: typeof provider.callsMade === "number" ? provider.callsMade : null,
-        verdict: {
-            action: verdict.action,
-            providerUsed: verdict.providerUsed,
-            reasons: verdict.reasons,
-            resolved: verdict.resolved,
-            coords: verdict.coords,
-            existing: verdict.existing
-                ? { id: verdict.existing.id, name: verdict.existing.name, slug: verdict.existing.slug }
-                : null,
-            candidateSlug: verdict.candidateSlug,
-            pipelineVersion: verdict.pipelineVersion,
-        },
-    });
 });
 
 module.exports = router;
