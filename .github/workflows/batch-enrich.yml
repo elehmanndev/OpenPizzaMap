@@ -12,13 +12,13 @@ jobs:
     steps:
       - name: Call batch-enrich endpoint
         run: |
-          response=$(curl -sf -w "\n%{http_code}" \
+          response=$(curl -s -w "\n%{http_code}" \
             -H "x-api-key: ${{ secrets.ADMIN_API_KEY }}" \
             "https://openpizzamap.com/api/admin/batch-enrich?limit=20")
           http_code=$(echo "$response" | tail -1)
-          body=$(echo "$response" | head -n -1)
+          body=$(echo "$response" | sed '$d')
           echo "$body" | jq . 2>/dev/null || echo "$body"
+          echo "HTTP status: $http_code"
           if [ "$http_code" != "200" ]; then
-            echo "::error::HTTP $http_code"
-            exit 1
+            echo "::warning::HTTP $http_code — will retry next scheduled run"
           fi
