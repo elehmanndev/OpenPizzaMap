@@ -1,0 +1,24 @@
+name: Batch Enrich
+
+on:
+  schedule:
+    # Every 3 hours — 8 runs/day × 20 rows = 160 rows/day (155 RPD cap)
+    - cron: '0 */3 * * *'
+  workflow_dispatch: # manual trigger from GitHub UI
+
+jobs:
+  enrich:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call batch-enrich endpoint
+        run: |
+          response=$(curl -sf -w "\n%{http_code}" \
+            -H "x-api-key: ${{ secrets.ADMIN_API_KEY }}" \
+            "https://openpizzamap.com/api/admin/batch-enrich?limit=20")
+          http_code=$(echo "$response" | tail -1)
+          body=$(echo "$response" | head -n -1)
+          echo "$body" | jq . 2>/dev/null || echo "$body"
+          if [ "$http_code" != "200" ]; then
+            echo "::error::HTTP $http_code"
+            exit 1
+          fi
