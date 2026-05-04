@@ -116,6 +116,7 @@ async function main() {
     if (isEmpty(row.openingHours) && resolved.openingHours) patch.openingHours = resolved.openingHours;
     if (row.googleRating == null && resolved.rating != null) patch.googleRating = resolved.rating;
     if (row.googleReviewCount == null && resolved.ratingCount != null) patch.googleReviewCount = resolved.ratingCount;
+    if (isEmpty(row.heroImageUrl) && resolved.photoUrl) patch.heroImageUrl = resolved.photoUrl;
 
     const src = wasCache ? 'cache' : 'api';
     if (DRY_RUN) {

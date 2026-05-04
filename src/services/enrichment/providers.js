@@ -210,6 +210,7 @@ class GoogleApiProvider {
       "places.internationalPhoneNumber",
       "places.websiteUri",
       "places.regularOpeningHours.weekdayDescriptions",
+      "places.photos",
     ].join(",");
 
     let json;
@@ -232,6 +233,21 @@ class GoogleApiProvider {
       return null;
     }
 
+    // Fetch photo URL if the response includes a photo reference.
+    // This is a separate Place Photos call (10k free/month).
+    let photoUrl = null;
+    const photoRef = (place.photos || [])[0];
+    if (photoRef && photoRef.name) {
+      try {
+        const photoJson = await this._get(
+          `https://places.googleapis.com/v1/${photoRef.name}/media?maxWidthPx=800&skipHttpRedirect=true`,
+        );
+        photoUrl = photoJson.photoUri || null;
+      } catch {
+        // Non-fatal — we still have all other fields
+      }
+    }
+
     const payload = {
       googlePlaceId: place.id || null,
       canonicalName: (place.displayName && place.displayName.text) || name,
@@ -247,6 +263,7 @@ class GoogleApiProvider {
         place.regularOpeningHours && place.regularOpeningHours.weekdayDescriptions
           ? place.regularOpeningHours.weekdayDescriptions.join("; ")
           : null,
+      photoUrl,
     };
     await writeCache(this.prisma, this.name, hash, payload);
     return payload;

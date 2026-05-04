@@ -798,7 +798,7 @@ async function main() {
           stylesJson: JSON.stringify(styles),
           phone: p.phone,
           websiteUrl: p.websiteUrl || null,
-          heroImageUrl: p.heroImageUrl,
+          heroImageUrl: p.heroImageUrl || resolved?.photoUrl || null,
           slug: placeSlug,
           cityId: cityRow.id,
           status: 'active',
