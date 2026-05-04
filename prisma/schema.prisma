@@ -73,6 +73,15 @@ model Place {
   // collapsed 9.06 / 9.07 to the same stored value, masking algorithm changes.
   opmRating               Decimal? @db.Decimal(4,2)
   opmRatingSource         String?  @db.VarChar(20)   // "external" | "community" | "blend"
+  // Enrichment pipeline (docs/enrichment-pipeline.md). googlePlaceId is the
+  // canonical identity once a row has been through the new flow — unique
+  // across the table. Legacy rows stay null until a backfill runs.
+  // enrichmentVersion bumps when the pipeline's logic changes in a way that
+  // requires re-running; lets a future backfill target rows by version
+  // without a "have we processed" boolean.
+  googlePlaceId           String?  @unique @db.VarChar(64)
+  googlePlaceUrl          String?  @db.VarChar(500)
+  enrichmentVersion       Int      @default(0)
   status        PlaceStatus @default(active)
   slug          String?     @unique
   cityId        Int?
@@ -311,6 +320,23 @@ model Submission {
   @@index([createdAt])
   @@index([reviewedByUserId], map: "Submission_reviewedByUserId_fkey")
   @@index([userId], map: "Submission_userId_fkey")
+}
+
+// Cache for EnrichmentProvider responses. (provider, queryHash) is the
+// canonical key; queryHash is sha256("name|city|country") to absorb
+// case/whitespace variants. responseJson is the raw provider payload —
+// what the next pipeline run reads back when the same query repeats. TTL
+// of 90 days keeps it fresh enough without re-charging Google's API.
+model EnrichmentCache {
+  id           Int      @id @default(autoincrement())
+  provider     String   @db.VarChar(20)
+  queryHash    String   @db.VarChar(64)
+  responseJson String   @db.LongText
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  @@unique([provider, queryHash])
+  @@index([expiresAt])
 }
 
 enum UserRole {

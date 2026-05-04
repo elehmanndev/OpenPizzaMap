@@ -13,6 +13,9 @@ const path = require('path');
 const { PrismaClient } = require('@prisma/client');
 const { decodeEntities } = require('./lib/utils');
 const { boundingBox, haversineKm } = require('../src/services/geo');
+const { enrichAndValidate } = require('../src/services/enrichment');
+const { getProvider, PIPELINE_VERSION } = require('../src/services/enrichment/providers');
+const { normalizePlaceName } = require('../src/services/normalize-place-name');
 
 const ROOT = path.resolve(__dirname, '..');
 const CACHE_FILE = path.join(ROOT, 'geocode-cache.json');
@@ -225,28 +228,10 @@ function dedupKey(name, city) {
 
 // Strip prefixes that import sources flip-flop on. Slug-based dedup misses
 // pairs like "Pizzeria Starita a Materdei" / "Starita a Materdei" because
-// the slug differs by one token. Normalising both sides catches those at
-// import time before they create a duplicate row. Loop until no further
-// prefix is removed so a row like "10 Antica Pizzeria Ciro" collapses to
-// "ciro" cleanly. Suffix words (`bistrot`, `restaurant`) are NOT stripped
-// — those frequently distinguish a venue's standalone bar from its main
-// pizzeria at the same address (see Pass B of the dedup audit).
-const NAME_PREFIX_RE = /^(pizzeria|pizzaria|antica|the|le|la|il|el|los|las|\d+\s+|–|—|-)\s*/i;
-function normalizeName(name) {
-  let s = String(name || '')
-    .normalize('NFD').replace(/[̀-ͯ]/g, '')   // strip accents
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-  // Loop because the same row can have stacked prefixes ("10 Pizzeria Diego").
-  for (let i = 0; i < 5; i++) {
-    const next = s.replace(NAME_PREFIX_RE, '').trim();
-    if (next === s) break;
-    s = next;
-  }
-  return s;
-}
+// Place-name normalisation moved to src/services/normalize-place-name.js
+// (shared with the enrichment pipeline). Re-export under the local name so
+// the rest of this file is unchanged.
+const normalizeName = normalizePlaceName;
 
 function priceLevelFromRange(range) {
   if (!range) return 2;
@@ -722,8 +707,13 @@ async function main() {
   // higher-quality sources (e.g. 50TP filling a phone AVPN didn't have)
   // enrich the row. Coords are deliberately NOT overwritten — once geocoded,
   // a row's lat/lng stay put. Styles merge as a union via stylesJson.
-  let citiesUpserted = 0, placesCreated = 0, placesEnriched = 0, placesUntouched = 0, sourcesUpserted = 0;
+  let citiesUpserted = 0, placesCreated = 0, placesEnriched = 0, placesUntouched = 0, sourcesUpserted = 0, placesFlagged = 0;
   const usedSlugs = new Set();
+
+  // One enrichment provider for the whole run — Playwright is the
+  // expensive case (browser launch ~2 s) and we'd otherwise pay it per
+  // place. Closed in the finally below.
+  const enrichmentProvider = getProvider({ prisma });
 
   // Treat empty string as "missing" — older rows landed addressLine='' rather
   // than null because of `addressLine: p.addressLine || ''` in the create path.
@@ -761,38 +751,36 @@ async function main() {
 
     const styles = [...entry.styles];
 
-    // Dedup fallback: normalise the candidate name and search for an
-    // existing row in the same country within a 200 m bbox whose
-    // normalised name matches. Catches the slug-miss class (e.g.
-    // "Pizzeria Starita a Materdei" already in DB, incoming
-    // "Starita a Materdei" — different slug, same place). 200 m is
-    // generous enough to absorb the geocoder drift we saw between
-    // 50TP and AVPN imports without tripping on neighbouring shops.
+    // Identity resolution + dedup gate + coord sanity — runs the
+    // enrichment pipeline (docs/enrichment-pipeline.md). Provider is
+    // env-toggled via ENRICHMENT_PROVIDER (default: playwright). The
+    // pipeline handles the three-layer dedup (googlePlaceId → bbox+name →
+    // slug), coord drift detection, and decides the action. We still
+    // own the Place row create/update + PlaceSource attachment because
+    // those are importer-specific (the submission flow has its own
+    // city upsert + source-tagging shape).
     const candidateCountry = p.countryName || CODE_TO_COUNTRY_NAME[p.countryCode] || p.countryCode;
-    let existing = null;
-    if (p.lat != null && p.lng != null && candidateCountry) {
-      const candidateNorm = normalizeName(p.name);
-      if (candidateNorm) {
-        const box = boundingBox(Number(p.lat), Number(p.lng), 0.2);
-        const nearby = await prisma.place.findMany({
-          where: {
-            country: candidateCountry,
-            lat: { gte: box.minLat, lte: box.maxLat },
-            lng: { gte: box.minLng, lte: box.maxLng },
-          },
-          select: { id: true, name: true, slug: true, lat: true, lng: true },
-        });
-        for (const row of nearby) {
-          if (normalizeName(row.name) !== candidateNorm) continue;
-          if (haversineKm(Number(row.lat), Number(row.lng), Number(p.lat), Number(p.lng)) > 0.2) continue;
-          // Fetch the full row so the enrichment branch sees every field.
-          existing = await prisma.place.findUnique({ where: { id: row.id } });
-          break;
-        }
-      }
+    const verdict = await enrichAndValidate({
+      name: p.name,
+      city: p.city,
+      country: candidateCountry,
+      lat: p.lat,
+      lng: p.lng,
+    }, { prisma, provider: enrichmentProvider });
+
+    if (verdict.action === 'manual_review') {
+      console.log(`[review] "${p.name}" (${p.city}) — ${verdict.reasons.join('; ')}`);
+      placesFlagged++;
+      continue;
     }
-    // Fall through to the slug-based lookup if the normalised match missed.
-    if (!existing) existing = await prisma.place.findUnique({ where: { slug: placeSlug } });
+
+    const existing = verdict.existing;
+    const chosenLat = verdict.coords.chosenLat ?? p.lat;
+    const chosenLng = verdict.coords.chosenLng ?? p.lng;
+    const resolved = verdict.resolved;
+    if (verdict.coords.flagged) {
+      console.log(`[coord-drift] "${p.name}" (${p.city}) — ${verdict.coords.drift.toFixed(2)} km from raw, using resolved`);
+    }
 
     let place;
     if (!existing) {
@@ -803,9 +791,9 @@ async function main() {
           city: p.city,
           region: p.region,
           postalCode: p.postalCode,
-          country: p.countryName || CODE_TO_COUNTRY_NAME[p.countryCode] || p.countryCode,
-          lat: p.lat,
-          lng: p.lng,
+          country: candidateCountry,
+          lat: chosenLat,
+          lng: chosenLng,
           priceLevel: p.priceLevel,
           stylesJson: JSON.stringify(styles),
           phone: p.phone,
@@ -815,6 +803,10 @@ async function main() {
           cityId: cityRow.id,
           status: 'active',
           isVisible: false,
+          googlePlaceId: resolved?.googlePlaceId || null,
+          googlePlaceUrl: resolved?.googleMapsUrl || null,
+          enrichmentVersion: PIPELINE_VERSION,
+          enrichedAt: resolved ? new Date() : null,
         },
       });
       placesCreated++;
@@ -844,6 +836,18 @@ async function main() {
       if (typeof existing.heroImageUrl === 'string' && existing.heroImageUrl.startsWith('/uploads/')) {
         delete patch.heroImageUrl;
       }
+      // Backfill enrichment fields when the legacy row has them empty and
+      // the pipeline produced them. Never overwrite an existing googlePlaceId.
+      if (!existing.googlePlaceId && resolved?.googlePlaceId) {
+        patch.googlePlaceId = resolved.googlePlaceId;
+      }
+      if (!existing.googlePlaceUrl && resolved?.googleMapsUrl) {
+        patch.googlePlaceUrl = resolved.googleMapsUrl;
+      }
+      if (resolved && (existing.enrichmentVersion ?? 0) < PIPELINE_VERSION) {
+        patch.enrichmentVersion = PIPELINE_VERSION;
+        patch.enrichedAt = new Date();
+      }
       if (Object.keys(patch).length) {
         place = await prisma.place.update({ where: { id: existing.id }, data: patch });
         placesEnriched++;
@@ -863,7 +867,8 @@ async function main() {
     }
   }
 
-  console.log(`[write] cities=${citiesUpserted} created=${placesCreated} enriched=${placesEnriched} untouched=${placesUntouched} sources=${sourcesUpserted}`);
+  console.log(`[write] cities=${citiesUpserted} created=${placesCreated} enriched=${placesEnriched} untouched=${placesUntouched} flagged=${placesFlagged} sources=${sourcesUpserted}`);
+  await enrichmentProvider.close().catch(() => {});
   await prisma.$disconnect();
 }
 
