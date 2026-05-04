@@ -43,11 +43,11 @@ All 155 enriched rows now have:
 
 New enrichments (via `findPlace()`) now fetch photos automatically — only the 155 legacy rows need the backfill.
 
-Run on Hostinger once quota resets (~midnight Pacific):
-```bash
-/opt/alt/alt-nodejs22/root/usr/bin/node scripts/batch-enrich.js --photos-only --limit 80
+Automated via GitHub Actions — the cron workflow now runs a second step:
 ```
-Budget: 2 calls/row × 80 rows = 160 calls. Place Details and Place Photos each have 10k/month free tier — no cost concern.
+GET /api/admin/batch-enrich?mode=photos&limit=20
+```
+20 rows/cycle × 8 cycles/day = 160 photos/day. At 2 API calls/row (Place Details + Place Photos), that's 320 calls/day against the 10k/month free tier — no cost concern. The backfill self-terminates when `remaining` hits 0.
 
 ## Remaining
 
@@ -55,4 +55,4 @@ Budget: 2 calls/row × 80 rows = 160 calls. Place Details and Place Photos each 
 - At 155 RPD, full backfill completes in ~11 days
 - Daily cron scheduled to run `--limit 155` automatically
 - Re-runs are safe: cached queries don't re-charge Google, and enriched rows (enrichmentVersion=1) are excluded from the query
-- Photo backfill: 155 rows, run once via `--photos-only` (no daily cron needed)
+- Photo backfill: ~155 rows, runs automatically via `mode=photos` in the same cron (20/cycle)
