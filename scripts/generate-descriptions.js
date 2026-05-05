@@ -1,24 +1,34 @@
 #!/usr/bin/env node
-// Generate short HTML descriptions for places using Gemini 2.5 Flash Lite (free tier).
-// Only targets places without a descriptionHtml. Uses name, city, country, styles,
-// and website text (when available) as context.
+// Phase 2 of the review-based description pipeline.
+// Reads google-reviews-cache.json (produced by scrape-reviews.js) and uses
+// Gemini 2.5 Flash Lite to summarise the reviews into a 2-sentence description
+// with unique, specific insights from real customers.
 //
-// Free tier: 15 RPM — script paces itself automatically.
+// Falls back to website text for places not in the reviews cache.
+//
+// Free tier: 15 RPM Gemini → script paces itself automatically.
 //
 // Usage:
 //   node scripts/generate-descriptions.js --dry-run            # preview, no writes
 //   node scripts/generate-descriptions.js --apply              # write to DB
-//   node scripts/generate-descriptions.js --apply --limit=100  # cap at 100 per run
+//   node scripts/generate-descriptions.js --apply --limit=100
 //   node scripts/generate-descriptions.js --apply --id=42      # single place
 //   node scripts/generate-descriptions.js --apply --all        # overwrite existing too
 //
 // Requires: GEMINI_API_KEY in .env
+// Reviews source: google-reviews-cache.json (run scrape-reviews.js first)
 
+require("dotenv").config();
 const { PrismaClient } = require("@prisma/client");
 const https = require("https");
 const http = require("http");
+const path = require("path");
+const fs = require("fs");
 
 const prisma = new PrismaClient();
+
+const ROOT = path.resolve(__dirname, "..");
+const REVIEWS_CACHE_PATH = path.join(ROOT, "google-reviews-cache.json");
 
 const DRY_RUN = process.argv.includes("--dry-run");
 const APPLY   = process.argv.includes("--apply");
@@ -33,6 +43,14 @@ if (!DRY_RUN && !APPLY) {
     console.error("Usage: node generate-descriptions.js --dry-run | --apply [--all] [--id=N] [--limit=N]");
     process.exit(1);
 }
+
+// ─── Reviews cache ────────────────────────────────────────────────────────────
+
+function loadReviewsCache() {
+    try { return JSON.parse(fs.readFileSync(REVIEWS_CACHE_PATH, "utf8")); } catch { return {}; }
+}
+
+// ─── Website fallback ─────────────────────────────────────────────────────────
 
 function fetchUrl(url, timeoutMs = 8000) {
     return new Promise((resolve) => {
@@ -67,6 +85,8 @@ function extractText(html) {
         .trim()
         .slice(0, 2000);
 }
+
+// ─── Gemini ───────────────────────────────────────────────────────────────────
 
 async function callGemini(prompt) {
     const apiKey = process.env.GEMINI_API_KEY;
@@ -104,7 +124,42 @@ async function callGemini(prompt) {
     });
 }
 
-function buildPrompt(place, styles, websiteText) {
+// ─── Prompt builders ──────────────────────────────────────────────────────────
+
+function buildReviewPrompt(place, styles, reviews) {
+    const styleNames = styles.map(s => s.name).join(", ");
+    const header = [
+        `Name: ${place.name}`,
+        styleNames ? `Pizza style(s): ${styleNames}` : null,
+    ].filter(Boolean).join("\n");
+
+    const reviewBlock = reviews
+        .slice(0, 20)
+        .map((r, i) => `${i + 1}. ${r.slice(0, 500)}`)
+        .join("\n");
+
+    return `Write a short summary of what customers say about this pizzeria using EXACTLY this format:
+
+Pizza Lovers say: "[2-3 specific things reviewers praise, e.g. named dishes or qualities]. [One negative or mediocre point if present, otherwise a second positive]."
+
+Rules:
+- Start with exactly: Pizza Lovers say: "
+- End with a closing double-quote and period
+- Name specific dishes, ingredients, or qualities that real reviewers mention
+- Include one honest negative/mixed point if reviewers mention one
+- Max 200 characters total including the prefix
+- No HTML tags
+- Do NOT mention the city or country
+- Do NOT start with the restaurant name
+- Write in English
+- Output only the single formatted line, nothing else
+
+PIZZERIA: ${header}
+REVIEWS (${reviews.length}):
+${reviewBlock}`;
+}
+
+function buildWebsitePrompt(place, styles, websiteText) {
     const styleNames = styles.map(s => s.name).join(", ");
     const lines = [
         `Name: ${place.name}`,
@@ -131,13 +186,23 @@ ${lines}`;
 }
 
 function cleanDescription(text) {
-    return text
-        .trim()
-        .replace(/^["']|["']$/g, "")
-        .trim();
+    const t = text.trim();
+    // Only strip if the ENTIRE output is symmetrically wrapped in quotes
+    // (Gemini sometimes wraps its full response). Don't strip trailing quotes
+    // that are part of the "Pizza Lovers say: "..." format.
+    if ((t.startsWith('"') && t.endsWith('"')) || (t.startsWith("'") && t.endsWith("'"))) {
+        return t.slice(1, -1).trim();
+    }
+    return t;
 }
 
+// ─── Main ─────────────────────────────────────────────────────────────────────
+
 async function main() {
+    const reviewsCache = loadReviewsCache();
+    const cachedIds = new Set(Object.keys(reviewsCache));
+    console.log(`[describe] Loaded reviews cache: ${cachedIds.size} places`);
+
     const where = SINGLE_ID
         ? { id: SINGLE_ID }
         : ALL
@@ -156,22 +221,39 @@ async function main() {
     });
 
     const totalMissing = ALL ? "all" : await prisma.place.count({ where: { descriptionHtml: null, isVisible: true } });
+    const withReviews = places.filter(p => cachedIds.has(String(p.id))).length;
     console.log(`[describe] ${places.length} places in this run (${totalMissing} total missing descriptions)`);
-    console.log(`[describe] dry-run=${DRY_RUN}, delay=${DELAY_MS}ms between calls\n`);
+    console.log(`[describe] ${withReviews} have cached reviews → review prompt`);
+    console.log(`[describe] ${places.length - withReviews} will use website fallback`);
+    console.log(`[describe] dry-run=${DRY_RUN}, delay=${DELAY_MS}ms between Gemini calls\n`);
 
     let written = 0, skipped = 0, failed = 0;
 
-    for (const place of places) {
-        let websiteText = "";
-        if (place.websiteUrl) {
-            try {
-                const html = await fetchUrl(place.websiteUrl);
-                websiteText = extractText(html);
-            } catch (_) {}
+    for (let idx = 0; idx < places.length; idx++) {
+        // Reconnect every 30 iterations to avoid MySQL idle-connection timeout.
+        if (idx > 0 && idx % 30 === 0) {
+            await prisma.$disconnect();
+            await prisma.$connect();
         }
-
+        const place = places[idx];
         const styles = place.styles.map(s => s.style);
-        const prompt = buildPrompt(place, styles, websiteText);
+        let prompt, source;
+
+        const cached = reviewsCache[String(place.id)];
+        if (cached && cached.reviews && cached.reviews.length > 0) {
+            prompt = buildReviewPrompt(place, styles, cached.reviews);
+            source = `reviews(${cached.reviews.length})`;
+        } else {
+            let websiteText = "";
+            if (place.websiteUrl) {
+                try {
+                    const html = await fetchUrl(place.websiteUrl);
+                    websiteText = extractText(html);
+                } catch (_) {}
+            }
+            prompt = buildWebsitePrompt(place, styles, websiteText);
+            source = websiteText ? "website" : "metadata-only";
+        }
 
         let description = "";
         try {
@@ -191,14 +273,28 @@ async function main() {
             continue;
         }
 
-        console.log(`[describe] #${place.id} "${place.name}" (${place.city}, ${place.country})`);
+        console.log(`[describe] #${place.id} "${place.name}" (${place.city}, ${place.country}) [${source}]`);
         console.log(`           → ${description}\n`);
 
         if (APPLY) {
-            await prisma.place.update({
-                where: { id: place.id },
-                data: { descriptionHtml: description },
-            });
+            try {
+                await prisma.place.update({
+                    where: { id: place.id },
+                    data: { descriptionHtml: description },
+                });
+            } catch (err) {
+                if (err.code === "P1017" || err.code === "P1001") {
+                    await prisma.$disconnect();
+                    await new Promise(r => setTimeout(r, 2000));
+                    await prisma.$connect();
+                    await prisma.place.update({
+                        where: { id: place.id },
+                        data: { descriptionHtml: description },
+                    });
+                } else {
+                    throw err;
+                }
+            }
             written++;
         }
 

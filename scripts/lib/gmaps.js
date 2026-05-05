@@ -215,4 +215,117 @@ async function lookup(page, name, city) {
     return { address, lat, lng, title, ...meta };
 }
 
-module.exports = { createGmapsPage, lookup, loadCache, saveCache, CACHE_PATH };
+// Navigate to a place and scrape up to maxReviews review texts from the
+// Reviews tab. Accepts either a googlePlaceId (direct URL, reliable) or
+// name+city (search, same flow as lookup). Returns [] on any failure.
+async function scrapeReviews(page, { googlePlaceId, name, city } = {}, maxReviews = 20) {
+    try {
+        if (googlePlaceId) {
+            await page.goto(`https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(googlePlaceId)}`,
+                { waitUntil: 'domcontentloaded', timeout: 30000 });
+        } else {
+            const q = encodeURIComponent(`${name} ${city || ''}`.trim());
+            await page.goto(`https://www.google.com/maps/search/${q}`,
+                { waitUntil: 'domcontentloaded', timeout: 30000 });
+        }
+
+        // Dismiss EU consent if present.
+        for (const sel of ['button[aria-label*="Accept"]', 'button[aria-label*="Acepto"]', 'button[aria-label*="Akzeptieren"]', 'form[action*="consent"] button']) {
+            const btn = await page.$(sel).catch(() => null);
+            if (btn) { await btn.click().catch(() => {}); await sleep(500); break; }
+        }
+
+        // If search results list (no direct panel), click the first result.
+        if (!googlePlaceId) {
+            await Promise.race([
+                page.waitForSelector('button[data-item-id="address"]', { timeout: 8000 }).catch(() => null),
+                page.waitForSelector('a.hfpxzc', { timeout: 8000 }).catch(() => null),
+            ]);
+            const hasPanel = await page.$('button[data-item-id="address"]').catch(() => null);
+            if (!hasPanel) {
+                const first = await page.$('a.hfpxzc').catch(() => null);
+                if (!first) return [];
+                await first.click().catch(() => {});
+                await page.waitForSelector('button[data-item-id="address"]', { timeout: 8000 }).catch(() => null);
+            }
+        } else {
+            // Direct place_id URL — wait for the panel heading.
+            await page.waitForSelector('h1, button[data-item-id="address"]', { timeout: 15000 }).catch(() => null);
+        }
+
+        // Find and click the Reviews tab (stable: role="tab" with "Reviews" text).
+        const tabClicked = await page.evaluate(() => {
+            for (const el of document.querySelectorAll('[role="tab"]')) {
+                if (/reviews?/i.test(el.textContent || '') || /reviews?/i.test(el.getAttribute('aria-label') || '')) {
+                    el.click();
+                    return true;
+                }
+            }
+            // Fallback: plain buttons with just "Reviews" or "N reviews" label.
+            for (const btn of document.querySelectorAll('button')) {
+                const t = (btn.textContent || '').trim();
+                if (/^reviews?$/i.test(t) || /^\d[\d,.]+\s*reviews?$/i.test(t)) {
+                    btn.click();
+                    return true;
+                }
+            }
+            return false;
+        }).catch(() => false);
+
+        if (!tabClicked) return [];
+
+        // Wait for the reviews feed to appear.
+        await page.waitForSelector('[role="feed"]', { timeout: 8000 }).catch(() => null);
+        await sleep(1500);
+
+        // Scroll the feed panel to load more reviews.
+        for (let i = 0; i < 5; i++) {
+            await page.evaluate(() => {
+                const feed = document.querySelector('[role="feed"]');
+                if (feed) feed.scrollBy(0, 800);
+                else window.scrollBy(0, 800);
+            }).catch(() => {});
+            await sleep(1000);
+        }
+
+        // Extract review texts from cards.
+        return await page.evaluate((max) => {
+            const results = [];
+
+            // Primary: cards tagged with data-review-id.
+            for (const card of document.querySelectorAll('[data-review-id]')) {
+                for (const span of card.querySelectorAll('span')) {
+                    const t = (span.textContent || '').replace(/\s+/g, ' ').trim();
+                    // Must be a plausible review body: 80–1200 chars, not a date/rating line.
+                    if (t.length >= 80 && t.length <= 1200 &&
+                        !/^[\d.,]+\s*(stars?|★|reviews?)/i.test(t) &&
+                        !/(ago|yesterday|last (week|month|year))$/i.test(t)) {
+                        results.push(t);
+                        break;
+                    }
+                }
+                if (results.length >= max) break;
+            }
+
+            // Fallback: scan the feed directly if cards gave nothing.
+            if (results.length === 0) {
+                const feed = document.querySelector('[role="feed"]');
+                if (feed) {
+                    for (const span of feed.querySelectorAll('span')) {
+                        const t = (span.textContent || '').replace(/\s+/g, ' ').trim();
+                        if (t.length >= 100 && t.length <= 1200 && !results.includes(t)) {
+                            results.push(t);
+                        }
+                        if (results.length >= max) break;
+                    }
+                }
+            }
+
+            return results;
+        }, maxReviews).catch(() => []);
+    } catch {
+        return [];
+    }
+}
+
+module.exports = { createGmapsPage, lookup, scrapeReviews, loadCache, saveCache, CACHE_PATH };
