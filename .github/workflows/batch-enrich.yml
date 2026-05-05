@@ -10,6 +10,23 @@ jobs:
   enrich:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Restore reviews cache
+        uses: actions/cache@v4
+        with:
+          path: google-reviews-cache.json
+          key: reviews-cache-${{ github.run_id }}
+          restore-keys: reviews-cache-
+
       - name: Enrich new rows
         run: |
           response=$(curl -s -w "\n%{http_code}" \
@@ -35,3 +52,15 @@ jobs:
           if [ "$http_code" != "200" ]; then
             echo "::warning::Photos HTTP $http_code — will retry next scheduled run"
           fi
+
+      - name: Scrape reviews for newly enriched places
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+        run: node scripts/scrape-reviews.js --apply --limit=20
+
+      - name: Generate descriptions from reviews
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node scripts/generate-descriptions.js --apply --limit=20
