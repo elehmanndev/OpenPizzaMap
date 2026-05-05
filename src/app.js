@@ -201,6 +201,7 @@ if (maintenanceMode) {
     const cookieParser = require("cookie-parser");
 
     const pages = require("./routes/pages");
+    const pagesAdmin = require("./routes/pages.admin");
     const apiAuth = require("./routes/api.auth");
     const apiNotify = require("./routes/api.notify");
     const apiPlaces = require("./routes/api.places");
@@ -293,6 +294,7 @@ if (maintenanceMode) {
     app.use(passport.initialize());
 
     app.use("/", pages);
+    app.use("/", pagesAdmin);
     app.use("/api/auth", apiAuth);
     app.use("/api/notify", apiNotify);
     app.use("/api/places", apiPlaces);

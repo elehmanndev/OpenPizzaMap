@@ -1,9 +1,10 @@
 // Shared Google Maps Playwright helper. Used by:
-//   - scripts/resolve-via-gmaps.js (address resolver, single-purpose CLI)
-//   - scripts/enricher.js (phaseGmaps, opt-in --phase=gmaps)
+//   - scripts/enrichment/resolve-via-gmaps.js (address resolver, single-purpose CLI)
+//   - scripts/legacy/enricher.js (phaseGmaps, opt-in --phase=gmaps; deprecated)
+//   - src/services/enrichment/providers.js (PlaywrightProvider — wraps lookup())
 //
-// Both consumers share the same on-disk cache so a row looked up by one
-// script doesn't need re-fetching by the other. The cache key is
+// All consumers share the same on-disk cache so a row looked up by one
+// script doesn't need re-fetching by the others. The cache key is
 // `${name}|${city}` to match the original resolver's keying.
 
 const path = require('path');
@@ -11,7 +12,8 @@ const fs = require('fs');
 const { chromium } = require('playwright');
 
 const ROOT = path.resolve(__dirname, '..', '..');
-const CACHE_PATH = path.join(ROOT, 'gmaps-resolve-cache.json');
+const CACHE_PATH = path.join(ROOT, 'data', 'cache', 'gmaps-resolve-cache.json');
+fs.mkdirSync(path.dirname(CACHE_PATH), { recursive: true });
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 

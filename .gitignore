@@ -7,8 +7,6 @@ yarn-error.log*
 .DS_Store
 .prisma
 *.log
-import-errors.json
-import-log*.txt
 .claude/
 .playwright-mcp/
 
@@ -18,9 +16,14 @@ scripts/lib/.tripadvisor-budget.json
 # scripts on each Hostinger boot/deploy and must not be checked in.
 .builds/
 
-# Scraper outputs, geocode caches, dedup reports, and other regenerable
-# artifacts. Anchored with a leading `/` so the rules apply only to repo root,
-# not to any equivalently-named files nested under src/, scripts/, etc.
+# Script artifacts. Everything under data/ is regenerable: scrape outputs,
+# external-API caches, audit/dedup/error reports. The dirs themselves are
+# created on demand by scripts/lib/bootstrap.js.
+data/
+
+# Legacy: catch-all for anything still landing at the repo root from older
+# scripts that haven't moved over yet. Anchored with a leading `/` so they
+# apply only to repo root, not equivalently-named files under src/ etc.
 /*-scrape.json
 /*-cache.json
 /dedup-*.json
@@ -29,6 +32,8 @@ scripts/lib/.tripadvisor-budget.json
 /*-debug.html
 /scrape-result.json
 /tasteatlas-*.json
+/import-errors.json
+/import-log*.txt
 
 # Screenshots and reference images dropped at the repo root. Keeps
 # public/uploads/places/*.png (committed deliberately) untouched.
