@@ -1,19 +1,13 @@
 const { alertError } = require("../services/errorAlert");
+const { resetClient } = require("../db");
 
-// Centralised error handler. With express-async-errors loaded in app.js, any
-// thrown error or rejected promise inside a route handler reaches this
-// function instead of becoming an unhandled rejection that takes the worker
-// down.
-//
-// Categorise common Prisma errors so prod logs are useful and the response
-// status reflects the cause (DB unreachable → 503; bad input → 400; everything
-// else → 500). On 5xx we also log a structured one-liner that's easy to grep
-// in stderr.log.
 function errorHandler(err, req, res, next) {
     const code = err && err.code;
+    const isPrismaRustPanic = err && err.name === "PrismaClientRustPanicError";
     const isPrismaInit =
         err &&
-        (err.name === "PrismaClientInitializationError" ||
+        (isPrismaRustPanic ||
+            err.name === "PrismaClientInitializationError" ||
             code === "P1001" ||
             code === "P1002" ||
             code === "P1008" ||
@@ -24,6 +18,12 @@ function errorHandler(err, req, res, next) {
             code === "P2025" || // record not found
             code === "P2002");  // unique constraint
     const isJsonBody = err && err.type === "entity.parse.failed";
+
+    if (isPrismaRustPanic) {
+        // Engine panicked (e.g. "timer has gone away" after Passenger fork).
+        // Reset so the next request gets a fresh PrismaClient.
+        resetClient();
+    }
 
     let status = 500;
     let publicMessage = "Internal Server Error";
