@@ -39,7 +39,11 @@ body {
   position: relative;
 }
 
-body::before {
+/* Pizza-pattern wallpaper — opt-in, only on the auth/login flow.
+   Off everywhere else (profile, place detail, map, admin, legal) so
+   stacked content cards aren't fighting the pattern. The standalone
+   maintenance landing has its own bespoke background. */
+body.auth-page::before {
   content: "";
   position: fixed;
   inset: 0;
@@ -52,7 +56,7 @@ body::before {
   z-index: 0;
 }
 
-body > * {
+body.auth-page > * {
   position: relative;
   z-index: 1;
 }
@@ -375,11 +379,6 @@ button {
   width: 100%;
   border: none;
   border-radius: 0;
-}
-
-.map-page body::before,
-body.map-page::before {
-  display: none;
 }
 
 /* ---- Map split layout (sidebar + canvas) ------------------------------ */
