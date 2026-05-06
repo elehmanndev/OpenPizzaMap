@@ -1,6 +1,24 @@
 # 2026-05-06 — Clinical cleanup: shared script harness + repo organization
 
-## Status: SHIPPED — committed and pushed to main
+## Status: SHIPPED — committed (`f15e315`), pushed to main, prod verified HEALTHY
+
+Post-deploy verification (2026-05-06):
+- Pushed `b86071c..f15e315 main -> main`.
+- ~2 min after push the health endpoint returned `PrismaClientRustPanicError`
+  with HTTP 503 — Hostinger's old Passenger worker was still serving while
+  the new worker booted with the new file layout.
+- Resolved on its own: at uptimeSec=2 the new worker reported `{"ok":true,
+  "status":"healthy","counts":{"places":1772,"visits":0,"favorites":0}}`.
+  Public `/` and `/map` returned 200 throughout.
+- No code change needed to recover. The lazy-init Proxy from `b86071c` did
+  its job once Passenger fully cycled.
+
+## Lesson for next time
+
+A big-diff push (this one moved 38 files + restructured every script) takes
+Hostinger longer to fully cycle than the usual ~30 s. Plan for a 2–5 min
+window where the **old worker** can panic on stale engine binaries while
+the new one boots. Wait for `uptimeSec` to reset before declaring failure.
 
 Eric was burned out from the recurring "script broke in prod, SSH in to diagnose,
 fix env path, push" loop. Pushed back on his initial "entire refactor" ask
