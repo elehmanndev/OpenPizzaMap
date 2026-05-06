@@ -29,6 +29,13 @@ const morgan = require("morgan");
 
 const app = express();
 
+// Hostinger terminates TLS at its reverse proxy, so without `trust proxy`
+// Express sees req.secure === false. With `cookie.secure: true` in prod that
+// causes express-session to silently refuse to set the session cookie on the
+// 302 from /api/auth/google/callback — login appears to succeed at Google,
+// then bounces straight back to /auth because the browser has no opm.sid.
+app.set("trust proxy", 1);
+
 // Cache-bust static assets with a single version string. Scan only the asset
 // dirs that ship with the app — never `uploads/`, which holds 1k+ user images
 // and would burn IOPS on every worker boot under shared hosting.

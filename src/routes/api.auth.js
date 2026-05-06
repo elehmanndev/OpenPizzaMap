@@ -109,10 +109,18 @@ router.get("/google/callback", (req, res, next) => {
             username: user.username,
             role: user.role,
         };
-        if (!user.username) {
-            return res.redirect("/set-username");
-        }
-        return res.redirect("/me");
+        const target = user.username ? "/me" : "/set-username";
+        // Force the session to persist before responding. PrismaSessionStore
+        // writes to MySQL; the implicit save inside res.end has races on
+        // shared hosting that occasionally let the 302 fire before the row
+        // exists, leaving the next request unauthenticated.
+        return req.session.save((saveErr) => {
+            if (saveErr) {
+                console.error("Session save failed after Google auth:", saveErr);
+                return res.redirect("/auth?google=failed");
+            }
+            return res.redirect(target);
+        });
     })(req, res, next);
 });
 
