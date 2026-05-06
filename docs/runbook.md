@@ -6,6 +6,28 @@ validate.
 
 ---
 
+## Hostinger SSH layout (read this first)
+
+After SSH'ing in, the layout is **not** what `public_html` suggests:
+
+- `~/domains/openpizzamap.com/nodejs/` — **the actual Node.js app**
+  (package.json, src/, prisma/, node_modules/, scripts/). All `npm`,
+  `node`, and `prisma` commands run from here.
+- `~/domains/openpizzamap.com/public_html/` — static-only mount, **no**
+  package.json. Don't try to run Node commands from this directory.
+- `~/domains/openpizzamap.com/DO_NOT_UPLOAD_HERE/` — exactly what it says.
+- `~/opm.log` — app log file at the home dir level.
+
+Node binary: `/opt/alt/alt-nodejs20/root/bin/node` (and `npm`). Always use
+the absolute path; the default `node` on `$PATH` may not match.
+
+Recovery one-liner for the Prisma chmod issue (see next section):
+```sh
+cd ~/domains/openpizzamap.com/nodejs && /opt/alt/alt-nodejs20/root/bin/npm run postinstall
+```
+
+---
+
 ## Prisma engine panics on every query (Hostinger chmod / deploy)
 
 ### Symptom
@@ -42,13 +64,13 @@ didn't cover `.prisma/client`).
 Three commits, all on `main`:
 
 - [`e856a7e`](https://github.com/ericll93/OpenPizzaMap/commit/e856a7e)
-  — factored chmod into [scripts/chmod-prisma-engines.js](../scripts/chmod-prisma-engines.js),
+  — factored chmod into [scripts/deploy/chmod-prisma-engines.js](../scripts/deploy/chmod-prisma-engines.js),
   added `node_modules/.prisma/client` (the actual runtime engine
   location — uncovered before) to its targets, and runs it both before
   and after `prisma generate` from postinstall.
 - [`0a14bc3`](https://github.com/ericll93/OpenPizzaMap/commit/0a14bc3)
   — postinstall now also writes `tmp/restart.txt` via
-  [scripts/touch-passenger-restart.js](../scripts/touch-passenger-restart.js)
+  [scripts/deploy/touch-passenger-restart.js](../scripts/deploy/touch-passenger-restart.js)
   so Passenger respawns the worker after deploy.
 - [`9ab1681`](https://github.com/ericll93/OpenPizzaMap/commit/9ab1681)
   — bumped `src/app.js` mtime once. **Operational note:** on the
@@ -66,11 +88,25 @@ Three commits, all on `main`:
    forces both postinstall to rerun *and* the entry mtime to change).
    Wait 60–120 s. Hit `/api/health`. Expect `{"ok":true,"status":"healthy",...,"uptimeSec":0}`
    — `uptimeSec=0` confirms the worker actually restarted.
-2. **If health still 503, SSH and chmod manually.** From the [Hostinger Prisma runbook](../notes/reference/hostinger-prisma-runbook.md)
-   in Obsidian, but the short version:
+2. **If health still 503, SSH and rerun postinstall.** This is the
+   sequence that recovered the **2026-05-06** outage (after the OAuth
+   fix deploy triggered a worker respawn that hit the chmod bug):
    ```sh
    ssh -p 65002 u975898812@92.113.28.98
-   cd ~/domains/openpizzamap.com/public_html
+   cd ~/domains/openpizzamap.com/nodejs
+   export PATH=/opt/alt/alt-nodejs20/root/bin:$PATH   # npm sub-shell needs node on PATH
+   npm run postinstall
+   ```
+   The `npm run postinstall` does the full sequence: chmod the Prisma
+   engines, regenerate the client, chmod again, write
+   `.builds/asset-version.txt`, and touch `tmp/restart.txt` to force a
+   Passenger respawn. Watch for `uptimeSec: 0` on `/api/health` — that
+   confirms the worker actually restarted.
+
+   If that fails too, the manual chmod fallback (do **not** forget the
+   `cd nodejs`):
+   ```sh
+   cd ~/domains/openpizzamap.com/nodejs
    chmod -R +x node_modules/.prisma/client/* node_modules/@prisma/engines/* node_modules/.bin/*
    touch tmp/restart.txt
    touch src/app.js
@@ -80,8 +116,10 @@ Three commits, all on `main`:
    use hPanel → Node.js app → **Restart** button. That force-restarts
    Passenger which picks up whatever the latest deploy wrote.
 4. **If hPanel restart doesn't help either**, the Prisma client
-   itself is corrupt. SSH and run
+   itself is corrupt. SSH and run (from `~/domains/openpizzamap.com/nodejs`):
    ```sh
+   cd ~/domains/openpizzamap.com/nodejs
+   export PATH=/opt/alt/alt-nodejs20/root/bin:$PATH
    rm -rf node_modules/.prisma/client
    node node_modules/prisma/build/index.js generate
    chmod -R +x node_modules/.prisma/client/*
@@ -110,7 +148,7 @@ Three commits, all on `main`:
   `/api/health`. It deliberately pings `prisma.place.count()`,
   `prisma.visit.count()`, `prisma.favorite.count()` — three tables
   picked because they're the ones most likely to drift.
-- Migrate gate: [scripts/migrate.js](../scripts/migrate.js) is strict
+- Migrate gate: [scripts/deploy/migrate.js](../scripts/deploy/migrate.js) is strict
   by default since 2026-04-30 — a failed `prisma migrate deploy` halts
   the boot rather than serving with a stale schema. Override with
   `MIGRATE_LENIENT=true` *only* during explicit recovery.
