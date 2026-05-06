@@ -32,16 +32,22 @@ const ENV_CANDIDATES = [
     path.join(ROOT, ".env"),
 ];
 
+// Accept either a .env file (local + Hostinger) OR pre-populated process.env
+// (GitHub Actions workflows pass secrets via `env:` blocks; there's no file).
+// File takes precedence so local edits override stale env in the parent shell.
 const envPath = ENV_CANDIDATES.find((p) => fs.existsSync(p));
-if (!envPath) {
-    console.error("[bootstrap] No .env found. Looked in:");
+if (envPath) {
+    require("dotenv").config({ path: envPath, override: true });
+} else if (!process.env.DATABASE_URL) {
+    console.error("[bootstrap] No .env file found and DATABASE_URL not set in process.env.");
+    console.error("[bootstrap] Looked for .env in:");
     for (const c of ENV_CANDIDATES) console.error("  -", c);
+    console.error("[bootstrap] Refusing to start — this would crash on the first DB call.");
     process.exit(1);
 }
-require("dotenv").config({ path: envPath, override: true });
 
 if (!process.env.DATABASE_URL) {
-    console.error(`[bootstrap] DATABASE_URL not set after loading ${envPath}.`);
+    console.error(`[bootstrap] DATABASE_URL not set after loading ${envPath || "(no file)"}.`);
     console.error("[bootstrap] Refusing to start — this would crash on the first DB call.");
     process.exit(1);
 }
