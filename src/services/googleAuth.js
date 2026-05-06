@@ -86,6 +86,9 @@ function configureGoogleAuth() {
                     const now = new Date();
 
                     const displayName = normalizeDisplayName(pickDisplayName(profile, email), email);
+                    const avatarUrl = profile && profile.photos && profile.photos[0]
+                        ? String(profile.photos[0].value || "").slice(0, 1024) || null
+                        : null;
 
                     if (user) {
                         if (user.googleId && user.googleId !== googleId) {
@@ -96,6 +99,7 @@ function configureGoogleAuth() {
                         if (!user.googleId) updates.googleId = googleId;
                         if (!user.emailVerifiedAt) updates.emailVerifiedAt = now;
                         if (user.displayName !== displayName) updates.displayName = displayName;
+                        if (avatarUrl && user.avatarUrl !== avatarUrl) updates.avatarUrl = avatarUrl;
                         if (user.verificationTokenHash || user.verificationTokenExpiresAt) {
                             updates.verificationTokenHash = null;
                             updates.verificationTokenExpiresAt = null;
@@ -118,6 +122,7 @@ function configureGoogleAuth() {
                             username: null,
                             role: "user",
                             googleId,
+                            avatarUrl,
                             emailVerifiedAt: now,
                             newsletterOptIn: true,
                         },

@@ -48,6 +48,7 @@ router.get("/google/callback", (req, res, next) => {
             displayName: user.displayName,
             username: user.username,
             role: user.role,
+            avatarUrl: user.avatarUrl || null,
         };
         const target = user.username ? "/me" : "/set-username";
         // Force the session to persist before responding. PrismaSessionStore
@@ -87,7 +88,7 @@ router.post("/set-username", authLimiter, async (req, res) => {
         const updated = await prisma.user.update({
             where: { id: req.session.user.id },
             data: { username },
-            select: { id: true, email: true, displayName: true, username: true, role: true },
+            select: { id: true, email: true, displayName: true, username: true, role: true, avatarUrl: true },
         });
 
         req.session.user = updated;

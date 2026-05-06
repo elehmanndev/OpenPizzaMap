@@ -23,6 +23,7 @@ model User {
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
   googleId     String?      @unique
+  avatarUrl    String?      @db.Text
   reviews      Submission[] @relation("ReviewedBy")
   submissions  Submission[] @relation("UserSubmissions")
   visits       Visit[]
