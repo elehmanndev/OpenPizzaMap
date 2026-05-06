@@ -5,11 +5,11 @@
       <span class="auth-logo">OPM</span>
       <div>
         <span class="auth-brand-name">OpenPizzaMap</span>
-        <span class="auth-brand-tag">Sign in or create your account</span>
+        <span class="auth-brand-tag">Sign in to track and share your pizza spots</span>
       </div>
     </div>
     <h1 class="auth-title">Welcome to OpenPizzaMap</h1>
-    <p class="auth-subtitle">Enter your email and we'll send you a magic link. No password to remember.</p>
+    <p class="auth-subtitle">One-click sign in with your Google account. No passwords, no email back-and-forth.</p>
     ${googleAuthEnabled ? String.raw`
       <a class="auth-social" href="/api/auth/google">
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -20,53 +20,9 @@
         </svg>
         Continue with Google
       </a>
-      <div class="auth-divider"><span>or use your email</span></div>
-    ` : ``}
-    <form class="auth-form" id="auth-form" novalidate>
-      <label class="auth-field">
-        <span>Email</span>
-        <input name="email" type="email" autocomplete="email" required />
-        <small class="auth-error" aria-live="polite"></small>
-      </label>
-      <button class="auth-submit" type="submit">Send me a link</button>
-      <p class="auth-msg" id="msg"></p>
-    </form>
+    ` : String.raw`
+      <p class="auth-msg" role="alert">Google sign-in is currently unavailable. Try again later.</p>
+    `}
   </div>
 </section>
-<script>
-  const form = document.getElementById("auth-form");
-  const msg = document.getElementById("msg");
-  const emailInput = form.querySelector("input[name='email']");
-  const submitBtn = form.querySelector("button[type='submit']");
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    msg.textContent = "";
-    if (!form.checkValidity()) {
-      msg.textContent = "Please enter a valid email.";
-      return;
-    }
-    submitBtn.disabled = true;
-    const original = submitBtn.textContent;
-    submitBtn.textContent = "Sending…";
-    try {
-      const res = await fetch("/api/auth/start", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: emailInput.value.trim() }),
-      });
-      const data = await res.json();
-      if (data.ok) {
-        location.href = "/check-email?email=" + encodeURIComponent(emailInput.value.trim());
-        return;
-      }
-      msg.textContent = (typeof data.error === "string" && data.error) || "Something went wrong. Try again.";
-    } catch (err) {
-      msg.textContent = "Network error. Try again.";
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = original;
-    }
-  });
-</script>
 ` }) %>

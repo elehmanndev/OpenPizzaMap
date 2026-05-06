@@ -1,71 +1,11 @@
 const express = require("express");
-const crypto = require("crypto");
 const { z } = require("zod");
 const { prisma } = require("../db");
 const { authLimiter } = require("../middleware/rateLimit");
-const { sendMagicLinkEmail } = require("../services/email");
 const passport = require("passport");
 const { isGoogleAuthConfigured, getGoogleCallbackUrl } = require("../services/googleAuth");
 
 const router = express.Router();
-
-const startSchema = z.object({
-    email: z.string().trim().toLowerCase().email(),
-});
-
-const TOKEN_TTL_MS = 1000 * 60 * 30; // 30 minutes
-
-router.post("/start", authLimiter, async (req, res) => {
-    try {
-        const parsed = startSchema.safeParse(req.body);
-        if (!parsed.success) {
-            return res.status(400).json({ ok: false, error: "Please enter a valid email." });
-        }
-
-        const { email } = parsed.data;
-
-        const token = crypto.randomBytes(32).toString("hex");
-        const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
-        const tokenExpiresAt = new Date(Date.now() + TOKEN_TTL_MS);
-
-        const existing = await prisma.user.findUnique({ where: { email } });
-
-        let isNewUser = false;
-        if (existing) {
-            await prisma.user.update({
-                where: { id: existing.id },
-                data: {
-                    verificationTokenHash: tokenHash,
-                    verificationTokenExpiresAt: tokenExpiresAt,
-                },
-            });
-        } else {
-            isNewUser = true;
-            await prisma.user.create({
-                data: {
-                    email,
-                    displayName: email.split("@")[0].slice(0, 60),
-                    role: "user",
-                    verificationTokenHash: tokenHash,
-                    verificationTokenExpiresAt: tokenExpiresAt,
-                    newsletterOptIn: true,
-                },
-            });
-        }
-
-        try {
-            await sendMagicLinkEmail({ to: email, token, isNewUser });
-        } catch (mailErr) {
-            console.error("Magic-link email failed:", mailErr);
-            return res.status(500).json({ ok: false, error: "Failed to send sign-in email. Try again." });
-        }
-
-        res.json({ ok: true });
-    } catch (err) {
-        console.error("Auth start failed:", err);
-        res.status(500).json({ ok: false, error: "Could not start sign-in." });
-    }
-});
 
 router.post("/logout", async (req, res) => {
     req.session.destroy(() => res.json({ ok: true }));

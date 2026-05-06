@@ -1,5 +1,4 @@
 const express = require("express");
-const crypto = require("crypto");
 const fs = require("fs");
 const fsPromises = require("fs/promises");
 const path = require("path");
@@ -143,61 +142,6 @@ router.get("/set-username", requireAuth, async (req, res) => {
     res.render("set_username", { user: req.session.user || null });
 });
 
-router.get("/check-email", (req, res) => {
-    const email = typeof req.query.email === "string" ? req.query.email : null;
-    res.render("check_email", { user: req.session.user || null, email });
-});
-
-router.get("/verify", async (req, res) => {
-    const token = typeof req.query.token === "string" ? req.query.token : "";
-    if (!token) {
-        return res.render("verify", {
-            user: req.session.user || null,
-            status: "error",
-            message: "Missing sign-in token. Please open the link from your email.",
-        });
-    }
-
-    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
-    const user = await prisma.user.findFirst({ where: { verificationTokenHash: tokenHash } });
-    if (!user) {
-        return res.render("verify", {
-            user: req.session.user || null,
-            status: "error",
-            message: "That sign-in link is invalid or has already been used.",
-        });
-    }
-
-    if (user.verificationTokenExpiresAt && user.verificationTokenExpiresAt < new Date()) {
-        return res.render("verify", {
-            user: req.session.user || null,
-            status: "error",
-            message: "That sign-in link has expired. Please request a new one.",
-        });
-    }
-
-    await prisma.user.update({
-        where: { id: user.id },
-        data: {
-            emailVerifiedAt: user.emailVerifiedAt || new Date(),
-            verificationTokenHash: null,
-            verificationTokenExpiresAt: null,
-        },
-    });
-
-    req.session.user = {
-        id: user.id,
-        email: user.email,
-        displayName: user.displayName,
-        username: user.username,
-        role: user.role,
-    };
-
-    if (!user.username) {
-        return res.redirect("/set-username");
-    }
-    return res.redirect("/me");
-});
 router.post("/logout", (req, res) => req.session.destroy(() => res.redirect("/")));
 
 router.get("/about", async (req, res) => {
