@@ -272,12 +272,68 @@ router.get("/privacy", (req, res) => {
 });
 
 router.get("/me", requireAuth, async (req, res) => {
-    const subs = await prisma.submission.findMany({
-        where: { userId: req.session.user.id },
-        orderBy: { createdAt: "desc" },
-        take: 100,
+    const userId = req.session.user.id;
+
+    // Pull everything we need for the profile in one round-trip-shaped batch.
+    // Counts come from Prisma's count(); lists are bounded so a power user
+    // with thousands of favourites still renders in O(view-cap).
+    const [account, visitRows, favoriteRows, reviewRows, submissionsCount] = await Promise.all([
+        prisma.user.findUnique({
+            where: { id: userId },
+            select: { id: true, email: true, displayName: true, username: true, role: true, avatarUrl: true, createdAt: true },
+        }),
+        prisma.visit.findMany({
+            where: { userId },
+            orderBy: { createdAt: "desc" },
+            include: { place: { select: { id: true, name: true, city: true, country: true, isVisible: true } } },
+        }),
+        prisma.favorite.findMany({
+            where: { userId },
+            orderBy: { createdAt: "desc" },
+            include: { place: { select: { id: true, name: true, city: true, country: true, isVisible: true } } },
+        }),
+        prisma.review.findMany({
+            where: { userId, isVisible: true },
+            orderBy: { createdAt: "desc" },
+            take: 10,
+            include: { place: { select: { id: true, name: true, city: true, country: true } } },
+        }),
+        prisma.submission.count({ where: { userId } }),
+    ]);
+
+    const visiblePlace = (p) => p && p.isVisible !== false;
+    const visits = visitRows.filter((v) => visiblePlace(v.place));
+    const visitedPlaceIds = new Set(visits.map((v) => v.placeId));
+
+    const favoritesAll = favoriteRows.filter((f) => visiblePlace(f.place));
+    const wishlist = favoritesAll.filter((f) => !visitedPlaceIds.has(f.placeId));
+    const beenFromFavorites = favoritesAll.filter((f) => visitedPlaceIds.has(f.placeId));
+
+    // "Been there" = unioned by place: every visit, plus the favourite row's
+    // metadata where the visit happened to be a saved place. Visits drive
+    // ordering (most recent first), favourites annotate.
+    const favByPlace = new Map(beenFromFavorites.map((f) => [f.placeId, f]));
+    const beenThere = visits.map((v) => ({
+        place: v.place,
+        visitedAt: v.createdAt,
+        favoritedAt: favByPlace.has(v.placeId) ? favByPlace.get(v.placeId).createdAt : null,
+    }));
+
+    res.render("me", {
+        user: req.session.user,
+        account,
+        counts: {
+            visits: visits.length,
+            favorites: favoritesAll.length,
+            wishlist: wishlist.length,
+            been: beenThere.length,
+            reviews: reviewRows.length,
+            submissions: submissionsCount,
+        },
+        wishlist,
+        beenThere,
+        reviews: reviewRows,
     });
-    res.render("me", { user: req.session.user, submissions: subs });
 });
 
 router.get("/favourites", requireAuth, async (req, res) => {
