@@ -39,7 +39,7 @@ function stars(value) {
 %>
 <%- include("layout", { title: "My profile", user, leaflet: false, bodyClass: "profile-page", body: String.raw`
 <section class="profile-wrap">
-  <header class="profile-header">
+  <section class="profile-header">
     <div class="profile-avatar">
       ${account.avatarUrl
           ? `<img src="${escapeAttr(account.avatarUrl)}" alt="" referrerpolicy="no-referrer" />`
@@ -50,7 +50,7 @@ function stars(value) {
       ${account.username ? `<div class="profile-username">@${escapeHtml(account.username)}</div>` : ""}
       ${memberSince ? `<div class="profile-since">Member since ${escapeHtml(memberSince)}</div>` : ""}
     </div>
-  </header>
+  </section>
 
   <div class="profile-stats">
     <div class="profile-stat">
