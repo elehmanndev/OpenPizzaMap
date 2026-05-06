@@ -5,31 +5,14 @@ const defaultEnv = path.join(process.cwd(), ".env");
 require("dotenv").config({ path: fs.existsSync(localEnv) ? localEnv : defaultEnv });
 
 const { PrismaClient } = require("@prisma/client");
-const bcrypt = require("bcryptjs");
 
 const prisma = new PrismaClient();
 
 async function main() {
-    // Create admin user (local dev)
-    const adminEmail = "admin@openpizzamap.local";
-    const adminPass = "admin123!ChangeMe";
-    const hash = await bcrypt.hash(adminPass, 12);
-
-    await prisma.user.upsert({
-        where: { email: adminEmail },
-        update: {
-            emailVerifiedAt: new Date(),
-        },
-        create: {
-            email: adminEmail,
-            passwordHash: hash,
-            displayName: "Admin",
-            username: "admin",
-            role: "admin",
-            emailVerifiedAt: new Date(),
-            newsletterOptIn: false,
-        },
-    });
+    // No admin user is seeded. Auth is Google-only — a row with a
+    // pre-baked passwordHash can never sign in. To grant admin to a
+    // real Google user, sign in once to create the row, then run a
+    // one-off `UPDATE User SET role = 'admin' WHERE email = ...`.
 
     // 10 sample places (Barcelona-ish coords; edit as needed)
     const samples = [
@@ -95,7 +78,6 @@ async function main() {
     }
 
     console.log("Seed complete.");
-    console.log("Admin credentials (local only):", adminEmail, adminPass);
 }
 
 main()

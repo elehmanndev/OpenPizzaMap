@@ -44,6 +44,30 @@ function normalizeDisplayName(raw, email) {
     return "pizza";
 }
 
+// Avatar URLs come from Google's OAuth profile. Today they always point at
+// *.googleusercontent.com, but Google's profile schema is open enough that
+// a future change could return a third-party URL. Allow-list the host so
+// we don't end up hot-linking arbitrary domains in <img src="…">.
+const AVATAR_HOST_SUFFIXES = [".googleusercontent.com", ".google.com"];
+
+function pickGoogleAvatar(profile) {
+    const raw = profile && profile.photos && profile.photos[0]
+        ? String(profile.photos[0].value || "").trim()
+        : "";
+    if (!raw) return null;
+    let parsed;
+    try {
+        parsed = new URL(raw);
+    } catch (_e) {
+        return null;
+    }
+    if (parsed.protocol !== "https:") return null;
+    const host = parsed.hostname.toLowerCase();
+    const allowed = AVATAR_HOST_SUFFIXES.some((suffix) => host.endsWith(suffix));
+    if (!allowed) return null;
+    return parsed.toString().slice(0, 1024);
+}
+
 function pickDisplayName(profile, email) {
     if (profile && profile.name && profile.name.givenName) {
         return profile.name.givenName;
@@ -86,9 +110,7 @@ function configureGoogleAuth() {
                     const now = new Date();
 
                     const displayName = normalizeDisplayName(pickDisplayName(profile, email), email);
-                    const avatarUrl = profile && profile.photos && profile.photos[0]
-                        ? String(profile.photos[0].value || "").slice(0, 1024) || null
-                        : null;
+                    const avatarUrl = pickGoogleAvatar(profile);
 
                     if (user) {
                         if (user.googleId && user.googleId !== googleId) {
