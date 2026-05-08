@@ -130,6 +130,9 @@
 
     function ratingFor(p) {
         const r = p.opmRating ?? p.googleRating ?? p.tripadvisorRating ?? p.yelpRating;
+        // Number(null) is 0, not NaN — without this guard, places with no
+        // rating render as "0.0" instead of "—" on map cards and popups.
+        if (r == null) return null;
         const n = Number(r);
         return Number.isFinite(n) ? n : null;
     }
