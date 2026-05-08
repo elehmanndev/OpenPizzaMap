@@ -53,8 +53,15 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   } else where = { addressLine: '' };
   const placesAll = await prisma.place.findMany({
     where,
-    select: { id: true, name: true, city: true, country: true, addressLine: true, phone: true, websiteUrl: true, openingHours: true, lat: true, lng: true, isVisible: true, googleRating: true, googleReviewCount: true },
-    orderBy: { id: 'asc' },
+    select: { id: true, name: true, city: true, country: true, addressLine: true, phone: true, websiteUrl: true, openingHours: true, lat: true, lng: true, isVisible: true, googleRating: true, googleReviewCount: true, enrichedAt: true },
+    // Match the API queue's ordering (src/routes/api.admin.js): rows with
+    // NULL enrichedAt go first (untried or force-prioritised), then oldest
+    // attempt, then id. Lets us prioritise specific rows (e.g. centroid
+    // clusters being re-resolved) by nulling their enrichedAt.
+    orderBy: [
+      { enrichedAt: { sort: 'asc', nulls: 'first' } },
+      { id: 'asc' },
+    ],
   });
   const places = LIMIT ? placesAll.slice(0, LIMIT) : placesAll;
   console.log(`[resolve] ${places.length} places to look up (apply=${APPLY}, need-meta=${NEED_META})`);
