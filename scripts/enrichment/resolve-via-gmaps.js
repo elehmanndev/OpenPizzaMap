@@ -47,13 +47,13 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   else if (NEED_META) {
     where = {
       isVisible: true,
-      OR: [{ phone: null }, { websiteUrl: null }, { openingHours: null }],
+      OR: [{ phone: null }, { websiteUrl: null }, { openingHours: null }, { googleRating: null }],
     };
     if (SINCE_ID != null) where.id = { gte: SINCE_ID };
   } else where = { addressLine: '' };
   const placesAll = await prisma.place.findMany({
     where,
-    select: { id: true, name: true, city: true, country: true, addressLine: true, phone: true, websiteUrl: true, openingHours: true, lat: true, lng: true, isVisible: true },
+    select: { id: true, name: true, city: true, country: true, addressLine: true, phone: true, websiteUrl: true, openingHours: true, lat: true, lng: true, isVisible: true, googleRating: true, googleReviewCount: true },
     orderBy: { id: 'asc' },
   });
   const places = LIMIT ? placesAll.slice(0, LIMIT) : placesAll;
@@ -63,14 +63,17 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const { browser, page } = await createGmapsPage();
 
   let resolved = 0, skipped = 0, missed = 0;
-  let metaPhones = 0, metaWebs = 0, metaHours = 0;
+  let metaPhones = 0, metaWebs = 0, metaHours = 0, metaRatings = 0;
   for (const p of places) {
     const cacheKey = `${p.name}|${p.city || ''}`;
     let r = cache[cacheKey];
     // Cache invalidation for --need-meta: the original cache shape only had
-    // address/lat/lng/title. If we're hunting for phone/website/hours and the
-    // cache entry pre-dates that, drop it and re-fetch.
+    // address/lat/lng/title. If we're hunting for phone/website/hours/rating
+    // and the cache entry pre-dates that, drop it and re-fetch. Also
+    // re-fetch entries that pre-date the rating extraction (no `rating` key).
     if (NEED_META && r && !r.miss && !('phone' in r) && !('websiteUrl' in r) && !('openingHours' in r)) {
+      r = null;
+    } else if (NEED_META && r && !r.miss && !('rating' in r)) {
       r = null;
     }
     if (!r) {
@@ -87,7 +90,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
       await sleep(800); // gentle pace — Google rate-limits if you hammer
     }
     if (!r || r.miss || !r.address) { missed++; console.log(`[resolve] #${p.id} "${p.name}" — no result`); continue; }
-    const tags = [r.lat ? `@${r.lat},${r.lng}` : '', r.phone ? `📞${r.phone}` : '', r.websiteUrl ? '🌐' : '', r.openingHours ? '🕒' : ''].filter(Boolean).join(' ');
+    const tags = [r.lat ? `@${r.lat},${r.lng}` : '', r.phone ? `📞${r.phone}` : '', r.websiteUrl ? '🌐' : '', r.openingHours ? '🕒' : '', r.rating ? `★${r.rating}${r.reviewCount ? `(${r.reviewCount})` : ''}` : ''].filter(Boolean).join(' ');
     console.log(`[resolve] #${p.id} "${p.name}" → ${r.address}${tags ? '  ' + tags : ''}`);
 
     if (APPLY) {
@@ -108,6 +111,11 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
       if (!p.phone && r.phone) { data.phone = r.phone; metaPhones++; }
       if (!p.websiteUrl && r.websiteUrl) { data.websiteUrl = r.websiteUrl; metaWebs++; }
       if (!p.openingHours && r.openingHours) { data.openingHours = r.openingHours; metaHours++; }
+      if (p.googleRating == null && r.rating) {
+        data.googleRating = r.rating;
+        if (r.reviewCount) data.googleReviewCount = r.reviewCount;
+        metaRatings++;
+      }
       if (Object.keys(data).length) {
         await prisma.place.update({ where: { id: p.id }, data });
       } else {
@@ -117,7 +125,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     }
     resolved++;
   }
-  if (NEED_META) console.log(`[resolve] meta filled — phone=${metaPhones} website=${metaWebs} hours=${metaHours}`);
+  if (NEED_META) console.log(`[resolve] meta filled — phone=${metaPhones} website=${metaWebs} hours=${metaHours} rating=${metaRatings}`);
   saveCache(cache);
   console.log(`\n[resolve] ${resolved} resolved, ${missed} missed, ${skipped} skipped`);
   await browser.close();

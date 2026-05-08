@@ -97,7 +97,39 @@ async function lookup(page, name, city) {
     // Pull metadata from the place panel. Each is wrapped so a missing
     // element doesn't blank the whole dict.
     const meta = await page.evaluate(() => {
-        const out = { phone: null, websiteUrl: null, openingHours: null };
+        const out = { phone: null, websiteUrl: null, openingHours: null, rating: null, reviewCount: null };
+
+        // Rating: look for an element whose aria-label matches "<num> stars".
+        // Falls back to the visible "4.5" / "(1,234)" text near the title if
+        // the aria-label isn't there. Both 5-star (Google) and percentage
+        // labels exist; we only want the numeric stars form.
+        const ratingEl = document.querySelector('[role="img"][aria-label*="stars" i], [role="img"][aria-label*="star" i]');
+        if (ratingEl) {
+            const al = ratingEl.getAttribute('aria-label') || '';
+            const m = al.match(/(\d+(?:[.,]\d+)?)\s*stars?/i);
+            if (m) {
+                const num = parseFloat(m[1].replace(',', '.'));
+                if (num >= 1 && num <= 5) out.rating = num;
+            }
+        }
+        // Review count: nearby element commonly looks like "(1,234)" or
+        // "1,234 reviews". Search the rating's parent + a couple of ancestors.
+        if (out.rating != null && ratingEl) {
+            let scope = ratingEl;
+            for (let i = 0; i < 4 && scope; i++) {
+                const t = (scope.textContent || '').replace(/\s+/g, ' ');
+                const m = t.match(/\(?\s*(\d{1,3}(?:[.,]\d{3})*|\d+)\s*\)?\s*(?:reviews?|reseñas?|recensioni|avis|bewertungen|opiniones)?/i);
+                // Filter out the rating itself which is also a number.
+                if (m) {
+                    const n = parseInt(m[1].replace(/[.,]/g, ''), 10);
+                    if (Number.isFinite(n) && n >= 1 && n !== Math.round(out.rating * 10) / 10) {
+                        out.reviewCount = n;
+                        break;
+                    }
+                }
+                scope = scope.parentElement;
+            }
+        }
 
         const phoneBtn = document.querySelector('button[data-item-id^="phone"]');
         if (phoneBtn) {
