@@ -163,9 +163,18 @@ router.get("/batch-enrich", async (req, res) => {
         return res.json({ ok: true, mode: "photos", ...stats, apiCalls: provider.callsMade ?? 0, remaining: remaining - stats.updated, quotaHit });
     }
 
+    // Order by enrichedAt nulls-first so untried rows go before rows we
+    // already attempted; among tried rows, oldest attempts go first. Without
+    // this, an unresolvable prefix (Google can't find them) would block the
+    // queue forever — the cron would re-try the same rows every 3h and never
+    // reach newer imports.
     const rows = await prisma.place.findMany({
         where: { enrichmentVersion: 0, googlePlaceId: null },
-        orderBy: [{ isVisible: "desc" }, { id: "asc" }],
+        orderBy: [
+            { isVisible: "desc" },
+            { enrichedAt: { sort: "asc", nulls: "first" } },
+            { id: "asc" },
+        ],
         take: limit,
     });
     const remaining = await prisma.place.count({
@@ -193,7 +202,14 @@ router.get("/batch-enrich", async (req, res) => {
             continue;
         }
 
-        if (!resolved) { stats.skipped++; continue; }
+        if (!resolved) {
+            // Stamp enrichedAt without bumping enrichmentVersion: row stays
+            // in the queue (will be retried once newer rows have had a turn)
+            // but moves to the back via the nulls-first ordering above.
+            await prisma.place.update({ where: { id: row.id }, data: { enrichedAt: new Date() } }).catch(() => {});
+            stats.skipped++;
+            continue;
+        }
 
         const patch = {};
         if (resolved.googlePlaceId) patch.googlePlaceId = resolved.googlePlaceId;
