@@ -236,20 +236,15 @@ async function main() {
         let prompt, source;
 
         const cached = reviewsCache[String(place.id)];
-        if (cached && cached.reviews && cached.reviews.length > 0) {
-            prompt = buildReviewPrompt(place, styles, cached.reviews);
-            source = `reviews(${cached.reviews.length})`;
-        } else {
-            let websiteText = "";
-            if (place.websiteUrl) {
-                try {
-                    const html = await fetchUrl(place.websiteUrl);
-                    websiteText = extractText(html);
-                } catch (_) {}
-            }
-            prompt = buildWebsitePrompt(place, styles, websiteText);
-            source = websiteText ? "website" : "metadata-only";
+        if (!cached || !cached.reviews || cached.reviews.length === 0) {
+            // No reviews → no description. Skip until reviews are scraped.
+            // Eric's rule: descriptions must come from real customers, never
+            // from website blurbs or pure metadata.
+            skipped++;
+            continue;
         }
+        prompt = buildReviewPrompt(place, styles, cached.reviews);
+        source = `reviews(${cached.reviews.length})`;
 
         let description = "";
         try {
