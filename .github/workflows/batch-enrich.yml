@@ -81,6 +81,20 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: node scripts/enrichment/generate-descriptions.js --apply --limit=20
 
+      # Clear stale "fallback blurb" descriptions left behind by the old
+      # website-fallback path in generate-descriptions.js. Idempotent: once
+      # all descriptions match the "Pizza Lovers say:" prefix this is a
+      # no-op. Safe to leave in the workflow indefinitely.
+      - name: Clear non-review fallback descriptions
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X POST \
+            -H "x-api-key: ${{ secrets.ADMIN_API_KEY }}" \
+            "https://openpizzamap.com/api/admin/null-fallback-descriptions")
+          http_code=$(echo "$response" | tail -1)
+          body=$(echo "$response" | sed '$d')
+          echo "$body" | jq . 2>/dev/null || echo "$body"
+          echo "HTTP status: $http_code"
+
       # Long-tail fallback: rows the Google Places API can't resolve
       # (small-town venues, name mismatches) often *do* exist on Google Maps
       # itself. Drive a real browser to scrape phone/website/hours/rating
