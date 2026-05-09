@@ -241,4 +241,59 @@ router.get("/batch-enrich", async (req, res) => {
     });
 });
 
+// One-shot cleanup: null out every Place.descriptionHtml that wasn't
+// generated from real customer reviews. Earlier generate-descriptions.js
+// had a website fallback that produced generic Gemini blurbs for places
+// without scraped reviews; this clears those so the next review-based
+// run can fill them with the canonical "Pizza Lovers say:" format.
+//
+// Lives in the live app on purpose — bare CLI scripts hit Prisma's
+// "tokio timer has gone away" panic on Hostinger, this endpoint reuses
+// the already-warm worker engine so it always works.
+//
+// GET  /api/admin/null-fallback-descriptions             → dry-run preview
+// POST /api/admin/null-fallback-descriptions             → apply (clears rows)
+const REVIEW_PREFIX = "Pizza Lovers say:";
+
+async function inspectFallbackDescriptions() {
+    const rows = await prisma.place.findMany({
+        where: { descriptionHtml: { not: null } },
+        select: { id: true, name: true, city: true, country: true, descriptionHtml: true },
+        orderBy: { id: "asc" },
+    });
+    const bad = rows.filter(r => !String(r.descriptionHtml).trim().startsWith(REVIEW_PREFIX));
+    return { total: rows.length, kept: rows.length - bad.length, bad };
+}
+
+router.get("/null-fallback-descriptions", async (req, res) => {
+    const { total, kept, bad } = await inspectFallbackDescriptions();
+    res.json({
+        ok: true,
+        mode: "dry-run",
+        total,
+        kept,
+        toClear: bad.length,
+        sample: bad.slice(0, 20).map(r => ({
+            id: r.id,
+            name: r.name,
+            city: r.city,
+            country: r.country,
+            description: String(r.descriptionHtml).slice(0, 160),
+        })),
+    });
+});
+
+router.post("/null-fallback-descriptions", async (req, res) => {
+    const { total, bad } = await inspectFallbackDescriptions();
+    if (!bad.length) {
+        return res.json({ ok: true, mode: "apply", total, cleared: 0, message: "nothing to clear" });
+    }
+    const ids = bad.map(r => r.id);
+    const result = await prisma.place.updateMany({
+        where: { id: { in: ids } },
+        data: { descriptionHtml: null },
+    });
+    res.json({ ok: true, mode: "apply", total, cleared: result.count });
+});
+
 module.exports = router;
