@@ -74,12 +74,14 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
         run: node scripts/scrapers/scrape-reviews.js --apply --limit=20
+        continue-on-error: true # Hostinger MySQL flaps; next cron retries
 
       - name: Generate descriptions from reviews
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: node scripts/enrichment/generate-descriptions.js --apply --limit=20
+        continue-on-error: true # Hostinger MySQL flaps; next cron retries
 
       # Clear stale "fallback blurb" descriptions left behind by the old
       # website-fallback path in generate-descriptions.js. Idempotent: once

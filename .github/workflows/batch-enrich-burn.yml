@@ -94,6 +94,7 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
         run: node scripts/scrapers/scrape-reviews.js --apply --limit=60
+        continue-on-error: true # Hostinger MySQL flaps; next cron retries
 
       - name: Generate descriptions from reviews (60/run, 1.1s delay)
         env:
@@ -101,6 +102,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_DELAY_MS: '1100'
         run: node scripts/enrichment/generate-descriptions.js --apply --limit=60
+        continue-on-error: true # Hostinger MySQL flaps; next cron retries
 
       - name: Clear non-review fallback descriptions
         run: |
