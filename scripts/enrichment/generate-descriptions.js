@@ -6,7 +6,9 @@
 //
 // Falls back to website text for places not in the reviews cache.
 //
-// Free tier: 15 RPM Gemini → script paces itself automatically.
+// Free tier: 15 RPM Gemini → script paces itself automatically (4.1s delay).
+// Override with GEMINI_DELAY_MS env var when running on the burn workflow
+// (Tier-1 paid tier allows up to 4000 RPM).
 //
 // Usage:
 //   node scripts/generate-descriptions.js --dry-run            # preview, no writes
@@ -14,6 +16,7 @@
 //   node scripts/generate-descriptions.js --apply --limit=100
 //   node scripts/generate-descriptions.js --apply --id=42      # single place
 //   node scripts/generate-descriptions.js --apply --all        # overwrite existing too
+//   GEMINI_DELAY_MS=1100 node scripts/.../generate-descriptions.js --apply
 //
 // Requires: GEMINI_API_KEY in .env
 // Reviews source: google-reviews-cache.json (run scrape-reviews.js first)
@@ -32,8 +35,9 @@ const ALL     = process.argv.includes("--all");
 const SINGLE_ID = (() => { const m = process.argv.find(a => a.startsWith("--id=")); return m ? Number(m.split("=")[1]) : null; })();
 const LIMIT   = (() => { const m = process.argv.find(a => a.startsWith("--limit=")); return m ? Number(m.split("=")[1]) : 200; })();
 
-// 15 RPM → 4s between calls to stay comfortably under
-const DELAY_MS = 4100;
+// 15 RPM → 4.1s between calls to stay comfortably under the free tier.
+// Burn workflow sets GEMINI_DELAY_MS=1100 to lift this to ~55 RPM.
+const DELAY_MS = Number(process.env.GEMINI_DELAY_MS) || 4100;
 
 if (!DRY_RUN && !APPLY) {
     console.error("Usage: node generate-descriptions.js --dry-run | --apply [--all] [--id=N] [--limit=N]");
