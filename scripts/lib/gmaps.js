@@ -118,11 +118,14 @@ async function lookup(page, name, city) {
             let scope = ratingEl;
             for (let i = 0; i < 4 && scope; i++) {
                 const t = (scope.textContent || '').replace(/\s+/g, ' ');
-                const m = t.match(/\(?\s*(\d{1,3}(?:[.,]\d{3})*|\d+)\s*\)?\s*(?:reviews?|reseñas?|recensioni|avis|bewertungen|opiniones)?/i);
-                // Filter out the rating itself which is also a number.
+                // Keyword (reviews/reseñas/...) is required — without it, the
+                // regex happily matched the leading digit of the rating itself
+                // (e.g. "4" from "4.5 stars") and wrote that as the review
+                // count.
+                const m = t.match(/\(?\s*(\d{1,3}(?:[.,]\d{3})*|\d+)\s*\)?\s*(?:reviews?|reseñas?|recensioni|avis|bewertungen|opiniones)/i);
                 if (m) {
                     const n = parseInt(m[1].replace(/[.,]/g, ''), 10);
-                    if (Number.isFinite(n) && n >= 1 && n !== Math.round(out.rating * 10) / 10) {
+                    if (Number.isFinite(n) && n >= 1) {
                         out.reviewCount = n;
                         break;
                     }

@@ -126,6 +126,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
       if (Object.keys(data).length) {
         await prisma.place.update({ where: { id: p.id }, data });
       } else {
+        // Stamp enrichedAt so the row drops down the queue instead of
+        // re-running forever on every cron. Mirrors the batch-enrich fix
+        // in commit 3a25336.
+        await prisma.place.update({ where: { id: p.id }, data: { enrichedAt: new Date() } });
         skipped++;
         continue;
       }
