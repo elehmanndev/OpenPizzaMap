@@ -114,15 +114,25 @@ async function lookup(page, name, city) {
         }
         // Review count: nearby element commonly looks like "(1,234)" or
         // "1,234 reviews". Search the rating's parent + a couple of ancestors.
+        //
+        // Two-pass parsing in order, both filter to localised "reviews" or a
+        // parenthesised count to avoid the rating's own leading digit:
+        //
+        //   1. STRICT keyword: <num> reviews/reseñas/recensioni/avis/bewertungen/opiniones
+        //      — handles verbose layouts ("1,234 reviews")
+        //   2. PARENS-FALLBACK: a number in parentheses with >= 2 digits
+        //      OR a thousands separator
+        //      — handles the compact Google "(1,234)" layout that ships
+        //        with no keyword next to the count
+        //      — the 2-digit minimum + thousands separator requirement
+        //        rejects the "(4)" / "(5)" leading-digit-of-rating
+        //        false-positive that the original regex hit
         if (out.rating != null && ratingEl) {
             let scope = ratingEl;
             for (let i = 0; i < 4 && scope; i++) {
                 const t = (scope.textContent || '').replace(/\s+/g, ' ');
-                // Keyword (reviews/reseñas/...) is required — without it, the
-                // regex happily matched the leading digit of the rating itself
-                // (e.g. "4" from "4.5 stars") and wrote that as the review
-                // count.
-                const m = t.match(/\(?\s*(\d{1,3}(?:[.,]\d{3})*|\d+)\s*\)?\s*(?:reviews?|reseñas?|recensioni|avis|bewertungen|opiniones)/i);
+                let m = t.match(/\(?\s*(\d{1,3}(?:[.,]\d{3})*|\d+)\s*\)?\s*(?:reviews?|reseñas?|recensioni|avis|bewertungen|opiniones)/i);
+                if (!m) m = t.match(/\(\s*(\d{1,3}(?:[.,]\d{3})+|\d{2,})\s*\)/);
                 if (m) {
                     const n = parseInt(m[1].replace(/[.,]/g, ''), 10);
                     if (Number.isFinite(n) && n >= 1) {

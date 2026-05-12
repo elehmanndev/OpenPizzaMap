@@ -47,7 +47,11 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   else if (NEED_META) {
     where = {
       isVisible: true,
-      OR: [{ phone: null }, { websiteUrl: null }, { openingHours: null }, { googleRating: null }],
+      // googleReviewCount included so rows with a rating-but-no-count get
+      // re-queued. Without it the place looks "fully enriched" to this
+      // queue even though the blend in opm-rating.js can't use the rating
+      // without a count.
+      OR: [{ phone: null }, { websiteUrl: null }, { openingHours: null }, { googleRating: null }, { googleReviewCount: null }],
     };
     if (SINCE_ID != null) where.id = { gte: SINCE_ID };
   } else where = { addressLine: '' };
