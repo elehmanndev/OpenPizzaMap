@@ -52,6 +52,7 @@ model Place {
   websiteUrl    String?
   googleMapsUrl String?
   instagramUrl  String?
+  facebookUrl   String?
   openingHours  String?     @db.Text       // schema.org weekly format ("Mo-Sa 12:00-23:00") or JSON if structured
   enrichedAt    DateTime?                  // last successful enrichment pass — used to skip recently-touched rows
   osmCheckedAt  DateTime?                  // last OpenStreetMap lookup (success OR miss); rotates the OSM queue so rows with no OSM match don't re-check forever
