@@ -43,8 +43,11 @@ function saveCache(cache) {
 
 // One Overpass round-trip with retries + endpoint failover.
 // Resolves to parsed JSON `{ elements: [...] }` or throws after exhausting both
-// endpoints + ~30s of retry budget. Honours 429/503 with exponential backoff.
-async function overpassQuery(ql) {
+// endpoints + retry budget. Honours 429/503 with exponential backoff.
+// opts.timeoutMs lets bulk queries (country-wide scrapes) wait longer than
+// the ~30s default we use for spot lookups.
+async function overpassQuery(ql, opts = {}) {
+    const timeoutMs = opts.timeoutMs || 30000;
     let lastErr = null;
     for (const endpoint of OVERPASS_ENDPOINTS) {
         for (let attempt = 0; attempt < 3; attempt++) {
@@ -52,7 +55,7 @@ async function overpassQuery(ql) {
             if (delayMs) await sleep(delayMs);
             try {
                 const ctrl = new AbortController();
-                const t = setTimeout(() => ctrl.abort(), 30000);
+                const t = setTimeout(() => ctrl.abort(), timeoutMs);
                 let r;
                 try {
                     r = await fetch(endpoint, {

@@ -48,10 +48,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     let where;
     if (IDS) where = { id: { in: IDS } };
     else {
+        // lat/lng are non-nullable in the schema (Decimal without ?), so no
+        // need to filter for them — every visible place has coords.
         where = {
             isVisible: true,
-            lat: { not: null },
-            lng: { not: null },
             OR: [{ phone: null }, { websiteUrl: null }, { openingHours: null }],
         };
     }
