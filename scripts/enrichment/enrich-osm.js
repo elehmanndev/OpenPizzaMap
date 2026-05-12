@@ -20,6 +20,12 @@
 
 const { prisma } = require('../lib/bootstrap');
 const osm = require('../lib/osm');
+const { haversineM, AGGREGATOR_HOSTS } = require('../lib/utils');
+
+// Targeted-override thresholds. Each gets its own constant so the policy is
+// readable in one place — and so future tuning needs no surgery elsewhere.
+const COORD_UPGRADE_MIN_DISTANCE_M = 200;   // pin must be >= this far from OSM coords to upgrade
+const COORD_UPGRADE_MIN_SIMILARITY = 0.85;  // and OSM name must match this confidently
 
 const args = process.argv.slice(2);
 const APPLY = args.includes('--apply');
@@ -69,6 +75,9 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     const cache = osm.loadCache();
     let resolved = 0, missed = 0, skipped = 0;
     let metaPhone = 0, metaWeb = 0, metaHours = 0, metaAddr = 0;
+    // Targeted overrides — counted separately from null-fills so the log
+    // makes it clear when we're upgrading a row vs. filling a blank.
+    let coordUpgrades = 0, webUpgrades = 0;
 
     for (const p of places) {
         const cacheKey = `${p.name}|${p.city || ''}`;
@@ -102,36 +111,67 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         ].filter(Boolean).join(' ');
         console.log(`[osm] #${p.id} "${p.name}" → osm/${r.osmType}/${r.osmId}  ${tags}`);
 
-        if (APPLY) {
-            const data = { osmCheckedAt: new Date() };
-            if (!p.phone && r.phone) { data.phone = r.phone; metaPhone++; }
-            if (!p.websiteUrl && r.websiteUrl) { data.websiteUrl = r.websiteUrl; metaWeb++; }
-            if (!p.openingHours && r.openingHours) { data.openingHours = r.openingHours; metaHours++; }
-            if ((!p.addressLine || !p.addressLine.trim()) && r.address) { data.addressLine = r.address; metaAddr++; }
-            await prisma.place.update({ where: { id: p.id }, data });
-            const filled = Object.keys(data).filter((k) => k !== 'osmCheckedAt').length;
-            if (filled > 0) resolved++; else skipped++;
-        } else {
-            // Dry-run: count what we WOULD fill so the summary is meaningful.
-            const wouldFill = (
-                (!p.phone && r.phone ? 1 : 0) +
-                (!p.websiteUrl && r.websiteUrl ? 1 : 0) +
-                (!p.openingHours && r.openingHours ? 1 : 0) +
-                ((!p.addressLine || !p.addressLine.trim()) && r.address ? 1 : 0)
-            );
-            if (wouldFill > 0) {
-                resolved++;
-                if (!p.phone && r.phone) metaPhone++;
-                if (!p.websiteUrl && r.websiteUrl) metaWeb++;
-                if (!p.openingHours && r.openingHours) metaHours++;
-                if ((!p.addressLine || !p.addressLine.trim()) && r.address) metaAddr++;
-            } else {
-                skipped++;
+        // Decide every potential write up-front so dry-run and apply share
+        // identical logic and the summary numbers match what an --apply run
+        // would actually write.
+        const patch = {};
+        // Fill-only-if-null: phone, hours, address. Discrepancies on these
+        // are usually formatting noise (phone) or hard-to-arbitrate
+        // crowdsourced data (hours, address), so we never overwrite.
+        if (!p.phone && r.phone) patch.phone = r.phone;
+        if (!p.openingHours && r.openingHours) patch.openingHours = r.openingHours;
+        if ((!p.addressLine || !p.addressLine.trim()) && r.address) patch.addressLine = r.address;
+
+        // Website: fill-if-null OR upgrade-if-current-is-aggregator. The
+        // upgrade case swaps a Facebook/Insta/TripAdvisor stub for the
+        // venue's real domain — never the reverse.
+        let webIsUpgrade = false;
+        if (!p.websiteUrl && r.websiteUrl) {
+            patch.websiteUrl = r.websiteUrl;
+        } else if (p.websiteUrl && r.websiteUrl
+            && AGGREGATOR_HOSTS.test(p.websiteUrl)
+            && !AGGREGATOR_HOSTS.test(r.websiteUrl)) {
+            patch.websiteUrl = r.websiteUrl;
+            webIsUpgrade = true;
+        }
+
+        // Coords: fill-if-null OR upgrade-if-far-and-confident. The upgrade
+        // case fixes centroid-fallback rows where the existing pin is
+        // hundreds of metres off the true venue location.
+        let coordsAreUpgrade = false;
+        if ((p.lat == null || p.lng == null) && r.lat != null && r.lng != null) {
+            patch.lat = r.lat;
+            patch.lng = r.lng;
+        } else if (p.lat != null && p.lng != null && r.lat != null && r.lng != null
+            && r.similarity >= COORD_UPGRADE_MIN_SIMILARITY) {
+            const dist = haversineM(Number(p.lat), Number(p.lng), r.lat, r.lng);
+            if (dist >= COORD_UPGRADE_MIN_DISTANCE_M) {
+                patch.lat = r.lat;
+                patch.lng = r.lng;
+                coordsAreUpgrade = true;
             }
+        }
+
+        // Tally what changed for the summary.
+        if (patch.phone) metaPhone++;
+        if (patch.openingHours) metaHours++;
+        if (patch.addressLine) metaAddr++;
+        if (patch.websiteUrl) { metaWeb++; if (webIsUpgrade) webUpgrades++; }
+        if (patch.lat != null && coordsAreUpgrade) coordUpgrades++;
+
+        const changeCount = Object.keys(patch).length;
+        if (changeCount > 0) resolved++; else skipped++;
+
+        if (APPLY) {
+            await prisma.place.update({
+                where: { id: p.id },
+                data: { ...patch, osmCheckedAt: new Date() },
+            });
         }
     }
 
     console.log(`\n[osm] meta filled — phone=${metaPhone} website=${metaWeb} hours=${metaHours} address=${metaAddr}`);
+    console.log(`[osm] upgrades — coords=${coordUpgrades} (>=${COORD_UPGRADE_MIN_DISTANCE_M}m, sim>=${COORD_UPGRADE_MIN_SIMILARITY})  website-from-aggregator=${webUpgrades}`);
     console.log(`[osm] ${resolved} resolved, ${missed} missed, ${skipped} skipped (no new fields)`);
     if (!APPLY) console.log('\n(dry-run — pass --apply to write back)');
 
