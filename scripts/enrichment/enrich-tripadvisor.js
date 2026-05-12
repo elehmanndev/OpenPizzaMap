@@ -66,7 +66,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
     const before = taBudget.status();
     console.log(`[ta] ${places.length} places to enrich (apply=${APPLY})`);
-    console.log(`[ta] LOCAL counter before: month ${before.monthCalls}/${before.monthlyCap}, today ${before.todayCalls}/${before.dailyCap}`);
+    console.log(`[ta] BILLED before: month ${before.monthDetailCalls}/${before.monthlyCap}, today ${before.todayDetailCalls}/${before.dailyCap}`);
+    console.log(`[ta] FREE search before: month ${before.monthSearchCalls}, today ${before.todaySearchCalls}`);
     console.log('');
 
     let matched = 0, missed = 0, errors = 0;
@@ -126,8 +127,11 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     const after = taBudget.status();
     console.log('');
     console.log(`[ta] matched=${matched} missed=${missed} errors=${errors}`);
-    console.log(`[ta] LOCAL counter after:  month ${after.monthCalls}/${after.monthlyCap}, today ${after.todayCalls}/${after.dailyCap}`);
-    console.log(`[ta] local calls this run: ${after.monthCalls - before.monthCalls}`);
+    console.log(`[ta] BILLED after:  month ${after.monthDetailCalls}/${after.monthlyCap}, today ${after.todayDetailCalls}/${after.dailyCap}`);
+    console.log(`[ta] FREE search after:  month ${after.monthSearchCalls}, today ${after.todaySearchCalls}`);
+    const billedThisRun = after.monthDetailCalls - before.monthDetailCalls;
+    const searchThisRun = after.monthSearchCalls - before.monthSearchCalls;
+    console.log(`[ta] this run: ${searchThisRun} free search + ${billedThisRun} billed = ${searchThisRun + billedThisRun} total`);
 
     await prisma.$disconnect();
 })();
