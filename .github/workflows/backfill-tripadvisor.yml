@@ -1,0 +1,64 @@
+name: Backfill TripAdvisor
+
+# Daily TripAdvisor backfill. Calls /location/search (free per TA's
+# Rate Limits page — "Daily call limit for search APIs: 10000",
+# independent of the 5k/mo details quota) + /location/{id}/details
+# (billed against the 5,000/mo free tier) for places that don't have
+# tripadvisorLocationId set.
+#
+# At 150 places/run:
+#   - 150 paid (details) calls/day in the worst case (most places match)
+#   - The 1,640-place visible backlog drains in ~11 days
+#   - After that, the cron mostly handles new imports (~30 calls/mo)
+#   - Sits comfortably under the 4,000/mo HARD cap in
+#     scripts/lib/tripadvisor-budget.js (which leaves 1,000 headroom
+#     under TA's 5,000 free tier for safety)
+#
+# Negative cache: when search returns no confident match, the row's
+# tripadvisorLocationId is set to -1 (sentinel) so it doesn't re-search
+# every cron. Same pattern as the Playwright resolver fix in 07c39f4.
+#
+# Required secrets: DATABASE_URL, TRIPADVISOR_API_KEY (the key MUST be
+# domain-restricted to www.openpizzamap.com — TA validates Referer
+# server-side and 403s without the `www.` prefix).
+
+on:
+  schedule:
+    # Daily at 02:30 UTC. Off-peak; intentionally a different minute
+    # than the batch-enrich crons (:00 / :15 / :30 on the hour) — but
+    # since this only fires once a day vs. their hourly cadence, the
+    # collision risk is negligible. Picked 02:30 to be safely after
+    # midnight UTC rollover so the budget tracker's day counter resets
+    # before this run consumes its slice.
+    - cron: '30 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  enrich:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Restore TA budget counter
+        uses: actions/cache@v4
+        with:
+          # The budget tracker persists in this gitignored file. Cache
+          # it between runs so each day's quota is honoured cumulatively
+          # instead of resetting on every fresh runner.
+          path: scripts/lib/.tripadvisor-budget.json
+          key: tripadvisor-budget-${{ github.run_id }}
+          restore-keys: tripadvisor-budget-
+
+      - name: Backfill TripAdvisor metadata
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          TRIPADVISOR_API_KEY: ${{ secrets.TRIPADVISOR_API_KEY }}
+        run: node scripts/enrichment/enrich-tripadvisor.js --apply --limit=150
