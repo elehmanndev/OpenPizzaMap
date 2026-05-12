@@ -54,6 +54,7 @@ model Place {
   instagramUrl  String?
   openingHours  String?     @db.Text       // schema.org weekly format ("Mo-Sa 12:00-23:00") or JSON if structured
   enrichedAt    DateTime?                  // last successful enrichment pass — used to skip recently-touched rows
+  osmCheckedAt  DateTime?                  // last OpenStreetMap lookup (success OR miss); rotates the OSM queue so rows with no OSM match don't re-check forever
   // TripAdvisor Content API enrichment (additive — only set when scrape-venue
   // ran with --with-tripadvisor or the TA enricher phase ran). Cached up to
   // 30 days per TA's licensing terms; reviews are explicitly NOT stored.
