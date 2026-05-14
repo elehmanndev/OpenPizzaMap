@@ -2369,6 +2369,7 @@ img.map-suggest-thumb { display: block; }
 }
 
 .place-header {
+  position: relative;
   background: var(--c-surface);
   border: 1px solid var(--c-border);
   border-radius: 16px;
@@ -2377,6 +2378,16 @@ img.map-suggest-thumb { display: block; }
   display: flex;
   align-items: flex-start;
   gap: 18px;
+}
+
+.place-rating-badge--pinned {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+}
+.place-header__main:has(+ .place-rating-badge--pinned),
+.place-rating-badge--pinned ~ .place-header__main {
+  padding-right: 56px;
 }
 
 .place-header__main {

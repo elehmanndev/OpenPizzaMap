@@ -1,25 +1,249 @@
-<%- include("layout", { title: city && (city.seoTitle || city.name) ? (city.seoTitle || city.name) : "City", user, leaflet: false, body: String.raw`
-  <h1>${escapeHtml(city ? city.name : "City")}</h1>
-  ${city && city.introHtml ? `<div class="card">${city.introHtml}</div>` : ""}
+<%- include("layout", { title: city && (city.seoTitle || city.name) ? `Best pizza in ${city.name}` : "City", user, leaflet: true, body: String.raw`
+  <h1 style="font-size:clamp(20px, 6.2vw, 32px); line-height:1.15; margin-bottom:12px;">Discover the best pizza in ${escapeHtml(city.name)}</h1>
 
-  <h2>Places</h2>
-  ${places && places.length ? `<div class="row">${places.map(p => `
-    <div class="card" style="flex:1; min-width: 220px;">
-      <div><strong>${escapeHtml(p.name)}</strong></div>
-      <div class="small">${escapeHtml(p.city)}${p.country ? ` · ${escapeHtml(p.country)}` : ""}</div>
-      <div style="margin-top:8px;">
-        <a class="btn primary" href="/place/${p.id}">View place</a>
-      </div>
+  ${city && city.introHtml ? `
+    <div class="country-intro" data-collapsed="true">
+      <div class="country-intro__body">${city.introHtml}</div>
+      <button type="button" class="country-intro__toggle" aria-expanded="false">
+        <span class="country-intro__toggle-label">Read more</span>
+        <span aria-hidden="true" class="material-symbols-rounded country-intro__chevron">expand_more</span>
+      </button>
     </div>
-  `).join("")}</div>` : "<p class=\"small\">No places yet.</p>"}
+    <style>
+      .country-intro { position: relative; margin-bottom: 16px; }
+      .country-intro__body { font-size: 14px; line-height: 1.55; color: var(--c-text); }
+      .country-intro__body p:first-child { margin-top: 0; }
+      .country-intro__body p:last-child { margin-bottom: 0; }
+      .country-intro[data-collapsed="true"] .country-intro__body {
+        display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+      }
+      .country-intro__toggle {
+        margin-top: 10px; display: inline-flex; align-items: center; gap: 4px;
+        background: none; border: 0; padding: 4px 0; color: var(--c-accent);
+        font: inherit; font-weight: 600; font-size: 13px; cursor: pointer;
+      }
+      .country-intro__chevron { font-size: 18px; transition: transform 0.2s; }
+      .country-intro[data-collapsed="false"] .country-intro__chevron { transform: rotate(180deg); }
+    </style>
+    <script>
+      (() => {
+        const intro = document.currentScript.previousElementSibling.previousElementSibling;
+        const btn = intro.querySelector(".country-intro__toggle");
+        const label = intro.querySelector(".country-intro__toggle-label");
+        btn.addEventListener("click", () => {
+          const collapsed = intro.dataset.collapsed === "true";
+          intro.dataset.collapsed = collapsed ? "false" : "true";
+          btn.setAttribute("aria-expanded", collapsed ? "true" : "false");
+          label.textContent = collapsed ? "Show less" : "Read more";
+        });
+      })();
+    </script>
+  ` : ""}
+
+  ${mapPoints && mapPoints.length ? `
+    <a class="city-map-card" href="/map" aria-label="Open full map">
+      <div id="city-map" class="city-map-card__map" aria-hidden="true"></div>
+      <span class="city-map-card__cta">
+        <span class="material-symbols-rounded" aria-hidden="true">location_on</span>
+        Explore the map
+      </span>
+    </a>
+    <style>
+      .city-map-card {
+        position: relative; display: block; height: 140px;
+        border-radius: 14px; overflow: hidden;
+        border: 1px solid var(--c-border);
+        background: var(--c-input-bg); margin-bottom: 24px;
+      }
+      .city-map-card__map { position: absolute; inset: 0; pointer-events: none; }
+      .city-map-card__cta {
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        z-index: 600; background: #fff; color: #1e1e1e;
+        font-weight: 600; font-size: 14px; padding: 8px 14px; border-radius: 999px;
+        display: inline-flex; align-items: center; gap: 6px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+        border: 1px solid var(--c-border);
+        pointer-events: none;
+      }
+      .city-map-card__cta .material-symbols-rounded { font-size: 18px; color: var(--c-accent); }
+      .city-map-card:hover .city-map-card__cta { transform: translate(-50%, -50%) scale(1.03); }
+    </style>
+    <script>
+      (() => {
+        const points = ${JSON.stringify(mapPoints)};
+        const el = document.getElementById("city-map");
+        const map = L.map(el, {
+          zoomControl: false, attributionControl: false,
+          dragging: false, scrollWheelZoom: false, doubleClickZoom: false,
+          boxZoom: false, keyboard: false, tap: false, touchZoom: false,
+        });
+        L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png", {
+          maxZoom: 20, subdomains: "abcd", attribution: "",
+        }).addTo(map);
+        const latlngs = points.map(p => [p.lat, p.lng]);
+        if (latlngs.length === 1) {
+          map.setView(latlngs[0], 13);
+        } else {
+          map.fitBounds(L.latLngBounds(latlngs).pad(0.15));
+        }
+      })();
+    </script>
+  ` : ""}
+
+  ${places && places.length ? `
+    ${(() => {
+      const sortLabels = { popular: "Popular", rating: "Rating", "near-me": "Near me", "price-asc": "Price ↑", "price-desc": "Price ↓" };
+      const current = sortLabels[activeSort] || sortLabels.popular;
+      return `
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin: 0 0 12px;">
+          <span class="small" style="color:var(--c-muted); font-weight:500;">${pagination.totalPlaces} ${pagination.totalPlaces === 1 ? "pizzeria" : "pizzerias"} indexed</span>
+          <details class="map-sort-dropdown" data-city-sort>
+            <summary class="map-sort-summary">
+              <span class="map-sort-summary-label">Sort: <strong data-sort-current>${current}</strong></span>
+              <span class="material-symbols-rounded map-sort-caret" aria-hidden="true">expand_more</span>
+            </summary>
+            <div class="map-sort-menu" role="radiogroup" aria-label="Sort by">
+              <label class="map-sort-opt"><input type="radio" name="city-sort" value="popular" ${activeSort==='popular'?'checked':''} /><span class="map-sort-opt-label">Popular</span></label>
+              <label class="map-sort-opt"><input type="radio" name="city-sort" value="rating" ${activeSort==='rating'?'checked':''} /><span class="map-sort-opt-label">Rating</span></label>
+              <label class="map-sort-opt"><input type="radio" name="city-sort" value="near-me" /><span class="map-sort-opt-label">Near me</span></label>
+              <label class="map-sort-opt"><input type="radio" name="city-sort" value="price-asc" ${activeSort==='price-asc'?'checked':''} /><span class="map-sort-opt-label">Price ↑</span></label>
+              <label class="map-sort-opt"><input type="radio" name="city-sort" value="price-desc" ${activeSort==='price-desc'?'checked':''} /><span class="map-sort-opt-label">Price ↓</span></label>
+            </div>
+          </details>
+        </div>
+      `;
+    })()}
+    <div data-city-cards style="display:flex; flex-direction:column; gap:16px; margin-top:4px;">
+      ${places.map(p => `
+        <a class="map-sidebar-card" href="/place/${p.id}" role="listitem" data-lat="${p.lat != null ? p.lat : ''}" data-lng="${p.lng != null ? p.lng : ''}">
+          ${p.heroImageUrl ? `
+            <div class="msc-hero" style="height:100%;">
+              <img class="msc-hero-img" src="${escapeHtml(p.heroImageUrl)}" alt="" loading="lazy" onerror="this.parentElement.classList.add('msc-hero--fallback');this.replaceWith(Object.assign(document.createElement('span'),{className:'msc-hero-emoji',textContent:'🍕'}))" />
+              ${p.rating != null ? `<span class="msc-rating">${p.rating.toFixed(1)}</span>` : ""}
+            </div>
+          ` : `
+            <div class="msc-hero msc-hero--fallback" style="height:100%;">
+              ${p.rating != null ? `<span class="msc-rating">${p.rating.toFixed(1)}</span>` : ""}
+              <span class="msc-hero-emoji">🍕</span>
+            </div>
+          `}
+          <div class="msc-body">
+            <h3 class="msc-name">${escapeHtml(p.name)}</h3>
+            ${(p.priceLevel || p.style) ? `
+              <div class="msc-styles" style="margin-top:4px;">
+                ${p.priceLevel ? `<span class="place-price" style="padding:3px 10px; font-size:11px;"><span class="place-price__on">${"€".repeat(Math.max(1, Math.min(4, p.priceLevel)))}</span><span class="place-price__off">${"€".repeat(Math.max(0, 4 - p.priceLevel))}</span></span>` : ""}
+                ${p.style ? `<span class="place-style-chip" style="padding:3px 10px; font-size:11px;">${escapeHtml(p.style.label)}</span>` : ""}
+              </div>
+            ` : ""}
+            <p class="msc-meta" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+              <span>${p.reviewsTotal ? `${p.reviewsTotal >= 1000 ? (p.reviewsTotal / 1000).toFixed(1).replace(/\.0$/, "") + "k" : p.reviewsTotal} reviews` : ""}</span>
+              <span aria-hidden="true" class="material-symbols-rounded" style="display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:999px; background:#e9e9eb; color:#555; font-size:20px; font-variation-settings:'wght' 600;">chevron_right</span>
+            </p>
+          </div>
+        </a>
+      `).join("")}
+    </div>
+    ${pagination.totalPages > 1 ? (() => {
+      const sortParam = activeSort && activeSort !== "popular" ? `&sort=${encodeURIComponent(activeSort)}` : "";
+      return `
+      <nav class="city-pager" aria-label="Page navigation">
+        ${pagination.page > 1 ? `<a class="btn" href="?page=${pagination.page - 1}${sortParam}">‹ Previous</a>` : `<span class="btn city-pager__disabled">‹ Previous</span>`}
+        <span class="city-pager__status">Page ${pagination.page} of ${pagination.totalPages}</span>
+        ${pagination.page < pagination.totalPages ? `<a class="btn primary" href="?page=${pagination.page + 1}${sortParam}">Next ›</a>` : `<span class="btn city-pager__disabled">Next ›</span>`}
+      </nav>
+      `;
+    })() : ""}
+    ${pagination.totalPages > 1 ? `
+      <style>
+        .city-pager { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 20px 0 8px; flex-wrap: wrap; }
+        .city-pager__status { font-size: 13px; color: var(--c-muted); font-weight: 500; }
+        .city-pager__disabled { opacity: 0.4; pointer-events: none; }
+      </style>
+    ` : ""}
+    <script>
+      (() => {
+        const dropdown = document.querySelector("[data-city-sort]");
+        if (!dropdown) return;
+        const radios = dropdown.querySelectorAll('input[name="city-sort"]');
+        const labelEl = dropdown.querySelector("[data-sort-current]");
+        const cardsWrap = document.querySelector("[data-city-cards]");
+        const labelMap = { popular: "Popular", rating: "Rating", "near-me": "Near me", "price-asc": "Price ↑", "price-desc": "Price ↓" };
+
+        function setLabel(v) { if (labelEl) labelEl.textContent = labelMap[v] || labelMap.popular; }
+        function close() { dropdown.removeAttribute("open"); }
+
+        function navigate(v) {
+          const url = new URL(window.location.href);
+          if (v === "popular") url.searchParams.delete("sort");
+          else url.searchParams.set("sort", v);
+          url.searchParams.delete("page");
+          window.location.href = url.toString();
+        }
+
+        function sortByDistance(lat, lng) {
+          const cards = [...cardsWrap.querySelectorAll(".map-sidebar-card")];
+          const toRad = (x) => (x * Math.PI) / 180;
+          const dist = (la, ln) => {
+            if (!Number.isFinite(la) || !Number.isFinite(ln)) return Infinity;
+            const dLat = toRad(la - lat);
+            const dLng = toRad(ln - lng);
+            const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat)) * Math.cos(toRad(la)) * Math.sin(dLng / 2) ** 2;
+            return 2 * 6371 * Math.asin(Math.sqrt(a));
+          };
+          cards.sort((a, b) => dist(Number(a.dataset.lat), Number(a.dataset.lng)) - dist(Number(b.dataset.lat), Number(b.dataset.lng)));
+          for (const c of cards) cardsWrap.appendChild(c);
+          setLabel("near-me");
+          close();
+        }
+
+        radios.forEach((r) => {
+          r.addEventListener("change", () => {
+            const v = r.value;
+            if (v === "near-me") {
+              if (!navigator.geolocation) {
+                alert("Location not available in this browser.");
+                return;
+              }
+              navigator.geolocation.getCurrentPosition(
+                (pos) => sortByDistance(pos.coords.latitude, pos.coords.longitude),
+                () => alert("Could not get your location. Allow location access and try again.")
+              );
+            } else {
+              navigate(v);
+            }
+          });
+        });
+      })();
+    </script>
+  ` : `<p class="small">No places yet.</p>`}
 
   ${faqs && faqs.length ? String.raw`
-    <h2>FAQs</h2>
-    ${faqs.map(f => `
-      <div class="card">
-        <strong>${escapeHtml(f.question)}</strong>
-        <div style="margin-top:8px;">${f.answerHtml}</div>
-      </div>
-    `).join("")}
+    <h2 style="margin-top:32px;">FAQs about ${escapeHtml(city.name)}</h2>
+    <div class="faq-list">
+      ${faqs.map(f => `
+        <details class="faq-item">
+          <summary class="faq-item__q">
+            <span>${escapeHtml(f.question)}</span>
+            <span aria-hidden="true" class="material-symbols-rounded faq-item__chevron">expand_more</span>
+          </summary>
+          <div class="faq-item__a">${f.answerHtml}</div>
+        </details>
+      `).join("")}
+    </div>
+    <style>
+      .faq-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+      .faq-item { border: 1px solid var(--c-border); border-radius: 12px; background: var(--c-surface); overflow: hidden; }
+      .faq-item__q {
+        list-style: none; cursor: pointer; display: flex; align-items: center;
+        justify-content: space-between; gap: 12px; padding: 14px 16px;
+        font-weight: 600; font-size: 15px; color: var(--c-text);
+      }
+      .faq-item__q::-webkit-details-marker { display: none; }
+      .faq-item__chevron { font-size: 22px; color: var(--c-muted); transition: transform 0.2s; flex-shrink: 0; }
+      .faq-item[open] .faq-item__chevron { transform: rotate(180deg); }
+      .faq-item__a { padding: 0 16px 14px; color: var(--c-text); font-size: 14px; line-height: 1.55; }
+      .faq-item__a p:first-child { margin-top: 0; }
+      .faq-item__a p:last-child { margin-bottom: 0; }
+    </style>
   ` : ""}
 ` }) %>

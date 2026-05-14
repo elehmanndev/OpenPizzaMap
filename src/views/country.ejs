@@ -1,25 +1,159 @@
 <%- include("layout", { title: country && (country.seoTitle || country.name) ? (country.seoTitle || country.name) : `Country ${country ? country.code : ""}`, user, leaflet: false, body: String.raw`
   <h1>${escapeHtml(country && (country.name || country.code) ? (country.name || country.code) : "Country")}</h1>
-  ${country && country.introHtml ? `<div class="card">${country.introHtml}</div>` : ""}
+  ${country && country.introHtml ? `
+    <div class="country-intro" data-collapsed="true">
+      <div class="country-intro__body">${country.introHtml}</div>
+      <button type="button" class="country-intro__toggle" aria-expanded="false">
+        <span class="country-intro__toggle-label">Read more</span>
+        <span aria-hidden="true" class="material-symbols-rounded country-intro__chevron">expand_more</span>
+      </button>
+    </div>
+    <style>
+      .country-intro { position: relative; }
+      .country-intro__body {
+        font-size: 14px;
+        line-height: 1.55;
+        color: var(--c-text);
+      }
+      .country-intro__body p:first-child { margin-top: 0; }
+      .country-intro__body p:last-child { margin-bottom: 0; }
+      .country-intro[data-collapsed="true"] .country-intro__body {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .country-intro__toggle {
+        margin-top: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: none;
+        border: 0;
+        padding: 4px 0;
+        color: var(--c-accent);
+        font: inherit;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .country-intro__chevron {
+        font-size: 18px;
+        transition: transform 0.2s;
+      }
+      .country-intro[data-collapsed="false"] .country-intro__chevron {
+        transform: rotate(180deg);
+      }
+    </style>
+    <script>
+      (() => {
+        const intro = document.currentScript.previousElementSibling.previousElementSibling;
+        const btn = intro.querySelector(".country-intro__toggle");
+        const label = intro.querySelector(".country-intro__toggle-label");
+        btn.addEventListener("click", () => {
+          const collapsed = intro.dataset.collapsed === "true";
+          intro.dataset.collapsed = collapsed ? "false" : "true";
+          btn.setAttribute("aria-expanded", collapsed ? "true" : "false");
+          label.textContent = collapsed ? "Show less" : "Read more";
+        });
+      })();
+    </script>
+  ` : ""}
 
   <h2>Cities</h2>
   ${cities && cities.length ? `<div class="row">${cities.map(c => `
-    <div class="card" style="flex:1; min-width: 220px;">
-      <div><strong>${escapeHtml(c.name)}</strong></div>
-      <div class="small">${c.placeCount} places</div>
-      <div style="margin-top:8px;">
-        <a class="btn primary" href="/country/${encodeURIComponent(country.code)}/city/${encodeURIComponent(c.slug)}">View city</a>
+    <div class="card" style="flex:1; min-width: 260px;">
+      <div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px;">
+        <strong>${escapeHtml(c.name)}</strong>
+        <span class="small">${c.placeCount} places</span>
+      </div>
+      ${c.topPlaces && c.topPlaces.length ? `
+        <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
+          ${c.topPlaces.map(p => `
+            <a class="map-sidebar-card" href="/place/${p.id}" role="listitem">
+              ${p.heroImageUrl ? `
+                <div class="msc-hero" style="height:100%;">
+                  <img class="msc-hero-img" src="${escapeHtml(p.heroImageUrl)}" alt="" loading="lazy" onerror="this.parentElement.classList.add('msc-hero--fallback');this.replaceWith(Object.assign(document.createElement('span'),{className:'msc-hero-emoji',textContent:'🍕'}))" />
+                  ${p.rating != null ? `<span class="msc-rating">${p.rating.toFixed(1)}</span>` : ""}
+                </div>
+              ` : `
+                <div class="msc-hero msc-hero--fallback" style="height:100%;">
+                  ${p.rating != null ? `<span class="msc-rating">${p.rating.toFixed(1)}</span>` : ""}
+                  <span class="msc-hero-emoji">🍕</span>
+                </div>
+              `}
+              <div class="msc-body">
+                <h3 class="msc-name">${escapeHtml(p.name)}</h3>
+                ${(p.priceLevel || p.style) ? `
+                  <div class="msc-styles" style="margin-top:4px;">
+                    ${p.priceLevel ? `<span class="place-price" style="padding:3px 10px; font-size:11px;"><span class="place-price__on">${"€".repeat(Math.max(1, Math.min(4, p.priceLevel)))}</span><span class="place-price__off">${"€".repeat(Math.max(0, 4 - p.priceLevel))}</span></span>` : ""}
+                    ${p.style ? `<span class="place-style-chip" style="padding:3px 10px; font-size:11px;">${escapeHtml(p.style.label)}</span>` : ""}
+                  </div>
+                ` : ""}
+                <p class="msc-meta" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                  <span>${p.reviewsTotal ? `${p.reviewsTotal >= 1000 ? (p.reviewsTotal / 1000).toFixed(1).replace(/\.0$/, "") + "k" : p.reviewsTotal} reviews` : ""}</span>
+                  <span aria-hidden="true" class="material-symbols-rounded" style="display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:999px; background:#e9e9eb; color:#555; font-size:20px; font-variation-settings:'wght' 600;">chevron_right</span>
+                </p>
+              </div>
+            </a>
+          `).join("")}
+        </div>
+      ` : ""}
+      <div style="margin-top:10px; display:flex; justify-content:flex-end;">
+        <a class="btn primary" href="/country/${encodeURIComponent(country.code)}/city/${encodeURIComponent(c.slug)}">All pizzerias in ${escapeHtml(c.name)}</a>
       </div>
     </div>
   `).join("")}</div>` : "<p class=\"small\">No visible cities yet.</p>"}
 
   ${faqs && faqs.length ? String.raw`
     <h2>FAQs</h2>
-    ${faqs.map(f => `
-      <div class="card">
-        <strong>${escapeHtml(f.question)}</strong>
-        <div style="margin-top:8px;">${f.answerHtml}</div>
-      </div>
-    `).join("")}
+    <div class="faq-list">
+      ${faqs.map(f => `
+        <details class="faq-item">
+          <summary class="faq-item__q">
+            <span>${escapeHtml(f.question)}</span>
+            <span aria-hidden="true" class="material-symbols-rounded faq-item__chevron">expand_more</span>
+          </summary>
+          <div class="faq-item__a">${f.answerHtml}</div>
+        </details>
+      `).join("")}
+    </div>
+    <style>
+      .faq-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+      .faq-item {
+        border: 1px solid var(--c-border);
+        border-radius: 12px;
+        background: var(--c-surface);
+        overflow: hidden;
+      }
+      .faq-item__q {
+        list-style: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 16px;
+        font-weight: 600;
+        font-size: 15px;
+        color: var(--c-text);
+      }
+      .faq-item__q::-webkit-details-marker { display: none; }
+      .faq-item__chevron {
+        font-size: 22px;
+        color: var(--c-muted);
+        transition: transform 0.2s;
+        flex-shrink: 0;
+      }
+      .faq-item[open] .faq-item__chevron { transform: rotate(180deg); }
+      .faq-item__a {
+        padding: 0 16px 14px;
+        color: var(--c-text);
+        font-size: 14px;
+        line-height: 1.55;
+      }
+      .faq-item__a p:first-child { margin-top: 0; }
+      .faq-item__a p:last-child { margin-bottom: 0; }
+    </style>
   ` : ""}
 ` }) %>

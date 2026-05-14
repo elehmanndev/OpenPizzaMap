@@ -219,14 +219,14 @@
 
   <article class="place-shell">
     <div class="place-header">
+      ${place.opmRating != null ? `
+        <div class="place-rating-badge place-rating-badge--inline place-rating-badge--pinned" title="OpenPizzaMap score" data-place-rating="${escapeAttr(String(Number(place.opmRating)))}">
+          <strong>${escapeHtml(Number(place.opmRating).toFixed(1))}</strong>
+        </div>
+      ` : ""}
       <div class="place-header__main">
         <div class="place-title-row">
           <h1 class="place-title">${escapeHtml(place.name)}</h1>
-          ${place.opmRating != null ? `
-            <div class="place-rating-badge place-rating-badge--inline" title="OpenPizzaMap score" data-place-rating="${escapeAttr(String(Number(place.opmRating)))}">
-              <strong>${escapeHtml(Number(place.opmRating).toFixed(1))}</strong>
-            </div>
-          ` : ""}
         </div>
         <p class="place-address">${escapeHtml(place.addressLine || "")}${place.addressLine ? " · " : ""}${escapeHtml(place.city || "")}${place.country ? `, ${escapeHtml(place.country)}` : ""}</p>
 
