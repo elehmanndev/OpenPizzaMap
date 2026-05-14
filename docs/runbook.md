@@ -63,16 +63,16 @@ didn't cover `.prisma/client`).
 
 Three commits, all on `main`:
 
-- [`e856a7e`](https://github.com/ericll93/OpenPizzaMap/commit/e856a7e)
+- [`e856a7e`](https://github.com/elehmanndev/OpenPizzaMap/commit/e856a7e)
   — factored chmod into [scripts/deploy/chmod-prisma-engines.js](../scripts/deploy/chmod-prisma-engines.js),
   added `node_modules/.prisma/client` (the actual runtime engine
   location — uncovered before) to its targets, and runs it both before
   and after `prisma generate` from postinstall.
-- [`0a14bc3`](https://github.com/ericll93/OpenPizzaMap/commit/0a14bc3)
+- [`0a14bc3`](https://github.com/elehmanndev/OpenPizzaMap/commit/0a14bc3)
   — postinstall now also writes `tmp/restart.txt` via
   [scripts/deploy/touch-passenger-restart.js](../scripts/deploy/touch-passenger-restart.js)
   so Passenger respawns the worker after deploy.
-- [`9ab1681`](https://github.com/ericll93/OpenPizzaMap/commit/9ab1681)
+- [`9ab1681`](https://github.com/elehmanndev/OpenPizzaMap/commit/9ab1681)
   — bumped `src/app.js` mtime once. **Operational note:** on the
   current Hostinger box `tmp/restart.txt` alone wasn't enough to
   trigger the respawn during the 2026-05-03 outage; changing the
