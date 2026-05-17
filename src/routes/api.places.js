@@ -91,8 +91,12 @@ function resolveLimit(req, isAuth) {
 function applyCacheHeaders(req, res) {
     const hasSession = !!(req.session && req.session.user);
     const hasCookie = !!(req.headers.cookie && req.headers.cookie.includes("opm.sid"));
-    res.set("Vary", "Cookie");
     if (hasSession || hasCookie) {
+        // Vary: Cookie tells downstream caches the response depends on the
+        // session cookie. Only needed on the authed path; on the public path
+        // the Cloudflare Cache Rule already splits the cache by cookie
+        // presence, and Vary: Cookie there triggers CF to append `no-store`.
+        res.set("Vary", "Cookie");
         res.set("Cache-Control", "private, no-store");
     } else {
         // 60 s edge cache, plus 5 min serve-stale-while-revalidating. Even one
