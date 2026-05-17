@@ -255,24 +255,68 @@ function shouldRunPhase(phase, { force, skip, hour }) {
     return true;
 }
 
+// Per-phase hard timeout — if a phase doesn't return in this many ms,
+// race it against a rejected promise so the orchestrator can move on.
+// Without this, a hung Playwright launch or stuck HTTPS call freezes
+// the whole pipeline indefinitely (lock not released for 40 min).
+const PER_PHASE_TIMEOUT_MS = 8 * 60_000;
+
+function withTimeout(promise, ms, phaseName) {
+    let timer;
+    const timeoutPromise = new Promise((_, reject) => {
+        timer = setTimeout(() => {
+            reject(new Error(`phase "${phaseName}" timed out after ${ms}ms`));
+        }, ms);
+    });
+    return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timer));
+}
+
 async function runMaintenance({ mode = "min", force = null, skip = null, overrides = {} } = {}) {
     const preset = MODE_PRESETS[mode] || MODE_PRESETS.min;
     const opts = { ...preset, ...overrides };
     const startedAt = new Date();
     const hour = startedAt.getUTCHours();
 
-    writeLock({ mode, startedAt: startedAt.getTime(), pid: process.pid });
+    const lockState = { mode, startedAt: startedAt.getTime(), pid: process.pid, currentPhase: null };
+    writeLock(lockState);
 
     const phaseResults = [];
+
+    // Write the in-flight run + completed-phases snapshot after each
+    // phase so /maintenance/status can show progress mid-pipeline
+    // instead of only at the end. Lets us see WHICH phase is stuck if
+    // a future run hangs.
+    const persistProgress = () => {
+        const partial = {
+            mode,
+            startedAt: startedAt.toISOString(),
+            finishedAt: null,
+            durationMs: Date.now() - startedAt.getTime(),
+            phases: phaseResults,
+            inFlight: true,
+        };
+        const status = loadStatus();
+        status.runs = [partial, ...(status.runs || []).filter(r => !r.inFlight)].slice(0, 20);
+        saveStatus(status);
+    };
+
     for (const phase of PHASES) {
         if (!shouldRunPhase(phase, { force, skip, hour })) {
             phaseResults.push({ name: phase.name, skipped: true, reason: "not scheduled this hour" });
+            persistProgress();
             continue;
         }
+        lockState.currentPhase = phase.name;
+        writeLock(lockState);
+
         const phaseStart = Date.now();
         let result;
         try {
-            result = await phase.run(opts);
+            result = await withTimeout(
+                phase.run(opts),
+                PER_PHASE_TIMEOUT_MS,
+                phase.name,
+            );
         } catch (err) {
             result = { ok: false, error: err.message, stack: err.stack };
         }
@@ -281,6 +325,7 @@ async function runMaintenance({ mode = "min", force = null, skip = null, overrid
             durationMs: Date.now() - phaseStart,
             ...result,
         });
+        persistProgress();
         // Never abort the chain — Hostinger MySQL flaps, third-party APIs
         // blip, next cron tick retries. Same continue-on-error
         // philosophy the GitHub workflows had.
@@ -293,14 +338,35 @@ async function runMaintenance({ mode = "min", force = null, skip = null, overrid
         finishedAt: finishedAt.toISOString(),
         durationMs: finishedAt.getTime() - startedAt.getTime(),
         phases: phaseResults,
+        inFlight: false,
     };
 
     const status = loadStatus();
-    status.runs = [run, ...(status.runs || [])].slice(0, 20);
+    status.runs = [run, ...(status.runs || []).filter(r => !r.inFlight)].slice(0, 20);
     saveStatus(status);
     clearLock();
 
     return run;
+}
+
+// Force-clear a stuck lock + persist any in-flight run as aborted. Used
+// when a phase hangs past its timeout and the orchestrator's own
+// timeout race didn't catch it (e.g. unkillable native code in
+// Chromium spawn). Idempotent.
+function abortMaintenance() {
+    const lock = readLock();
+    if (!lock) return { ok: true, alreadyClear: true };
+    const status = loadStatus();
+    const partial = (status.runs || []).find(r => r.inFlight);
+    if (partial) {
+        partial.inFlight = false;
+        partial.finishedAt = new Date().toISOString();
+        partial.aborted = true;
+        partial.abortReason = "manual abort via /maintenance/abort";
+        saveStatus(status);
+    }
+    clearLock();
+    return { ok: true, aborted: true, wasRunning: lock };
 }
 
 // Returns an object { accepted, reason }. If a run is already in
@@ -338,6 +404,7 @@ module.exports = {
     runMaintenance,
     tryStartMaintenance,
     getMaintenanceStatus,
+    abortMaintenance,
     MODE_PRESETS,
     HOUR_GATES,
 };

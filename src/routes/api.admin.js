@@ -13,6 +13,7 @@ const {
 const {
     tryStartMaintenance,
     getMaintenanceStatus,
+    abortMaintenance,
 } = require("../services/maintenance");
 const { getCoverage, unstickVersionBumpedRows } = require("../services/audit-coverage");
 
@@ -177,6 +178,13 @@ router.post("/maintenance", async (req, res) => {
 
 router.get("/maintenance/status", async (req, res) => {
     res.json(getMaintenanceStatus());
+});
+
+// Force-clear a stuck maintenance lock. Use when a phase hangs past
+// its own per-phase timeout (e.g. native Chromium spawn that didn't
+// respond to the orchestrator's timeout race). Idempotent.
+router.post("/maintenance/abort", async (req, res) => {
+    res.json(abortMaintenance());
 });
 
 // Coverage watcher — answers "is the pipeline draining its backlog,
