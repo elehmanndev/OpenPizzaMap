@@ -30,11 +30,12 @@
 
 FROM mcr.microsoft.com/playwright:v1.59.1-jammy
 
-# Layer 1: clone repo (changes when main branch moves)
 WORKDIR /app
-RUN git clone --depth=1 https://github.com/elehmanndev/OpenPizzaMap.git .
 
-# Layer 2: install dependencies (changes when package-lock.json changes)
+# Layer 1: package files only (dep install layer cache-busts only when
+# package-lock.json changes, not on every source-code edit).
+COPY package.json package-lock.json ./
+
 # Skip the Hostinger-specific postinstall steps (chmod-prisma-engines,
 # setup-playwright, touch-passenger-restart). The Playwright base image
 # already has Chromium installed at the right path; the chmod issue is
@@ -42,10 +43,14 @@ RUN git clone --depth=1 https://github.com/elehmanndev/OpenPizzaMap.git .
 ENV SKIP_PLAYWRIGHT_INSTALL=1
 RUN npm ci --omit=dev --ignore-scripts
 
-# Layer 3: generate Prisma client (changes when schema.prisma changes)
+# Layer 2: Prisma schema (cache-busts only when schema.prisma changes).
+COPY prisma ./prisma
 RUN npx prisma generate
 
-# The runner loop. Container stays alive; it sleeps between maintenance
-# ticks rather than relying on external cron. See scripts/cron/runner.js
-# for the cadence + mode controls (RUNNER_MODE / RUNNER_INTERVAL_MS env).
+# Layer 3: everything else.
+COPY . .
+
+# Runtime: a long-running scheduler that calls runMaintenance() on a
+# loop. Container stays alive; sleeps between ticks. See
+# scripts/cron/runner.js for cadence + mode controls.
 CMD ["node", "scripts/cron/runner.js"]
