@@ -1,6 +1,21 @@
 node_modules
 .env
 .env.local
+.env.*
+
+# Security audits and session notes contain operational details
+# (infra paths, past incident specifics, internal architecture, sometimes
+# secrets-in-prose). Kept in the Obsidian vault only — see
+# Projects/3_Openpizzamap/sessions in the vault for the mirror.
+AUDIT-*.md
+notes/sessions/
+
+# Database dumps / backups — never commit production data.
+*.sql.gz
+*.sql.zip
+*.dump
+*.bak
+backup*.sql
 
 # SQLite dev database. Schema is MySQL on prod; dev.db was a leftover
 # from an earlier provider. Keep it ignored so it can't be re-committed.

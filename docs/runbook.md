@@ -92,7 +92,7 @@ Three commits, all on `main`:
    sequence that recovered the **2026-05-06** outage (after the OAuth
    fix deploy triggered a worker respawn that hit the chmod bug):
    ```sh
-   ssh -p 65002 u975898812@92.113.28.98
+   ssh -p $HOSTINGER_SSH_PORT $HOSTINGER_USER@$HOSTINGER_HOST
    cd ~/domains/openpizzamap.com/nodejs
    export PATH=/opt/alt/alt-nodejs20/root/bin:$PATH   # npm sub-shell needs node on PATH
    npm run postinstall

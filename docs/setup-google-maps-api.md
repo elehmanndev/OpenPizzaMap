@@ -119,7 +119,7 @@ that matches. **For server-side use, do Option B.**
 3. Application restrictions → select **IP addresses**.
 4. Add Hostinger's outbound IP. To find it:
    ```sh
-   ssh -p 65002 u975898812@92.113.28.98 'curl -s https://ifconfig.me'
+   ssh -p $HOSTINGER_SSH_PORT $HOSTINGER_USER@$HOSTINGER_HOST 'curl -s https://ifconfig.me'
    ```
    Paste that IP into the restriction list. (Hostinger's outbound IP
    has been stable; if it ever changes, the key will start returning

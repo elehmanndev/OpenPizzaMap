@@ -8,7 +8,7 @@ to flip Eric's setup from `playwright` (free fallback) to `google_api`
 > [docs/setup-google-maps-api.md](setup-google-maps-api.md) §1–§7 are
 > done. You should already have:
 > - `GOOGLE_MAPS_API_KEY` set in Hostinger env (with the restricted
->   key that has IP=92.113.28.98 + Places + Geocoding only)
+>   key that has IP=$HOSTINGER_HOST + Places + Geocoding only)
 > - Hard quotas applied (155/315/315/50×4)
 > - $1 budget alert on the project
 >
@@ -28,7 +28,7 @@ In Hostinger hPanel:
 3. **Save**.
 4. Restart the Node app:
    - hPanel → **Node.js app → Restart**, or
-   - SSH: `ssh -p 65002 u975898812@92.113.28.98 "cd ~/domains/openpizzamap.com/public_html && touch tmp/restart.txt && touch src/app.js"`
+   - SSH: `ssh -p $HOSTINGER_SSH_PORT $HOSTINGER_USER@$HOSTINGER_HOST "cd ~/domains/openpizzamap.com/public_html && touch tmp/restart.txt && touch src/app.js"`
 
 Wait 60-120s for Passenger to respawn.
 
