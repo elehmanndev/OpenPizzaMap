@@ -57,11 +57,26 @@ if (process.env.SKIP_PLAYWRIGHT_INSTALL === "1") {
 }
 
 try {
+    // Pin browser path to the REAL user home (from /etc/passwd via
+    // os.userInfo) — same logic scripts/lib/gmaps.js uses at runtime.
+    // Without the pin, Hostinger's Passenger sets $HOME to the app
+    // directory, install + launch disagree on the path, and the
+    // launch fails with "Executable doesn't exist". See 2026-05-17.
+    const installEnv = { ...process.env };
+    if (!installEnv.PLAYWRIGHT_BROWSERS_PATH) {
+        try {
+            const homedir = require("os").userInfo().homedir;
+            if (homedir) {
+                installEnv.PLAYWRIGHT_BROWSERS_PATH = path.join(homedir, ".cache", "ms-playwright");
+                console.log(`[playwright-setup] PLAYWRIGHT_BROWSERS_PATH=${installEnv.PLAYWRIGHT_BROWSERS_PATH}`);
+            }
+        } catch (_) { /* fall back to default */ }
+    }
     console.log("[playwright-setup] running: npx playwright install chromium");
     execSync("npx playwright install chromium", {
         cwd: ROOT,
         stdio: "inherit",
-        env: process.env,
+        env: installEnv,
     });
     console.log("[playwright-setup] chromium install complete");
 } catch (err) {

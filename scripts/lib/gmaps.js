@@ -9,6 +9,27 @@
 
 const path = require('path');
 const fs = require('fs');
+
+// Pin the Playwright browser cache to the REAL user home before any
+// playwright code loads. Passenger on Hostinger sets the worker's
+// $HOME to the app directory, so a default Playwright lookup falls
+// back to `~/domains/openpizzamap.com/.cache/ms-playwright/` — but
+// `npx playwright install` writes to the actual user home
+// `/home/u975898812/.cache/ms-playwright/`. Without this pin the
+// launch fails with "Executable doesn't exist" even though the
+// binary is on disk. See 2026-05-17 investigation.
+if (!process.env.PLAYWRIGHT_BROWSERS_PATH) {
+    try {
+        const homedir = require('os').userInfo().homedir;
+        if (homedir) {
+            process.env.PLAYWRIGHT_BROWSERS_PATH = path.join(homedir, '.cache', 'ms-playwright');
+        }
+    } catch (_) {
+        // userInfo() can fail on some restricted environments; leave
+        // the env var unset and let Playwright use its default.
+    }
+}
+
 const { chromium } = require('playwright');
 
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -28,6 +49,7 @@ function saveCache(cache) {
 // pre-set (skips the EU GDPR redirect), image/font/media requests blocked
 // (DOM-only), en-US locale + Chrome UA. Returns { browser, context, page };
 // the caller is responsible for browser.close() when done.
+
 async function createGmapsPage() {
     // Single-process Chromium: required on Hostinger shared hosting
     // (multi-process mode hits a hidden cgroup/namespace cap when
