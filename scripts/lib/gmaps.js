@@ -29,7 +29,24 @@ function saveCache(cache) {
 // (DOM-only), en-US locale + Chrome UA. Returns { browser, context, page };
 // the caller is responsible for browser.close() when done.
 async function createGmapsPage() {
-    const browser = await chromium.launch({ headless: true });
+    // Single-process Chromium: required on Hostinger shared hosting
+    // (multi-process mode hits a hidden cgroup/namespace cap when
+    // child processes try to spawn threads — pthread_create EAGAIN
+    // despite ulimit -u being 2M). Tested 2026-05-17: --single-process
+    // + --no-zygote launches cleanly where the default multi-process
+    // mode aborts with SIGABRT.
+    //
+    // Trade-off: a renderer crash takes down the whole browser
+    // (vs. just one tab in multi-process mode). Acceptable for our
+    // batch scraping — a single failed lookup gets retried on the
+    // next cron tick anyway. Locally / on Unraid the default
+    // multi-process mode works fine; the single-process flags are
+    // a no-op on systems that don't need them, so we apply them
+    // unconditionally to keep one code path.
+    const browser = await chromium.launch({
+        headless: true,
+        args: ['--single-process', '--no-zygote', '--disable-gpu', '--no-sandbox'],
+    });
     const context = await browser.newContext({
         userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         locale: 'en-US',
