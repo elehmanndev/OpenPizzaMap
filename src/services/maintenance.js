@@ -36,8 +36,15 @@ const {
 } = require("./enrichment/batch");
 
 const ROOT = path.resolve(__dirname, "..", "..");
-const STATUS_FILE = path.join(ROOT, "data", "cache", "maintenance-status.json");
-const LOCK_FILE = path.join(ROOT, "data", "cache", "maintenance.lock");
+const CACHE_DIR = path.join(ROOT, "data", "cache");
+const STATUS_FILE = path.join(CACHE_DIR, "maintenance-status.json");
+const LOCK_FILE = path.join(CACHE_DIR, "maintenance.lock");
+
+// On fresh Hostinger deploys data/cache doesn't exist yet — scripts/lib/
+// bootstrap.js creates it on require, but maintenance.js doesn't go
+// through bootstrap (it imports src/db.js directly). Ensure the dir
+// exists on first require so writeLock / saveStatus don't fail ENOENT.
+fs.mkdirSync(CACHE_DIR, { recursive: true });
 
 // ─── Mode presets ───────────────────────────────────────────────────────────
 //
