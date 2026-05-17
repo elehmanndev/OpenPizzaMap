@@ -141,29 +141,61 @@ async function run({
     const cachedIds = new Set(Object.keys(reviewsCache));
     console.log(`[describe] Loaded reviews cache: ${cachedIds.size} places`);
 
-    // Match the reviews phase's filter: only rows with a googlePlaceId
-    // can have cached reviews. Without this, descriptions picks
-    // low-id rows that don't have place_ids yet — reviews never
-    // cached them, descriptions has nothing to summarise, the
-    // backlog never drains. Bug surfaced on the first Unraid tick
-    // (2026-05-18): reviews cached 40 rows, descriptions queried
-    // 40 different rows, 0 written.
-    const where = singleId
-        ? { id: singleId }
-        : all
-            ? {}
-            : { descriptionHtml: null, isVisible: true, googlePlaceId: { not: null } };
-
-    const places = await prisma.place.findMany({
-        where,
-        take: limit,
-        orderBy: { id: "asc" },
-        select: {
-            id: true, name: true, city: true, country: true,
-            websiteUrl: true,
-            styles: { include: { style: { select: { name: true } } } },
-        },
-    });
+    // Drive the descriptions queue OFF THE CACHE itself in default
+    // mode. The cache is populated by the reviews phase in low-id-
+    // ASC order; the descriptions queue (ordered by id ASC) was
+    // picking IDs scattered far above the cache's near-term range
+    // (gap surfaced 2026-05-18: cache had IDs 42-156, descriptions
+    // queue's lowest 40 were 185, 261, 265, 280, 312, …, 1421 — only
+    // 4 of 40 overlapped). By picking rows that ARE in the cache,
+    // descriptions never wastes a tick on rows reviews hasn't reached.
+    let places;
+    if (singleId) {
+        places = await prisma.place.findMany({
+            where: { id: singleId },
+            take: limit,
+            select: {
+                id: true, name: true, city: true, country: true,
+                websiteUrl: true,
+                styles: { include: { style: { select: { name: true } } } },
+            },
+        });
+    } else if (all) {
+        places = await prisma.place.findMany({
+            where: {},
+            take: limit,
+            orderBy: { id: "asc" },
+            select: {
+                id: true, name: true, city: true, country: true,
+                websiteUrl: true,
+                styles: { include: { style: { select: { name: true } } } },
+            },
+        });
+    } else {
+        // Default cron path: rows that have cached reviews AND no
+        // description yet AND are visible.
+        const cachedIdNumbers = [...cachedIds]
+            .map((s) => parseInt(s, 10))
+            .filter(Number.isFinite);
+        if (cachedIdNumbers.length === 0) {
+            console.log(`[describe] reviews cache is empty — nothing to describe this tick.`);
+            return { ok: true, written: 0, skipped: 0, failed: 0, total: 0, cachedIds: 0 };
+        }
+        places = await prisma.place.findMany({
+            where: {
+                id: { in: cachedIdNumbers },
+                descriptionHtml: null,
+                isVisible: true,
+            },
+            take: limit,
+            orderBy: { id: "asc" },
+            select: {
+                id: true, name: true, city: true, country: true,
+                websiteUrl: true,
+                styles: { include: { style: { select: { name: true } } } },
+            },
+        });
+    }
 
     const totalMissing = all ? "all" : await prisma.place.count({ where: { descriptionHtml: null, isVisible: true } });
     const withReviews = places.filter(p => cachedIds.has(String(p.id))).length;
