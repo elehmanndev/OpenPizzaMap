@@ -58,11 +58,12 @@ RUN npx prisma generate
 # recomputes this whenever package-lock.json drifts.
 RUN sha256sum package-lock.json | cut -d' ' -f1 > /app/.docker-lock-hash
 
-# Mark the entrypoint executable (Hostinger's git auto-deploy strip-
-# exec-bit bug isn't here, so this chmod is one-and-done).
-RUN chmod +x scripts/cron/docker-entrypoint.sh
-
 # Every container start pulls latest code + re-installs deps if
 # package-lock changed + runs the maintenance loop. See
 # scripts/cron/docker-entrypoint.sh for the gory details.
-ENTRYPOINT ["scripts/cron/docker-entrypoint.sh"]
+#
+# Invoking via `bash <script>` instead of relying on the script's
+# exec bit — git-on-Windows + Docker layer caching combine to make
+# `RUN chmod +x` unreliable across rebuilds. This way the file just
+# needs to be readable.
+ENTRYPOINT ["bash", "/app/scripts/cron/docker-entrypoint.sh"]
