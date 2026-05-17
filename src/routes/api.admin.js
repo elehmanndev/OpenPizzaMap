@@ -5,6 +5,16 @@ const { requireAdmin } = require("../middleware/auth");
 const { approveSubmission, rejectSubmission } = require("../services/submissions");
 const { enrichAndValidate } = require("../services/enrichment");
 const { getProvider } = require("../services/enrichment/providers");
+const {
+    runResolveBatch,
+    runPhotosBatch,
+    runClearFallbackDescriptions,
+} = require("../services/enrichment/batch");
+const {
+    tryStartMaintenance,
+    getMaintenanceStatus,
+} = require("../services/maintenance");
+const { getCoverage, unstickVersionBumpedRows } = require("../services/audit-coverage");
 
 const router = express.Router();
 
@@ -113,132 +123,79 @@ router.get("/test-enrichment", async (req, res) => {
 // cron service (cron-job.org). Processes up to `limit` rows (default 20)
 // per call and stops early on quota exceeded.
 //
-// GET /api/admin/batch-enrich?limit=20
-//   → { ok, enriched, skipped, dupes, errors, apiCalls, remaining }
+// GET /api/admin/batch-enrich?limit=20            → resolve identity for new rows
+// GET /api/admin/batch-enrich?limit=20&mode=photos → backfill heroImageUrl
+//
+// Thin wrapper around src/services/enrichment/batch.js so the same code
+// runs whether called from this endpoint or the consolidated
+// /api/admin/maintenance orchestrator.
 router.get("/batch-enrich", async (req, res) => {
-    const limit = Math.min(Math.max(parseInt(req.query.limit) || 20, 1), 155);
+    const limit = parseInt(req.query.limit) || 20;
     const mode = req.query.mode === "photos" ? "photos" : "full";
-    const { QuotaExceededError, PIPELINE_VERSION } = require("../services/enrichment/providers");
-    const isEmpty = (v) => v == null || (typeof v === "string" && v.trim() === "");
+    const result = mode === "photos"
+        ? await runPhotosBatch({ limit })
+        : await runResolveBatch({ limit });
+    if (mode === "photos") result.mode = "photos";
+    res.json(result);
+});
 
-    if (mode === "photos") {
-        const where = {
-            googlePlaceId: { not: null },
-            OR: [{ heroImageUrl: null }, { heroImageUrl: "" }],
-        };
-        const remaining = await prisma.place.count({ where });
-        const rows = await prisma.place.findMany({
-            where,
-            orderBy: [{ isVisible: "desc" }, { id: "asc" }],
-            take: limit,
-            select: { id: true, name: true, city: true, googlePlaceId: true, heroImageUrl: true },
-        });
-
-        if (!rows.length) {
-            return res.json({ ok: true, mode: "photos", updated: 0, noPhoto: 0, errors: 0, apiCalls: 0, remaining: 0, message: "photo backfill complete" });
-        }
-
-        const provider = getProvider({ prisma });
-        if (!provider.getPhoto) {
-            return res.status(400).json({ ok: false, error: "provider does not support getPhoto — need google_api" });
-        }
-
-        const stats = { updated: 0, noPhoto: 0, errors: 0 };
-        let quotaHit = false;
-        for (const row of rows) {
-            let photoUrl;
-            try {
-                photoUrl = await provider.getPhoto(row.googlePlaceId);
-            } catch (err) {
-                if (err instanceof QuotaExceededError) { quotaHit = true; break; }
-                stats.errors++;
-                continue;
-            }
-            if (!photoUrl) { stats.noPhoto++; continue; }
-            await prisma.place.update({ where: { id: row.id }, data: { heroImageUrl: photoUrl } });
-            stats.updated++;
-        }
-
-        await provider.close().catch(() => {});
-        return res.json({ ok: true, mode: "photos", ...stats, apiCalls: provider.callsMade ?? 0, remaining: remaining - stats.updated, quotaHit });
-    }
-
-    // Order by enrichedAt nulls-first so untried rows go before rows we
-    // already attempted; among tried rows, oldest attempts go first. Without
-    // this, an unresolvable prefix (Google can't find them) would block the
-    // queue forever — the cron would re-try the same rows every 3h and never
-    // reach newer imports.
-    const rows = await prisma.place.findMany({
-        where: { enrichmentVersion: 0, googlePlaceId: null },
-        orderBy: [
-            { isVisible: "desc" },
-            { enrichedAt: { sort: "asc", nulls: "first" } },
-            { id: "asc" },
-        ],
-        take: limit,
-    });
-    const remaining = await prisma.place.count({
-        where: { enrichmentVersion: 0, googlePlaceId: null },
-    });
-
-    if (!rows.length) {
-        return res.json({ ok: true, enriched: 0, skipped: 0, dupes: 0, errors: 0, apiCalls: 0, remaining: 0, message: "backfill complete" });
-    }
-
-    const provider = getProvider({ prisma });
-    const stats = { enriched: 0, skipped: 0, dupes: 0, errors: 0 };
-    let quotaHit = false;
-
-    for (const row of rows) {
-        let resolved;
-        try {
-            resolved = await provider.findPlace(row.name, row.city, row.country);
-        } catch (err) {
-            if (err instanceof QuotaExceededError) {
-                quotaHit = true;
-                break;
-            }
-            stats.errors++;
-            continue;
-        }
-
-        if (!resolved) {
-            // Stamp enrichedAt without bumping enrichmentVersion: row stays
-            // in the queue (will be retried once newer rows have had a turn)
-            // but moves to the back via the nulls-first ordering above.
-            await prisma.place.update({ where: { id: row.id }, data: { enrichedAt: new Date() } }).catch(() => {});
-            stats.skipped++;
-            continue;
-        }
-
-        const patch = {};
-        if (resolved.googlePlaceId) patch.googlePlaceId = resolved.googlePlaceId;
-        if (resolved.googleMapsUrl) patch.googlePlaceUrl = resolved.googleMapsUrl;
-        patch.enrichmentVersion = PIPELINE_VERSION;
-        patch.enrichedAt = new Date();
-        if (isEmpty(row.phone) && resolved.phone) patch.phone = resolved.phone;
-        if (isEmpty(row.websiteUrl) && resolved.websiteUrl) patch.websiteUrl = resolved.websiteUrl;
-        if (isEmpty(row.openingHours) && resolved.openingHours) patch.openingHours = resolved.openingHours;
-        if (row.googleRating == null && resolved.rating != null) patch.googleRating = resolved.rating;
-        if (row.googleReviewCount == null && resolved.ratingCount != null) patch.googleReviewCount = resolved.ratingCount;
-        if (isEmpty(row.heroImageUrl) && resolved.photoUrl) patch.heroImageUrl = resolved.photoUrl;
-
-        try {
-            await prisma.place.update({ where: { id: row.id }, data: patch });
-            stats.enriched++;
-        } catch (err) {
-            if (err.code === "P2002") { stats.dupes++; } else { stats.errors++; }
+// Consolidated maintenance entrypoint — the cron-job.org target. Runs
+// every enrichment phase (resolve, photos, reviews, descriptions, osm,
+// tripadvisor, socials, opmRating, clearFallbackDescriptions) with
+// hour-gated daily phases honoring their scheduled hour. Fire-and-
+// forget: returns 202 immediately, work continues in the worker.
+// Status queryable at /api/admin/maintenance/status.
+//
+// POST /api/admin/maintenance?mode=burn            → aggressive (12-day credit window)
+// POST /api/admin/maintenance?mode=min             → free-tier sustain
+// POST /api/admin/maintenance?mode=min&force=osm   → also run named hour-gated phases now
+// POST /api/admin/maintenance?mode=min&skip=osm    → skip named phases
+//
+// 202 Accepted on a successful kick-off; 409 Conflict if a previous
+// run is still in flight (cron-job.org will treat 409 as a failed tick,
+// which is correct — overlap is what we don't want).
+router.post("/maintenance", async (req, res) => {
+    const mode = req.query.mode === "burn" ? "burn" : "min";
+    const parseCsv = (s) => (s ? String(s).split(",").map(x => x.trim()).filter(Boolean) : null);
+    const force = parseCsv(req.query.force);
+    const skip = parseCsv(req.query.skip);
+    // Allow per-phase limit overrides via query: ?resolve=80&photos=80
+    const overrides = {};
+    for (const key of ["resolve", "photos", "reviews", "descriptions", "osm", "tripadvisor", "socials", "playwrightFallback"]) {
+        if (req.query[key] != null) {
+            const n = parseInt(req.query[key], 10);
+            if (Number.isFinite(n) && n > 0) overrides[key] = n;
         }
     }
 
-    await provider.close().catch(() => {});
-    res.json({
-        ok: true,
-        ...stats,
-        apiCalls: provider.callsMade ?? 0,
-        remaining: remaining - stats.enriched,
-        quotaHit,
-    });
+    const result = tryStartMaintenance({ mode, force, skip, overrides });
+    if (!result.accepted) {
+        return res.status(409).json({ ok: false, ...result });
+    }
+    res.status(202).json({ ok: true, ...result, statusUrl: "/api/admin/maintenance/status" });
+});
+
+router.get("/maintenance/status", async (req, res) => {
+    res.json(getMaintenanceStatus());
+});
+
+// Coverage watcher — answers "is the pipeline draining its backlog,
+// and which rows are stuck where no phase will pick them up?"
+//
+// GET /api/admin/audit/coverage              → counts only (~10 queries)
+// GET /api/admin/audit/coverage?samples=20   → also returns up to 20 row
+//                                              IDs per stuck category for
+//                                              manual triage
+router.get("/audit/coverage", async (req, res) => {
+    const samples = Math.min(parseInt(req.query.samples, 10) || 0, 100);
+    res.json(await getCoverage({ samples }));
+});
+
+// One-shot recovery: reset enrichmentVersion=0 on visible rows whose
+// previous resolve bumped the version without writing googlePlaceId.
+// Puts the stuck rows back into the resolve queue. Idempotent.
+router.post("/audit/unstick", async (req, res) => {
+    res.json(await unstickVersionBumpedRows());
 });
 
 // One-shot cleanup: null out every Place.descriptionHtml that wasn't
