@@ -21,20 +21,26 @@
 #   Multi-process Chromium just works here — none of the Hostinger LVE
 #   gymnastics needed.
 #
-# UPDATING:
-#   The container clones the repo at build time. To pick up new commits,
-#   rebuild: `docker build --no-cache -f Dockerfile.unraid -t opm-runner .`
-#   (or use Unraid's "Force update" toggle on the template). Container
-#   doesn't auto-pull during runtime — keeps the running pipeline stable
-#   between scheduled rebuilds.
+# UPDATING (auto-pull on restart):
+#   The container's entrypoint (scripts/cron/docker-entrypoint.sh) does
+#   `git fetch && git reset --hard origin/main` on every start, then
+#   re-runs `npm ci` ONLY if package-lock.json changed. So picking up a
+#   new commit is just:
+#       docker restart opm-runner
+#   No rebuild, no Edit→Apply dance in the Unraid UI. Only rebuild when
+#   the base image bumps or scripts/cron/docker-entrypoint.sh itself
+#   changes.
 
 FROM mcr.microsoft.com/playwright:v1.59.1-jammy
 
 WORKDIR /app
 
-# Layer 1: package files only (dep install layer cache-busts only when
-# package-lock.json changes, not on every source-code edit).
-COPY package.json package-lock.json ./
+# Clone the repo into the image so the build can run npm ci + prisma
+# generate against a real package-lock.json. The entrypoint will
+# fast-forward this to origin/main on every container start, so the
+# build-time SHA is just the starting point.
+RUN git clone https://github.com/elehmanndev/OpenPizzaMap.git . \
+ && git config --global --add safe.directory /app
 
 # Skip the Hostinger-specific postinstall steps (chmod-prisma-engines,
 # setup-playwright, touch-passenger-restart). The Playwright base image
@@ -44,16 +50,19 @@ COPY package.json package-lock.json ./
 # (the live Hostinger app only needs playwright-core, not the full
 # package). The Unraid runner DOES need it for resolve-via-gmaps.js.
 ENV SKIP_PLAYWRIGHT_INSTALL=1
-RUN npm ci --ignore-scripts
-
-# Layer 2: Prisma schema (cache-busts only when schema.prisma changes).
-COPY prisma ./prisma
+RUN npm ci --ignore-scripts --no-audit --no-fund
 RUN npx prisma generate
 
-# Layer 3: everything else.
-COPY . .
+# Stamp the lock-file hash so the entrypoint knows the in-image deps
+# already match (no npm ci on the first start). The entrypoint
+# recomputes this whenever package-lock.json drifts.
+RUN sha256sum package-lock.json | cut -d' ' -f1 > /app/.docker-lock-hash
 
-# Runtime: a long-running scheduler that calls runMaintenance() on a
-# loop. Container stays alive; sleeps between ticks. See
-# scripts/cron/runner.js for cadence + mode controls.
-CMD ["node", "scripts/cron/runner.js"]
+# Mark the entrypoint executable (Hostinger's git auto-deploy strip-
+# exec-bit bug isn't here, so this chmod is one-and-done).
+RUN chmod +x scripts/cron/docker-entrypoint.sh
+
+# Every container start pulls latest code + re-installs deps if
+# package-lock changed + runs the maintenance loop. See
+# scripts/cron/docker-entrypoint.sh for the gory details.
+ENTRYPOINT ["scripts/cron/docker-entrypoint.sh"]
