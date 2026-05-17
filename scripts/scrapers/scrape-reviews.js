@@ -75,9 +75,20 @@ async function run({ dryRun = false, apply = true, all = false, singleId = null,
 
     const cache = loadCache();
 
+    // Default cron path: only fetch reviews for rows that NEED a
+    // description. Reviews are only consumed by the descriptions
+    // phase, so caching reviews for rows that already have a
+    // description is wasted Google API calls.
+    //
+    // Surfaced 2026-05-18: reviews phase had cached 121 places (IDs
+    // 42-198) but only 1 of those had a null description — the
+    // other 120 already had descriptions from earlier enrichment.
+    // Without this filter, reviews would have to chew through 1,177
+    // already-described rows before reaching the 441 that actually
+    // need descriptions.
     const where = singleId
         ? { id: singleId, googlePlaceId: { not: null } }
-        : { googlePlaceId: { not: null }, isVisible: true };
+        : { googlePlaceId: { not: null }, isVisible: true, descriptionHtml: null };
 
     const allPlaces = await prisma.place.findMany({
         where,
