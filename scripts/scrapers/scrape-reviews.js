@@ -4,6 +4,10 @@
 // saves them to google-reviews-cache.json. Run this first; generate-descriptions.js
 // reads from that file on the next step.
 //
+// Importable: exports `run(opts)` so src/services/maintenance.js can
+// call it in-process inside the live worker (avoids the Hostinger
+// Prisma "tokio panic" hit when this is spawned as a bare CLI script).
+//
 // Requires: GOOGLE_MAPS_API_KEY in .env
 // Targets places with googlePlaceId set. Places without one are skipped.
 //
@@ -21,19 +25,8 @@ const { prisma, PATHS } = require("../lib/bootstrap");
 
 const CACHE_PATH = path.join(PATHS.cache, "google-reviews-cache.json");
 
-const DRY_RUN   = process.argv.includes("--dry-run");
-const APPLY     = process.argv.includes("--apply");
-const ALL       = process.argv.includes("--all");
-const SINGLE_ID = (() => { const m = process.argv.find(a => a.startsWith("--id=")); return m ? Number(m.split("=")[1]) : null; })();
-const LIMIT     = (() => { const m = process.argv.find(a => a.startsWith("--limit=")); return m ? Number(m.split("=")[1]) : 500; })();
-
 // Polite delay between API calls (~5 req/sec).
 const DELAY_MS = 200;
-
-if (!DRY_RUN && !APPLY) {
-    console.error("Usage: node scrape-reviews.js --dry-run | --apply [--all] [--id=N] [--limit=N]");
-    process.exit(1);
-}
 
 function loadCache() {
     try { return JSON.parse(fs.readFileSync(CACHE_PATH, "utf8")); } catch { return {}; }
@@ -73,14 +66,17 @@ function fetchReviews(googlePlaceId, apiKey) {
     });
 }
 
-async function main() {
+async function run({ dryRun = false, apply = true, all = false, singleId = null, limit = 500 } = {}) {
     const apiKey = process.env.GOOGLE_MAPS_API_KEY;
-    if (!apiKey) { console.error("GOOGLE_MAPS_API_KEY not set in .env"); process.exit(1); }
+    if (!apiKey) {
+        console.error("[reviews] GOOGLE_MAPS_API_KEY not set in .env");
+        return { ok: false, error: "GOOGLE_MAPS_API_KEY not set" };
+    }
 
     const cache = loadCache();
 
-    const where = SINGLE_ID
-        ? { id: SINGLE_ID, googlePlaceId: { not: null } }
+    const where = singleId
+        ? { id: singleId, googlePlaceId: { not: null } }
         : { googlePlaceId: { not: null }, isVisible: true };
 
     const allPlaces = await prisma.place.findMany({
@@ -89,21 +85,21 @@ async function main() {
         select: { id: true, name: true, city: true, country: true, googlePlaceId: true },
     });
 
-    const places = ALL
+    const places = all
         ? allPlaces
         : allPlaces.filter(p => !cache[String(p.id)]);
 
-    const capped = places.slice(0, LIMIT);
+    const capped = places.slice(0, limit);
 
     console.log(`[reviews] ${allPlaces.length} places with googlePlaceId`);
-    console.log(`[reviews] ${capped.length} to fetch this run (${ALL ? "all, re-fetching cached" : "skipping already cached"})`);
-    console.log(`[reviews] dry-run=${DRY_RUN}\n`);
+    console.log(`[reviews] ${capped.length} to fetch this run (${all ? "all, re-fetching cached" : "skipping already cached"})`);
+    console.log(`[reviews] dryRun=${dryRun}\n`);
 
-    if (DRY_RUN) {
+    if (dryRun) {
         for (const p of capped) {
             console.log(`[reviews] would fetch #${p.id} "${p.name}" (${p.city}, ${p.country})`);
         }
-        return;
+        return { ok: true, dryRun: true, candidates: capped.length };
     }
 
     let saved = 0, empty = 0, failed = 0;
@@ -138,8 +134,29 @@ async function main() {
 
     console.log(`\n[reviews] Done — saved=${saved} empty=${empty} failed=${failed}`);
     console.log(`[reviews] Cache: ${CACHE_PATH}`);
+    return { ok: true, saved, empty, failed, total: capped.length };
 }
 
-main()
-    .catch(err => { console.error(err); process.exit(1); })
-    .finally(() => prisma.$disconnect());
+function parseCliArgs() {
+    const args = process.argv;
+    return {
+        dryRun: args.includes("--dry-run"),
+        apply: args.includes("--apply"),
+        all: args.includes("--all"),
+        singleId: (() => { const m = args.find(a => a.startsWith("--id=")); return m ? Number(m.split("=")[1]) : null; })(),
+        limit: (() => { const m = args.find(a => a.startsWith("--limit=")); return m ? Number(m.split("=")[1]) : 500; })(),
+    };
+}
+
+if (require.main === module) {
+    const opts = parseCliArgs();
+    if (!opts.dryRun && !opts.apply) {
+        console.error("Usage: node scrape-reviews.js --dry-run | --apply [--all] [--id=N] [--limit=N]");
+        process.exit(1);
+    }
+    run(opts)
+        .catch(err => { console.error(err); process.exit(1); })
+        .finally(() => prisma.$disconnect());
+}
+
+module.exports = { run };

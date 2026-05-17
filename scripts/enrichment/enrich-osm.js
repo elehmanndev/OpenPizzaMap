@@ -2,6 +2,11 @@
 // Fill missing metadata (phone, websiteUrl, openingHours, address) from
 // OpenStreetMap via the Overpass API.
 //
+// Importable: exports `run(opts)` so src/services/maintenance.js can
+// call it in-process inside the live worker (avoids the Hostinger
+// Prisma "tokio panic" hit when this is spawned as a bare CLI script).
+// CLI entry preserved via `if (require.main === module)`.
+//
 // Usage:
 //   node scripts/enrichment/enrich-osm.js              # dry-run, prints findings
 //   node scripts/enrichment/enrich-osm.js --apply      # write to DB
@@ -27,26 +32,11 @@ const { haversineM, AGGREGATOR_HOSTS } = require('../lib/utils');
 const COORD_UPGRADE_MIN_DISTANCE_M = 200;   // pin must be >= this far from OSM coords to upgrade
 const COORD_UPGRADE_MIN_SIMILARITY = 0.85;  // and OSM name must match this confidently
 
-const args = process.argv.slice(2);
-const APPLY = args.includes('--apply');
-const IDS = (() => {
-    const a = args.find((x) => x.startsWith('--ids='));
-    return a ? a.slice(6).split(',').map((s) => parseInt(s, 10)).filter(Boolean) : null;
-})();
-const LIMIT = (() => {
-    const a = args.find((x) => x.startsWith('--limit='));
-    return a ? parseInt(a.slice(8), 10) : null;
-})();
-const RADIUS = (() => {
-    const a = args.find((x) => x.startsWith('--radius='));
-    return a ? parseInt(a.slice(9), 10) : undefined;
-})();
-
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-(async () => {
+async function run({ apply = false, ids = null, limit = null, radius } = {}) {
     let where;
-    if (IDS) where = { id: { in: IDS } };
+    if (ids) where = { id: { in: ids } };
     else {
         // lat/lng are non-nullable in the schema (Decimal without ?), so no
         // need to filter for them — every visible place has coords.
@@ -69,8 +59,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
             { id: 'asc' },
         ],
     });
-    const places = LIMIT ? placesAll.slice(0, LIMIT) : placesAll;
-    console.log(`[osm] ${places.length} places to look up (apply=${APPLY}${RADIUS ? `, radius=${RADIUS}m` : ''})`);
+    const places = limit ? placesAll.slice(0, limit) : placesAll;
+    console.log(`[osm] ${places.length} places to look up (apply=${apply}${radius ? `, radius=${radius}m` : ''})`);
 
     const cache = osm.loadCache();
     let resolved = 0, missed = 0, skipped = 0;
@@ -84,7 +74,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         let r = cache[cacheKey];
         if (!r) {
             try {
-                r = await osm.lookup(p.name, Number(p.lat), Number(p.lng), { radiusM: RADIUS });
+                r = await osm.lookup(p.name, Number(p.lat), Number(p.lng), { radiusM: radius });
                 cache[cacheKey] = r || { miss: true, ts: Date.now() };
                 osm.saveCache(cache);
                 await sleep(1100); // ~1 query/sec — be a good Overpass citizen
@@ -98,7 +88,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         if (!r || r.miss) {
             missed++;
             console.log(`[osm] #${p.id} "${p.name}" — no OSM match`);
-            if (APPLY) await prisma.place.update({ where: { id: p.id }, data: { osmCheckedAt: new Date() } });
+            if (apply) await prisma.place.update({ where: { id: p.id }, data: { osmCheckedAt: new Date() } });
             continue;
         }
 
@@ -162,7 +152,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         const changeCount = Object.keys(patch).length;
         if (changeCount > 0) resolved++; else skipped++;
 
-        if (APPLY) {
+        if (apply) {
             await prisma.place.update({
                 where: { id: p.id },
                 data: { ...patch, osmCheckedAt: new Date() },
@@ -173,8 +163,38 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     console.log(`\n[osm] meta filled — phone=${metaPhone} website=${metaWeb} hours=${metaHours} address=${metaAddr}`);
     console.log(`[osm] upgrades — coords=${coordUpgrades} (>=${COORD_UPGRADE_MIN_DISTANCE_M}m, sim>=${COORD_UPGRADE_MIN_SIMILARITY})  website-from-aggregator=${webUpgrades}`);
     console.log(`[osm] ${resolved} resolved, ${missed} missed, ${skipped} skipped (no new fields)`);
-    if (!APPLY) console.log('\n(dry-run — pass --apply to write back)');
+    if (!apply) console.log('\n(dry-run — pass --apply to write back)');
 
     osm.saveCache(cache);
-    await prisma.$disconnect();
-})();
+    return {
+        ok: true, resolved, missed, skipped,
+        metaPhone, metaWeb, metaHours, metaAddr,
+        coordUpgrades, webUpgrades,
+        total: places.length,
+    };
+}
+
+function parseCliArgs() {
+    const args = process.argv.slice(2);
+    const intArg = (prefix) => {
+        const a = args.find((x) => x.startsWith(prefix));
+        return a ? parseInt(a.slice(prefix.length), 10) : null;
+    };
+    return {
+        apply: args.includes('--apply'),
+        ids: (() => {
+            const a = args.find((x) => x.startsWith('--ids='));
+            return a ? a.slice(6).split(',').map((s) => parseInt(s, 10)).filter(Boolean) : null;
+        })(),
+        limit: intArg('--limit='),
+        radius: intArg('--radius=') || undefined,
+    };
+}
+
+if (require.main === module) {
+    run(parseCliArgs())
+        .then(() => prisma.$disconnect())
+        .catch((e) => { console.error(e); process.exit(1); });
+}
+
+module.exports = { run };

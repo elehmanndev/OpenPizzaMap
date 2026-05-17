@@ -15,20 +15,13 @@
 //
 // Fill-only-if-null on each field — never overwrites a value already in the
 // DB (matches the project's dedup/merge policy).
+//
+// Importable: exports `run(opts)` so src/services/maintenance.js can
+// call it in-process inside the live worker (avoids the Hostinger
+// Prisma "tokio panic" hit when this is spawned as a bare CLI script).
 
 const { prisma } = require('../lib/bootstrap');
 const { fetchWithTimeout, sleep, AGGREGATOR_HOSTS } = require('../lib/utils');
-
-const args = process.argv.slice(2);
-const APPLY = args.includes('--apply');
-const IDS = (() => {
-    const a = args.find((x) => x.startsWith('--ids='));
-    return a ? a.slice(6).split(',').map((s) => parseInt(s, 10)).filter(Boolean) : null;
-})();
-const LIMIT = (() => {
-    const a = args.find((x) => x.startsWith('--limit='));
-    return a ? parseInt(a.slice(8), 10) : null;
-})();
 
 const UA = 'OpenPizzaMap-socials-backfill/0.1 (eric@openpizzamap.com)';
 const POLITE_DELAY_MS = 800;
@@ -148,9 +141,9 @@ async function fetchHomepage(url) {
     return { ok: true, html: Buffer.from(slice).toString('utf8') };
 }
 
-(async () => {
+async function run({ apply = false, ids = null, limit = null } = {}) {
     let where;
-    if (IDS) where = { id: { in: IDS } };
+    if (ids) where = { id: { in: ids } };
     else {
         where = {
             isVisible: true,
@@ -164,8 +157,8 @@ async function fetchHomepage(url) {
         select: { id: true, name: true, city: true, websiteUrl: true, instagramUrl: true, facebookUrl: true },
         orderBy: [{ id: 'asc' }],
     });
-    const places = LIMIT ? all.slice(0, LIMIT) : all;
-    console.log(`[socials] ${places.length} candidates (apply=${APPLY})`);
+    const places = limit ? all.slice(0, limit) : all;
+    console.log(`[socials] ${places.length} candidates (apply=${apply})`);
 
     let fetched = 0, igFound = 0, fbFound = 0, igFilled = 0, fbFilled = 0;
     let skippedAgg = 0, fetchErr = 0;
@@ -200,7 +193,7 @@ async function fetchHomepage(url) {
             if (patch.instagramUrl) parts.push(`IG=${patch.instagramUrl}`);
             if (patch.facebookUrl)  parts.push(`FB=${patch.facebookUrl}`);
             console.log(`  [${p.id}] ${p.name} — ${parts.join(' ')}`);
-            if (APPLY) {
+            if (apply) {
                 await prisma.place.update({ where: { id: p.id }, data: patch });
                 if (patch.instagramUrl) igFilled++;
                 if (patch.facebookUrl)  fbFilled++;
@@ -212,8 +205,36 @@ async function fetchHomepage(url) {
 
     console.log('');
     console.log(`[socials] done. fetched=${fetched} ig=${igFound} fb=${fbFound} skipped-agg=${skippedAgg} fetch-err=${fetchErr}`);
-    if (APPLY) console.log(`[socials] applied: instagramUrl=${igFilled} facebookUrl=${fbFilled}`);
+    if (apply) console.log(`[socials] applied: instagramUrl=${igFilled} facebookUrl=${fbFilled}`);
     else       console.log(`[socials] DRY RUN — re-run with --apply to write.`);
 
-    await prisma.$disconnect();
-})().catch((e) => { console.error(e); process.exit(1); });
+    return {
+        ok: true,
+        fetched, igFound, fbFound, igFilled, fbFilled,
+        skippedAgg, fetchErr,
+        total: places.length,
+    };
+}
+
+function parseCliArgs() {
+    const args = process.argv.slice(2);
+    return {
+        apply: args.includes('--apply'),
+        ids: (() => {
+            const a = args.find((x) => x.startsWith('--ids='));
+            return a ? a.slice(6).split(',').map((s) => parseInt(s, 10)).filter(Boolean) : null;
+        })(),
+        limit: (() => {
+            const a = args.find((x) => x.startsWith('--limit='));
+            return a ? parseInt(a.slice(8), 10) : null;
+        })(),
+    };
+}
+
+if (require.main === module) {
+    run(parseCliArgs())
+        .then(() => prisma.$disconnect())
+        .catch((e) => { console.error(e); process.exit(1); });
+}
+
+module.exports = { run };

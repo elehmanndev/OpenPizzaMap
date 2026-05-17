@@ -3,6 +3,10 @@
 // url) for places that don't have it yet. Uses the shared lib at
 // scripts/lib/tripadvisor.js + the existing budget tracker.
 //
+// Importable: exports `run(opts)` so src/services/maintenance.js can
+// call it in-process inside the live worker (avoids the Hostinger
+// Prisma "tokio panic" hit when this is spawned as a bare CLI script).
+//
 // Usage:
 //   node scripts/enrichment/enrich-tripadvisor.js                 # dry-run
 //   node scripts/enrichment/enrich-tripadvisor.js --apply         # writes
@@ -20,36 +24,21 @@ const { prisma } = require('../lib/bootstrap');
 const { taLookup } = require('../lib/tripadvisor');
 const taBudget = require('../lib/tripadvisor-budget');
 
-const args = process.argv.slice(2);
-const APPLY = args.includes('--apply');
-const IDS = (() => {
-    const a = args.find((x) => x.startsWith('--ids='));
-    return a ? a.slice(6).split(',').map((s) => parseInt(s, 10)).filter(Boolean) : null;
-})();
-const LIMIT = (() => {
-    const a = args.find((x) => x.startsWith('--limit='));
-    return a ? parseInt(a.slice(8), 10) : null;
-})();
-const COUNTRY = (() => {
-    const a = args.find((x) => x.startsWith('--country='));
-    return a ? a.slice(10) : null;
-})();
-
 // Sentinel value: -1 in tripadvisorLocationId means "search ran but no
 // confident match" — prevents the row from being re-queued every cron.
 const NEGATIVE_CACHE_SENTINEL = -1;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-(async () => {
+async function run({ apply = false, ids = null, limit = null, country = null } = {}) {
     let where;
-    if (IDS) where = { id: { in: IDS } };
+    if (ids) where = { id: { in: ids } };
     else {
         where = {
             isVisible: true,
             tripadvisorLocationId: null,
         };
-        if (COUNTRY) where.country = COUNTRY;
+        if (country) where.country = country;
     }
 
     const placesAll = await prisma.place.findMany({
@@ -62,15 +51,16 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
             { id: 'asc' },
         ],
     });
-    const places = LIMIT ? placesAll.slice(0, LIMIT) : placesAll;
+    const places = limit ? placesAll.slice(0, limit) : placesAll;
 
     const before = taBudget.status();
-    console.log(`[ta] ${places.length} places to enrich (apply=${APPLY})`);
+    console.log(`[ta] ${places.length} places to enrich (apply=${apply})`);
     console.log(`[ta] BILLED before: month ${before.monthDetailCalls}/${before.monthlyCap}, today ${before.todayDetailCalls}/${before.dailyCap}`);
     console.log(`[ta] FREE search before: month ${before.monthSearchCalls}, today ${before.todaySearchCalls}`);
     console.log('');
 
     let matched = 0, missed = 0, errors = 0;
+    let budgetCapHit = false;
 
     for (const p of places) {
         try {
@@ -78,7 +68,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
             if (!r) {
                 missed++;
                 console.log(`[ta] #${p.id} "${p.name}" / ${p.city} — no confident match`);
-                if (APPLY) {
+                if (apply) {
                     await prisma.place.update({
                         where: { id: p.id },
                         data: { tripadvisorLocationId: NEGATIVE_CACHE_SENTINEL },
@@ -96,7 +86,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
             if (ranking) console.log(`     ranking: ${ranking}`);
             if (url) console.log(`     url: ${url}`);
 
-            if (APPLY) {
+            if (apply) {
                 // TA returns location_id as a string ("12597899"); our column is
                 // Int — parseInt before writing.
                 const locationId = parseInt(r.search.location_id, 10);
@@ -119,6 +109,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
             // hammering through the rest.
             if (/cap reached/i.test(e.message)) {
                 console.log('[ta] hit budget cap, aborting');
+                budgetCapHit = true;
                 break;
             }
         }
@@ -133,5 +124,39 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     const searchThisRun = after.monthSearchCalls - before.monthSearchCalls;
     console.log(`[ta] this run: ${searchThisRun} free search + ${billedThisRun} billed = ${searchThisRun + billedThisRun} total`);
 
-    await prisma.$disconnect();
-})();
+    return {
+        ok: true,
+        matched, missed, errors,
+        budgetCapHit,
+        searchCalls: searchThisRun,
+        detailCalls: billedThisRun,
+        total: places.length,
+    };
+}
+
+function parseCliArgs() {
+    const args = process.argv.slice(2);
+    return {
+        apply: args.includes('--apply'),
+        ids: (() => {
+            const a = args.find((x) => x.startsWith('--ids='));
+            return a ? a.slice(6).split(',').map((s) => parseInt(s, 10)).filter(Boolean) : null;
+        })(),
+        limit: (() => {
+            const a = args.find((x) => x.startsWith('--limit='));
+            return a ? parseInt(a.slice(8), 10) : null;
+        })(),
+        country: (() => {
+            const a = args.find((x) => x.startsWith('--country='));
+            return a ? a.slice(10) : null;
+        })(),
+    };
+}
+
+if (require.main === module) {
+    run(parseCliArgs())
+        .then(() => prisma.$disconnect())
+        .catch((e) => { console.error(e); process.exit(1); });
+}
+
+module.exports = { run };

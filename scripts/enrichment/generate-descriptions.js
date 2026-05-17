@@ -4,6 +4,10 @@
 // Gemini 2.5 Flash Lite to summarise the reviews into a 2-sentence description
 // with unique, specific insights from real customers.
 //
+// Importable: exports `run(opts)` so src/services/maintenance.js can
+// call it in-process inside the live worker (avoids the Hostinger
+// Prisma "tokio panic" hit when this is spawned as a bare CLI script).
+//
 // Falls back to website text for places not in the reviews cache.
 //
 // Free tier: 15 RPM Gemini → script paces itself automatically (4.1s delay).
@@ -29,61 +33,10 @@ const { prisma, PATHS } = require("../lib/bootstrap");
 
 const REVIEWS_CACHE_PATH = path.join(PATHS.cache, "google-reviews-cache.json");
 
-const DRY_RUN = process.argv.includes("--dry-run");
-const APPLY   = process.argv.includes("--apply");
-const ALL     = process.argv.includes("--all");
-const SINGLE_ID = (() => { const m = process.argv.find(a => a.startsWith("--id=")); return m ? Number(m.split("=")[1]) : null; })();
-const LIMIT   = (() => { const m = process.argv.find(a => a.startsWith("--limit=")); return m ? Number(m.split("=")[1]) : 200; })();
-
-// 15 RPM → 4.1s between calls to stay comfortably under the free tier.
-// Burn workflow sets GEMINI_DELAY_MS=1100 to lift this to ~55 RPM.
-const DELAY_MS = Number(process.env.GEMINI_DELAY_MS) || 4100;
-
-if (!DRY_RUN && !APPLY) {
-    console.error("Usage: node generate-descriptions.js --dry-run | --apply [--all] [--id=N] [--limit=N]");
-    process.exit(1);
-}
-
 // ─── Reviews cache ────────────────────────────────────────────────────────────
 
 function loadReviewsCache() {
     try { return JSON.parse(fs.readFileSync(REVIEWS_CACHE_PATH, "utf8")); } catch { return {}; }
-}
-
-// ─── Website fallback ─────────────────────────────────────────────────────────
-
-function fetchUrl(url, timeoutMs = 8000) {
-    return new Promise((resolve) => {
-        try {
-            try { new URL(url); } catch (_) { return resolve(""); }
-            const lib = url.startsWith("https") ? https : http;
-            const req = lib.get(url, {
-                headers: { "User-Agent": "Mozilla/5.0 (compatible; OPM/1.0)" },
-                timeout: timeoutMs,
-            }, (res) => {
-                if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-                    const next = new URL(res.headers.location, url).href;
-                    return fetchUrl(next, timeoutMs).then(resolve);
-                }
-                let body = "";
-                res.setEncoding("utf8");
-                res.on("data", chunk => { if (body.length < 15000) body += chunk; });
-                res.on("end", () => resolve(body));
-            });
-            req.on("error", () => resolve(""));
-            req.on("timeout", () => { req.destroy(); resolve(""); });
-        } catch (_) { resolve(""); }
-    });
-}
-
-function extractText(html) {
-    return html
-        .replace(/<script[\s\S]*?<\/script>/gi, "")
-        .replace(/<style[\s\S]*?<\/style>/gi, "")
-        .replace(/<[^>]+>/g, " ")
-        .replace(/\s+/g, " ")
-        .trim()
-        .slice(0, 2000);
 }
 
 // ─── Gemini ───────────────────────────────────────────────────────────────────
@@ -159,32 +112,6 @@ REVIEWS (${reviews.length}):
 ${reviewBlock}`;
 }
 
-function buildWebsitePrompt(place, styles, websiteText) {
-    const styleNames = styles.map(s => s.name).join(", ");
-    const lines = [
-        `Name: ${place.name}`,
-        `City: ${place.city || "unknown"}`,
-        `Country: ${place.country || "unknown"}`,
-        styleNames ? `Pizza style(s): ${styleNames}` : null,
-        websiteText ? `Website excerpt: ${websiteText}` : null,
-    ].filter(Boolean).join("\n");
-
-    return `You are writing concise, enthusiastic descriptions for an international pizza map called OpenPizzaMap.
-
-Write a 2-sentence HTML description for this pizzeria. Rules:
-- Max 2 sentences, max 180 characters total
-- Use only <strong> tags if needed, no other HTML
-- Focus on what makes this place special or notable
-- Mention the pizza style if known and distinctive
-- Do NOT mention the city or country (it's already shown on the map)
-- Do NOT start with the restaurant name
-- Write in English
-- Output only the description, nothing else
-
-PIZZERIA INFO:
-${lines}`;
-}
-
 function cleanDescription(text) {
     const t = text.trim();
     // Only strip if the ENTIRE output is symmetrically wrapped in quotes
@@ -198,20 +125,31 @@ function cleanDescription(text) {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
-async function main() {
+async function run({
+    dryRun = false,
+    apply = true,
+    all = false,
+    singleId = null,
+    limit = 200,
+    // When called from the live worker (in-process), DO NOT periodically
+    // disconnect — that would close the shared Prisma singleton and
+    // break the rest of the running app. Default true for CLI mode.
+    reconnectMidLoop = true,
+    delayMs = Number(process.env.GEMINI_DELAY_MS) || 4100,
+} = {}) {
     const reviewsCache = loadReviewsCache();
     const cachedIds = new Set(Object.keys(reviewsCache));
     console.log(`[describe] Loaded reviews cache: ${cachedIds.size} places`);
 
-    const where = SINGLE_ID
-        ? { id: SINGLE_ID }
-        : ALL
+    const where = singleId
+        ? { id: singleId }
+        : all
             ? {}
             : { descriptionHtml: null, isVisible: true };
 
     const places = await prisma.place.findMany({
         where,
-        take: LIMIT,
+        take: limit,
         orderBy: { id: "asc" },
         select: {
             id: true, name: true, city: true, country: true,
@@ -220,18 +158,19 @@ async function main() {
         },
     });
 
-    const totalMissing = ALL ? "all" : await prisma.place.count({ where: { descriptionHtml: null, isVisible: true } });
+    const totalMissing = all ? "all" : await prisma.place.count({ where: { descriptionHtml: null, isVisible: true } });
     const withReviews = places.filter(p => cachedIds.has(String(p.id))).length;
     console.log(`[describe] ${places.length} places in this run (${totalMissing} total missing descriptions)`);
     console.log(`[describe] ${withReviews} have cached reviews → review prompt`);
-    console.log(`[describe] ${places.length - withReviews} will use website fallback`);
-    console.log(`[describe] dry-run=${DRY_RUN}, delay=${DELAY_MS}ms between Gemini calls\n`);
+    console.log(`[describe] ${places.length - withReviews} skipped (no cached reviews)`);
+    console.log(`[describe] dryRun=${dryRun}, delay=${delayMs}ms between Gemini calls\n`);
 
     let written = 0, skipped = 0, failed = 0;
 
     for (let idx = 0; idx < places.length; idx++) {
-        // Reconnect every 30 iterations to avoid MySQL idle-connection timeout.
-        if (idx > 0 && idx % 30 === 0) {
+        // Reconnect every 30 iterations to avoid MySQL idle-connection
+        // timeout — ONLY in CLI mode where we own the Prisma client.
+        if (reconnectMidLoop && idx > 0 && idx % 30 === 0) {
             await prisma.$disconnect();
             await prisma.$connect();
         }
@@ -257,28 +196,28 @@ async function main() {
         } catch (err) {
             console.error(`[describe] #${place.id} "${place.name}" — Gemini error: ${err.message}`);
             failed++;
-            await new Promise(r => setTimeout(r, DELAY_MS));
+            await new Promise(r => setTimeout(r, delayMs));
             continue;
         }
 
         if (!description) {
             console.log(`[describe] #${place.id} "${place.name}" — empty response, skipping`);
             skipped++;
-            await new Promise(r => setTimeout(r, DELAY_MS));
+            await new Promise(r => setTimeout(r, delayMs));
             continue;
         }
 
         console.log(`[describe] #${place.id} "${place.name}" (${place.city}, ${place.country}) [${source}]`);
         console.log(`           → ${description}\n`);
 
-        if (APPLY) {
+        if (apply) {
             try {
                 await prisma.place.update({
                     where: { id: place.id },
                     data: { descriptionHtml: description },
                 });
             } catch (err) {
-                if (err.code === "P1017" || err.code === "P1001") {
+                if (reconnectMidLoop && (err.code === "P1017" || err.code === "P1001")) {
                     await prisma.$disconnect();
                     await new Promise(r => setTimeout(r, 2000));
                     await prisma.$connect();
@@ -293,13 +232,36 @@ async function main() {
             written++;
         }
 
-        await new Promise(r => setTimeout(r, DELAY_MS));
+        await new Promise(r => setTimeout(r, delayMs));
     }
 
     console.log(`\n[describe] Done — written=${written} skipped=${skipped} failed=${failed}`);
-    if (DRY_RUN) console.log("[describe] Dry-run — no changes written. Re-run with --apply to save.");
+    if (dryRun) console.log("[describe] Dry-run — no changes written. Re-run with --apply to save.");
+
+    return { ok: true, written, skipped, failed, total: places.length, cachedIds: cachedIds.size };
 }
 
-main()
-    .catch(err => { console.error(err); process.exit(1); })
-    .finally(() => prisma.$disconnect());
+function parseCliArgs() {
+    const args = process.argv;
+    return {
+        dryRun: args.includes("--dry-run"),
+        apply: args.includes("--apply"),
+        all: args.includes("--all"),
+        singleId: (() => { const m = args.find(a => a.startsWith("--id=")); return m ? Number(m.split("=")[1]) : null; })(),
+        limit: (() => { const m = args.find(a => a.startsWith("--limit=")); return m ? Number(m.split("=")[1]) : 200; })(),
+        reconnectMidLoop: true,
+    };
+}
+
+if (require.main === module) {
+    const opts = parseCliArgs();
+    if (!opts.dryRun && !opts.apply) {
+        console.error("Usage: node generate-descriptions.js --dry-run | --apply [--all] [--id=N] [--limit=N]");
+        process.exit(1);
+    }
+    run(opts)
+        .catch(err => { console.error(err); process.exit(1); })
+        .finally(() => prisma.$disconnect());
+}
+
+module.exports = { run };

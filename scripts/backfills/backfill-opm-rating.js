@@ -4,6 +4,10 @@
 // produces the same numbers and only writes rows whose computed value
 // actually changed.
 //
+// Importable: exports `run(opts)` so src/services/maintenance.js can
+// call it in-process inside the live worker (avoids the Hostinger
+// Prisma "tokio panic" hit when this is spawned as a bare CLI script).
+//
 // Two-pass:
 //   1. Compute global priorMean as the count-weighted average of every
 //      place's external rating (weighted by min(count, 100)). Falls back
@@ -19,7 +23,6 @@
 const path = require("path");
 const { prisma, ROOT } = require("../lib/bootstrap");
 const { computeOpmRating, PRIOR_MEAN, CAP_PER_EXTERNAL_SOURCE } = require(path.join(ROOT, "src", "services", "opm-rating"));
-const APPLY = process.argv.includes("--apply");
 
 const EXTERNAL_PAIRS = [
     ["googleRating", "googleReviewCount"],
@@ -79,7 +82,7 @@ function bucketHistogram(values) {
     return buckets;
 }
 
-async function main() {
+async function run({ apply = false } = {}) {
     const all = await prisma.place.findMany({
         select: {
             id: true, name: true, opmRating: true,
@@ -108,7 +111,7 @@ async function main() {
         if (out == null) {
             nullRows++;
             // Clear stale opmRating if upstream data is now missing.
-            if (p.opmRating != null && APPLY) {
+            if (p.opmRating != null && apply) {
                 await prisma.place.update({ where: { id: p.id }, data: { opmRating: null } });
                 updatedRows++;
             }
@@ -120,13 +123,13 @@ async function main() {
             unchangedRows++;
             continue;
         }
-        if (APPLY) {
+        if (apply) {
             await prisma.place.update({ where: { id: p.id }, data: { opmRating: out } });
             updatedRows++;
         }
     }
 
-    console.log(`[backfill] computed=${computedRows}  null(no data)=${nullRows}  unchanged=${unchangedRows}  ${APPLY ? "wrote" : "would write"}=${updatedRows}`);
+    console.log(`[backfill] computed=${computedRows}  null(no data)=${nullRows}  unchanged=${unchangedRows}  ${apply ? "wrote" : "would write"}=${updatedRows}`);
 
     const hist = bucketHistogram(computedValues);
     console.log("\n[histogram] opmRating distribution (bucket width 0.5):");
@@ -137,9 +140,20 @@ async function main() {
     }
     console.log(`  null  ${String(nullRows).padStart(4)}  (no rating signals)`);
 
-    if (!APPLY) console.log("\n(dry-run — pass --apply to write opmRating back)");
+    if (!apply) console.log("\n(dry-run — pass --apply to write opmRating back)");
+
+    return {
+        ok: true, total: all.length,
+        computed: computedRows, updated: updatedRows,
+        unchanged: unchangedRows, nullRows,
+        priorMean,
+    };
 }
 
-main()
-    .catch((e) => { console.error(e); process.exit(1); })
-    .finally(async () => { await prisma.$disconnect(); });
+if (require.main === module) {
+    run({ apply: process.argv.includes("--apply") })
+        .catch((e) => { console.error(e); process.exit(1); })
+        .finally(async () => { await prisma.$disconnect(); });
+}
+
+module.exports = { run };

@@ -28,12 +28,24 @@
 
 const fs = require("fs");
 const path = require("path");
-const { spawn } = require("child_process");
 const {
     runResolveBatch,
     runPhotosBatch,
     runClearFallbackDescriptions,
 } = require("./enrichment/batch");
+
+// Scripts now expose `run(opts)` (refactored 2026-05-17 after the first
+// burn-mode tick on prod revealed Prisma's "tokio timer has gone away"
+// panic fires on every spawned Node child — the same Hostinger bug the
+// old api.admin.js comment warned about. In-process calls share the
+// already-warm Prisma client in the live worker, which doesn't panic.
+const { run: runOsm } = require("../../scripts/enrichment/enrich-osm");
+const { run: runTripadvisor } = require("../../scripts/enrichment/enrich-tripadvisor");
+const { run: runDescriptions } = require("../../scripts/enrichment/generate-descriptions");
+const { run: runPlaywrightFallback } = require("../../scripts/enrichment/resolve-via-gmaps");
+const { run: runReviews } = require("../../scripts/scrapers/scrape-reviews");
+const { run: runSocials } = require("../../scripts/backfills/backfill-socials-from-website");
+const { run: runOpmRating } = require("../../scripts/backfills/backfill-opm-rating");
 
 const ROOT = path.resolve(__dirname, "..", "..");
 const CACHE_DIR = path.join(ROOT, "data", "cache");
@@ -100,22 +112,11 @@ const HOUR_GATES = {
     opmRating:   4,   // 04:xx UTC (was: cron '17 4 * * *')
 };
 
-// Per-phase child-process timeout. The runtime characteristics come
-// from the old GH workflows: reviews/desc are ~6-8 min for 60 rows,
-// OSM is bounded by the 1.1s sleep × limit, etc. Doubled to give
-// headroom for Hostinger MySQL flaps.
-const PHASE_TIMEOUTS_MS = {
-    reviews:            15 * 60_000,
-    descriptions:       15 * 60_000,
-    osm:                 5 * 60_000,
-    tripadvisor:        10 * 60_000,
-    socials:            10 * 60_000,
-    opmRating:           5 * 60_000,
-    // Playwright is ~3s/row + ~10s Chromium cold-start. burn=20 rows
-    // → ~70s typical, ~3min worst-case under heavy DOM. 10 min covers
-    // CAPTCHA-retry stalls.
-    playwrightFallback: 10 * 60_000,
-};
+// All phases now run in-process; child_process is no longer used. The
+// fire-and-forget pattern in tryStartMaintenance() means a slow phase
+// can't block the HTTP response anyway. Per-phase timeouts removed —
+// individual phases' own internal pacing (Gemini delays, Overpass 1qps,
+// TA rate-limits) bound their runtime in practice.
 
 // ─── Single-flight lock ─────────────────────────────────────────────────────
 //
@@ -167,48 +168,7 @@ function getMaintenanceStatus() {
     };
 }
 
-// ─── Phase runners ──────────────────────────────────────────────────────────
-
-// Spawn a Node script as a child process. The script is run from the
-// repo root so its `require('../lib/bootstrap')` resolves. stdout +
-// stderr are collected (truncated to last 4KB) so they show up in the
-// status JSON without bloating disk.
-function spawnScript(name, scriptPath, args, timeoutMs) {
-    return new Promise((resolve) => {
-        const child = spawn(process.execPath, [scriptPath, ...args], {
-            cwd: ROOT,
-            env: process.env,
-            stdio: ["ignore", "pipe", "pipe"],
-        });
-
-        let stdout = "";
-        let stderr = "";
-        const cap = 4096;
-        child.stdout.on("data", (b) => { stdout = (stdout + b.toString()).slice(-cap); });
-        child.stderr.on("data", (b) => { stderr = (stderr + b.toString()).slice(-cap); });
-
-        const killer = setTimeout(() => {
-            child.kill("SIGTERM");
-            // Hard-kill if SIGTERM didn't take in 10s.
-            setTimeout(() => { try { child.kill("SIGKILL"); } catch (_) {} }, 10_000);
-        }, timeoutMs);
-
-        child.on("error", (err) => {
-            clearTimeout(killer);
-            resolve({ ok: false, exitCode: null, error: err.message, stdout, stderr });
-        });
-        child.on("exit", (code, signal) => {
-            clearTimeout(killer);
-            resolve({
-                ok: code === 0,
-                exitCode: code,
-                signal,
-                stdout: stdout.slice(-cap),
-                stderr: stderr.slice(-cap),
-            });
-        });
-    });
-}
+// ─── Phase runners (all in-process) ─────────────────────────────────────────
 
 const PHASES = [
     {
@@ -222,70 +182,42 @@ const PHASES = [
     {
         name: "reviews",
         async run(opts) {
-            return spawnScript(
-                "reviews",
-                path.join(ROOT, "scripts", "scrapers", "scrape-reviews.js"),
-                ["--apply", `--limit=${opts.reviews}`],
-                PHASE_TIMEOUTS_MS.reviews,
-            );
+            return runReviews({ apply: true, limit: opts.reviews });
         },
     },
     {
         name: "descriptions",
         async run(opts) {
-            return spawnScript(
-                "descriptions",
-                path.join(ROOT, "scripts", "enrichment", "generate-descriptions.js"),
-                ["--apply", `--limit=${opts.descriptions}`],
-                PHASE_TIMEOUTS_MS.descriptions,
-            );
+            // reconnectMidLoop: false so the script doesn't disconnect the
+            // shared worker Prisma client every 30 rows.
+            return runDescriptions({ apply: true, limit: opts.descriptions, reconnectMidLoop: false });
         },
     },
     {
         name: "osm",
         async run(opts) {
-            return spawnScript(
-                "osm",
-                path.join(ROOT, "scripts", "enrichment", "enrich-osm.js"),
-                ["--apply", `--limit=${opts.osm}`],
-                PHASE_TIMEOUTS_MS.osm,
-            );
+            return runOsm({ apply: true, limit: opts.osm });
         },
     },
     {
         name: "tripadvisor",
         gateHour: HOUR_GATES.tripadvisor,
         async run(opts) {
-            return spawnScript(
-                "tripadvisor",
-                path.join(ROOT, "scripts", "enrichment", "enrich-tripadvisor.js"),
-                ["--apply", `--limit=${opts.tripadvisor}`],
-                PHASE_TIMEOUTS_MS.tripadvisor,
-            );
+            return runTripadvisor({ apply: true, limit: opts.tripadvisor });
         },
     },
     {
         name: "socials",
         gateHour: HOUR_GATES.socials,
         async run(opts) {
-            return spawnScript(
-                "socials",
-                path.join(ROOT, "scripts", "backfills", "backfill-socials-from-website.js"),
-                ["--apply", `--limit=${opts.socials}`],
-                PHASE_TIMEOUTS_MS.socials,
-            );
+            return runSocials({ apply: true, limit: opts.socials });
         },
     },
     {
         name: "opmRating",
         gateHour: HOUR_GATES.opmRating,
         async run() {
-            return spawnScript(
-                "opmRating",
-                path.join(ROOT, "scripts", "backfills", "backfill-opm-rating.js"),
-                ["--apply"],
-                PHASE_TIMEOUTS_MS.opmRating,
-            );
+            return runOpmRating({ apply: true });
         },
     },
     {
@@ -294,26 +226,22 @@ const PHASES = [
     },
     // Playwright long-tail fallback. Drives a real Chromium browser to
     // scrape phone/website/hours/rating from the Google Maps place
-    // panel for rows the Places API can't resolve (small-town venues,
-    // name mismatches). Per `project_enricher_backlog.md` this was the
-    // phase that unstuck the long-tail rows during the 2026-05-09
-    // recovery — keeping it as the last phase so a Chromium crash
-    // never blocks the other 9 phases from running.
+    // panel for rows the Places API can't resolve. Per the 2026-05-09
+    // enricher-backlog notes this was the phase that unstuck the most
+    // long-tail rows during the previous recovery.
     //
     // Runs LAST on purpose: if Chromium / system-lib deps aren't
-    // available on Hostinger shared, this phase exits non-zero but
-    // every other phase has already completed. Status JSON will show
-    // exactly which phase fails, making the "move to Unraid" decision
-    // (or refactor-to-in-process decision) data-driven.
+    // available on Hostinger shared (likely), this phase fails but
+    // every other phase has already completed. Status JSON tells us
+    // exactly what to move to Unraid if needed.
     {
         name: "playwrightFallback",
         async run(opts) {
-            return spawnScript(
-                "playwrightFallback",
-                path.join(ROOT, "scripts", "enrichment", "resolve-via-gmaps.js"),
-                ["--need-meta", "--apply", `--limit=${opts.playwrightFallback}`],
-                PHASE_TIMEOUTS_MS.playwrightFallback,
-            );
+            return runPlaywrightFallback({
+                needMeta: true,
+                apply: true,
+                limit: opts.playwrightFallback,
+            });
         },
     },
 ];
