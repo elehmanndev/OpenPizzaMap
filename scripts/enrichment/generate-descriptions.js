@@ -141,11 +141,18 @@ async function run({
     const cachedIds = new Set(Object.keys(reviewsCache));
     console.log(`[describe] Loaded reviews cache: ${cachedIds.size} places`);
 
+    // Match the reviews phase's filter: only rows with a googlePlaceId
+    // can have cached reviews. Without this, descriptions picks
+    // low-id rows that don't have place_ids yet — reviews never
+    // cached them, descriptions has nothing to summarise, the
+    // backlog never drains. Bug surfaced on the first Unraid tick
+    // (2026-05-18): reviews cached 40 rows, descriptions queried
+    // 40 different rows, 0 written.
     const where = singleId
         ? { id: singleId }
         : all
             ? {}
-            : { descriptionHtml: null, isVisible: true };
+            : { descriptionHtml: null, isVisible: true, googlePlaceId: { not: null } };
 
     const places = await prisma.place.findMany({
         where,
