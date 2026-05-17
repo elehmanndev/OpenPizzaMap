@@ -40,8 +40,11 @@ COPY package.json package-lock.json ./
 # setup-playwright, touch-passenger-restart). The Playwright base image
 # already has Chromium installed at the right path; the chmod issue is
 # Hostinger-specific; Passenger isn't running here.
+# NOTE: not using --omit=dev because `playwright` is in devDependencies
+# (the live Hostinger app only needs playwright-core, not the full
+# package). The Unraid runner DOES need it for resolve-via-gmaps.js.
 ENV SKIP_PLAYWRIGHT_INSTALL=1
-RUN npm ci --omit=dev --ignore-scripts
+RUN npm ci --ignore-scripts
 
 # Layer 2: Prisma schema (cache-busts only when schema.prisma changes).
 COPY prisma ./prisma
