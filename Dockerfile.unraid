@@ -1,0 +1,51 @@
+# Unraid container for the OpenPizzaMap maintenance pipeline.
+#
+# WHY THIS EXISTS:
+#   Hostinger's Passenger worker (where openpizzamap.com runs) lives in a
+#   CloudLinux LVE with tight per-entry-source process/thread quotas that
+#   block Chromium from launching, even in --single-process mode. The
+#   2026-05-17 investigation confirmed Chromium works fine in a Hostinger
+#   SSH session (looser LVE config) but crashes in the web worker. And
+#   Hostinger's user `crontab` is aliased to a read-only stub — there's no
+#   way to schedule background jobs on Hostinger Business at all.
+#
+#   So the whole maintenance pipeline (Playwright fallback + all 9 other
+#   phases) runs from this container on Eric's Unraid box instead. The
+#   container connects directly to Hostinger MySQL — Hostinger's
+#   "Hosts remotos MySQL" already has `%` whitelisted, so no SSH tunnel
+#   is needed.
+#
+# BASE IMAGE:
+#   mcr.microsoft.com/playwright bundles Node 20 + Chromium + every system
+#   lib Chromium needs (libnss3, libatk-bridge2.0, libgbm, fontconfig, …).
+#   Multi-process Chromium just works here — none of the Hostinger LVE
+#   gymnastics needed.
+#
+# UPDATING:
+#   The container clones the repo at build time. To pick up new commits,
+#   rebuild: `docker build --no-cache -f Dockerfile.unraid -t opm-runner .`
+#   (or use Unraid's "Force update" toggle on the template). Container
+#   doesn't auto-pull during runtime — keeps the running pipeline stable
+#   between scheduled rebuilds.
+
+FROM mcr.microsoft.com/playwright:v1.59.1-jammy
+
+# Layer 1: clone repo (changes when main branch moves)
+WORKDIR /app
+RUN git clone --depth=1 https://github.com/elehmanndev/OpenPizzaMap.git .
+
+# Layer 2: install dependencies (changes when package-lock.json changes)
+# Skip the Hostinger-specific postinstall steps (chmod-prisma-engines,
+# setup-playwright, touch-passenger-restart). The Playwright base image
+# already has Chromium installed at the right path; the chmod issue is
+# Hostinger-specific; Passenger isn't running here.
+ENV SKIP_PLAYWRIGHT_INSTALL=1
+RUN npm ci --omit=dev --ignore-scripts
+
+# Layer 3: generate Prisma client (changes when schema.prisma changes)
+RUN npx prisma generate
+
+# The runner loop. Container stays alive; it sleeps between maintenance
+# ticks rather than relying on external cron. See scripts/cron/runner.js
+# for the cadence + mode controls (RUNNER_MODE / RUNNER_INTERVAL_MS env).
+CMD ["node", "scripts/cron/runner.js"]
