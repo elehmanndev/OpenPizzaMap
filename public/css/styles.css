@@ -3047,26 +3047,26 @@ a.place-review:hover {
     margin-top: 2px;
 }
 /* Per-review OPM badge — matches .place-rating-badge styling (solid
-   black square, white number, drop shadow) but sized down to sit
-   neatly next to the user identity in the card header. Shows the
-   average of Pizza/Setting/Service/Value on the 0-5 scale. */
+   black square, white number, drop shadow) but sized down to the
+   same 36px height as the avatar so the card header reads as one
+   compact row. Shows avg of Pizza/Setting/Service/Value (0-5). */
 .opm-review__badge {
     flex: 0 0 auto;
-    width: 44px;
-    height: 44px;
+    width: 36px;
+    height: 36px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     background: #1e1e1e;
     color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    border-radius: 7px;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.22);
     font-family: 'Outfit', sans-serif;
     letter-spacing: -0.02em;
     line-height: 1;
 }
 .opm-review__badge strong {
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
 }
@@ -3104,8 +3104,9 @@ a.place-review:hover {
 .opm-review__cats > li {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     gap: 4px;
+    text-align: center;
 }
 .opm-review__cat {
     font-size: 10.5px;
