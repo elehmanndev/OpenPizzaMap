@@ -57,6 +57,7 @@ function fmtPhase(p) {
         p.cleared != null   && `cleared=${p.cleared}`,
         p.computed != null  && `computed=${p.computed}`,
         p.fetched != null   && `fetched=${p.fetched}`,
+        p.published != null && `published=${p.published}`,
         p.dupes ?            `dupes=${p.dupes}` : null,
         p.errors ?           `errors=${p.errors}` : null,
     ].filter(Boolean).join(' ');

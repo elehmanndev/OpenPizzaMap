@@ -73,6 +73,28 @@
         buildStarInput(el);
     });
 
+    // Price-range chips (added 2026-05-18 alongside the chatbot intake).
+    // The hidden <input data-price-input value="…"> ships the
+    // server-rendered current priceLevel so the chip pre-selects the
+    // place's existing range; submitting updates it last-write-wins.
+    const priceInput = modal.querySelector("[data-price-input]");
+    const priceChips = modal.querySelectorAll("[data-price-chip]");
+    function setPrice(v) {
+        if (priceInput) priceInput.value = v == null ? "" : String(v);
+        priceChips.forEach((chip) => {
+            const on = chip.dataset.priceChip === String(v);
+            chip.classList.toggle("is-active", on);
+            chip.setAttribute("aria-pressed", String(on));
+        });
+    }
+    if (priceInput && priceInput.value) setPrice(Number(priceInput.value));
+    priceChips.forEach((chip) => {
+        chip.addEventListener("click", () => {
+            setPrice(Number(chip.dataset.priceChip));
+            modal.dispatchEvent(new CustomEvent("change", { bubbles: true }));
+        });
+    });
+
     // Pre-fill from server-rendered existing review JSON, if any.
     const existingEl = document.getElementById("opm-existing-review");
     if (existingEl) {
@@ -151,15 +173,19 @@
             if (!allRated()) return;
             const values = readValues();
             const comment = commentEl ? commentEl.value.trim() : "";
+            const priceLevelRaw = priceInput ? priceInput.value : "";
+            const priceLevel = priceLevelRaw ? Number(priceLevelRaw) : undefined;
             submitBtn.disabled = true;
             const prevLabel = submitBtn.textContent;
             submitBtn.textContent = "Sending…";
             errorEl.hidden = true; errorEl.textContent = "";
             try {
+                const body = { ...values, comment };
+                if (priceLevel) body.priceLevel = priceLevel;
                 const resp = await fetch(`/api/places/${placeId}/review`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ ...values, comment }),
+                    body: JSON.stringify(body),
                 });
                 if (resp.status === 401) {
                     // Not logged in — bounce to /auth, preserve return path.

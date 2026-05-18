@@ -31,7 +31,14 @@ router.get("/place/:id", async (req, res) => {
             },
         },
     });
-    if (!place || place.isVisible === false) return res.status(404).send("Not found");
+    if (!place) return res.status(404).send("Not found");
+    // Creator bypass: spots added via the chatbot intake start as
+    // isVisible=false. The session-tracked just-created list lets the
+    // submitter view + review the new row before the enrichment cron
+    // flips it visible.
+    const justCreated = Array.isArray(req.session?.justCreatedPlaceIds) && req.session.justCreatedPlaceIds.includes(id);
+    if (place.isVisible === false && !justCreated) return res.status(404).send("Not found");
+    place.isJustCreatedForViewer = justCreated && place.isVisible === false;
 
     const userId = req.session?.user?.id || null;
     // Server-side render the first page of reviews so the section paints
@@ -85,42 +92,61 @@ router.get("/place/:id", async (req, res) => {
     res.render("place", { user: req.session.user || null, place });
 });
 
-router.get("/add", requireAuth, (req, res) => {
-    res.render("add", { user: req.session.user });
-});
+// Old form-based /add was replaced by the Gemini-chat intake at
+// /add-your-spot on 2026-05-18. Keep a redirect so any saved bookmarks
+// and stale nav-menu cookies don't 404.
+router.get("/add", (req, res) => res.redirect(301, "/add-your-spot"));
 
-router.post("/add", requireAuth, async (req, res) => {
-    // form posts into submissions endpoint logic (server-side)
-    const payload = {
-        name: req.body.name,
-        addressLine: req.body.addressLine,
-        city: req.body.city,
-        region: req.body.region || null,
-        postalCode: req.body.postalCode || null,
-        country: req.body.country || "ES",
-        lat: req.body.lat,
-        lng: req.body.lng,
-        priceLevel: Number(req.body.priceLevel || 2),
-        stylesJson: JSON.stringify((req.body.styles || "").split(",").map(s => s.trim()).filter(Boolean)),
-        dineIn: !!req.body.dineIn,
-        takeaway: !!req.body.takeaway,
-        delivery: !!req.body.delivery,
-        websiteUrl: req.body.websiteUrl || null,
-        googleMapsUrl: req.body.googleMapsUrl || null,
-        instagramUrl: req.body.instagramUrl || null,
-        status: "active",
-    };
-
-    await prisma.submission.create({
-        data: {
-            userId: req.session.user.id,
-            type: "new_place",
-            payloadJson: JSON.stringify(payload),
-        },
+router.get("/add-your-spot", requireAuth, async (req, res) => {
+    const styles = await prisma.style.findMany({
+        where: { isVisible: true },
+        orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+        select: { slug: true, name: true, shortLabel: true },
     });
-
-    res.redirect("/me");
+    res.render("add_your_spot", { user: req.session.user, styles });
 });
+
+// Dev-only impersonation backdoor (added 2026-05-18). Lets local /preview
+// testing exercise the chatbot intake + review flow without Google OAuth
+// (the GCP-side callback is registered for production only, so the live
+// flow can't complete via http://localhost). Gated three ways so a misconfig
+// can't ever expose it in production:
+//   1. NODE_ENV !== "production"
+//   2. ALLOW_DEV_LOGIN env var must be "true"
+//   3. The chosen user must already exist in the DB
+//
+// Usage:  GET /dev/login            → impersonates the first admin
+//         GET /dev/login?as=<email> → impersonates that user (must exist)
+if (process.env.NODE_ENV !== "production" && String(process.env.ALLOW_DEV_LOGIN || "").toLowerCase() === "true") {
+    router.get("/dev/login", async (req, res) => {
+        const as = typeof req.query.as === "string" ? req.query.as.trim().toLowerCase() : "";
+        const where = as ? { email: as } : { role: "admin" };
+        const user = await prisma.user.findFirst({
+            where,
+            orderBy: { id: "asc" },
+            select: { id: true, email: true, displayName: true, username: true, role: true, avatarUrl: true },
+        });
+        if (!user) {
+            return res.status(404).type("text/plain").send(`No user matching ${as || "role=admin"}. Seed first or pass ?as=<email>.`);
+        }
+        req.session.user = {
+            id: user.id,
+            email: user.email,
+            displayName: user.displayName,
+            username: user.username,
+            role: user.role,
+            avatarUrl: user.avatarUrl || null,
+        };
+        req.session.save((saveErr) => {
+            if (saveErr) {
+                console.error("Dev-login session save failed:", saveErr);
+                return res.status(500).type("text/plain").send("Session save failed");
+            }
+            const target = typeof req.query.next === "string" && req.query.next.startsWith("/") ? req.query.next : "/me";
+            res.redirect(target);
+        });
+    });
+}
 
 router.get("/auth", (req, res) => {
     if (req.session.user) return res.redirect("/me");
@@ -512,23 +538,11 @@ router.get("/me", requireAuth, async (req, res) => {
     });
 });
 
-router.get("/favourites", requireAuth, async (req, res) => {
-    const userId = req.session.user.id;
-    const favs = await prisma.favorite.findMany({
-        where: { userId },
-        orderBy: { createdAt: "desc" },
-        include: {
-            place: {
-                include: { styles: { include: { style: true }, orderBy: { style: { sortOrder: "asc" } } } },
-            },
-        },
-    });
-    const places = favs
-        .filter((f) => f.place && f.place.isVisible !== false)
-        .map((f) => f.place);
-    res.render("favourites", { user: req.session.user, places });
-});
-
+// /favourites was retired on 2026-05-18 — the heart button on each place
+// card still works, but the dedicated list page is gone. Redirect to /me
+// (the profile already shows wishlist + been-there sections built from
+// the same Favorite/Visit rows).
+router.get("/favourites", (req, res) => res.redirect(301, "/me"));
 
 // Single-flight build lock: if multiple crawler requests miss the cache at
 // the same instant, they share one DB scan instead of each spawning their own.

@@ -306,6 +306,11 @@ const reviewBodySchema = z.object({
     servicio: ratingSchema,
     precio: ratingSchema,
     comment: z.string().trim().max(500).optional().or(z.literal("")),
+    // priceLevel is a Place attribute, not a Review attribute. Surfacing
+    // it in the review modal (added 2026-05-18) lets users keep the
+    // place's € rating fresh as it changes over time — last submitter
+    // wins. Optional so older clients keep working.
+    priceLevel: z.coerce.number().int().min(1).max(3).optional(),
 });
 
 function publicReviewShape(row) {
@@ -345,7 +350,14 @@ router.post("/:id/review", requireApiAuth, async (req, res) => {
         where: { id: placeId },
         select: { id: true, isVisible: true, status: true },
     });
-    if (!place || place.isVisible === false || place.status !== "active") {
+    if (!place || place.status !== "active") {
+        return res.status(404).json({ ok: false, error: "Not found" });
+    }
+    // Same creator-bypass as GET /place/:id: a user who just added a
+    // spot via the chatbot can review it before enrichment flips
+    // isVisible to true.
+    const justCreated = Array.isArray(req.session?.justCreatedPlaceIds) && req.session.justCreatedPlaceIds.includes(placeId);
+    if (place.isVisible === false && !justCreated) {
         return res.status(404).json({ ok: false, error: "Not found" });
     }
 
@@ -369,6 +381,15 @@ router.post("/:id/review", requireApiAuth, async (req, res) => {
             create: { userId, placeId },
             update: {},
         });
+        // Optional place-level priceLevel update (Eric, 2026-05-18) —
+        // we don't bother with stale-write conflicts; last submitter
+        // wins on this single field.
+        if (parsed.data.priceLevel != null) {
+            await tx.place.update({
+                where: { id: placeId },
+                data: { priceLevel: parsed.data.priceLevel },
+            });
+        }
         return r;
     });
 

@@ -218,6 +218,16 @@
   ` : ""}
 
   <article class="place-shell">
+    ${place.isJustCreatedForViewer ? `
+      <aside class="place-welcome" role="status">
+        <div class="place-welcome__icon"><span class="material-symbols-rounded" aria-hidden="true">celebration</span></div>
+        <div class="place-welcome__body">
+          <strong>Thanks for adding ${escapeHtml(place.name)}!</strong>
+          <p>We're enriching the rest (address, hours, photos, description) in the background. While you wait — drop the first review so other pizza nerds can see what you thought.</p>
+        </div>
+        <button type="button" class="btn primary place-welcome__cta" data-open-review data-place-id="${place.id}">Rate this place</button>
+      </aside>
+    ` : ""}
     <div class="place-header">
       ${place.opmRating != null ? `
         <div class="place-rating-badge place-rating-badge--inline place-rating-badge--pinned" title="OpenPizzaMap score" data-place-rating="${escapeAttr(String(Number(place.opmRating)))}">
@@ -422,6 +432,15 @@
             <span class="review-row__label">Value <span class="review-row__emoji" aria-hidden="true">💶</span></span>
             <div class="star-input" data-star-input data-name="precio"></div>
           </div>
+        </fieldset>
+        <fieldset class="review-modal__price" data-review-price>
+          <legend class="review-row__label">Price range</legend>
+          <div class="price-input" role="radiogroup" aria-label="Price range">
+            <button type="button" class="price-input__chip" data-price-chip="1" aria-pressed="false">€<span class="visually-hidden"> — cheap</span></button>
+            <button type="button" class="price-input__chip" data-price-chip="2" aria-pressed="false">€€<span class="visually-hidden"> — mid</span></button>
+            <button type="button" class="price-input__chip" data-price-chip="3" aria-pressed="false">€€€<span class="visually-hidden"> — splurge</span></button>
+          </div>
+          <input type="hidden" name="priceLevel" data-price-input value="${place.priceLevel || ''}" />
         </fieldset>
         <label class="review-modal__comment-wrap">
           <span class="review-modal__comment-label">Tell us about your visit (optional)</span>

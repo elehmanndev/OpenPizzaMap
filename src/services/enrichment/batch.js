@@ -18,15 +18,18 @@ const isEmpty = (v) => v == null || (typeof v === "string" && v.trim() === "");
 async function runResolveBatch({ limit = 20 } = {}) {
     const capped = Math.min(Math.max(parseInt(limit) || 20, 1), 155);
 
-    // Order by enrichedAt nulls-first so untried rows go before rows we
-    // already attempted; among tried rows, oldest attempts go first.
-    // Without this, an unresolvable prefix (Google can't find them)
-    // would block the queue forever — every cron run would re-try the
-    // same rows and never reach newer imports.
+    // Skip-the-line: hidden rows first. Chatbot-created spots
+    // (/add-your-spot, added 2026-05-18) start as isVisible=false and
+    // can't appear on the map until enrichment fills them in — so they
+    // jump the queue ahead of legacy backfill of already-visible rows.
+    // Among the chosen visibility bucket, untried rows (enrichedAt
+    // null) go before retries, and among retries the oldest attempts
+    // go first. Without nulls-first an unresolvable prefix would block
+    // the queue forever.
     const rows = await prisma.place.findMany({
         where: { enrichmentVersion: 0, googlePlaceId: null },
         orderBy: [
-            { isVisible: "desc" },
+            { isVisible: "asc" },
             { enrichedAt: { sort: "asc", nulls: "first" } },
             { id: "asc" },
         ],
@@ -122,7 +125,11 @@ async function runPhotosBatch({ limit = 20 } = {}) {
     const remaining = await prisma.place.count({ where });
     const rows = await prisma.place.findMany({
         where,
-        orderBy: [{ isVisible: "desc" }, { id: "asc" }],
+        // Skip-the-line: hidden rows first (same rationale as
+        // runResolveBatch). A chatbot-created row that just got its
+        // googlePlaceId in this same tick can pick up its heroImageUrl
+        // on the very next pass, satisfying publishReady.
+        orderBy: [{ isVisible: "asc" }, { id: "asc" }],
         take: capped,
         select: { id: true, name: true, city: true, googlePlaceId: true, heroImageUrl: true },
     });
@@ -167,6 +174,61 @@ async function runPhotosBatch({ limit = 20 } = {}) {
 // starts with "Pizza Lovers say:" this is a no-op.
 const REVIEW_PREFIX = "Pizza Lovers say:";
 
+// Flip isVisible=true on hidden rows that the enrichment cron has
+// brought up to "ready" quality. Added 2026-05-18 alongside the
+// /add-your-spot chatbot intake — chatbot-created Place rows start as
+// isVisible=false and need a programmatic gate before they appear on
+// the public map.
+//
+// Readiness criteria (all must hold):
+//   - enrichedAt set (Google/OSM/etc actually touched the row)
+//   - heroImageUrl OR descriptionHtml present (something visual / textual
+//     beyond the bare submission)
+//   - status === "active"
+//
+// Rows that don't yet meet the bar stay hidden — they'll be picked up
+// on a later tick once descriptions or photos land.
+async function runPublishReadyBatch({ limit = 50 } = {}) {
+    const capped = Math.min(Math.max(parseInt(limit) || 50, 1), 500);
+    const candidates = await prisma.place.findMany({
+        where: {
+            isVisible: false,
+            status: "active",
+            enrichedAt: { not: null },
+            OR: [
+                { heroImageUrl: { not: null } },
+                { descriptionHtml: { not: null } },
+            ],
+        },
+        select: { id: true, descriptionHtml: true },
+        orderBy: { id: "asc" },
+        take: capped,
+    });
+
+    if (!candidates.length) {
+        return { ok: true, published: 0, scanned: 0 };
+    }
+
+    // Filter out fallback (auto-generated lorem) descriptions — they
+    // don't count as "useful content". Same prefix the clear-fallback
+    // phase already detects.
+    const ready = candidates.filter((row) => {
+        if (!row.descriptionHtml) return true; // hero alone is fine
+        const d = String(row.descriptionHtml).trim();
+        return d.startsWith(REVIEW_PREFIX) || !d.includes("Lorem ipsum");
+    }).map((r) => r.id);
+
+    if (!ready.length) {
+        return { ok: true, published: 0, scanned: candidates.length };
+    }
+
+    const result = await prisma.place.updateMany({
+        where: { id: { in: ready } },
+        data: { isVisible: true },
+    });
+    return { ok: true, published: result.count, scanned: candidates.length };
+}
+
 async function runClearFallbackDescriptions() {
     const rows = await prisma.place.findMany({
         where: { descriptionHtml: { not: null } },
@@ -185,4 +247,5 @@ module.exports = {
     runResolveBatch,
     runPhotosBatch,
     runClearFallbackDescriptions,
+    runPublishReadyBatch,
 };

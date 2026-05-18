@@ -32,6 +32,7 @@ const {
     runResolveBatch,
     runPhotosBatch,
     runClearFallbackDescriptions,
+    runPublishReadyBatch,
 } = require("./enrichment/batch");
 
 // Scripts now expose `run(opts)` (refactored 2026-05-17 after the first
@@ -223,6 +224,13 @@ const PHASES = [
     {
         name: "clearFallbackDescriptions",
         async run() { return runClearFallbackDescriptions(); },
+    },
+    // Publishes hidden chatbot-created rows once enrichment has filled
+    // in enough fields. Cheap pure-SQL phase — no external API calls —
+    // so it runs every tick regardless of mode.
+    {
+        name: "publishReady",
+        async run() { return runPublishReadyBatch({ limit: 100 }); },
     },
     // Playwright long-tail fallback. Drives a real Chromium browser to
     // scrape phone/website/hours/rating from the Google Maps place

@@ -14,41 +14,11 @@ const { buildSitemapXml, writeSitemapFiles } = require("../services/sitemap");
 
 const router = express.Router();
 
-router.get("/admin/pages", requireAdmin, async (req, res) => {
-    const pages = await prisma.page.findMany({
-        orderBy: { key: "asc" },
-    });
-    res.render("admin_pages", { user: req.session.user, pages });
-});
-
-router.get("/admin/pages/new", requireAdmin, (req, res) => {
-    const key = typeof req.query.key === "string" ? req.query.key.trim() : "";
-    if (!key) return res.redirect("/admin/pages");
-    res.redirect(`/admin/pages/${encodeURIComponent(key)}`);
-});
-
-router.get("/admin/pages/:key", requireAdmin, async (req, res) => {
-    const key = String(req.params.key || "").trim();
-    const existing = await prisma.page.findUnique({ where: { key } });
-    const page = existing || { key, title: "", bodyHtml: "", isVisible: false };
-    res.render("admin_page_edit", { user: req.session.user, page });
-});
-
-router.post("/admin/pages/:key", requireAdmin, async (req, res) => {
-    const { sanitizeRichText } = require("../services/sanitize");
-    const key = String(req.params.key || "").trim();
-    const title = String(req.body.title || "").trim().slice(0, 120);
-    const bodyHtml = sanitizeRichText(String(req.body.bodyHtml || ""));
-    const isVisible = !!req.body.isVisible;
-    if (!key) return res.redirect("/admin/pages");
-
-    await prisma.page.upsert({
-        where: { key },
-        update: { title, bodyHtml, isVisible },
-        create: { key, title, bodyHtml, isVisible },
-    });
-    res.redirect(`/admin/pages/${encodeURIComponent(key)}`);
-});
+// /admin/pages CMS was removed on 2026-05-18 — it managed the bodyHtml
+// for /about and the intro on /faq, but Eric didn't recall it existing
+// and nothing in the live nav linked to /about. The `Page` table stays
+// intact so existing rows still render on /about if they exist; just
+// no editor. Kill the rest of the table later if /about is truly dead.
 
 router.get("/admin/faqs", requireAdmin, async (req, res) => {
     const scope = typeof req.query.scope === "string" ? req.query.scope : "global";

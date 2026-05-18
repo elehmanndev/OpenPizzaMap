@@ -40,13 +40,12 @@
           <nav class="menu-links">
             <a href="/map">Map</a>
             <% if (user) { %>
-              <a href="/add">Add</a>
-              <a href="/me">My submissions</a>
-              <a href="/favourites">My favourites</a>
+              <a href="/add-your-spot">Add your spot</a>
+              <a href="/me">My profile</a>
               <% if (user.role==="admin" ) { %>
                 <a href="/admin/places">Places</a>
                 <a href="/admin/styles">Styles</a>
-                <a href="/admin/pages">CMS</a>
+                <a href="/admin/submissions">Submissions</a>
               <% } %>
             <% } %>
           </nav>

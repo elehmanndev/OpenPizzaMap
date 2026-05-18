@@ -6,10 +6,18 @@ const defaultEnv = path.join(process.cwd(), ".env");
 const envPath = fs.existsSync(hostingerEnv)
     ? hostingerEnv
     : (fs.existsSync(localEnv) ? localEnv : defaultEnv);
+// dotenv override: env-file values win over the parent shell for local
+// and Hostinger configs (so secrets in those files are authoritative).
+// EXCEPT for PORT — if the parent already set PORT we keep it, so the
+// preview harness / launch.json can pin a different port without
+// touching the user's .env.local (which keeps PORT=3000 for normal
+// solo dev).
+const _pinnedPort = process.env.PORT;
 require("dotenv").config({
     path: envPath,
     override: envPath === localEnv || envPath === hostingerEnv
 });
+if (_pinnedPort) process.env.PORT = _pinnedPort;
 console.log(
     `Startup env: NODE_ENV=${process.env.NODE_ENV || "unset"} DATABASE_URL=${process.env.DATABASE_URL ? "set" : "unset"} BASE_URL=${process.env.BASE_URL ? "set" : "unset"}`
 );
@@ -110,7 +118,7 @@ app.set("views", path.join(__dirname, "views"));
 // Block common bot scans early (before any middleware/routes).
 app.use((req, res, next) => {
     const p = req.path.toLowerCase();
-    const allowedApiPrefixes = ["/api/auth", "/api/notify", "/api/places", "/api/reviews", "/api/submissions", "/api/admin", "/api/health"];
+    const allowedApiPrefixes = ["/api/auth", "/api/chat", "/api/notify", "/api/places", "/api/reviews", "/api/submissions", "/api/admin", "/api/health"];
     const blockedPrefixes = [
         "/wp-",
         "/wp/",
@@ -210,6 +218,7 @@ if (maintenanceMode) {
     const pages = require("./routes/pages");
     const pagesAdmin = require("./routes/pages.admin");
     const apiAuth = require("./routes/api.auth");
+    const apiChat = require("./routes/api.chat");
     const apiNotify = require("./routes/api.notify");
     const apiPlaces = require("./routes/api.places");
     const apiReviews = require("./routes/api.reviews");
@@ -303,6 +312,7 @@ if (maintenanceMode) {
     app.use("/", pages);
     app.use("/", pagesAdmin);
     app.use("/api/auth", apiAuth);
+    app.use("/api/chat", apiChat);
     app.use("/api/notify", apiNotify);
     app.use("/api/places", apiPlaces);
     app.use("/api/reviews", apiReviews);

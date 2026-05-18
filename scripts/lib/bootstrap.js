@@ -37,7 +37,16 @@ const ENV_CANDIDATES = [
 // File takes precedence so local edits override stale env in the parent shell.
 const envPath = ENV_CANDIDATES.find((p) => fs.existsSync(p));
 if (envPath) {
+    // Mirror src/app.js: preserve a parent-supplied PORT across the
+    // dotenv override so the preview harness / launch.json can pin a
+    // different port without touching the user's .env.local (which
+    // keeps PORT=3000 for normal solo dev). bootstrap.js runs again
+    // INSIDE the live worker when src/services/maintenance.js requires
+    // the enrichment scripts, so without this guard the second dotenv
+    // pass undoes app.js's restore and the app binds 3000 anyway.
+    const _pinnedPort = process.env.PORT;
     require("dotenv").config({ path: envPath, override: true });
+    if (_pinnedPort) process.env.PORT = _pinnedPort;
 } else if (!process.env.DATABASE_URL) {
     console.error("[bootstrap] No .env file found and DATABASE_URL not set in process.env.");
     console.error("[bootstrap] Looked for .env in:");
