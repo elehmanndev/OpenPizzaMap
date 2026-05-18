@@ -366,7 +366,7 @@
               : `<span class="opm-review__avatar" aria-hidden="true">${escapeHtml(initial)}</span>`;
             return `
             <li class="opm-review">
-              <header class="opm-review__head">
+              <div class="opm-review__head">
                 <div class="opm-review__who">
                   ${avatarHtml}
                   <div class="opm-review__id">
@@ -377,7 +377,7 @@
                 <div class="opm-review__badge" title="Average across Pizza, Setting, Service, Value (out of 5)" aria-label="${avg.toFixed(1)} out of 5">
                   <strong>${avg.toFixed(1)}</strong>
                 </div>
-              </header>
+              </div>
               ${r.comment ? `<blockquote class="opm-review__comment">${escapeHtml(r.comment)}</blockquote>` : ""}
               <ul class="opm-review__cats">
                 <li><span class="opm-review__cat">Pizza</span>${renderStars(r.pizza, "stars--xs")}</li>

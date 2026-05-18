@@ -332,7 +332,7 @@
             ? `<span class="opm-review__avatar opm-review__avatar--img"><img alt="" referrerpolicy="no-referrer" onerror="this.parentNode.outerHTML='<span class=&quot;opm-review__avatar&quot; aria-hidden=&quot;true&quot;>${safeInitial}</span>'" /></span>`
             : `<span class="opm-review__avatar" aria-hidden="true">${safeInitial}</span>`;
         li.innerHTML = `
-            <header class="opm-review__head">
+            <div class="opm-review__head">
                 <div class="opm-review__who">
                     ${avatarHtml}
                     <div class="opm-review__id">
@@ -343,7 +343,7 @@
                 <div class="opm-review__badge" title="Average across Pizza, Setting, Service, Value (out of 5)" aria-label="${avg.toFixed(1)} out of 5">
                     <strong>${avg.toFixed(1)}</strong>
                 </div>
-            </header>
+            </div>
             ${r.comment ? `<blockquote class="opm-review__comment"></blockquote>` : ""}
             <ul class="opm-review__cats">
                 <li><span class="opm-review__cat">Pizza</span>${starsHtml(r.pizza, "stars--xs")}</li>
