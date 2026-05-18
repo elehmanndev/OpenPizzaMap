@@ -352,15 +352,28 @@
           <h2 class="place-section-title">Community reviews</h2>
           <span class="place-community-reviews__count">${place.reviewsTotal}</span>
         </div>
+
+        ${place.reviewAverages ? `
+          <ul class="place-rating-summary" aria-label="Average ratings by category">
+            ${[
+              { label: "Pizza",   value: place.reviewAverages.pizza },
+              { label: "Setting", value: place.reviewAverages.local },
+              { label: "Service", value: place.reviewAverages.servicio },
+              { label: "Value",   value: place.reviewAverages.precio },
+            ].map((row) => `
+              <li class="place-rating-summary__row">
+                <span class="place-rating-summary__label">${row.label}</span>
+                <span class="place-rating-summary__stars">${row.value != null ? renderStars(row.value, "stars--sm") : ""}</span>
+                <span class="place-rating-summary__num">${row.value != null ? row.value.toFixed(1) : "—"}</span>
+              </li>
+            `).join("")}
+          </ul>
+        ` : ""}
+
         <ul class="place-community-reviews__list" data-reviews-list data-place-id="${place.id}" data-loaded-count="${place.reviewsFirstPage.length}" data-total="${place.reviewsTotal}" data-page-size="${place.reviewPageSize}">
           ${place.reviewsFirstPage.map((r) => {
             const avg = ((Number(r.pizza) + Number(r.local) + Number(r.servicio) + Number(r.precio)) / 4);
             const initial = (r.userName || "?").trim().charAt(0).toUpperCase();
-            // Avatar: render <img> if we have a URL (Google content or
-            // /uploads/avatars/{id}.jpg), with an inline onerror that
-            // swaps to the initials circle if the URL 404s or Google
-            // hotlink-blocks. Always set referrerpolicy=no-referrer so
-            // Google content URLs don't get rejected at the CDN.
             const avatarHtml = r.userAvatar
               ? `<span class="opm-review__avatar opm-review__avatar--img"><img src="${escapeAttr(r.userAvatar)}" alt="" referrerpolicy="no-referrer" onerror="this.parentNode.outerHTML='<span class=&quot;opm-review__avatar&quot; aria-hidden=&quot;true&quot;>${escapeHtml(initial)}</span>'" /></span>`
               : `<span class="opm-review__avatar" aria-hidden="true">${escapeHtml(initial)}</span>`;
@@ -379,12 +392,6 @@
                 </div>
               </div>
               ${r.comment ? `<blockquote class="opm-review__comment">${escapeHtml(r.comment)}</blockquote>` : ""}
-              <ul class="opm-review__cats">
-                <li><span class="opm-review__cat">Pizza</span>${renderStars(r.pizza, "stars--xs")}</li>
-                <li><span class="opm-review__cat">Setting</span>${renderStars(r.local, "stars--xs")}</li>
-                <li><span class="opm-review__cat">Service</span>${renderStars(r.servicio, "stars--xs")}</li>
-                <li><span class="opm-review__cat">Value</span>${renderStars(r.precio, "stars--xs")}</li>
-              </ul>
             </li>
           `;
           }).join("")}

@@ -345,12 +345,6 @@
                 </div>
             </div>
             ${r.comment ? `<blockquote class="opm-review__comment"></blockquote>` : ""}
-            <ul class="opm-review__cats">
-                <li><span class="opm-review__cat">Pizza</span>${starsHtml(r.pizza, "stars--xs")}</li>
-                <li><span class="opm-review__cat">Setting</span>${starsHtml(r.local, "stars--xs")}</li>
-                <li><span class="opm-review__cat">Service</span>${starsHtml(r.servicio, "stars--xs")}</li>
-                <li><span class="opm-review__cat">Value</span>${starsHtml(r.precio, "stars--xs")}</li>
-            </ul>
         `;
         li.querySelector(".opm-review__user").textContent = userName;
         li.querySelector(".opm-review__time").textContent = relText;

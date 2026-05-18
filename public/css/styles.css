@@ -3148,45 +3148,57 @@ a.place-review:hover {
 .opm-review__comment::before { content: open-quote; margin-right: 2px; }
 .opm-review__comment::after  { content: close-quote; margin-left: 2px; }
 
-/* Sub-rating breakdown — each cell stacks (label on top, stars below)
-   so the 2-column grid reads as four discrete chips instead of one
-   cramped row where adjacent cells' content visually collides.
-   2x2 on mobile, 1x4 on >=520px. */
-.opm-review__cats {
+/* Aggregate per-category averages for the whole place. Renders ONCE
+   above the testimonial carousel — Pizza / Setting / Service / Value
+   each shown as a row of (label, stars, number). Replaces the old
+   per-card sub-rating breakdown so review cards stay testimonial-clean. */
+.place-rating-summary {
     list-style: none;
-    /* margin-top: auto pushes the breakdown to the bottom of the card
-       so all cards in a row share the same baseline regardless of
-       comment length. */
-    margin: auto 0 0;
-    padding: 12px 0 0;
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    margin: 4px 0 18px;
+    padding: 14px 16px;
+    background: #faf7f0;
+    border: 1px solid var(--c-border);
+    border-radius: 14px;
     display: grid;
-    /* Mobile: 2x2 — the 1-up carousel card is narrow enough that a
-       single row of 4 would crush labels. */
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px 20px;
+    gap: 10px 12px;
 }
-/* Desktop: card is ~half the viewport so the four categories fit
-   comfortably on a single row. */
-@media (min-width: 720px) {
-    .opm-review__cats {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 4px 12px;
-    }
-}
-.opm-review__cats > li {
-    display: flex;
-    flex-direction: column;
+.place-rating-summary__row {
+    display: grid;
+    grid-template-columns: minmax(72px, 0.4fr) 1fr auto;
     align-items: center;
-    gap: 4px;
-    text-align: center;
+    gap: 12px;
 }
-.opm-review__cat {
-    font-size: 10.5px;
+.place-rating-summary__label {
+    font-size: 12.5px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--c-muted);
+}
+.place-rating-summary__stars { display: inline-flex; align-items: center; }
+.place-rating-summary__num {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--c-text);
+    font-variant-numeric: tabular-nums;
+    min-width: 28px;
+    text-align: right;
+}
+@media (min-width: 720px) {
+    /* On desktop the panel can lay out as a single horizontal row of
+       four mini-blocks instead of stacking — saves vertical space and
+       reads as a compact "ratings strip". */
+    .place-rating-summary {
+        grid-template-columns: repeat(4, 1fr);
+        align-items: center;
+    }
+    .place-rating-summary__row {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        gap: 4px;
+        text-align: center;
+    }
+    .place-rating-summary__num { text-align: center; }
 }
 .opm-reviews-more { margin-top: 16px; width: 100%; }
 @media (min-width: 480px) { .opm-reviews-more { width: auto; } }

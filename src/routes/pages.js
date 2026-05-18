@@ -44,7 +44,7 @@ router.get("/place/:id", async (req, res) => {
     // Server-side render the first page of reviews so the section paints
     // immediately. Client paginates from /api/places/:id/reviews after.
     const REVIEW_PAGE_SIZE = 10;
-    const [visitCount, reviewsTotal, reviewsFirstPage] = await Promise.all([
+    const [visitCount, reviewsTotal, reviewsFirstPage, reviewAverages] = await Promise.all([
         prisma.visit.count({ where: { placeId: id } }),
         prisma.review.count({ where: { placeId: id, isVisible: true } }),
         prisma.review.findMany({
@@ -52,6 +52,14 @@ router.get("/place/:id", async (req, res) => {
             orderBy: { createdAt: "desc" },
             take: REVIEW_PAGE_SIZE,
             include: { user: { select: { username: true, displayName: true, avatarUrl: true } } },
+        }),
+        // Aggregate per-category averages across all visible reviews. Powers
+        // the "Community ratings" panel above the testimonial carousel —
+        // shows the Pizza/Setting/Service/Value mean once for the place
+        // instead of repeating the 4-cell breakdown on every review card.
+        prisma.review.aggregate({
+            where: { placeId: id, isVisible: true },
+            _avg: { pizza: true, local: true, servicio: true, precio: true },
         }),
     ]);
     let viewerVisited = false;
@@ -89,6 +97,12 @@ router.get("/place/:id", async (req, res) => {
     }));
     place.viewerReview = viewerReview;
     place.reviewPageSize = REVIEW_PAGE_SIZE;
+    place.reviewAverages = reviewsTotal > 0 ? {
+        pizza:    reviewAverages._avg.pizza    != null ? Number(reviewAverages._avg.pizza)    : null,
+        local:    reviewAverages._avg.local    != null ? Number(reviewAverages._avg.local)    : null,
+        servicio: reviewAverages._avg.servicio != null ? Number(reviewAverages._avg.servicio) : null,
+        precio:   reviewAverages._avg.precio   != null ? Number(reviewAverages._avg.precio)   : null,
+    } : null;
 
     res.render("place", { user: req.session.user || null, place });
 });
