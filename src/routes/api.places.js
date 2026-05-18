@@ -305,7 +305,10 @@ const reviewBodySchema = z.object({
     local: ratingSchema,
     servicio: ratingSchema,
     precio: ratingSchema,
-    comment: z.string().trim().max(500).optional().or(z.literal("")),
+    // Comment is REQUIRED (2026-05-19) — stars alone are noise without
+    // context. Min 4 chars rejects "ok", "lol", etc. Client also gates
+    // submit on this, so the server min is just the safety net.
+    comment: z.string().trim().min(4).max(500),
     // priceLevel is a Place attribute, not a Review attribute. Surfacing
     // it in the review modal (added 2026-05-18) lets users keep the
     // place's € rating fresh as it changes over time — last submitter
@@ -314,8 +317,11 @@ const reviewBodySchema = z.object({
 });
 
 function publicReviewShape(row) {
-    // Never expose email. displayName/username are user-controlled and
-    // safe to show. Avatar isn't on the User model — omit cleanly.
+    // Never expose email. displayName/username/avatarUrl are
+    // user-controlled and safe to show. avatarUrl can be either a
+    // Google content URL (lh3.googleusercontent.com/…) or a local
+    // /uploads/avatars/{userId}.jpg path; the client renders either
+    // identically with referrerpolicy=no-referrer on the <img>.
     return {
         id: row.id,
         pizza: row.pizza,
@@ -328,6 +334,7 @@ function publicReviewShape(row) {
         userName: row.user
             ? (row.user.username || row.user.displayName || "user")
             : "user",
+        userAvatar: row.user ? row.user.avatarUrl || null : null,
         userId: row.userId,
     };
 }
@@ -366,7 +373,7 @@ router.post("/:id/review", requireApiAuth, async (req, res) => {
         local: parsed.data.local,
         servicio: parsed.data.servicio,
         precio: parsed.data.precio,
-        comment: parsed.data.comment ? parsed.data.comment.trim() : null,
+        comment: parsed.data.comment.trim(),
     };
 
     const review = await prisma.$transaction(async (tx) => {
@@ -402,6 +409,7 @@ router.post("/:id/review", requireApiAuth, async (req, res) => {
             user: {
                 username: req.session.user.username,
                 displayName: req.session.user.displayName,
+                avatarUrl: req.session.user.avatarUrl || null,
             },
         }),
         opmRating,
@@ -424,7 +432,7 @@ router.get("/:id/reviews", async (req, res) => {
             skip: offset,
             take: limit,
             include: {
-                user: { select: { username: true, displayName: true } },
+                user: { select: { username: true, displayName: true, avatarUrl: true } },
             },
         }),
         prisma.review.count({ where: { placeId, isVisible: true } }),

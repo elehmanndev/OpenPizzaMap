@@ -40,10 +40,14 @@ function stars(value) {
 <%- include("layout", { title: "My profile", user, leaflet: false, bodyClass: "profile-page", body: String.raw`
 <section class="profile-wrap">
   <section class="profile-header">
-    <div class="profile-avatar">
+    <div class="profile-avatar" data-profile-avatar>
       ${account.avatarUrl
-          ? `<img src="${escapeAttr(account.avatarUrl)}" alt="" referrerpolicy="no-referrer" />`
-          : `<span class="profile-avatar-initials">${escapeHtml(initials)}</span>`}
+          ? `<img src="${escapeAttr(account.avatarUrl)}" alt="" referrerpolicy="no-referrer" data-profile-avatar-img />`
+          : `<span class="profile-avatar-initials" data-profile-avatar-initials>${escapeHtml(initials)}</span>`}
+      <label class="profile-avatar-edit" title="Change profile picture">
+        <span class="material-symbols-rounded" aria-hidden="true">photo_camera</span>
+        <input type="file" name="avatar" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" data-profile-avatar-input hidden />
+      </label>
     </div>
     <div class="profile-identity">
       <h1 class="profile-name">${escapeHtml(account.displayName || account.username || "Pizza fan")}</h1>
@@ -146,6 +150,45 @@ function stars(value) {
           await fetch("/api/auth/logout", { method: "POST" });
         } catch (_e) {}
         location.href = "/";
+      });
+    }
+
+    // Avatar upload. Single hidden <input type=file> next to the avatar;
+    // the camera icon label triggers it. On change → POST multipart to
+    // /api/auth/avatar → swap the image in place + cache-bust.
+    const avatarInput = document.querySelector("[data-profile-avatar-input]");
+    const avatarBox = document.querySelector("[data-profile-avatar]");
+    if (avatarInput && avatarBox) {
+      avatarInput.addEventListener("change", async () => {
+        const file = avatarInput.files && avatarInput.files[0];
+        if (!file) return;
+        avatarBox.classList.add("is-uploading");
+        try {
+          const fd = new FormData();
+          fd.append("avatar", file);
+          const resp = await fetch("/api/auth/avatar", { method: "POST", body: fd });
+          const data = await resp.json().catch(() => ({}));
+          if (!resp.ok || data.ok === false) {
+            alert(data.error || "Couldn't upload that picture.");
+            return;
+          }
+          // Swap initials → <img>, or update existing <img> src.
+          let img = avatarBox.querySelector("[data-profile-avatar-img]");
+          if (!img) {
+            avatarBox.querySelectorAll("[data-profile-avatar-initials]").forEach((n) => n.remove());
+            img = document.createElement("img");
+            img.setAttribute("data-profile-avatar-img", "");
+            img.setAttribute("referrerpolicy", "no-referrer");
+            img.alt = "";
+            avatarBox.insertBefore(img, avatarBox.firstChild);
+          }
+          img.src = data.avatarUrl;
+        } catch (err) {
+          alert("Upload failed. Try again.");
+        } finally {
+          avatarBox.classList.remove("is-uploading");
+          avatarInput.value = "";
+        }
       });
     }
   })();

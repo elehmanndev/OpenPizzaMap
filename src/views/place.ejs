@@ -356,11 +356,19 @@
           ${place.reviewsFirstPage.map((r) => {
             const avg = ((Number(r.pizza) + Number(r.local) + Number(r.servicio) + Number(r.precio)) / 4);
             const initial = (r.userName || "?").trim().charAt(0).toUpperCase();
+            // Avatar: render <img> if we have a URL (Google content or
+            // /uploads/avatars/{id}.jpg), with an inline onerror that
+            // swaps to the initials circle if the URL 404s or Google
+            // hotlink-blocks. Always set referrerpolicy=no-referrer so
+            // Google content URLs don't get rejected at the CDN.
+            const avatarHtml = r.userAvatar
+              ? `<span class="opm-review__avatar opm-review__avatar--img"><img src="${escapeAttr(r.userAvatar)}" alt="" referrerpolicy="no-referrer" onerror="this.parentNode.outerHTML='<span class=&quot;opm-review__avatar&quot; aria-hidden=&quot;true&quot;>${escapeHtml(initial)}</span>'" /></span>`
+              : `<span class="opm-review__avatar" aria-hidden="true">${escapeHtml(initial)}</span>`;
             return `
             <li class="opm-review">
               <header class="opm-review__head">
                 <div class="opm-review__who">
-                  <span class="opm-review__avatar" aria-hidden="true">${escapeHtml(initial)}</span>
+                  ${avatarHtml}
                   <div class="opm-review__id">
                     <span class="opm-review__user">${escapeHtml(r.userName)}</span>
                     <time class="opm-review__time" datetime="${escapeAttr(new Date(r.createdAt).toISOString())}" data-rel-time>${escapeHtml(relTime(r.createdAt))}</time>
@@ -456,8 +464,8 @@
           <input type="hidden" name="priceLevel" data-price-input value="${place.priceLevel || ''}" />
         </fieldset>
         <label class="review-modal__comment-wrap">
-          <span class="review-modal__comment-label">Tell us about your visit (optional)</span>
-          <textarea class="review-modal__comment" data-review-comment maxlength="500" rows="3" placeholder="Tell us about it…">${place.viewerReview && place.viewerReview.comment ? escapeHtml(place.viewerReview.comment) : ""}</textarea>
+          <span class="review-modal__comment-label">Tell us about your visit</span>
+          <textarea class="review-modal__comment" data-review-comment required minlength="4" maxlength="500" rows="3" placeholder="What stood out? What would you tell a friend?">${place.viewerReview && place.viewerReview.comment ? escapeHtml(place.viewerReview.comment) : ""}</textarea>
           <span class="review-modal__counter" data-review-counter>0 / 500</span>
         </label>
         <div class="review-modal__error" data-review-error hidden></div>

@@ -99,4 +99,85 @@ router.post("/set-username", authLimiter, async (req, res) => {
     }
 });
 
+// ─── POST /api/auth/avatar — upload + crop the user's profile picture ─────
+//
+// Multer reads the multipart body into memory (avatars are tiny — 256x256
+// jpg lands at ~12-25 KB after sharp). We resize/crop to a 256x256 jpg
+// (centred cover), write to public/uploads/avatars/{userId}.jpg, then
+// update User.avatarUrl. Atomic write via a temp file + rename so a
+// browser fetch mid-upload never sees a half-written image.
+const path = require("path");
+const fs = require("fs/promises");
+const multer = require("multer");
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024, files: 1 },
+    fileFilter: (req, file, cb) => {
+        // Accept only common image MIME types; sharp will reject the rest anyway.
+        if (/^image\/(jpeg|jpg|png|webp|gif|avif)$/i.test(file.mimetype)) cb(null, true);
+        else cb(new Error("Unsupported file type. Use JPG, PNG, WebP, GIF, or AVIF."));
+    },
+});
+
+router.post("/avatar", (req, res, next) => {
+    if (!req.session || !req.session.user) {
+        return res.status(401).json({ ok: false, error: "Sign in required" });
+    }
+    upload.single("avatar")(req, res, (err) => {
+        if (err) {
+            const msg = err.code === "LIMIT_FILE_SIZE"
+                ? "Image is too large. Max 5 MB."
+                : err.message || "Upload failed";
+            return res.status(400).json({ ok: false, error: msg });
+        }
+        handleAvatar(req, res).catch(next);
+    });
+});
+
+async function handleAvatar(req, res) {
+    if (!req.file || !req.file.buffer || !req.file.buffer.length) {
+        return res.status(400).json({ ok: false, error: "No file provided" });
+    }
+    const sharp = require("sharp");
+    const userId = req.session.user.id;
+    const dir = path.join(process.cwd(), "public", "uploads", "avatars");
+    await fs.mkdir(dir, { recursive: true });
+
+    const finalPath = path.join(dir, `${userId}.jpg`);
+    const tmpPath = path.join(dir, `${userId}.tmp-${Date.now()}.jpg`);
+
+    try {
+        await sharp(req.file.buffer)
+            .rotate()                          // honour EXIF orientation
+            .resize(256, 256, { fit: "cover", position: "centre" })
+            .jpeg({ quality: 82, mozjpeg: true })
+            .toFile(tmpPath);
+    } catch (err) {
+        try { await fs.unlink(tmpPath); } catch (_) {}
+        console.error("[avatar] sharp failed:", err && err.message);
+        return res.status(400).json({ ok: false, error: "Couldn't process that image." });
+    }
+    await fs.rename(tmpPath, finalPath);
+
+    // Cache-bust the URL so the live page picks up the new image without
+    // a hard refresh. Append a t=<ms> query — the static handler ignores
+    // unknown query params, browsers treat it as a fresh resource.
+    const avatarUrl = `/uploads/avatars/${userId}.jpg?t=${Date.now()}`;
+
+    const updated = await prisma.user.update({
+        where: { id: userId },
+        data: { avatarUrl },
+        select: { id: true, email: true, displayName: true, username: true, role: true, avatarUrl: true },
+    });
+    req.session.user = {
+        id: updated.id,
+        email: updated.email,
+        displayName: updated.displayName,
+        username: updated.username,
+        role: updated.role,
+        avatarUrl: updated.avatarUrl,
+    };
+    return res.json({ ok: true, avatarUrl: updated.avatarUrl });
+}
+
 module.exports = router;

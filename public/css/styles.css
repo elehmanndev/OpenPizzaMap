@@ -1129,13 +1129,18 @@ img.map-suggest-thumb { display: block; }
 
 .nav a {
   margin-right: 10px;
+  text-decoration: none;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--c-accent);
+  letter-spacing: -0.3px;
 }
 
 .map-page header {
-  color: #fff;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(10px);
+  background: rgba(250, 247, 242, 0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--c-border);
 }
 
 .notfound-page main.container {
@@ -1317,34 +1322,14 @@ img.map-suggest-thumb { display: block; }
   }
 }
 
-.map-page header a,
-.map-page header .small,
-.map-page header .greeting {
-  color: #fff;
-}
-
-.map-page header button {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
 .map-page header .menu-toggle {
   color: #fff;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: var(--c-accent);
+  border: none;
 }
 
-.map-page header .menu-panel,
-.map-page header .menu-panel a,
-.map-page header .menu-panel .menu-logout {
-  color: var(--c-text);
-}
-
-.map-page header .menu-panel .menu-logout,
-.map-page header .menu-panel .menu-auth a {
-  background: var(--c-surface);
-  border: 1px solid var(--c-border);
+.map-page header .menu-toggle:hover {
+  background: var(--c-accent-strong);
 }
 
 .auth-page {
@@ -2919,6 +2904,17 @@ a.place-review:hover {
     font-weight: 600;
     font-size: 14px;
     user-select: none;
+    overflow: hidden;
+}
+.opm-review__avatar--img {
+    background: var(--c-input-bg);
+    padding: 0;
+}
+.opm-review__avatar--img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 .opm-review__id {
     display: flex;
@@ -3246,12 +3242,12 @@ a.place-review:hover {
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
 }
 .profile-avatar {
+  position: relative;
   flex: 0 0 72px;
   width: 72px;
   height: 72px;
   border-radius: 50%;
   background: #f1ead6;
-  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3263,6 +3259,7 @@ a.place-review:hover {
   height: 100%;
   object-fit: cover;
   display: block;
+  border-radius: 50%;
 }
 .profile-avatar-initials {
   font-weight: 700;
@@ -3270,6 +3267,33 @@ a.place-review:hover {
   color: #b8424d;
   letter-spacing: -0.5px;
 }
+/* Tiny camera badge that overlays the bottom-right of the avatar and
+   triggers the hidden <input type=file>. Clicking anywhere on the
+   label dispatches a click on the input. */
+.profile-avatar-edit {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--c-accent);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  transition: background 120ms ease, transform 80ms ease;
+}
+.profile-avatar-edit:hover { background: var(--c-accent-strong); }
+.profile-avatar-edit:active { transform: scale(0.92); }
+.profile-avatar-edit .material-symbols-rounded {
+  font-size: 14px;
+  font-variation-settings: 'wght' 600;
+}
+.profile-avatar.is-uploading { opacity: 0.7; pointer-events: none; }
 .profile-identity {
   min-width: 0;
 }

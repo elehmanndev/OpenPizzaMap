@@ -51,7 +51,7 @@ router.get("/place/:id", async (req, res) => {
             where: { placeId: id, isVisible: true },
             orderBy: { createdAt: "desc" },
             take: REVIEW_PAGE_SIZE,
-            include: { user: { select: { username: true, displayName: true } } },
+            include: { user: { select: { username: true, displayName: true, avatarUrl: true } } },
         }),
     ]);
     let viewerVisited = false;
@@ -85,6 +85,7 @@ router.get("/place/:id", async (req, res) => {
         userName: row.user
             ? (row.user.username || row.user.displayName || "user")
             : "user",
+        userAvatar: row.user ? row.user.avatarUrl || null : null,
     }));
     place.viewerReview = viewerReview;
     place.reviewPageSize = REVIEW_PAGE_SIZE;

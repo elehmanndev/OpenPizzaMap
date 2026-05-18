@@ -120,19 +120,27 @@
         const v = readValues();
         return v.pizza > 0 && v.local > 0 && v.servicio > 0 && v.precio > 0;
     }
+    function hasComment() {
+        return !!(commentEl && commentEl.value.trim().length >= 4);
+    }
     function updateSubmitState() {
-        submitBtn.disabled = !allRated();
+        // Comment is now REQUIRED alongside the four star ratings —
+        // server enforces the same min(4) so this is just UX.
+        submitBtn.disabled = !(allRated() && hasComment());
     }
     modal.addEventListener("change", updateSubmitState);
     updateSubmitState();
 
-    // Comment counter.
+    // Comment counter + submit-gate live update.
     function updateCounter() {
         const len = commentEl.value.length;
         counterEl.textContent = `${len} / 500`;
     }
     if (commentEl) {
-        commentEl.addEventListener("input", updateCounter);
+        commentEl.addEventListener("input", () => {
+            updateCounter();
+            updateSubmitState();
+        });
         updateCounter();
     }
 
@@ -319,10 +327,14 @@
         }
         const avg = (Number(r.pizza) + Number(r.local) + Number(r.servicio) + Number(r.precio)) / 4;
         const initial = userName.trim().charAt(0).toUpperCase() || "?";
+        const safeInitial = initial.replace(/[<>&"]/g, "");
+        const avatarHtml = r.userAvatar
+            ? `<span class="opm-review__avatar opm-review__avatar--img"><img alt="" referrerpolicy="no-referrer" onerror="this.parentNode.outerHTML='<span class=&quot;opm-review__avatar&quot; aria-hidden=&quot;true&quot;>${safeInitial}</span>'" /></span>`
+            : `<span class="opm-review__avatar" aria-hidden="true">${safeInitial}</span>`;
         li.innerHTML = `
             <header class="opm-review__head">
                 <div class="opm-review__who">
-                    <span class="opm-review__avatar" aria-hidden="true">${initial}</span>
+                    ${avatarHtml}
                     <div class="opm-review__id">
                         <span class="opm-review__user"></span>
                         <time class="opm-review__time" datetime="${iso}"></time>
@@ -344,6 +356,15 @@
         li.querySelector(".opm-review__user").textContent = userName;
         li.querySelector(".opm-review__time").textContent = relText;
         if (r.comment) li.querySelector(".opm-review__comment").textContent = r.comment;
+        // Set the avatar <img> src AFTER the HTML is in the DOM so the
+        // browser's resource loader picks it up (innerHTML assignment
+        // doesn't fire load on already-attached <img> if the src is
+        // baked in via a template literal that contains an inline
+        // onerror handler — Chrome is finicky here).
+        if (r.userAvatar) {
+            const img = li.querySelector(".opm-review__avatar--img img");
+            if (img) img.src = r.userAvatar;
+        }
         return li;
     }
 })();
