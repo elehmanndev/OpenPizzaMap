@@ -823,12 +823,29 @@ ${fav}
         const el = document.querySelector(".map-sidebar");
         const handle = document.querySelector(".map-sheet-handle");
         const list = document.querySelector(".map-sidebar-list");
-        const COLLAPSED_VISIBLE = 132; // px of sheet showing when collapsed
+        const COLLAPSED_VISIBLE = 160; // px of sheet showing when collapsed (handle + search + filter row)
         const mq = window.matchMedia("(max-width: 900px)");
 
         // Offsets in px from the fully-expanded position (0). snaps[0] is the
         // largest offset (collapsed = sheet pushed furthest down).
         let snaps = [0, 0, 0];
+
+        // Velocity tracking — ring buffer of recent {t, y} samples for fling detection.
+        const velBuf = [];
+        function trackVelocity(clientY) {
+            const now = performance.now();
+            velBuf.push({ t: now, y: clientY });
+            // keep only last 120 ms
+            while (velBuf.length > 1 && now - velBuf[0].t > 120) velBuf.shift();
+        }
+        function flushVelocity() { velBuf.length = 0; }
+        // Returns px/ms: positive = moving UP (expanding), negative = moving DOWN (collapsing).
+        function getVelocity() {
+            if (velBuf.length < 2) return 0;
+            const a = velBuf[0], b = velBuf[velBuf.length - 1];
+            const dt = b.t - a.t;
+            return dt > 1 ? (a.y - b.y) / dt : 0; // inverted: up = positive
+        }
 
         function recalc() {
             const sheetH = el.offsetHeight || Math.round(window.innerHeight * 0.85);
@@ -891,6 +908,8 @@ ${fav}
             fromList = !!ev.target.closest(".map-sidebar-list");
             startY = ev.clientY;
             startOffset = currentOffset();
+            flushVelocity();
+            trackVelocity(ev.clientY);
         }
         function onMove(ev) {
             if (!pending && !dragging) return;
@@ -913,6 +932,7 @@ ${fav}
             }
             moved = true;
             lastDy = dy;
+            trackVelocity(ev.clientY);
             ev.preventDefault();
             if (!rafScheduled) {
                 rafScheduled = true;
@@ -926,9 +946,23 @@ ${fav}
             fromList = false;
             if (!wasDragging) return;
             el.classList.remove("is-dragging");
-            // Settle to the nearest snap based on the most recent visual offset.
+
             const off = Math.max(0, Math.min(snaps[0], startOffset - lastDy));
-            snapTo(nearest(off));
+            const vel = getVelocity();
+            flushVelocity();
+
+            // Fling: if velocity exceeds threshold, jump one snap in flick direction
+            // rather than settling to nearest position.
+            const FLING_PX_MS = 0.4;
+            if (vel > FLING_PX_MS) {
+                // Flung UP → expand one step
+                snapTo(Math.max(0, nearest(off) - 1));
+            } else if (vel < -FLING_PX_MS) {
+                // Flung DOWN → collapse one step
+                snapTo(Math.min(snaps.length - 1, nearest(off) + 1));
+            } else {
+                snapTo(nearest(off));
+            }
         }
         // Drag listeners attached to the sheet element so pointerdown fires on
         // any descendant via bubbling. We bail in onDown for hard opt-outs.
@@ -939,8 +973,9 @@ ${fav}
         if (handle) {
             handle.addEventListener("click", () => {
                 if (!mq.matches || moved) return;
+                // Cycle: collapsed → peek → expanded → collapsed
                 const cur = Number(el.dataset.snap || 0);
-                snapTo(cur === 0 ? 1 : 0);
+                snapTo(cur === 0 ? 1 : cur === 1 ? 2 : 0);
             });
         }
 

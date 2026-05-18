@@ -32,36 +32,77 @@
       <% if (user) { %>
         <span class="greeting">Hi, <%= user.displayName %></span>
       <% } %>
-      <details class="menu">
-        <summary class="menu-toggle" aria-label="Open menu">
-          <span class="material-symbols-rounded" aria-hidden="true">menu</span>
-        </summary>
-        <div class="menu-panel">
-          <nav class="menu-links">
-            <a href="/map">Map</a>
-            <% if (user) { %>
-              <a href="/add-your-spot">Add your spot</a>
-              <a href="/me">My profile</a>
-              <% if (user.role==="admin" ) { %>
-                <a href="/admin/places">Places</a>
-                <a href="/admin/styles">Styles</a>
-                <a href="/admin/submissions">Submissions</a>
-              <% } %>
-            <% } %>
-          </nav>
-          <% if (user) { %>
-            <form method="post" action="/logout">
-              <button type="submit" class="menu-logout">Logout</button>
-            </form>
-          <% } else { %>
-            <div class="menu-auth">
-              <a href="/auth">Sign in</a>
-            </div>
-          <% } %>
-        </div>
-      </details>
+      <button class="menu-toggle" id="sidebar-open" aria-label="Open menu">
+        <span class="material-symbols-rounded" aria-hidden="true">menu</span>
+      </button>
     </div>
   </header>
+
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+  <nav class="sidebar" id="sidebar" aria-label="Navigation">
+    <div class="sidebar-head">
+      <% if (user) { %>
+        <div class="sidebar-user">
+          <div class="sidebar-avatar"><%= (user.displayName || user.email || "?")[0].toUpperCase() %></div>
+          <div class="sidebar-user-info">
+            <div class="sidebar-user-name"><%= user.displayName || user.username %></div>
+            <% if (user.username) { %><div class="sidebar-user-handle">@<%= user.username %></div><% } %>
+          </div>
+        </div>
+      <% } else { %>
+        <div class="sidebar-brand">OpenPizzaMap</div>
+      <% } %>
+      <button class="sidebar-close" id="sidebar-close" aria-label="Close menu">
+        <span class="material-symbols-rounded">close</span>
+      </button>
+    </div>
+
+    <div class="sidebar-links">
+      <a href="/map" class="sidebar-link">
+        <span class="material-symbols-rounded">map</span>
+        Map
+      </a>
+      <% if (user) { %>
+        <a href="/add-your-spot" class="sidebar-link">
+          <span class="material-symbols-rounded">add_location_alt</span>
+          Add your spot
+        </a>
+        <a href="/me" class="sidebar-link">
+          <span class="material-symbols-rounded">person</span>
+          My profile
+        </a>
+        <% if (user.role === "admin") { %>
+          <div class="sidebar-section-label">Admin</div>
+          <a href="/admin/places" class="sidebar-link">
+            <span class="material-symbols-rounded">storefront</span>
+            Places
+          </a>
+          <a href="/admin/styles" class="sidebar-link">
+            <span class="material-symbols-rounded">style</span>
+            Styles
+          </a>
+          <a href="/admin/submissions" class="sidebar-link">
+            <span class="material-symbols-rounded">inbox</span>
+            Submissions
+          </a>
+        <% } %>
+      <% } %>
+    </div>
+
+    <div class="sidebar-foot">
+      <% if (user) { %>
+        <form method="post" action="/logout">
+          <button type="submit" class="sidebar-logout">
+            <span class="material-symbols-rounded">logout</span>
+            Sign out
+          </button>
+        </form>
+      <% } else { %>
+        <a href="/auth" class="sidebar-signin">Sign in</a>
+      <% } %>
+    </div>
+  </nav>
+
   <% const isAuthPage = typeof bodyClass === "string" && bodyClass.includes("auth-page"); %>
   <main class="container">
     <% if (isAuthPage) { %>
@@ -72,6 +113,34 @@
       <%- body %>
     <% } %>
   </main>
+
+  <script>
+    (function () {
+      const open = document.getElementById('sidebar-open');
+      const close = document.getElementById('sidebar-close');
+      const backdrop = document.getElementById('sidebar-backdrop');
+      const sidebar = document.getElementById('sidebar');
+
+      function openSidebar() {
+        sidebar.classList.add('is-open');
+        backdrop.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+      }
+      function closeSidebar() {
+        sidebar.classList.remove('is-open');
+        backdrop.classList.remove('is-open');
+        document.body.style.overflow = '';
+      }
+
+      open.addEventListener('click', openSidebar);
+      close.addEventListener('click', closeSidebar);
+      backdrop.addEventListener('click', closeSidebar);
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeSidebar();
+      });
+    })();
+  </script>
 </body>
 
 </html>
