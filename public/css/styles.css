@@ -3006,36 +3006,12 @@ a.place-review:hover {
     padding-bottom: 8px; /* space for any scrollbar UA quirks */
 }
 .place-community-reviews__list::-webkit-scrollbar { display: none; }
+/* Desktop keeps the same horizontal-carousel mechanics as mobile —
+   the only thing that changes is each card takes ~48% of the viewport
+   so two are visible side-by-side with a peek of the next.
+   Snap-scroll still applies. */
 @media (min-width: 720px) {
-    .place-community-reviews__list {
-        display: grid;
-        /* auto-fit lets the grid fall back to 3-up (or 2-up) when 4
-           cards won't fit comfortably. Each card needs at least 240px
-           for the head + italic comment + 2x2 sub-rating breakdown to
-           breathe. */
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 14px;
-        overflow: visible;
-        scroll-snap-type: none;
-        margin-inline: 0;
-        padding-inline: 0;
-        padding-bottom: 0;
-    }
-}
-/* Break the community-reviews section out of the 760px .place-shell
-   width on wide screens so the 4-up layout actually has room. Use
-   position-based centering instead of margins because `.place-shell
-   .card { margin: 16px 0 }` would clobber margin-inline. The section
-   centers on the viewport (which lines up with place-shell's center)
-   and caps at 1100px to match the global .container max. */
-@media (min-width: 1140px) {
-    .place-community-reviews {
-        position: relative;
-        left: 50%;
-        transform: translateX(-50%);
-        width: min(1100px, calc(100vw - 32px));
-        box-sizing: border-box;
-    }
+    .place-community-reviews__list { gap: 16px; }
 }
 
 /* Community review — testimonial-card layout. Each review is a
@@ -3058,10 +3034,10 @@ a.place-review:hover {
     flex-direction: column;
 }
 @media (min-width: 720px) {
-    .opm-review {
-        flex: initial;
-        scroll-snap-align: none;
-    }
+    /* 2-up carousel — card takes ~48% so two are visible with a peek
+       of the third sliding in from the right. Snap-stop stays so
+       scrolling lands on card boundaries. */
+    .opm-review { flex: 0 0 calc(50% - 12px); }
 }
 
 .opm-review__head {
@@ -3179,16 +3155,24 @@ a.place-review:hover {
 .opm-review__cats {
     list-style: none;
     /* margin-top: auto pushes the breakdown to the bottom of the card
-       so all cards in a desktop grid row align their sub-ratings to
-       the same baseline regardless of comment length. */
+       so all cards in a row share the same baseline regardless of
+       comment length. */
     margin: auto 0 0;
     padding: 12px 0 0;
     border-top: 1px solid rgba(0, 0, 0, 0.05);
     display: grid;
-    /* Always 2x2 — desktop cards in the auto-fit grid are ~240-320px
-       wide. A 1x4 breakdown would crush labels at those widths. */
+    /* Mobile: 2x2 — the 1-up carousel card is narrow enough that a
+       single row of 4 would crush labels. */
     grid-template-columns: repeat(2, 1fr);
     gap: 12px 20px;
+}
+/* Desktop: card is ~half the viewport so the four categories fit
+   comfortably on a single row. */
+@media (min-width: 720px) {
+    .opm-review__cats {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 4px 12px;
+    }
 }
 .opm-review__cats > li {
     display: flex;
