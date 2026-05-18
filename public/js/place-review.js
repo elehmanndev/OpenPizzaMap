@@ -317,18 +317,29 @@
             else if (hr < 24) relText = rtf.format(-hr, "hour");
             else relText = rtf.format(-day, "day");
         }
+        const avg = (Number(r.pizza) + Number(r.local) + Number(r.servicio) + Number(r.precio)) / 4;
+        const initial = userName.trim().charAt(0).toUpperCase() || "?";
         li.innerHTML = `
-            <div class="opm-review__head">
-                <span class="opm-review__user"></span>
-                <time class="opm-review__time" datetime="${iso}"></time>
-            </div>
+            <header class="opm-review__head">
+                <div class="opm-review__who">
+                    <span class="opm-review__avatar" aria-hidden="true">${initial}</span>
+                    <div class="opm-review__id">
+                        <span class="opm-review__user"></span>
+                        <time class="opm-review__time" datetime="${iso}"></time>
+                    </div>
+                </div>
+                <div class="opm-review__score" title="Average across Pizza, Setting, Service, Value">
+                    ${starsHtml(avg, "stars--sm")}
+                    <span class="opm-review__score-num">${avg.toFixed(1)}</span>
+                </div>
+            </header>
+            ${r.comment ? `<blockquote class="opm-review__comment"></blockquote>` : ""}
             <ul class="opm-review__cats">
-                <li><span class="opm-review__cat">Pizza</span>${starsHtml(r.pizza, "stars--sm")}</li>
-                <li><span class="opm-review__cat">Setting</span>${starsHtml(r.local, "stars--sm")}</li>
-                <li><span class="opm-review__cat">Service</span>${starsHtml(r.servicio, "stars--sm")}</li>
-                <li><span class="opm-review__cat">Value</span>${starsHtml(r.precio, "stars--sm")}</li>
+                <li><span class="opm-review__cat">Pizza</span>${starsHtml(r.pizza, "stars--xs")}</li>
+                <li><span class="opm-review__cat">Setting</span>${starsHtml(r.local, "stars--xs")}</li>
+                <li><span class="opm-review__cat">Service</span>${starsHtml(r.servicio, "stars--xs")}</li>
+                <li><span class="opm-review__cat">Value</span>${starsHtml(r.precio, "stars--xs")}</li>
             </ul>
-            ${r.comment ? `<p class="opm-review__comment"></p>` : ""}
         `;
         li.querySelector(".opm-review__user").textContent = userName;
         li.querySelector(".opm-review__time").textContent = relText;

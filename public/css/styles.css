@@ -2822,6 +2822,7 @@ a.place-review:hover {
     align-items: center;
     gap: 2px;
 }
+.stars--xs .star { width: 11px; height: 11px; }
 .stars--sm .star { width: 14px; height: 14px; }
 .stars--md .star { width: 20px; height: 20px; }
 .stars--lg .star { width: 28px; height: 28px; }
@@ -2878,45 +2879,112 @@ a.place-review:hover {
     flex-direction: column;
     gap: 18px;
 }
+/* Community review — testimonial-card layout.
+   Each review is a self-contained card: avatar + name/time on the left,
+   aggregate rating on the right, comment as the prominent body, and
+   the four sub-ratings demoted to a small chip row at the bottom.
+   Mirrors shadcn-style polished cards (21st.dev card-1 vibe). */
 .opm-review {
-    border-top: 1px solid rgba(0, 0, 0, 0.08);
-    padding-top: 16px;
-    margin-top: 16px;
+    list-style: none;
+    background: #fff;
+    border: 1px solid var(--c-border);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 1px 2px rgba(30, 30, 30, 0.04);
 }
-.opm-review:first-child { border-top: 0; padding-top: 0; margin-top: 0; }
+.opm-review + .opm-review { margin-top: 12px; }
+
 .opm-review__head {
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    align-items: baseline;
-    gap: 8px;
-    margin-bottom: 12px;
+    gap: 12px;
 }
-.opm-review__user { font-weight: 600; color: var(--c-text); font-size: 15px; }
-.opm-review__time { color: var(--c-muted); font-size: 12px; }
-/* Rating grid — each cell is a label-on-top-of-stars chip.
-   2x2 on mobile (375px) for tap-friendly density, 1x4 on >=520px
-   when the row has room. Padding + uppercase tracking on labels
-   gives each category visual weight instead of squishing label and
-   stars together on one cramped line. */
+.opm-review__who {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+.opm-review__avatar {
+    flex: 0 0 auto;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--c-accent);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    user-select: none;
+}
+.opm-review__id {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+.opm-review__user {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--c-text);
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.opm-review__time {
+    font-size: 12px;
+    color: var(--c-muted);
+    line-height: 1.2;
+    margin-top: 2px;
+}
+.opm-review__score {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.opm-review__score-num {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--c-text);
+    font-variant-numeric: tabular-nums;
+}
+
+/* Comment as the hero — italic blockquote with a touch of indent. */
+.opm-review__comment {
+    margin: 12px 0 0;
+    padding: 0;
+    color: var(--c-text);
+    line-height: 1.55;
+    font-size: 15px;
+    font-style: italic;
+    /* Subtle quote indent without a wall on the side */
+    quotes: "“" "”" "‘" "’";
+}
+.opm-review__comment::before { content: open-quote; margin-right: 2px; }
+.opm-review__comment::after  { content: close-quote; margin-left: 2px; }
+
+/* Sub-rating chip row — tiny labels + tiny stars, sits at the bottom. */
 .opm-review__cats {
     list-style: none;
-    margin: 0;
-    padding: 0;
+    margin: 14px 0 0;
+    padding: 12px 0 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    gap: 6px 16px;
 }
 @media (min-width: 520px) {
     .opm-review__cats { grid-template-columns: repeat(4, 1fr); }
 }
 .opm-review__cats > li {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-    padding: 8px 10px;
-    background: rgba(0, 0, 0, 0.03);
-    border-radius: 10px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
 }
 .opm-review__cat {
     font-size: 10.5px;
@@ -2924,12 +2992,6 @@ a.place-review:hover {
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--c-muted);
-}
-.opm-review__comment {
-    margin: 14px 0 0;
-    color: var(--c-text);
-    line-height: 1.55;
-    font-size: 14.5px;
 }
 .opm-reviews-more { margin-top: 16px; width: 100%; }
 @media (min-width: 480px) { .opm-reviews-more { width: auto; } }
