@@ -2,6 +2,10 @@
 *::before,
 *::after {
   box-sizing: border-box;
+  scrollbar-width: none;
+}
+*::-webkit-scrollbar {
+  display: none;
 }
 
 :root {
@@ -1030,17 +1034,18 @@ img.map-suggest-thumb { display: block; }
     left: 0;
     right: 0;
     bottom: 0;
-    height: 85vh;
-    height: 85dvh;
+    height: 88vh;
+    height: 88dvh;
     border-right: none;
-    border-top: 1px solid var(--c-border, #e5e5e5);
-    border-radius: 18px 18px 0 0;
-    box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.14);
+    border-top: none;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -2px 0 rgba(0,0,0,0.06), 0 -8px 32px rgba(0, 0, 0, 0.12);
     z-index: 600;
-    transform: translateY(var(--sheet-offset, calc(100% - 132px)));
-    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transform: translateY(var(--sheet-offset, calc(100% - 160px)));
+    transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
     will-change: transform;
     overflow: hidden;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
   .map-sidebar.is-dragging { transition: none; }
   .map-sheet-handle {
@@ -1048,19 +1053,26 @@ img.map-suggest-thumb { display: block; }
     justify-content: center;
     align-items: center;
     width: 100%;
-    padding: 14px 0 10px;
+    padding: 12px 0 8px;
     background: transparent;
     border: 0;
     cursor: grab;
     touch-action: none;
     flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
   }
   .map-sheet-handle:active { cursor: grabbing; }
   .map-sheet-handle-grip {
-    width: 44px;
-    height: 5px;
+    width: 36px;
+    height: 4px;
     border-radius: 999px;
-    background: var(--c-border, #cdcdcd);
+    background: #d0cbc4;
+    transition: width 0.2s, background 0.2s;
+  }
+  .map-sheet-handle:hover .map-sheet-handle-grip,
+  .map-sheet-handle:active .map-sheet-handle-grip {
+    width: 48px;
+    background: #a09890;
   }
   .map-sidebar-header {
     border-bottom: 1px solid var(--c-border, #ececec);
@@ -2967,19 +2979,68 @@ a.place-review:hover {
     font-size: 0.95rem;
     font-variant-numeric: tabular-nums;
 }
+/* Community-reviews layout: horizontal carousel on mobile, 4-up grid
+   on desktop. Cards keep their own intrinsic styling — only the list
+   container's behaviour changes per viewport.
+   - Mobile: flex row + scroll-snap. Each card is ~85% of the viewport
+     so the next card peeks in from the right, signalling more content.
+     Negative margins + padding extend the scroll surface to the card
+     gutter so the snap feels natural from edge to edge.
+   - Desktop: CSS grid, 4 equal columns, no overflow. */
 .place-community-reviews__list {
     list-style: none;
     margin: 0;
     padding: 0;
     display: flex;
-    flex-direction: column;
-    gap: 18px;
+    flex-wrap: nowrap;
+    gap: 12px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    /* Pull the scrollable strip slightly outside the card padding so
+       the first card's left edge sits flush with the section title
+       and the next card peeks from the right gutter. */
+    margin-inline: -4px;
+    padding-inline: 4px;
+    padding-bottom: 8px; /* space for any scrollbar UA quirks */
 }
-/* Community review — testimonial-card layout.
-   Each review is a self-contained card: avatar + name/time on the left,
-   aggregate rating on the right, comment as the prominent body, and
-   the four sub-ratings demoted to a small chip row at the bottom.
-   Mirrors shadcn-style polished cards (21st.dev card-1 vibe). */
+.place-community-reviews__list::-webkit-scrollbar { display: none; }
+@media (min-width: 720px) {
+    .place-community-reviews__list {
+        display: grid;
+        /* auto-fit lets the grid fall back to 3-up (or 2-up) when 4
+           cards won't fit comfortably. Each card needs at least 240px
+           for the head + italic comment + 2x2 sub-rating breakdown to
+           breathe. */
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 14px;
+        overflow: visible;
+        scroll-snap-type: none;
+        margin-inline: 0;
+        padding-inline: 0;
+        padding-bottom: 0;
+    }
+}
+/* Break the community-reviews section out of the 760px .place-shell
+   width on wide screens so the 4-up layout actually has room. Use
+   position-based centering instead of margins because `.place-shell
+   .card { margin: 16px 0 }` would clobber margin-inline. The section
+   centers on the viewport (which lines up with place-shell's center)
+   and caps at 1100px to match the global .container max. */
+@media (min-width: 1140px) {
+    .place-community-reviews {
+        position: relative;
+        left: 50%;
+        transform: translateX(-50%);
+        width: min(1100px, calc(100vw - 32px));
+        box-sizing: border-box;
+    }
+}
+
+/* Community review — testimonial-card layout. Each review is a
+   self-contained card. Card sizing differs by viewport — see the
+   list rules above. */
 .opm-review {
     list-style: none;
     background: #fff;
@@ -2987,8 +3048,21 @@ a.place-review:hover {
     border-radius: 16px;
     padding: 16px;
     box-shadow: 0 1px 2px rgba(30, 30, 30, 0.04);
+    /* Mobile carousel: each card takes ~85% of the carousel width so
+       the next one peeks in. flex-shrink:0 keeps width fixed; snap-
+       align:start makes the carousel land on a card boundary. */
+    flex: 0 0 85%;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    display: flex;
+    flex-direction: column;
 }
-.opm-review + .opm-review { margin-top: 12px; }
+@media (min-width: 720px) {
+    .opm-review {
+        flex: initial;
+        scroll-snap-align: none;
+    }
+}
 
 .opm-review__head {
     display: flex;
@@ -3046,6 +3120,12 @@ a.place-review:hover {
     color: var(--c-muted);
     line-height: 1.2;
     margin-top: 2px;
+    /* Lock to one line and truncate — "hace 31 segundos" used to wrap
+       in narrow grid cards and pushed the head into two rows. */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
 }
 /* Per-review OPM badge — matches .place-rating-badge styling (solid
    black square, white number, drop shadow) but sized down to the
@@ -3072,16 +3152,22 @@ a.place-review:hover {
     font-variant-numeric: tabular-nums;
 }
 
-/* Comment as the hero — italic blockquote with a touch of indent. */
+/* Comment as the hero — italic blockquote with a touch of indent.
+   Clamp to 4 lines so a long-winded comment in one grid card doesn't
+   stretch the whole row's height to match. */
 .opm-review__comment {
     margin: 12px 0 0;
     padding: 0;
     color: var(--c-text);
-    line-height: 1.55;
-    font-size: 15px;
+    line-height: 1.5;
+    font-size: 14.5px;
     font-style: italic;
-    /* Subtle quote indent without a wall on the side */
     quotes: "“" "”" "‘" "’";
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .opm-review__comment::before { content: open-quote; margin-right: 2px; }
 .opm-review__comment::after  { content: close-quote; margin-left: 2px; }
@@ -3092,15 +3178,17 @@ a.place-review:hover {
    2x2 on mobile, 1x4 on >=520px. */
 .opm-review__cats {
     list-style: none;
-    margin: 14px 0 0;
+    /* margin-top: auto pushes the breakdown to the bottom of the card
+       so all cards in a desktop grid row align their sub-ratings to
+       the same baseline regardless of comment length. */
+    margin: auto 0 0;
     padding: 12px 0 0;
     border-top: 1px solid rgba(0, 0, 0, 0.05);
     display: grid;
+    /* Always 2x2 — desktop cards in the auto-fit grid are ~240-320px
+       wide. A 1x4 breakdown would crush labels at those widths. */
     grid-template-columns: repeat(2, 1fr);
     gap: 12px 20px;
-}
-@media (min-width: 520px) {
-    .opm-review__cats { grid-template-columns: repeat(4, 1fr); }
 }
 .opm-review__cats > li {
     display: flex;
