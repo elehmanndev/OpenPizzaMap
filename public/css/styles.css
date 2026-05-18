@@ -2879,39 +2879,58 @@ a.place-review:hover {
     gap: 18px;
 }
 .opm-review {
-    border-top: 1px solid rgba(0,0,0,.08);
-    padding-top: 14px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    padding-top: 16px;
+    margin-top: 16px;
 }
-.opm-review:first-child { border-top: 0; padding-top: 0; }
+.opm-review:first-child { border-top: 0; padding-top: 0; margin-top: 0; }
 .opm-review__head {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
     gap: 8px;
-    margin-bottom: 6px;
+    margin-bottom: 12px;
 }
-.opm-review__user { font-weight: 600; color: var(--text, #111); }
-.opm-review__time { color: var(--text-muted, #6b7280); font-size: 0.85rem; }
+.opm-review__user { font-weight: 600; color: var(--c-text); font-size: 15px; }
+.opm-review__time { color: var(--c-muted); font-size: 12px; }
+/* Rating grid — each cell is a label-on-top-of-stars chip.
+   2x2 on mobile (375px) for tap-friendly density, 1x4 on >=520px
+   when the row has room. Padding + uppercase tracking on labels
+   gives each category visual weight instead of squishing label and
+   stars together on one cramped line. */
 .opm-review__cats {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4px 14px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
 }
-@media (min-width: 480px) {
+@media (min-width: 520px) {
     .opm-review__cats { grid-template-columns: repeat(4, 1fr); }
 }
 .opm-review__cats > li {
     display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.85rem;
-    color: var(--text-muted, #6b7280);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 8px 10px;
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 10px;
 }
-.opm-review__cat { min-width: 56px; }
-.opm-review__comment { margin-top: 10px; color: var(--text, #1f2937); line-height: 1.5; }
+.opm-review__cat {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--c-muted);
+}
+.opm-review__comment {
+    margin: 14px 0 0;
+    color: var(--c-text);
+    line-height: 1.55;
+    font-size: 14.5px;
+}
 .opm-reviews-more { margin-top: 16px; width: 100%; }
 @media (min-width: 480px) { .opm-reviews-more { width: auto; } }
 
