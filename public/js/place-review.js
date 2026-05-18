@@ -266,11 +266,12 @@
     // touch swipe is enough there). Each click scrolls by one card-
     // worth of width so scroll-snap lands on the next card boundary.
     (function setupCarouselNav() {
-        const rail = document.querySelector("[data-reviews-rail]");
-        if (!rail) return;
-        const railList = rail.querySelector("[data-reviews-list]");
-        const prevBtn = rail.querySelector("[data-rail-prev]");
-        const nextBtn = rail.querySelector("[data-rail-next]");
+        // Chevron buttons live in the section header (not inside the
+        // rail) so they don't overlay card content — query from
+        // document scope, not from the rail.
+        const railList = document.querySelector("[data-reviews-list]");
+        const prevBtn = document.querySelector("[data-rail-prev]");
+        const nextBtn = document.querySelector("[data-rail-next]");
         if (!railList || !prevBtn || !nextBtn) return;
 
         function stepPx() {
@@ -307,7 +308,20 @@
         });
         railList.addEventListener("scroll", update, { passive: true });
         window.addEventListener("resize", update);
+        // Re-measure when fonts/images settle. update() can run before
+        // the carousel has finished laying out (especially with
+        // Material Symbols web font) and incorrectly conclude there's
+        // nothing to scroll — leaving both chevrons stuck hidden.
+        window.addEventListener("load", update);
+        if (typeof ResizeObserver === "function") {
+            new ResizeObserver(update).observe(railList);
+        }
         update();
+        // Belt-and-braces: re-measure on the next animation frame and
+        // again after 250ms in case ResizeObserver doesn't catch a
+        // late layout shift from a delayed font / image.
+        requestAnimationFrame(update);
+        setTimeout(update, 250);
     })();
 
     // "Ver más reviews" pagination.
