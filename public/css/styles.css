@@ -2936,16 +2936,28 @@ a.place-review:hover {
     line-height: 1.2;
     margin-top: 2px;
 }
-.opm-review__score {
+/* Per-review OPM badge — matches .place-rating-badge styling (solid
+   black square, white number, drop shadow) but sized down to sit
+   neatly next to the user identity in the card header. Shows the
+   average of Pizza/Setting/Service/Value on the 0-5 scale. */
+.opm-review__badge {
     flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    background: #1e1e1e;
+    color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: -0.02em;
+    line-height: 1;
 }
-.opm-review__score-num {
+.opm-review__badge strong {
+    font-size: 18px;
     font-weight: 700;
-    font-size: 14px;
-    color: var(--c-text);
     font-variant-numeric: tabular-nums;
 }
 

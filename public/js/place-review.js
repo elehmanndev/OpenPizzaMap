@@ -340,9 +340,8 @@
                         <time class="opm-review__time" datetime="${iso}"></time>
                     </div>
                 </div>
-                <div class="opm-review__score" title="Average across Pizza, Setting, Service, Value">
-                    ${starsHtml(avg, "stars--sm")}
-                    <span class="opm-review__score-num">${avg.toFixed(1)}</span>
+                <div class="opm-review__badge" title="Average across Pizza, Setting, Service, Value (out of 5)" aria-label="${avg.toFixed(1)} out of 5">
+                    <strong>${avg.toFixed(1)}</strong>
                 </div>
             </header>
             ${r.comment ? `<blockquote class="opm-review__comment"></blockquote>` : ""}
