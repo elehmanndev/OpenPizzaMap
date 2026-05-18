@@ -262,6 +262,54 @@
         });
     }
 
+    // Carousel chevron nav (desktop-only — hidden via CSS on mobile,
+    // touch swipe is enough there). Each click scrolls by one card-
+    // worth of width so scroll-snap lands on the next card boundary.
+    (function setupCarouselNav() {
+        const rail = document.querySelector("[data-reviews-rail]");
+        if (!rail) return;
+        const railList = rail.querySelector("[data-reviews-list]");
+        const prevBtn = rail.querySelector("[data-rail-prev]");
+        const nextBtn = rail.querySelector("[data-rail-next]");
+        if (!railList || !prevBtn || !nextBtn) return;
+
+        function stepPx() {
+            const card = railList.querySelector(".opm-review");
+            if (!card) return 240;
+            // Card width + the list's column-gap so we land on the next
+            // snap boundary in one click.
+            const gap = parseFloat(getComputedStyle(railList).columnGap) || 16;
+            return card.getBoundingClientRect().width + gap;
+        }
+
+        function update() {
+            const max = railList.scrollWidth - railList.clientWidth;
+            // Threshold = 8px to absorb scroll-snap micro-offsets at the
+            // boundary (browsers sometimes settle scrollLeft 2-5px off
+            // from the absolute edge after a snap).
+            const atStart = railList.scrollLeft <= 8;
+            const atEnd = railList.scrollLeft >= max - 8;
+            const canScroll = max > 16;
+            // Hide both chevrons entirely if there's nothing to scroll
+            // (e.g., 1-2 reviews that fit without overflow on desktop).
+            // Otherwise show them but disable when at the relevant end.
+            prevBtn.hidden = !canScroll;
+            nextBtn.hidden = !canScroll;
+            prevBtn.disabled = atStart;
+            nextBtn.disabled = atEnd;
+        }
+
+        prevBtn.addEventListener("click", () => {
+            railList.scrollBy({ left: -stepPx(), behavior: "smooth" });
+        });
+        nextBtn.addEventListener("click", () => {
+            railList.scrollBy({ left: stepPx(), behavior: "smooth" });
+        });
+        railList.addEventListener("scroll", update, { passive: true });
+        window.addEventListener("resize", update);
+        update();
+    })();
+
     // "Ver más reviews" pagination.
     const list = document.querySelector("[data-reviews-list]");
     const moreBtn = document.querySelector("[data-load-more-reviews]");

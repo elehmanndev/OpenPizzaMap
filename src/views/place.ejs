@@ -370,6 +370,13 @@
           </ul>
         ` : ""}
 
+        <div class="place-community-reviews__rail" data-reviews-rail>
+        <button type="button" class="place-community-reviews__nav place-community-reviews__nav--prev" data-rail-prev aria-label="Previous reviews" hidden>
+          <span class="material-symbols-rounded" aria-hidden="true">chevron_left</span>
+        </button>
+        <button type="button" class="place-community-reviews__nav place-community-reviews__nav--next" data-rail-next aria-label="More reviews" hidden>
+          <span class="material-symbols-rounded" aria-hidden="true">chevron_right</span>
+        </button>
         <ul class="place-community-reviews__list" data-reviews-list data-place-id="${place.id}" data-loaded-count="${place.reviewsFirstPage.length}" data-total="${place.reviewsTotal}" data-page-size="${place.reviewPageSize}">
           ${place.reviewsFirstPage.map((r) => {
             const avg = ((Number(r.pizza) + Number(r.local) + Number(r.servicio) + Number(r.precio)) / 4);
@@ -396,6 +403,7 @@
           `;
           }).join("")}
         </ul>
+        </div>
         ${place.reviewsTotal > place.reviewsFirstPage.length ? `
           <button type="button" class="btn opm-reviews-more" data-load-more-reviews>Show more</button>
         ` : ""}

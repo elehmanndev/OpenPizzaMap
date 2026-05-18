@@ -3014,6 +3014,51 @@ a.place-review:hover {
     .place-community-reviews__list { gap: 16px; }
 }
 
+/* Rail wrapper for the carousel — gives the chevrons something to
+   absolutely-position against. On mobile we just let touch swipe; the
+   chevrons stay hidden. On desktop the JS toggles their hidden state
+   based on scroll position so they disable cleanly at each end. */
+.place-community-reviews__rail {
+    position: relative;
+}
+.place-community-reviews__nav {
+    display: none;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--c-border);
+    background: #fff;
+    color: var(--c-text);
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(30, 30, 30, 0.14);
+    transition: background 120ms ease, opacity 120ms ease, transform 80ms ease;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+.place-community-reviews__nav .material-symbols-rounded {
+    font-size: 22px;
+    font-variation-settings: 'wght' 600;
+}
+.place-community-reviews__nav:hover { background: var(--c-input-bg); }
+.place-community-reviews__nav:active { transform: translateY(-50%) scale(0.92); }
+.place-community-reviews__nav[disabled] {
+    opacity: 0.35;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+.place-community-reviews__nav--prev { left: -12px; }
+.place-community-reviews__nav--next { right: -12px; }
+@media (min-width: 720px) {
+    /* On desktop the chevrons are visible (when there's something to
+       scroll to). Mobile keeps them hidden — touch swipe is enough. */
+    .place-community-reviews__nav { display: inline-flex; }
+}
+
 /* Community review — testimonial-card layout. Each review is a
    self-contained card. Card sizing differs by viewport — see the
    list rules above. */
