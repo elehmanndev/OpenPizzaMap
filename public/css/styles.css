@@ -3104,9 +3104,19 @@ a.place-review:hover {
 .opm-review__cats > li {
     display: flex;
     flex-direction: column;
-    align-items: center;
     gap: 4px;
-    text-align: center;
+}
+/* Spread the 2-column breakdown edge-to-edge: left-column cells flush
+   left, right-column cells flush right. The 1x4 desktop layout falls
+   back to the default flex-start so all four cells line up cleanly. */
+.opm-review__cats > li:nth-child(odd)  { align-items: flex-start; text-align: left; }
+.opm-review__cats > li:nth-child(even) { align-items: flex-end;   text-align: right; }
+@media (min-width: 520px) {
+    .opm-review__cats > li:nth-child(odd),
+    .opm-review__cats > li:nth-child(even) {
+        align-items: flex-start;
+        text-align: left;
+    }
 }
 .opm-review__cat {
     font-size: 10.5px;
