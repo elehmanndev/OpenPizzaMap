@@ -118,7 +118,9 @@
     }
 
     async function finalize() {
-        if (!collected.name || !collected.city || !collected.gmapsUrl) {
+        // Only name + city are required. gmapsUrl is optional: the server
+        // falls back to a Places Text Search by name+city when it's null.
+        if (!collected.name || !collected.city) {
             finalized = false;
             showError("Looks like I missed a detail. Let's pick up where we left off.");
             setBusy(false);
