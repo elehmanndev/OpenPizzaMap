@@ -23,6 +23,7 @@
     <% } %>
 </head>
 
+<% const isAuthPage = typeof bodyClass === "string" && bodyClass.includes("auth-page"); %>
 <body class="<%= (typeof bodyClass !== "undefined" && bodyClass) ? bodyClass : "" %>">
   <header>
     <div class="nav">
@@ -32,12 +33,15 @@
       <% if (user) { %>
         <span class="greeting">Hi, <%= user.displayName %></span>
       <% } %>
-      <button class="menu-toggle" id="sidebar-open" aria-label="Open menu">
-        <span class="material-symbols-rounded" aria-hidden="true">menu</span>
-      </button>
+      <% if (!isAuthPage) { %>
+        <button class="menu-toggle" id="sidebar-open" aria-label="Open menu">
+          <span class="material-symbols-rounded" aria-hidden="true">menu</span>
+        </button>
+      <% } %>
     </div>
   </header>
 
+  <% if (!isAuthPage) { %>
   <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
   <nav class="sidebar" id="sidebar" aria-label="Navigation">
     <div class="sidebar-head">
@@ -102,8 +106,8 @@
       <% } %>
     </div>
   </nav>
+  <% } %>
 
-  <% const isAuthPage = typeof bodyClass === "string" && bodyClass.includes("auth-page"); %>
   <main class="container">
     <% if (isAuthPage) { %>
       <div class="auth-stack">
@@ -114,6 +118,7 @@
     <% } %>
   </main>
 
+  <% if (!isAuthPage) { %>
   <script>
     (function () {
       const open = document.getElementById('sidebar-open');
@@ -141,6 +146,7 @@
       });
     })();
   </script>
+  <% } %>
 </body>
 
 </html>
