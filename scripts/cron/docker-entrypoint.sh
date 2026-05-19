@@ -43,7 +43,11 @@ NEW_HASH=$(sha256sum package-lock.json | cut -d' ' -f1)
 OLD_HASH=$(cat "$HASH_FILE" 2>/dev/null || echo "")
 if [ "$NEW_HASH" != "$OLD_HASH" ]; then
     log "package-lock.json changed — running npm ci…"
-    SKIP_PLAYWRIGHT_INSTALL=1 npm ci --ignore-scripts --no-audit --no-fund 2>&1 | tail -5
+    # --include=dev because the runner needs playwright (which lives in
+    # devDependencies so Hostinger's prod install doesn't pull it in).
+    # If NODE_ENV=production is set on the host, npm ci would otherwise
+    # silently prune devDeps and the runner would crash on resolve-via-gmaps.
+    SKIP_PLAYWRIGHT_INSTALL=1 npm ci --include=dev --ignore-scripts --no-audit --no-fund 2>&1 | tail -5
     echo "$NEW_HASH" > "$HASH_FILE"
 else
     log "package-lock.json unchanged, skipping npm ci"
