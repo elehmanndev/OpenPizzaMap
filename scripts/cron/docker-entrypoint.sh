@@ -63,6 +63,15 @@ else
     log "package-lock.json unchanged + deps intact, skipping npm ci"
 fi
 
+# Belt-and-suspenders: even after npm ci --include=dev, something in
+# this base image is silently pruning playwright (npm version quirk?
+# hidden .npmrc? NODE_ENV=production override?). Just force-install it
+# directly if still missing. Idempotent no-op when already present.
+if [ ! -d node_modules/playwright ]; then
+    log "playwright still missing after npm ci — force-installing directly"
+    SKIP_PLAYWRIGHT_INSTALL=1 npm install playwright@1.59.1 --no-save --ignore-scripts --no-audit --no-fund 2>&1 | tail -3
+fi
+
 # ─── Regen Prisma client (fast, idempotent) ────────────────────────────────
 log "prisma generate…"
 npx prisma generate 2>&1 | tail -3
