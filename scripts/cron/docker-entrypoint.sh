@@ -37,12 +37,22 @@ else
     log "git fetch failed (network blip?) — staying on existing code"
 fi
 
-# ─── Reinstall deps only if package-lock changed ───────────────────────────
+# ─── Reinstall deps only if package-lock changed OR a critical dev dep ─────
+# was previously pruned. The dev-dep guard exists because a prior bad
+# entrypoint run (pre-2026-05-20 without --include=dev) could prune
+# playwright AND update the hash file, so the next start would see
+# "unchanged" and never reinstall the missing module.
 HASH_FILE=/app/.docker-lock-hash
 NEW_HASH=$(sha256sum package-lock.json | cut -d' ' -f1)
 OLD_HASH=$(cat "$HASH_FILE" 2>/dev/null || echo "")
+NEED_INSTALL=""
 if [ "$NEW_HASH" != "$OLD_HASH" ]; then
-    log "package-lock.json changed — running npm ci…"
+    NEED_INSTALL="package-lock.json changed"
+elif [ ! -d node_modules/playwright ]; then
+    NEED_INSTALL="playwright missing from node_modules"
+fi
+if [ -n "$NEED_INSTALL" ]; then
+    log "$NEED_INSTALL — running npm ci…"
     # --include=dev because the runner needs playwright (which lives in
     # devDependencies so Hostinger's prod install doesn't pull it in).
     # If NODE_ENV=production is set on the host, npm ci would otherwise
@@ -50,7 +60,7 @@ if [ "$NEW_HASH" != "$OLD_HASH" ]; then
     SKIP_PLAYWRIGHT_INSTALL=1 npm ci --include=dev --ignore-scripts --no-audit --no-fund 2>&1 | tail -5
     echo "$NEW_HASH" > "$HASH_FILE"
 else
-    log "package-lock.json unchanged, skipping npm ci"
+    log "package-lock.json unchanged + deps intact, skipping npm ci"
 fi
 
 # ─── Regen Prisma client (fast, idempotent) ────────────────────────────────
