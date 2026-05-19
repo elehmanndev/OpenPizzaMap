@@ -14,70 +14,9 @@ async function main() {
     // real Google user, sign in once to create the row, then run a
     // one-off `UPDATE User SET role = 'admin' WHERE email = ...`.
 
-    // 10 sample places (Barcelona-ish coords; edit as needed)
-    const samples = [
-        {
-            name: "Sample Neapolitan 1",
-            addressLine: "Carrer de Example 1",
-            city: "Barcelona",
-            region: "Catalunya",
-            postalCode: "08001",
-            country: "ES",
-            lat: "41.3851000",
-            lng: "2.1734000",
-            priceLevel: 2,
-            stylesJson: JSON.stringify(["neapolitan"]),
-            dineIn: true, takeaway: true, delivery: false,
-            websiteUrl: null, googleMapsUrl: null, instagramUrl: null,
-            status: "active"
-        },
-        {
-            name: "Sample Slice Spot",
-            addressLine: "Carrer de Example 2",
-            city: "Barcelona",
-            region: "Catalunya",
-            postalCode: "08002",
-            country: "ES",
-            lat: "41.3860000",
-            lng: "2.1700000",
-            priceLevel: 1,
-            stylesJson: JSON.stringify(["ny_slice"]),
-            dineIn: false, takeaway: true, delivery: true,
-            status: "active"
-        },
-        {
-            name: "Sample Roman Pizza",
-            addressLine: "Carrer de Example 3",
-            city: "Barcelona",
-            region: "Catalunya",
-            postalCode: "08003",
-            country: "ES",
-            lat: "41.3880000",
-            lng: "2.1770000",
-            priceLevel: 2,
-            stylesJson: JSON.stringify(["roman"]),
-            dineIn: true, takeaway: true, delivery: false,
-            status: "active"
-        }
-    ];
-
-    // pad to 10 with variations
-    while (samples.length < 10) {
-        const i = samples.length + 1;
-        samples.push({
-            ...samples[samples.length % 3],
-            name: `Sample Place ${i}`,
-            addressLine: `Carrer de Example ${i}`,
-            lat: (41.3851 + (i * 0.001)).toFixed(7),
-            lng: (2.1734 + (i * 0.001)).toFixed(7),
-        });
-    }
-
-    for (const s of samples) {
-        await prisma.place.create({ data: s });
-    }
-
-    console.log("Seed complete.");
+    // No place rows are seeded. The map is populated by curated
+    // scrapers (scripts/scrapers/) and user submissions (/add-your-spot).
+    console.log("Seed complete (no-op — places come from scrapers + intake).");
 }
 
 main()
