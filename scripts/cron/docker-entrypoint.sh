@@ -55,20 +55,20 @@ if [ -n "$NEED_INSTALL" ]; then
     log "$NEED_INSTALL — running npm ci…"
     # --include=dev because the runner needs playwright (which lives in
     # devDependencies so Hostinger's prod install doesn't pull it in).
-    # If NODE_ENV=production is set on the host, npm ci would otherwise
-    # silently prune devDeps and the runner would crash on resolve-via-gmaps.
     SKIP_PLAYWRIGHT_INSTALL=1 npm ci --include=dev --ignore-scripts --no-audit --no-fund 2>&1 | tail -5
     echo "$NEW_HASH" > "$HASH_FILE"
 else
     log "package-lock.json unchanged + deps intact, skipping npm ci"
 fi
 
-# Belt-and-suspenders: even after npm ci --include=dev, something in
-# this base image is silently pruning playwright (npm version quirk?
-# hidden .npmrc? NODE_ENV=production override?). Just force-install it
-# directly if still missing. Idempotent no-op when already present.
-if [ ! -d node_modules/playwright ]; then
-    log "playwright still missing after npm ci — force-installing directly"
+# Ensure playwright is actually loadable. The Unraid restart path
+# recreates the container from the image, and the image's build-time
+# npm ci (without --include=dev) may have left the playwright npm
+# package out or partial — so node_modules/playwright can exist as a
+# stale directory but require('playwright') still throws MODULE_NOT_FOUND.
+# Force-install on every start. Idempotent: instant when already correct.
+if ! node -e "require.resolve('playwright')" 2>/dev/null; then
+    log "playwright not loadable — force-installing"
     SKIP_PLAYWRIGHT_INSTALL=1 npm install playwright@1.59.1 --no-save --ignore-scripts --no-audit --no-fund 2>&1 | tail -3
 fi
 
