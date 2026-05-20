@@ -38,6 +38,7 @@ scripts/lib/.tripadvisor-budget.json
 # Per-host deploy state. Sentinels + asset-version manifest are written by
 # scripts on each Hostinger boot/deploy and must not be checked in.
 .builds/
+tmp/
 
 # Script artifacts. Everything under data/ is regenerable: scrape outputs,
 # external-API caches, audit/dedup/error reports. The dirs themselves are
