@@ -310,13 +310,11 @@
       </section>
     ` : ""}
 
-    <section class="card place-description">
-      ${place.descriptionHtml || `
-        <p><em>(Auto-generated description placeholder — Gemini will fill this in.)</em></p>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-        <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-      `}
-    </section>
+    ${place.descriptionHtml ? `
+      <section class="card place-description">
+        ${place.descriptionHtml}
+      </section>
+    ` : ""}
 
     ${(place.websiteUrl || place.instagramUrl || place.googleMapsUrl || place.phone) ? `
       <section class="place-actions">
