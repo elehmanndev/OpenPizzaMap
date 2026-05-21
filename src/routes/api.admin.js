@@ -160,16 +160,21 @@ router.post("/maintenance", async (req, res) => {
     const parseCsv = (s) => (s ? String(s).split(",").map(x => x.trim()).filter(Boolean) : null);
     const force = parseCsv(req.query.force);
     const skip = parseCsv(req.query.skip);
+    // `only` lets the opm-runner ping target a single phase
+    // (?only=localizeImages) — every other phase is skipped for that
+    // tick. The Unraid runner uses this to invoke just the file-writing
+    // phase that has to execute on the live Hostinger filesystem.
+    const only = parseCsv(req.query.only);
     // Allow per-phase limit overrides via query: ?resolve=80&photos=80
     const overrides = {};
-    for (const key of ["resolve", "photos", "reviews", "descriptions", "osm", "tripadvisor", "socials", "playwrightFallback"]) {
+    for (const key of ["resolve", "photos", "reviews", "descriptions", "osm", "tripadvisor", "socials", "playwrightFallback", "localizeImages"]) {
         if (req.query[key] != null) {
             const n = parseInt(req.query[key], 10);
             if (Number.isFinite(n) && n > 0) overrides[key] = n;
         }
     }
 
-    const result = tryStartMaintenance({ mode, force, skip, overrides });
+    const result = tryStartMaintenance({ mode, force, skip, only, overrides });
     if (!result.accepted) {
         return res.status(409).json({ ok: false, ...result });
     }

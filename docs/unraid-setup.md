@@ -72,6 +72,8 @@ In Unraid's web UI:
 | `TRIPADVISOR_API_KEY` | `<value>` | From Hostinger `.env` |
 | `RUNNER_MODE` | `burn` | "burn" until GCP credit runs out, then switch to "min" |
 | `RUNNER_INTERVAL_MS` | `3600000` | 1 hour between ticks |
+| `HOSTINGER_URL` | `https://openpizzamap.com` | Base URL of the live app. Each tick POSTs to `/api/admin/maintenance?only=localizeImages` so the file-writing phase runs on Hostinger's filesystem (the bytes can't land on Unraid). Omit to disable the dispatch. |
+| `ADMIN_API_KEY` | `<value>` | First key from Hostinger's `ADMIN_API_KEYS` env. Sent as `x-api-key` header on the localize-images ping. |
 | `NODE_ENV` | `production` | |
 
 4. **Volume mount** (optional but recommended — caches survive rebuilds):

@@ -22,6 +22,11 @@
 //   node scripts/download-images.js                # process every eligible place
 //   node scripts/download-images.js --limit 50     # try only 50
 //   node scripts/download-images.js --skip-existing-hotlinks   # only fill nulls
+//
+// Importable: exports `run(opts)` so src/services/maintenance.js can call it
+// in-process inside the live Hostinger Passenger worker (the `localizeImages`
+// phase). When called in-process, pass `disconnect: false` so the shared
+// Prisma client stays alive after this phase finishes.
 
 const fs = require('fs');
 const path = require('path');
@@ -29,15 +34,6 @@ const { prisma, ROOT, PATHS } = require('../lib/bootstrap');
 
 const OUT_DIR = path.join(ROOT, 'public', 'uploads', 'places');
 fs.mkdirSync(OUT_DIR, { recursive: true });
-
-const args = process.argv.slice(2);
-const LIMIT = (() => {
-  const i = args.indexOf('--limit');
-  if (i === -1) return null;
-  const n = parseInt(args[i + 1], 10);
-  return Number.isFinite(n) ? n : null;
-})();
-const SKIP_EXISTING_HOTLINKS = args.includes('--skip-existing-hotlinks');
 
 const UA = 'OpenPizzaMap/0.1 (eric@openpizzamap.com)';
 const CONCURRENCY = 4;
@@ -182,7 +178,7 @@ async function pmap(items, n, fn) {
   return results;
 }
 
-(async () => {
+async function run({ limit = null, skipExistingHotlinks = false, disconnect = true } = {}) {
   const scrapeMap = loadScrapeImages();
   console.log(`[load] ${scrapeMap.size} scrape records carry an image URL`);
 
@@ -195,7 +191,7 @@ async function pmap(items, n, fn) {
     if (p.heroImageUrl && p.heroImageUrl.startsWith('/uploads/')) continue; // already local
     let src = null;
     if (p.heroImageUrl && /^https?:\/\//i.test(p.heroImageUrl)) {
-      if (SKIP_EXISTING_HOTLINKS) continue;
+      if (skipExistingHotlinks) continue;
       src = p.heroImageUrl;
     } else if (!p.heroImageUrl) {
       const k = dedupKey(p.name, p.city);
@@ -207,7 +203,7 @@ async function pmap(items, n, fn) {
   console.log(`[plan] ${work.length} places to download (of ${places.length} total)`);
 
   let limited = work;
-  if (LIMIT) limited = limited.slice(0, LIMIT);
+  if (limit) limited = limited.slice(0, limit);
 
   let ok = 0, failed = 0, totalBytes = 0;
   const results = await pmap(limited, CONCURRENCY, async (item) => {
@@ -235,5 +231,21 @@ async function pmap(items, n, fn) {
     }
   }
   console.log(`[done] downloaded=${ok} failed=${failed} bytes=${(totalBytes / 1024 / 1024).toFixed(1)} MB → ${path.relative(ROOT, OUT_DIR)}`);
-  await prisma.$disconnect();
-})().catch(e => { console.error(e); process.exit(1); });
+  if (disconnect) await prisma.$disconnect();
+  return { ok: true, downloaded: ok, failed, totalBytes, planned: work.length };
+}
+
+module.exports = { run };
+
+if (require.main === module) {
+  const args = process.argv.slice(2);
+  const limit = (() => {
+    const i = args.indexOf('--limit');
+    if (i === -1) return null;
+    const n = parseInt(args[i + 1], 10);
+    return Number.isFinite(n) ? n : null;
+  })();
+  const skipExistingHotlinks = args.includes('--skip-existing-hotlinks');
+  run({ limit, skipExistingHotlinks, disconnect: true })
+    .catch(e => { console.error(e); process.exit(1); });
+}
