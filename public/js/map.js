@@ -198,7 +198,6 @@
   </div>`;
         const cityLine = [p.city, p.country].filter(Boolean).join(", ");
         const price = p.priceLevel ? priceGlyph(p.priceLevel) : "";
-        const meta = [cityLine, price].filter(Boolean).join(" · ");
         const chips = styleChips(p);
         const fav = favBtnHtml(!!p.viewerFavorited);
         return `
@@ -206,7 +205,8 @@ ${hero}
 ${fav}
 <div class="msc-body">
   <h3 class="msc-name">${esc(p.name)}</h3>
-  ${meta ? `<p class="msc-meta">${esc(meta)}</p>` : ""}
+  ${cityLine ? `<p class="msc-meta">${esc(cityLine)}</p>` : ""}
+  ${price ? `<p class="msc-price">${esc(price)}</p>` : ""}
   ${chips ? `<div class="msc-styles">${chips}</div>` : ""}
 </div>`.trim();
     }
