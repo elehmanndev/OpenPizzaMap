@@ -33,7 +33,6 @@ const path = require('path');
 const { prisma, ROOT, PATHS } = require('../lib/bootstrap');
 
 const OUT_DIR = path.join(ROOT, 'public', 'uploads', 'places');
-fs.mkdirSync(OUT_DIR, { recursive: true });
 
 const UA = 'OpenPizzaMap/0.1 (eric@openpizzamap.com)';
 const CONCURRENCY = 4;
@@ -179,6 +178,7 @@ async function pmap(items, n, fn) {
 }
 
 async function run({ limit = null, skipExistingHotlinks = false, disconnect = true } = {}) {
+  fs.mkdirSync(OUT_DIR, { recursive: true });
   const scrapeMap = loadScrapeImages();
   console.log(`[load] ${scrapeMap.size} scrape records carry an image URL`);
 
