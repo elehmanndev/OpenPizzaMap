@@ -30,7 +30,21 @@ if (!process.env.PLAYWRIGHT_BROWSERS_PATH) {
     }
 }
 
-const { chromium } = require('playwright');
+// Lazy-require playwright. It lives in devDependencies and only
+// resolve-via-gmaps.js / the legacy enricher / playwrightFallback
+// actually use the launcher — so if a deploy ends up without
+// playwright installed (Hostinger's prod runtime, or opm-runner
+// hitting one of the recurring npm-install-but-playwright-missing
+// states), loading this file should NOT crash the whole maintenance
+// orchestrator. The failure surfaces as a rejected promise inside
+// the phase function instead, which runMaintenance catches and logs
+// as a phase FAIL while moving on to the next phase.
+let _chromium = null;
+function getChromium() {
+    if (_chromium) return _chromium;
+    _chromium = require('playwright').chromium;
+    return _chromium;
+}
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const CACHE_PATH = path.join(ROOT, 'data', 'cache', 'gmaps-resolve-cache.json');
@@ -65,7 +79,7 @@ async function createGmapsPage() {
     // multi-process mode works fine; the single-process flags are
     // a no-op on systems that don't need them, so we apply them
     // unconditionally to keep one code path.
-    const browser = await chromium.launch({
+    const browser = await getChromium().launch({
         headless: true,
         args: ['--single-process', '--no-zygote', '--disable-gpu', '--no-sandbox'],
     });
