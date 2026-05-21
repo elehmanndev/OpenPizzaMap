@@ -47,6 +47,7 @@ const { run: runPlaywrightFallback } = require("../../scripts/enrichment/resolve
 const { run: runReviews } = require("../../scripts/scrapers/scrape-reviews");
 const { run: runSocials } = require("../../scripts/backfills/backfill-socials-from-website");
 const { run: runOpmRating } = require("../../scripts/backfills/backfill-opm-rating");
+const { run: runDownloadImages } = require("../../scripts/backfills/download-images");
 
 const ROOT = path.resolve(__dirname, "..", "..");
 const CACHE_DIR = path.join(ROOT, "data", "cache");
@@ -90,6 +91,7 @@ const MODE_PRESETS = {
         socials: 300,
         opmRating: true,
         playwrightFallback: 20,
+        localizeImages: 200,
     },
     min: {
         resolve: 20,
@@ -101,6 +103,7 @@ const MODE_PRESETS = {
         socials: 300,
         opmRating: true,
         playwrightFallback: 10,
+        localizeImages: 100,
     },
 };
 
@@ -179,6 +182,25 @@ const PHASES = [
     {
         name: "photos",
         async run(opts) { return runPhotosBatch({ limit: opts.photos }); },
+    },
+    // Downloads remote heroImageUrl values (signed lh3 Google photo URLs,
+    // scraper-host hotlinks) to public/uploads/places/{id}.{ext} so the
+    // bytes survive when the original URL rotates. Gated to Hostinger
+    // because the bytes must land on the live filesystem — Unraid's
+    // opm-runner ticks would otherwise write into a container disk that
+    // the public site can't serve from. Set OPM_HOST=hostinger in the
+    // Hostinger Node.js app env to enable.
+    {
+        name: "localizeImages",
+        async run(opts) {
+            if (process.env.OPM_HOST !== "hostinger") {
+                return { ok: true, skipped: true, reason: "OPM_HOST != hostinger" };
+            }
+            return runDownloadImages({
+                limit: opts.localizeImages,
+                disconnect: false,
+            });
+        },
     },
     {
         name: "reviews",
