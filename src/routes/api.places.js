@@ -214,8 +214,11 @@ router.get("/markers", async (req, res) => {
             heroImageUrl: true,
             opmRating: true,
             googleRating: true,
+            googleReviewCount: true,
             tripadvisorRating: true,
+            tripadvisorReviewCount: true,
             yelpRating: true,
+            yelpReviewCount: true,
             styles: {
                 select: {
                     style: { select: { slug: true, name: true, shortLabel: true } },
