@@ -278,7 +278,11 @@ const PHASES = [
 
 // ─── Orchestrator ───────────────────────────────────────────────────────────
 
-function shouldRunPhase(phase, { force, skip, hour }) {
+function shouldRunPhase(phase, { force, skip, only, hour }) {
+    // `only` is the strongest filter: when set, ONLY listed phases run.
+    // Used by the opm-runner ping that targets just `localizeImages` on
+    // Hostinger (the file-writing phase that can't run on Unraid).
+    if (only && only.length && !only.includes(phase.name)) return false;
     if (skip && skip.includes(phase.name)) return false;
     if (force && force.includes(phase.name)) return true;
     if (phase.gateHour != null) return phase.gateHour === hour;
@@ -301,7 +305,7 @@ function withTimeout(promise, ms, phaseName) {
     return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timer));
 }
 
-async function runMaintenance({ mode = "min", force = null, skip = null, overrides = {} } = {}) {
+async function runMaintenance({ mode = "min", force = null, skip = null, only = null, overrides = {} } = {}) {
     const preset = MODE_PRESETS[mode] || MODE_PRESETS.min;
     const opts = { ...preset, ...overrides };
     const startedAt = new Date();
@@ -331,8 +335,11 @@ async function runMaintenance({ mode = "min", force = null, skip = null, overrid
     };
 
     for (const phase of PHASES) {
-        if (!shouldRunPhase(phase, { force, skip, hour })) {
-            phaseResults.push({ name: phase.name, skipped: true, reason: "not scheduled this hour" });
+        if (!shouldRunPhase(phase, { force, skip, only, hour })) {
+            const reason = only && only.length
+                ? `not in only=[${only.join(",")}]`
+                : "not scheduled this hour";
+            phaseResults.push({ name: phase.name, skipped: true, reason });
             persistProgress();
             continue;
         }
@@ -403,14 +410,14 @@ function abortMaintenance() {
 // flight, accepted=false and the caller should respond 409 Conflict
 // (cron-job.org treats 4xx as failure → marks the tick as missed,
 // which is correct behavior).
-function tryStartMaintenance({ mode = "min", force = null, skip = null, overrides = {} } = {}) {
+function tryStartMaintenance({ mode = "min", force = null, skip = null, only = null, overrides = {} } = {}) {
     const lock = readLock();
     if (lock) {
         return { accepted: false, reason: "already running", currentRun: lock };
     }
     // Fire-and-forget: kick off the work without awaiting, return
     // immediately so the route handler can respond 202.
-    runMaintenance({ mode, force, skip, overrides }).catch((err) => {
+    runMaintenance({ mode, force, skip, only, overrides }).catch((err) => {
         // Last-resort error capture — runMaintenance handles per-phase
         // errors already, so reaching here means something at the
         // orchestration layer crashed. Log + clear lock so the next

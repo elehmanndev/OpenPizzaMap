@@ -27,6 +27,15 @@
 //   RUNNER_INITIAL_DELAY_MS — sleep before the FIRST tick. Useful when
 //                             multiple replicas might start at once.
 //                             Default 0.
+//   HOSTINGER_URL          — base URL of the live Hostinger app (e.g.
+//                            https://openpizzamap.com). When set,
+//                            runner.js POSTs to /api/admin/maintenance
+//                            with ?only=localizeImages after each tick
+//                            so the file-writing phase fires on the
+//                            live filesystem. Skipped if unset.
+//   ADMIN_API_KEY          — x-api-key header value for the Hostinger
+//                            /api/admin/* namespace. Required when
+//                            HOSTINGER_URL is set.
 
 const path = require('path');
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -37,8 +46,35 @@ const INTERVAL_MS = parseInt(process.env.RUNNER_INTERVAL_MS, 10) || 60 * 60 * 10
 const SKIP = (process.env.RUNNER_SKIP || '')
     .split(',').map((s) => s.trim()).filter(Boolean);
 const INITIAL_DELAY_MS = parseInt(process.env.RUNNER_INITIAL_DELAY_MS, 10) || 0;
+const HOSTINGER_URL = (process.env.HOSTINGER_URL || '').replace(/\/$/, '');
+const ADMIN_API_KEY = process.env.ADMIN_API_KEY || '';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Phases that have to run on Hostinger's filesystem (write to
+// public/uploads/places/, build sharp variants, etc.) — Unraid's
+// in-process tick handles only DB work, then this list is dispatched
+// to the live worker via HTTPS. Add new file-writing phases here as
+// they're built.
+const HOSTINGER_ONLY_PHASES = ['localizeImages'];
+
+async function pingHostingerLocalize() {
+    if (!HOSTINGER_URL || !ADMIN_API_KEY) {
+        return { skipped: true, reason: 'HOSTINGER_URL or ADMIN_API_KEY not set' };
+    }
+    const only = HOSTINGER_ONLY_PHASES.join(',');
+    const url = `${HOSTINGER_URL}/api/admin/maintenance?mode=${MODE}&only=${encodeURIComponent(only)}`;
+    try {
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'x-api-key': ADMIN_API_KEY },
+        });
+        const body = await res.text().catch(() => '');
+        return { ok: res.ok, status: res.status, body: body.slice(0, 200) };
+    } catch (err) {
+        return { ok: false, error: err.message };
+    }
+}
 
 let stopping = false;
 process.on('SIGTERM', () => { console.log('[runner] SIGTERM received, will exit after current tick'); stopping = true; });
@@ -80,6 +116,19 @@ async function tick(n) {
         // here means orchestration crashed. Log + keep looping.
         console.error(`[runner] tick ${n} crashed:`, err.message);
         console.error(err.stack);
+    }
+
+    // Dispatch file-writing phases to Hostinger. The HTTPS call is
+    // fire-and-forget by design: the route returns 202 as soon as the
+    // lock is acquired and the work continues in the live worker.
+    // Failures here never fail the tick — the next loop will retry.
+    const ping = await pingHostingerLocalize();
+    if (ping.skipped) {
+        console.log(`[runner]   localize ping: SKIP (${ping.reason})`);
+    } else if (ping.ok) {
+        console.log(`[runner]   localize ping: ${ping.status} ${ping.body}`);
+    } else {
+        console.warn(`[runner]   localize ping: FAIL (${ping.error || ping.status})`);
     }
 }
 
