@@ -47,6 +47,7 @@ const SOURCES = [
   { file: '50toppizza-scrape.json',                   source: '50toppizza',     style: null,                  shape: '50tp' },
   { file: 'michelin-scrape.json',                     source: 'michelin',       style: null,                  shape: 'michelin' },
   { file: 'lamejorpizza-scrape.json',                 source: 'lamejorpizza',   style: 'neapolitan',          shape: 'lamejorpizza' },
+  { file: 'gambero-rosso-scrape.json',                source: 'gamberorosso',   style: 'italian',             shape: 'gamberoRosso' },
 ];
 
 // ----- canonicalisation tables -----
@@ -402,6 +403,52 @@ function normalizeLamejorpizza(rec) {
   };
 }
 
+// Gambero Rosso scraper output (scripts/scrapers/scrape-gamberorosso.js).
+// Source URL: /cerca/?type=locali&categoria_locali=pizza-a-taglio,...&sort=relevance
+//
+// Tile shape: { name, city, province, category, description, spicchiTier,
+//   detailUrl, postId, in_db, in_db_match, lat, lng, formattedAddress,
+//   phone, websiteUrl, googlePlaceId }
+// `lat`/`lng`/`phone` are populated by the scraper's Google Places pass for
+// non-in_db rows; in_db rows have those nulled (the importer's fill-only
+// dedupe will inherit them from the existing DB row).
+//
+// Spicchi tier (1/2/3) maps directly into PlaceSource.rank so the badge
+// surface stays consistent with Michelin (1=bib, 2=★, 3=★★). The non-
+// awarded long-tail entries land with rank=null.
+//
+// Country is always Italy (the .it source URL is geo-restricted to Italian
+// venues). We DON'T pull a country code from the page because the .it/cerca/
+// endpoint never surfaces one.
+function normalizeGamberoRosso(rec) {
+  if (!rec.name || !rec.city) return null;
+  // Without lat/lng the importer skips the row entirely (see write-pass
+  // null-coords guard). The scraper Google-enriches every venue, so this
+  // only filters rows where Google found nothing.
+  if (rec.lat == null || rec.lng == null) return null;
+  const rank = typeof rec.spicchiTier === 'number' ? rec.spicchiTier : null;
+  // Map Italian city names (Napoli, Roma, Firenze, …) to the English canon
+  // the DB stores. Without this, in_db rows fall through dedup and we'd
+  // create duplicate Places for already-known venues.
+  const city = canonCityName(rec.city, null);
+  return {
+    name: decodeEntities(rec.name).trim(),
+    addressLine: rec.formattedAddress ? decodeEntities(rec.formattedAddress).trim() : null,
+    city,
+    region: null,
+    postalCode: null,
+    countryCode: 'IT',
+    countryName: 'Italy',
+    phone: rec.phone || null,
+    websiteUrl: rec.websiteUrl || null,
+    priceLevel: 2,
+    heroImageUrl: null, // photos filled later by the enrichment cron
+    rank,
+    lat: typeof rec.lat === 'number' ? rec.lat : null,
+    lng: typeof rec.lng === 'number' ? rec.lng : null,
+  };
+}
+
 // Michelin scraper output. Cards have lat/lng + country (ISO2) inline.
 // Distinction values: '' / 'bib' / '1 star' / '2 stars' / '3 stars'. We encode
 // these into PlaceSource.rank so the surface Place row stays clean and the
@@ -513,6 +560,7 @@ function loadAll() {
       else if (cfg.shape === '50tp') norm = normalize50TopPizza(rec);
       else if (cfg.shape === 'michelin') norm = normalizeMichelin(rec);
       else if (cfg.shape === 'lamejorpizza') norm = normalizeLamejorpizza(rec);
+      else if (cfg.shape === 'gamberoRosso') norm = normalizeGamberoRosso(rec);
       else norm = normalizeTasteatlas(rec);
       // normalizeLamejorpizza returns null for rows that didn't pass the
       // scraper-side quality gate — silently skip them here.
