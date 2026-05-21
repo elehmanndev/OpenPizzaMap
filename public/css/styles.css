@@ -1089,8 +1089,10 @@ img.map-suggest-thumb { display: block; }
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 10px;
+    align-content: start;
+    align-items: start;
   }
   .map-sidebar-card {
     grid-template-columns: 1fr;
