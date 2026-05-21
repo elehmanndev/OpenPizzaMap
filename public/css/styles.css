@@ -1090,9 +1090,9 @@ img.map-suggest-thumb { display: block; }
     overscroll-behavior: contain;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-auto-rows: max-content;
     gap: 10px;
     align-content: start;
-    align-items: start;
   }
   .map-sidebar-card {
     grid-template-columns: 1fr;
