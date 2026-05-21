@@ -933,6 +933,13 @@ img.map-suggest-thumb { display: block; }
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.msc-price {
+  font-size: 12px;
+  color: var(--c-muted, #777);
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
 .msc-styles {
   display: flex;
   flex-wrap: wrap;
@@ -1081,6 +1088,23 @@ img.map-suggest-thumb { display: block; }
   .map-sidebar-list {
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .map-sidebar-card {
+    grid-template-columns: 1fr;
+  }
+  .msc-hero {
+    height: auto;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+  }
+  .msc-body {
+    padding: 12px;
+  }
+  .msc-styles {
+    display: none;
   }
 }
 
