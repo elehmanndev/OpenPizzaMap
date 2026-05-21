@@ -1101,7 +1101,7 @@ img.map-suggest-thumb { display: block; }
     aspect-ratio: 1 / 1;
   }
   .msc-body {
-    padding: 12px;
+    padding: 22px 12px 12px;
     height: 120px;
     overflow-y: auto;
     overscroll-behavior: contain;
