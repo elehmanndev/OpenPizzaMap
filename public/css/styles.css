@@ -1102,9 +1102,9 @@ img.map-suggest-thumb { display: block; }
   }
   .msc-body {
     padding: 12px;
-  }
-  .msc-styles {
-    display: none;
+    height: 120px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 }
 

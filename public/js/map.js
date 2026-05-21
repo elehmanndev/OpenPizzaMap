@@ -198,6 +198,13 @@
   </div>`;
         const cityLine = [p.city, p.country].filter(Boolean).join(", ");
         const price = p.priceLevel ? priceGlyph(p.priceLevel) : "";
+        const reviewCount = (Number(p.googleReviewCount) || 0)
+            + (Number(p.tripadvisorReviewCount) || 0)
+            + (Number(p.yelpReviewCount) || 0);
+        const countStr = reviewCount > 0
+            ? `${reviewCount.toLocaleString()} review${reviewCount === 1 ? "" : "s"}`
+            : "";
+        const priceLine = [price, countStr].filter(Boolean).join(" · ");
         const chips = styleChips(p);
         const fav = favBtnHtml(!!p.viewerFavorited);
         return `
@@ -206,7 +213,7 @@ ${fav}
 <div class="msc-body">
   <h3 class="msc-name">${esc(p.name)}</h3>
   ${cityLine ? `<p class="msc-meta">${esc(cityLine)}</p>` : ""}
-  ${price ? `<p class="msc-price">${esc(price)}</p>` : ""}
+  ${priceLine ? `<p class="msc-price">${esc(priceLine)}</p>` : ""}
   ${chips ? `<div class="msc-styles">${chips}</div>` : ""}
 </div>`.trim();
     }
