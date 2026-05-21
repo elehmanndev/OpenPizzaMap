@@ -459,8 +459,10 @@ ${fav}
                 // Heart button intercepts the click before this fires.
                 if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.button !== 0) return;
                 ev.preventDefault();
-                map.setView(e.marker.getLatLng(), Math.max(map.getZoom(), 15), { animate: true });
-                e.marker.openPopup();
+                sheet.collapse();
+                // zoomToShowLayer unspiderifies the cluster if needed, then runs
+                // the callback once the marker is actually visible on the map.
+                cluster.zoomToShowLayer(e.marker, () => e.marker.openPopup());
             });
 
             const favBtn = card.querySelector("[data-fav-btn]");
@@ -749,8 +751,8 @@ ${fav}
         searchInput.value = e.place.name;
         state.query = e.place.name;
         searchClear.hidden = false;
-        map.setView(e.marker.getLatLng(), Math.max(map.getZoom(), 16), { animate: true });
-        e.marker.openPopup();
+        sheet.collapse();
+        cluster.zoomToShowLayer(e.marker, () => e.marker.openPopup());
         hideSuggest();
         renderSidebar();
     }
