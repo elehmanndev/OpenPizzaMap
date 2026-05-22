@@ -266,4 +266,50 @@ router.post("/null-fallback-descriptions", async (req, res) => {
     res.json({ ok: true, mode: "apply", total, cleared: result.count });
 });
 
+// One-shot recovery: null out heroImageUrl values still pointing at
+// lh3.googleusercontent.com. Per `feedback_lh3_url_ttl.md` these expire
+// in days-to-weeks; the localizeImages phase has been wasting 200
+// download attempts per tick retrying the same 697 dead URLs because
+// download-images.js sees them as plain http(s) hotlinks. Nulling them
+// drops them out of the localize queue and puts them back in the
+// photos queue (which matches `heroImageUrl IS NULL OR ''`) so a
+// future google_api-mode runner can fetch fresh URLs.
+//
+// GET  → dry-run preview (count + sample)
+// POST → apply
+const LH3_PREFIX = "https://lh3.googleusercontent.com/";
+
+async function findExpiredLh3() {
+    const rows = await prisma.place.findMany({
+        where: { heroImageUrl: { startsWith: LH3_PREFIX } },
+        select: { id: true, name: true, city: true, country: true, heroImageUrl: true },
+        orderBy: { id: "asc" },
+    });
+    return rows;
+}
+
+router.get("/null-expired-lh3", async (req, res) => {
+    const rows = await findExpiredLh3();
+    res.json({
+        ok: true,
+        mode: "dry-run",
+        toClear: rows.length,
+        sample: rows.slice(0, 10).map(r => ({
+            id: r.id,
+            name: r.name,
+            city: r.city,
+            country: r.country,
+            url: r.heroImageUrl,
+        })),
+    });
+});
+
+router.post("/null-expired-lh3", async (req, res) => {
+    const result = await prisma.place.updateMany({
+        where: { heroImageUrl: { startsWith: LH3_PREFIX } },
+        data: { heroImageUrl: null },
+    });
+    res.json({ ok: true, mode: "apply", cleared: result.count });
+});
+
 module.exports = router;
