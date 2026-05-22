@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+
 const hostingerEnv = path.join(process.cwd(), ".builds", "config", ".env");
 const localEnv = path.join(process.cwd(), ".env.local");
 const defaultEnv = path.join(process.cwd(), ".env");
