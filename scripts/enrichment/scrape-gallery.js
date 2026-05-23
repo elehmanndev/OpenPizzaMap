@@ -150,7 +150,22 @@ async function run({ limit = 10, disconnect = true } = {}) {
         }
 
         if (!result.photos || !result.photos.length) {
-            console.log(`[galleryScrape] #${p.id} "${p.name}" — 0 photos (${result.reason || "empty"})`);
+            const reason = result.reason || "empty";
+            console.log(`[galleryScrape] #${p.id} "${p.name}" — 0 photos (${reason})`);
+            // Surface the diagnostic data added in gmaps.js scrapePhotos
+            // when the entrypoint click succeeded but extraction yielded
+            // nothing. Lets us diagnose canvas-rendering / wrong-click /
+            // dropped-URL cases from the runner log alone.
+            if (result.debug) {
+                const d = result.debug;
+                console.log(`[galleryScrape]   debug: via=${result.openVia} imgs=${d.totalImgs} lh3=${d.lh3Imgs} bg=${d.bgUrls} dialog=${d.hasDialog} feed=${d.hasFeed} title="${d.title}"`);
+                if (d.lh3Sample && d.lh3Sample.length) {
+                    console.log(`[galleryScrape]   lh3 sample: ${d.lh3Sample.join(" | ")}`);
+                }
+                if (d.bgSample && d.bgSample.length) {
+                    console.log(`[galleryScrape]   bg  sample: ${d.bgSample.join(" | ")}`);
+                }
+            }
             stats.noPhotos++;
             await prisma.place.update({
                 where: { id: p.id },

@@ -627,7 +627,39 @@ async function scrapePhotos(page, { googlePlaceId, maxPhotos = 10 } = {}) {
             }));
         }, maxPhotos).catch(() => []);
 
-        return { photos, openVia: openResult.via };
+        // If we found 0 photos despite a successful entrypoint click,
+        // capture a tiny diagnostic snapshot so the runner log can show
+        // what the page actually looked like. Cases we want to distinguish:
+        //   - extractor filter dropped lh3 URLs (lh3Imgs > 0, photos = 0)
+        //   - photos in CSS only (bgUrls > 0, lh3Imgs = 0)
+        //   - click didn't open the gallery (hasDialog = false)
+        //   - canvas-rendered (everything zero — hard case)
+        let debug = null;
+        if (photos.length === 0) {
+            debug = await page.evaluate(() => {
+                const allImgs = Array.from(document.querySelectorAll("img"));
+                const lh3Imgs = allImgs
+                    .map((i) => i.src || "")
+                    .filter((s) => /lh3\.googleusercontent\.com/.test(s));
+                const bgUrls = [];
+                for (const el of document.querySelectorAll('[style*="background-image"]')) {
+                    const m = (el.getAttribute("style") || "").match(/url\(["']?(https?:[^"')]+)["']?\)/);
+                    if (m && /lh3\.googleusercontent\.com/.test(m[1])) bgUrls.push(m[1]);
+                }
+                return {
+                    totalImgs: allImgs.length,
+                    lh3Imgs: lh3Imgs.length,
+                    bgUrls: bgUrls.length,
+                    lh3Sample: lh3Imgs.slice(0, 3),
+                    bgSample: bgUrls.slice(0, 3),
+                    hasDialog: !!document.querySelector('div[role="dialog"]'),
+                    hasFeed: !!document.querySelector('[role="feed"]'),
+                    hasMain: !!document.querySelector('[role="main"]'),
+                    title: document.title.slice(0, 80),
+                };
+            }).catch(() => null);
+        }
+        return { photos, openVia: openResult.via, debug };
     } catch (err) {
         return { photos: [], error: err.message };
     }
