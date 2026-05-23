@@ -711,6 +711,30 @@ router.post("/gallery-relayout-to-slug", async (req, res) => {
     }
 });
 
+// Bulk-hide places by id (set isVisible=false). Used to take obvious
+// thin-duplicate rows out of the public map + search without deleting
+// them, so Eric can review later via the admin UI. Idempotent.
+//
+// POST /api/admin/places-hide?ids=1636,2345,...
+// Returns: { ok, hidden: N }
+router.post("/places-hide", async (req, res) => {
+    try {
+        const raw = String(req.query.ids || req.body?.ids || "").trim();
+        const ids = raw.split(",").map((s) => parseInt(s.trim(), 10)).filter((n) => Number.isFinite(n) && n > 0);
+        if (!ids.length) {
+            return res.status(400).json({ ok: false, error: "no valid ids" });
+        }
+        const result = await prisma.place.updateMany({
+            where: { id: { in: ids } },
+            data: { isVisible: false },
+        });
+        res.json({ ok: true, requested: ids.length, hidden: result.count });
+    } catch (err) {
+        console.error("[places-hide] crashed:", err);
+        res.status(500).json({ ok: false, error: err.message });
+    }
+});
+
 // Track 2 — purge every source='google' PlaceImage row + reset all
 // affected Place.galleryLastScrapedAt back to NULL. Used after the
 // 2026-05-23 size-suffix bug + position-collision bug forced a
