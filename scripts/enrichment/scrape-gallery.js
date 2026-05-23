@@ -33,6 +33,18 @@ const fs = require("fs");
 const path = require("path");
 const { prisma, ROOT } = require("../lib/bootstrap");
 const { createGmapsPage, scrapePhotos } = require("../lib/gmaps");
+const { haversineM } = require("../lib/utils");
+
+// Guards for self-healing a stale googlePlaceId after a successful
+// fallback scrape. All four must hold before we overwrite the ID:
+//   - we came in via fallback (the original ID was deemed wrong)
+//   - the URL exposed a different place_id than the one we navigated with
+//   - the page heading matches our DB name (right venue, not a near-miss)
+//   - the URL's coords are within 200m of our DB pin (right location)
+// Reset enrichmentVersion to 0 so the downstream phases (reviews,
+// descriptions, ratings, TA) re-run against the fixed ID on the next
+// tick — without this, the bad-ID-derived caches never refresh.
+const HEAL_COORD_TOLERANCE_M = 200;
 
 const BACKOFF_FILE = path.join(ROOT, "data", "cache", "gallery-backoff.json");
 const STRIKE_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -208,6 +220,38 @@ async function run({ limit = 10, disconnect = true } = {}) {
             ? ` (tab=${result.tabClicked.label || "?"}${result.tabClicked.alreadySelected ? ":default" : ""})`
             : "";
         console.log(`[galleryScrape] #${p.id} "${p.name}" — ${result.photos.length} photos${tabNote}`);
+
+        // Self-heal a stale googlePlaceId when the fallback path found
+        // the right venue. Guards block writes when ANY signal is off:
+        // wrong-venue near-misses keep the original ID rather than swap
+        // it for a worse one.
+        if (
+            result.viaFallback
+            && result.healedPlaceId
+            && result.healedPlaceId !== p.googlePlaceId
+            && result.headingMatched
+            && result.healedCoords
+            && p.lat != null && p.lng != null
+        ) {
+            const distM = Math.round(
+                haversineM(Number(p.lat), Number(p.lng), result.healedCoords.lat, result.healedCoords.lng)
+            );
+            if (distM != null && distM <= HEAL_COORD_TOLERANCE_M) {
+                console.log(`[galleryScrape]   self-heal #${p.id}: placeId ${p.googlePlaceId} → ${result.healedPlaceId} (dist=${distM}m)`);
+                await prisma.place.update({
+                    where: { id: p.id },
+                    data: {
+                        googlePlaceId: result.healedPlaceId,
+                        enrichmentVersion: 0,
+                    },
+                }).catch((e) => {
+                    console.warn(`[galleryScrape]   self-heal #${p.id} update failed: ${e.message}`);
+                });
+            } else {
+                console.log(`[galleryScrape]   self-heal #${p.id} skipped: coord dist=${distM}m > ${HEAL_COORD_TOLERANCE_M}m`);
+            }
+        }
+
         jobs.push({
             placeId: p.id,
             name: p.name,

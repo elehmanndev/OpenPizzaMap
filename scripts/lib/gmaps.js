@@ -528,6 +528,31 @@ function coordsFromUrl(url) {
 // over the place_id and fall back. Tuned to 200m to allow normal Maps
 // centroid drift while catching cases like Marino where the place_id
 // pointed at a different venue ~2km away.
+
+// Self-heal helper. After a successful fallback navigation, the URL
+// contains the canonical place_id of whatever venue Google resolved to.
+// If photos were extracted AND the heading matches our name AND coords
+// align, the caller can trust this place_id and overwrite the stale one
+// in the DB — closing the loop on place_id rot without a manual step.
+//
+// Looks in the URL first (cheap, no extra await) then falls back to the
+// page HTML data blob (handles edge cases where the URL hasn't been
+// rewritten yet). Patterns mirror probe-playwright-feasibility.js.
+async function extractPlaceIdFromPage(page) {
+    const url = page.url() || "";
+    for (const re of [
+        /!1s(ChIJ[\w\-_]+)/,
+        /!16s.*?(ChIJ[\w\-_]+)/,
+        /place_id[:=](ChIJ[\w\-_]+)/,
+        /\/data=.*?(ChIJ[\w\-_]+)/,
+    ]) {
+        const m = re.exec(url);
+        if (m) return m[1];
+    }
+    const html = await page.content().catch(() => "");
+    const m = /(ChIJ[\w\-_]{20,})/g.exec(html);
+    return m ? m[1] : null;
+}
 const COORD_TRUST_M = 200;
 
 async function scrapePhotos(page, {
@@ -910,7 +935,32 @@ async function scrapePhotos(page, {
             const snap = await snapshotPage();
             debug = { ...trace, ...(snap || {}) };
         }
-        return { photos, openVia: openResult.via, viaFallback, tabClicked, debug };
+
+        // Self-heal data — only meaningful when we came in via fallback
+        // (the place_id we navigated with was wrong/stale; the URL now
+        // reflects whatever venue Google actually landed on). Caller
+        // applies guards (photos>0, headingMatched, coords within 200m
+        // of DB) before writing to the DB.
+        let healedPlaceId = null;
+        let healedCoords = null;
+        let headingMatched = null;
+        if (viaFallback) {
+            healedPlaceId = await extractPlaceIdFromPage(page);
+            healedCoords = coordsFromUrl(page.url() || "");
+            const finalHeading = await getHeading();
+            headingMatched = !!(finalHeading && name && headingMatchesName(finalHeading, name));
+        }
+
+        return {
+            photos,
+            openVia: openResult.via,
+            viaFallback,
+            tabClicked,
+            debug,
+            healedPlaceId,
+            healedCoords,
+            headingMatched,
+        };
     } catch (err) {
         return { photos: [], error: err.message };
     }
