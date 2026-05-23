@@ -16,6 +16,7 @@ const {
     abortMaintenance,
 } = require("../services/maintenance");
 const { getCoverage, unstickVersionBumpedRows } = require("../services/audit-coverage");
+const { run: runDownloadGallery } = require("../../scripts/backfills/download-gallery");
 
 const router = express.Router();
 
@@ -167,7 +168,7 @@ router.post("/maintenance", async (req, res) => {
     const only = parseCsv(req.query.only);
     // Allow per-phase limit overrides via query: ?resolve=80&photos=80
     const overrides = {};
-    for (const key of ["resolve", "photos", "reviews", "descriptions", "osm", "tripadvisor", "socials", "playwrightFallback", "localizeImages"]) {
+    for (const key of ["resolve", "photos", "reviews", "descriptions", "osm", "tripadvisor", "socials", "playwrightFallback", "localizeImages", "galleryScrape"]) {
         if (req.query[key] != null) {
             const n = parseInt(req.query[key], 10);
             if (Number.isFinite(n) && n > 0) overrides[key] = n;
@@ -310,6 +311,33 @@ router.post("/null-expired-lh3", async (req, res) => {
         data: { heroImageUrl: null },
     });
     res.json({ ok: true, mode: "apply", cleared: result.count });
+});
+
+// Track 2 — galleryDownload endpoint. Receives the jobs payload from
+// the Unraid opm-runner immediately after a galleryScrape tick. Bytes
+// must land here within a minute or two — lh3 URLs from the scrape
+// expire fast. See docs/track2-photo-gallery.md.
+//
+// Payload shape:
+//   { jobs: [{ placeId, name, city, photos: [{ sourceUrl, sourceRef }, ...] }] }
+//
+// Synchronous on purpose: the runner waits for the response so it can
+// log per-place inserted/skipped/failed counts in the same tick. Total
+// download time for 10 places × 10 photos ≈ 30s end-to-end (sharp variants
+// dominate); within the 30s cron-job.org budget the runner is NOT subject
+// to since it's calling us directly.
+router.post("/gallery-download", async (req, res) => {
+    const jobs = Array.isArray(req.body?.jobs) ? req.body.jobs : null;
+    if (!jobs) {
+        return res.status(400).json({ ok: false, error: "missing jobs array" });
+    }
+    try {
+        const result = await runDownloadGallery({ jobs, disconnect: false });
+        res.json(result);
+    } catch (err) {
+        console.error("[gallery-download] crashed:", err);
+        res.status(500).json({ ok: false, error: err.message });
+    }
 });
 
 module.exports = router;

@@ -76,6 +76,36 @@ async function pingHostingerLocalize() {
     }
 }
 
+// Track 2 — dispatch the galleryScrape jobs collected on Unraid this
+// tick to Hostinger so the bytes get downloaded before the lh3 URLs
+// expire. Unlike pingHostingerLocalize this is NOT fire-and-forget: we
+// await the response so the runner log shows per-place insert/skip
+// counts in the same tick, and so a 5xx surfaces here instead of being
+// silently swallowed by the live worker.
+async function pushGalleryJobs(jobs) {
+    if (!HOSTINGER_URL || !ADMIN_API_KEY) {
+        return { skipped: true, reason: 'HOSTINGER_URL or ADMIN_API_KEY not set' };
+    }
+    if (!Array.isArray(jobs) || jobs.length === 0) {
+        return { skipped: true, reason: 'no jobs from galleryScrape this tick' };
+    }
+    const url = `${HOSTINGER_URL}/api/admin/gallery-download`;
+    try {
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'x-api-key': ADMIN_API_KEY,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ jobs }),
+        });
+        const body = await res.text().catch(() => '');
+        return { ok: res.ok, status: res.status, body: body.slice(0, 400) };
+    } catch (err) {
+        return { ok: false, error: err.message };
+    }
+}
+
 let stopping = false;
 process.on('SIGTERM', () => { console.log('[runner] SIGTERM received, will exit after current tick'); stopping = true; });
 process.on('SIGINT',  () => { console.log('[runner] SIGINT received, will exit after current tick');  stopping = true; });
@@ -103,8 +133,9 @@ function fmtPhase(p) {
 async function tick(n) {
     console.log(`\n[runner] === tick ${n} (mode=${MODE}${SKIP.length ? `, skip=${SKIP.join(',')}` : ''}) ===`);
     const start = Date.now();
+    let result = null;
     try {
-        const result = await runMaintenance({
+        result = await runMaintenance({
             mode: MODE,
             skip: SKIP.length ? SKIP : null,
         });
@@ -129,6 +160,24 @@ async function tick(n) {
         console.log(`[runner]   localize ping: ${ping.status} ${ping.body}`);
     } else {
         console.warn(`[runner]   localize ping: FAIL (${ping.error || ping.status})`);
+    }
+
+    // Track 2 — push galleryScrape jobs from this tick to Hostinger
+    // for byte download. The result above contains the phase outcome;
+    // we extract `jobs` from the galleryScrape phase row, if any.
+    try {
+        const galleryPhase = (result?.phases || []).find(p => p.name === 'galleryScrape');
+        const jobs = galleryPhase?.jobs || [];
+        const push = await pushGalleryJobs(jobs);
+        if (push.skipped) {
+            console.log(`[runner]   gallery push: SKIP (${push.reason})`);
+        } else if (push.ok) {
+            console.log(`[runner]   gallery push: ${push.status} ${push.body}`);
+        } else {
+            console.warn(`[runner]   gallery push: FAIL (${push.error || push.status})`);
+        }
+    } catch (err) {
+        console.warn(`[runner]   gallery push: crash ${err.message}`);
     }
 }
 

@@ -48,6 +48,7 @@ const { run: runReviews } = require("../../scripts/scrapers/scrape-reviews");
 const { run: runSocials } = require("../../scripts/backfills/backfill-socials-from-website");
 const { run: runOpmRating } = require("../../scripts/backfills/backfill-opm-rating");
 const { run: runDownloadImages } = require("../../scripts/backfills/download-images");
+const { run: runScrapeGallery } = require("../../scripts/enrichment/scrape-gallery");
 
 const ROOT = path.resolve(__dirname, "..", "..");
 const CACHE_DIR = path.join(ROOT, "data", "cache");
@@ -92,6 +93,7 @@ const MODE_PRESETS = {
         opmRating: true,
         playwrightFallback: 20,
         localizeImages: 200,
+        galleryScrape: 10,
     },
     min: {
         resolve: 20,
@@ -104,6 +106,7 @@ const MODE_PRESETS = {
         opmRating: true,
         playwrightFallback: 10,
         localizeImages: 100,
+        galleryScrape: 10,
     },
 };
 
@@ -271,6 +274,30 @@ const PHASES = [
                 needMeta: true,
                 apply: true,
                 limit: opts.playwrightFallback,
+            });
+        },
+    },
+    // Track 2 — Google Maps photo scrape. Picks up to N places lacking
+    // a recent gallery and runs Playwright to harvest up to 10 photo
+    // URLs each. Returns `{ jobs: [...] }` in the phase result; the
+    // caller (opm-runner) is responsible for POSTing those jobs to
+    // Hostinger's /api/admin/gallery-download so the bytes get
+    // downloaded before the lh3 URLs expire (minutes-long TTL).
+    //
+    // Hostinger-skipped: the in-process scrape needs the residential
+    // Unraid IP to avoid Google CAPTCHAs (probe: 0 CAPTCHAs in 25s
+    // from Unraid; Hostinger's shared IP gets challenged immediately).
+    // OPM_HOST=hostinger short-circuits the phase so cron-job.org pings
+    // don't trigger scrapes from the wrong host.
+    {
+        name: "galleryScrape",
+        async run(opts) {
+            if (process.env.OPM_HOST === "hostinger") {
+                return { ok: true, skipped: true, reason: "OPM_HOST = hostinger" };
+            }
+            return runScrapeGallery({
+                limit: opts.galleryScrape,
+                disconnect: false,
             });
         },
     },
