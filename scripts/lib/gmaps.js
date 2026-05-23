@@ -617,6 +617,7 @@ async function scrapePhotos(page, {
             distM: null,
             coordMismatch: false,
             wantsFallback: false,
+            tabClicked: null,
             finalUrl: null,
         };
 
@@ -757,6 +758,45 @@ async function scrapePhotos(page, {
         // Wait for photo container to populate
         await sleep(2000);
 
+        // Try to switch to a curated photo category — Google groups photos
+        // by category (All / Pizza / Food / Drink / Vibe / Menu / By owner)
+        // and the "Pizza" tab specifically contains photos Google has
+        // classified as pizza shots. Same for "Food". Much better signal-
+        // to-noise than the default "All" view, which mixes in menus,
+        // receipts, parking lots, etc. Tabs only appear after a successful
+        // See-photos entrypoint click; skipped when openResult.ok is false
+        // (preview-only DOM with no carousel).
+        let tabClicked = null;
+        if (openResult.ok) {
+            tabClicked = await page.evaluate(() => {
+                const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
+                if (!tabs.length) return null;
+                const textOf = (el) => (el.textContent || el.getAttribute("aria-label") || "").trim();
+                // Prefer Pizza (the venue type), then Food, then leave on
+                // current tab. Multilingual aria/text — hl=en gives English
+                // but the underlying DOM may keep the locale label depending
+                // on Google's A/B state, so we accept common translations.
+                const pizzaRe = /^(pizza|pizze)$/i;
+                const foodRe = /^(food|menjar|comida|cibo|essen|nourriture|comidas)$/i;
+                let target = tabs.find((t) => pizzaRe.test(textOf(t)));
+                let label = target ? "pizza" : null;
+                if (!target) {
+                    target = tabs.find((t) => foodRe.test(textOf(t)));
+                    label = target ? "food" : null;
+                }
+                if (!target) return null;
+                if (target.getAttribute("aria-selected") === "true") {
+                    return { clicked: false, label, alreadySelected: true };
+                }
+                target.click();
+                return { clicked: true, label, text: textOf(target).slice(0, 20) };
+            }).catch(() => null);
+            if (tabClicked && tabClicked.clicked) {
+                await sleep(1500); // let the tab content refresh
+            }
+        }
+        trace.tabClicked = tabClicked;
+
         // Scroll the photo container several times to load lazy thumbs.
         // Try a few scroll targets — Google reshuffles the DOM enough
         // that a single selector misses some layouts.
@@ -815,6 +855,12 @@ async function scrapePhotos(page, {
             };
             const addUrl = (u) => {
                 if (!u || !/lh3\.googleusercontent\.com/.test(u)) return;
+                // grass-cs/ URLs are Google's auto-generated venue
+                // signature thumbnails — universally low quality, often
+                // upscaled/synthesized from a single source frame. Eric
+                // confirmed visually 2026-05-23 they're always shit.
+                // Filter them out entirely.
+                if (/\/grass-cs\//.test(u)) return;
                 const id = extractId(u);
                 if (!id || seen.has(id)) return;
                 // Replace whatever size/modifier suffix is on the URL with
@@ -852,7 +898,7 @@ async function scrapePhotos(page, {
             const snap = await snapshotPage();
             debug = { ...trace, ...(snap || {}) };
         }
-        return { photos, openVia: openResult.via, viaFallback, debug };
+        return { photos, openVia: openResult.via, viaFallback, tabClicked, debug };
     } catch (err) {
         return { photos: [], error: err.message };
     }

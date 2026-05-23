@@ -180,7 +180,8 @@ async function run({ limit = 10, disconnect = true } = {}) {
                 const wf = d.wantsFallback != null ? ` wantsFallback=${d.wantsFallback}` : "";
                 const cm = d.coordMismatch != null ? ` coordMismatch=${d.coordMismatch}` : "";
                 const sh = d.streetHeading ? " streetHeading=true" : "";
-                console.log(`[galleryScrape]   debug: via=${result.openVia || "n/a"}${fb}${wf}${cm}${sh}${dist} heading="${d.heading || ""}" imgs=${d.totalImgs} lh3=${d.lh3Imgs} bg=${d.bgUrls} dialog=${d.hasDialog} feed=${d.hasFeed} hasResults=${d.hasResults} title="${d.title || ""}"`);
+                const tab = d.tabClicked ? ` tab=${d.tabClicked.label || "?"}${d.tabClicked.alreadySelected ? "(default)" : ""}` : "";
+                console.log(`[galleryScrape]   debug: via=${result.openVia || "n/a"}${fb}${wf}${cm}${sh}${tab}${dist} heading="${d.heading || ""}" imgs=${d.totalImgs} lh3=${d.lh3Imgs} bg=${d.bgUrls} dialog=${d.hasDialog} feed=${d.hasFeed} hasResults=${d.hasResults} title="${d.title || ""}"`);
                 if (d.finalUrl) {
                     console.log(`[galleryScrape]   finalUrl: ${d.finalUrl}`);
                 }
@@ -199,7 +200,14 @@ async function run({ limit = 10, disconnect = true } = {}) {
             continue;
         }
 
-        console.log(`[galleryScrape] #${p.id} "${p.name}" — ${result.photos.length} photos`);
+        // Note which photo-category tab the scraper landed on, when it
+        // chose one. Shows up as `(tab=pizza)` etc. so we can see at a
+        // glance whether the curated-tab path is firing across the
+        // backfill.
+        const tabNote = result.tabClicked
+            ? ` (tab=${result.tabClicked.label || "?"}${result.tabClicked.alreadySelected ? ":default" : ""})`
+            : "";
+        console.log(`[galleryScrape] #${p.id} "${p.name}" — ${result.photos.length} photos${tabNote}`);
         jobs.push({
             placeId: p.id,
             name: p.name,
