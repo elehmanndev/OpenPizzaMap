@@ -155,7 +155,7 @@
         const heroSrc = thumbUrlFor(p.heroImageUrl);
         const hero = p.heroImageUrl
             ? `<div class="ppc-hero">
-    <img class="ppc-hero-img" src="${esc(heroSrc)}" data-fallback="${esc(p.heroImageUrl)}" alt="" loading="lazy" onerror="if(this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.remove()}" />
+    <img class="ppc-hero-img" src="${esc(heroSrc)}" data-fallback="${esc(p.heroImageUrl)}" alt="" loading="lazy" onerror="if(this.dataset.errored){const h=this.closest('.ppc-hero');if(h){h.classList.add('ppc-hero--fallback');this.replaceWith(Object.assign(document.createElement('span'),{className:'ppc-hero-emoji',textContent:'🍕'}))}else{this.remove()}}else{this.dataset.errored='1';this.src=this.dataset.fallback}" />
     ${heroInner}
   </div>`
             : `<div class="ppc-hero ppc-hero--fallback">${heroInner}<span class="ppc-hero-emoji">🍕</span></div>`;
@@ -189,7 +189,7 @@
         const rating = ratingLabel(p);
         const hero = p.heroImageUrl
             ? `<div class="msc-hero">
-    <img class="msc-hero-img" src="${esc(heroSrc)}" data-fallback="${esc(p.heroImageUrl)}" alt="" loading="lazy" onerror="if(this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.style.display='none'}" />
+    <img class="msc-hero-img" src="${esc(heroSrc)}" data-fallback="${esc(p.heroImageUrl)}" alt="" loading="lazy" onerror="if(this.dataset.errored){const h=this.closest('.msc-hero');if(h){h.classList.add('msc-hero--fallback');this.replaceWith(Object.assign(document.createElement('span'),{className:'msc-hero-emoji',textContent:'🍕'}))}else{this.remove()}}else{this.dataset.errored='1';this.src=this.dataset.fallback}" />
     <span class="msc-rating">${rating}</span>
   </div>`
             : `<div class="msc-hero msc-hero--fallback">
@@ -696,7 +696,7 @@ ${fav}
             const li = document.createElement("li");
             li.className = "map-suggest-item";
             const thumb = e.place.heroImageUrl
-                ? `<img class="map-suggest-thumb" src="${esc(thumbUrlFor(e.place.heroImageUrl))}" data-fallback="${esc(e.place.heroImageUrl)}" alt="" loading="lazy" onerror="if(this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.outerHTML='<span class=\\'map-suggest-thumb map-suggest-thumb--icon\\'>🍕</span>'}" />`
+                ? `<img class="map-suggest-thumb" src="${esc(thumbUrlFor(e.place.heroImageUrl))}" data-fallback="${esc(e.place.heroImageUrl)}" alt="" loading="lazy" onerror="if(this.dataset.errored){this.outerHTML='<span class=\\'map-suggest-thumb map-suggest-thumb--icon\\'>🍕</span>'}else{this.dataset.errored='1';this.src=this.dataset.fallback}" />`
                 : `<span class="map-suggest-thumb map-suggest-thumb--icon" aria-hidden="true">🍕</span>`;
             li.innerHTML = `
                 ${thumb}
