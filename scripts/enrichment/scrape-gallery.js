@@ -124,7 +124,15 @@ async function run({ limit = 10, disconnect = true } = {}) {
     let captchaHit = false;
 
     for (const p of queue) {
-        const result = await scrapePhotos(page, { googlePlaceId: p.googlePlaceId, maxPhotos: 10 });
+        // Pass name + city so scrapePhotos can fall back to a name+city
+        // search if the place_id resolves to an address card or wrong
+        // entity (2026-05-23 Forneria Firenze case).
+        const result = await scrapePhotos(page, {
+            googlePlaceId: p.googlePlaceId,
+            name: p.name,
+            city: p.city,
+            maxPhotos: 10,
+        });
 
         if (result.captcha) {
             console.warn(`[galleryScrape] #${p.id} CAPTCHA — aborting tick`);
@@ -158,7 +166,8 @@ async function run({ limit = 10, disconnect = true } = {}) {
             // dropped-URL cases from the runner log alone.
             if (result.debug) {
                 const d = result.debug;
-                console.log(`[galleryScrape]   debug: via=${result.openVia} imgs=${d.totalImgs} lh3=${d.lh3Imgs} bg=${d.bgUrls} dialog=${d.hasDialog} feed=${d.hasFeed} title="${d.title}"`);
+                const fb = result.viaFallback ? " fallback=name-search" : "";
+                console.log(`[galleryScrape]   debug: via=${result.openVia}${fb} imgs=${d.totalImgs} lh3=${d.lh3Imgs} bg=${d.bgUrls} dialog=${d.hasDialog} feed=${d.hasFeed} title="${d.title}"`);
                 if (d.lh3Sample && d.lh3Sample.length) {
                     console.log(`[galleryScrape]   lh3 sample: ${d.lh3Sample.join(" | ")}`);
                 }

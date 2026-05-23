@@ -469,14 +469,30 @@ async function scrapeReviews(page, { googlePlaceId, name, city } = {}, maxReview
 // CAPTCHA detection: returns { captcha: true } if Google shows the
 // /sorry/index challenge or a recaptcha frame. Caller's responsibility
 // to back off (Track 2 design: 6h backoff, 3-strike → 7-day cooldown).
-async function scrapePhotos(page, { googlePlaceId, maxPhotos = 10 } = {}) {
-    if (!googlePlaceId) return { photos: [], reason: "no googlePlaceId" };
+// Compare a Google Maps h1 heading against the venue name in our DB.
+// Strips punctuation + lowercases both sides, then looks for ANY shared
+// token >= 3 chars. Used to detect when a place_id resolves to a
+// different entity than expected (address card, merged listing, etc.).
+function headingMatchesName(heading, name) {
+    if (!heading || !name) return false;
+    const norm = (s) =>
+        s.toLowerCase()
+            .normalize("NFD")
+            .replace(/[̀-ͯ]/g, "")
+            .replace(/[^a-z0-9 ]+/g, " ")
+            .split(/\s+/)
+            .filter((t) => t.length >= 3);
+    const h = new Set(norm(heading));
+    for (const t of norm(name)) if (h.has(t)) return true;
+    return false;
+}
 
-    try {
-        const url = `https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(googlePlaceId)}&hl=en`;
-        await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
+async function scrapePhotos(page, { googlePlaceId, name, city, maxPhotos = 10 } = {}) {
+    if (!googlePlaceId && !name) return { photos: [], reason: "no googlePlaceId or name" };
 
-        // Dismiss consent — covers ES/EN/DE/IT/FR locales.
+    // Reused inside this function for both the place_id path and the
+    // name+city fallback path. Inline to keep scrapePhotos self-contained.
+    const dismissConsent = async () => {
         for (const sel of [
             'button[aria-label*="Accept"]',
             'button[aria-label*="Acepto"]',
@@ -489,15 +505,79 @@ async function scrapePhotos(page, { googlePlaceId, maxPhotos = 10 } = {}) {
             const btn = await page.$(sel).catch(() => null);
             if (btn) { await btn.click().catch(() => {}); await sleep(800); break; }
         }
+    };
+    const detectCaptcha = async () => {
+        const html = await page.content().catch(() => "");
+        return /\/sorry\/index|recaptcha|unusual\s+traffic|automated\s+queries/i.test(html);
+    };
+    // Heading-text detection. Venue pages render an <h1> with the place
+    // name; address-only views (e.g. when the googlePlaceId is stale and
+    // resolves to a bare address card) have no h1. We use this as the
+    // signal to decide whether to fall back to name+city search.
+    const getHeading = async () =>
+        await page.evaluate(() => {
+            const h = document.querySelector("h1");
+            return h ? (h.textContent || "").trim() : null;
+        }).catch(() => null);
 
-        // Wait for the place panel to render. If the place doesn't
-        // exist or Google bounces us, this throws → caught below.
-        await page.waitForSelector('h1, button[data-item-id="address"]', { timeout: 15000 }).catch(() => null);
+    try {
+        let viaFallback = false;
 
-        // CAPTCHA check after navigation
-        const earlyHtml = await page.content().catch(() => "");
-        if (/\/sorry\/index|recaptcha|unusual\s+traffic|automated\s+queries/i.test(earlyHtml)) {
-            return { photos: [], captcha: true };
+        if (googlePlaceId) {
+            const url = `https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(googlePlaceId)}&hl=en`;
+            await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
+            await dismissConsent();
+            await page.waitForSelector('h1, button[data-item-id="address"]', { timeout: 15000 }).catch(() => null);
+
+            if (await detectCaptcha()) return { photos: [], captcha: true };
+
+            // If place_id resolved to an address-only card (no h1), or the
+            // h1 doesn't share a token with the place name, fall back to a
+            // name+city search. Catches the 2026-05-23 case where ~5-10
+            // places have stale googlePlaceIds pointing at addresses Google
+            // no longer associates with the venue.
+            const heading = await getHeading();
+            const wantsFallback = name && (!heading || !headingMatchesName(heading, name));
+            if (wantsFallback) {
+                viaFallback = true;
+                const q = encodeURIComponent(`${name} ${city || ""}`.trim());
+                await page.goto(`https://www.google.com/maps/search/${q}`, { waitUntil: "domcontentloaded", timeout: 30000 });
+                await dismissConsent();
+                await Promise.race([
+                    page.waitForSelector('button[data-item-id="address"]', { timeout: 8000 }).catch(() => null),
+                    page.waitForSelector("a.hfpxzc", { timeout: 8000 }).catch(() => null),
+                ]);
+                if (await detectCaptcha()) return { photos: [], captcha: true };
+                // If we got a results list rather than a direct panel,
+                // click the first result.
+                const hasPanel = await page.$('button[data-item-id="address"]').catch(() => null);
+                if (!hasPanel) {
+                    const first = await page.$("a.hfpxzc").catch(() => null);
+                    if (first) {
+                        await first.click().catch(() => {});
+                        await page.waitForSelector('h1, button[data-item-id="address"]', { timeout: 8000 }).catch(() => null);
+                    }
+                }
+            }
+        } else {
+            // No place_id given — go straight to name+city search.
+            viaFallback = true;
+            const q = encodeURIComponent(`${name} ${city || ""}`.trim());
+            await page.goto(`https://www.google.com/maps/search/${q}`, { waitUntil: "domcontentloaded", timeout: 30000 });
+            await dismissConsent();
+            await Promise.race([
+                page.waitForSelector('button[data-item-id="address"]', { timeout: 8000 }).catch(() => null),
+                page.waitForSelector("a.hfpxzc", { timeout: 8000 }).catch(() => null),
+            ]);
+            if (await detectCaptcha()) return { photos: [], captcha: true };
+            const hasPanel = await page.$('button[data-item-id="address"]').catch(() => null);
+            if (!hasPanel) {
+                const first = await page.$("a.hfpxzc").catch(() => null);
+                if (first) {
+                    await first.click().catch(() => {});
+                    await page.waitForSelector('h1, button[data-item-id="address"]', { timeout: 8000 }).catch(() => null);
+                }
+            }
         }
 
         // Open the photo browser. Order matters — the panel hero has an
@@ -659,7 +739,7 @@ async function scrapePhotos(page, { googlePlaceId, maxPhotos = 10 } = {}) {
                 };
             }).catch(() => null);
         }
-        return { photos, openVia: openResult.via, debug };
+        return { photos, openVia: openResult.via, viaFallback, debug };
     } catch (err) {
         return { photos: [], error: err.message };
     }
