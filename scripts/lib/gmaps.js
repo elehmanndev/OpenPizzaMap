@@ -564,9 +564,46 @@ async function scrapePhotos(page, {
             const h = document.querySelector("h1");
             return h ? (h.textContent || "").trim() : null;
         }).catch(() => null);
+    // Snapshot the page state for the runner log. Called from any
+    // zero-photo return path (no entrypoint, empty after extract).
+    const snapshotPage = async () =>
+        await page.evaluate(() => {
+            const allImgs = Array.from(document.querySelectorAll("img"));
+            const lh3Imgs = allImgs
+                .map((i) => i.src || "")
+                .filter((s) => /lh3\.googleusercontent\.com/.test(s));
+            const bgUrls = [];
+            for (const el of document.querySelectorAll('[style*="background-image"]')) {
+                const m = (el.getAttribute("style") || "").match(/url\(["']?(https?:[^"')]+)["']?\)/);
+                if (m && /lh3\.googleusercontent\.com/.test(m[1])) bgUrls.push(m[1]);
+            }
+            return {
+                totalImgs: allImgs.length,
+                lh3Imgs: lh3Imgs.length,
+                bgUrls: bgUrls.length,
+                lh3Sample: lh3Imgs.slice(0, 3),
+                bgSample: bgUrls.slice(0, 3),
+                hasDialog: !!document.querySelector('div[role="dialog"]'),
+                hasFeed: !!document.querySelector('[role="feed"]'),
+                hasMain: !!document.querySelector('[role="main"]'),
+                hasResults: !!document.querySelector("a.hfpxzc"),
+                title: document.title.slice(0, 80),
+            };
+        }).catch(() => null);
 
     try {
         let viaFallback = false;
+        // Decision-trace data accumulated through the function for the
+        // debug payload. Surfaced in scrape-gallery.js log when photos
+        // is empty, so a single tick log shows why a place came back 0.
+        const trace = {
+            heading: null,
+            urlCoords: null,
+            distM: null,
+            coordMismatch: false,
+            wantsFallback: false,
+            finalUrl: null,
+        };
 
         if (googlePlaceId) {
             const url = `https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(googlePlaceId)}&hl=en`;
@@ -584,7 +621,17 @@ async function scrapePhotos(page, {
             //      (e.g. Marino #261 where ChIJRfA09zIJOxMRX8PpisYlyao
             //      points at a different Marino ~2km away from our coords)
             const heading = await getHeading();
-            const urlCoords = coordsFromUrl(page.url());
+            // Google rewrites the URL to include @lat,lng,zoom AFTER the
+            // initial page load. Poll briefly for coords before deciding —
+            // without this, page.url() is read too early and coordsFromUrl
+            // returns null, making coordMismatch always false and the
+            // coord-based fallback path never firing.
+            let urlCoords = null;
+            for (let i = 0; i < 6; i++) {
+                urlCoords = coordsFromUrl(page.url());
+                if (urlCoords) break;
+                await sleep(300);
+            }
             const distM = urlCoords && lat != null && lng != null
                 ? haversineM(Number(lat), Number(lng), urlCoords.lat, urlCoords.lng)
                 : null;
@@ -594,6 +641,11 @@ async function scrapePhotos(page, {
                 || !headingMatchesName(heading, name)
                 || coordMismatch
             );
+            trace.heading = heading ? heading.slice(0, 80) : null;
+            trace.urlCoords = urlCoords;
+            trace.distM = distM != null ? Math.round(distM) : null;
+            trace.coordMismatch = !!coordMismatch;
+            trace.wantsFallback = !!wantsFallback;
             if (wantsFallback) {
                 viaFallback = true;
                 const q = buildSearchQuery();
@@ -675,7 +727,16 @@ async function scrapePhotos(page, {
             return { ok: false };
         }).catch(() => ({ ok: false }));
 
-        if (!openResult.ok) return { photos: [], reason: "no photo entrypoint" };
+        if (!openResult.ok) {
+            trace.finalUrl = (page.url() || "").slice(0, 200);
+            const snap = await snapshotPage();
+            return {
+                photos: [],
+                reason: "no photo entrypoint",
+                viaFallback,
+                debug: { ...trace, ...(snap || {}) },
+            };
+        }
 
         // Wait for photo container to populate
         await sleep(2000);
@@ -764,36 +825,13 @@ async function scrapePhotos(page, {
         }, maxPhotos).catch(() => []);
 
         // If we found 0 photos despite a successful entrypoint click,
-        // capture a tiny diagnostic snapshot so the runner log can show
-        // what the page actually looked like. Cases we want to distinguish:
-        //   - extractor filter dropped lh3 URLs (lh3Imgs > 0, photos = 0)
-        //   - photos in CSS only (bgUrls > 0, lh3Imgs = 0)
-        //   - click didn't open the gallery (hasDialog = false)
-        //   - canvas-rendered (everything zero — hard case)
+        // capture a diagnostic snapshot + the decision trace so the
+        // runner log shows why a place came back empty.
         let debug = null;
         if (photos.length === 0) {
-            debug = await page.evaluate(() => {
-                const allImgs = Array.from(document.querySelectorAll("img"));
-                const lh3Imgs = allImgs
-                    .map((i) => i.src || "")
-                    .filter((s) => /lh3\.googleusercontent\.com/.test(s));
-                const bgUrls = [];
-                for (const el of document.querySelectorAll('[style*="background-image"]')) {
-                    const m = (el.getAttribute("style") || "").match(/url\(["']?(https?:[^"')]+)["']?\)/);
-                    if (m && /lh3\.googleusercontent\.com/.test(m[1])) bgUrls.push(m[1]);
-                }
-                return {
-                    totalImgs: allImgs.length,
-                    lh3Imgs: lh3Imgs.length,
-                    bgUrls: bgUrls.length,
-                    lh3Sample: lh3Imgs.slice(0, 3),
-                    bgSample: bgUrls.slice(0, 3),
-                    hasDialog: !!document.querySelector('div[role="dialog"]'),
-                    hasFeed: !!document.querySelector('[role="feed"]'),
-                    hasMain: !!document.querySelector('[role="main"]'),
-                    title: document.title.slice(0, 80),
-                };
-            }).catch(() => null);
+            trace.finalUrl = (page.url() || "").slice(0, 200);
+            const snap = await snapshotPage();
+            debug = { ...trace, ...(snap || {}) };
         }
         return { photos, openVia: openResult.via, viaFallback, debug };
     } catch (err) {

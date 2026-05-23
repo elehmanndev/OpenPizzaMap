@@ -175,8 +175,14 @@ async function run({ limit = 10, disconnect = true } = {}) {
             // dropped-URL cases from the runner log alone.
             if (result.debug) {
                 const d = result.debug;
-                const fb = result.viaFallback ? " fallback=name-search" : "";
-                console.log(`[galleryScrape]   debug: via=${result.openVia}${fb} imgs=${d.totalImgs} lh3=${d.lh3Imgs} bg=${d.bgUrls} dialog=${d.hasDialog} feed=${d.hasFeed} title="${d.title}"`);
+                const fb = result.viaFallback ? " fallback=yes" : " fallback=no";
+                const dist = d.distM != null ? ` distM=${d.distM}` : "";
+                const wf = d.wantsFallback != null ? ` wantsFallback=${d.wantsFallback}` : "";
+                const cm = d.coordMismatch != null ? ` coordMismatch=${d.coordMismatch}` : "";
+                console.log(`[galleryScrape]   debug: via=${result.openVia || "n/a"}${fb}${wf}${cm}${dist} heading="${d.heading || ""}" imgs=${d.totalImgs} lh3=${d.lh3Imgs} bg=${d.bgUrls} dialog=${d.hasDialog} feed=${d.hasFeed} hasResults=${d.hasResults} title="${d.title || ""}"`);
+                if (d.finalUrl) {
+                    console.log(`[galleryScrape]   finalUrl: ${d.finalUrl}`);
+                }
                 if (d.lh3Sample && d.lh3Sample.length) {
                     console.log(`[galleryScrape]   lh3 sample: ${d.lh3Sample.join(" | ")}`);
                 }
