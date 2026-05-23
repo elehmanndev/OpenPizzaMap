@@ -428,4 +428,157 @@ async function scrapeReviews(page, { googlePlaceId, name, city } = {}, maxReview
     }
 }
 
-module.exports = { createGmapsPage, lookup, scrapeReviews, loadCache, saveCache, CACHE_PATH };
+// Scrape the photo carousel for a place by googlePlaceId. Returns an
+// array of { sourceUrl, sourceRef } objects (up to `maxPhotos`); empty
+// on hard miss. Each sourceUrl is a signed lh3.googleusercontent.com
+// URL that expires in MINUTES — the caller must download bytes
+// immediately in the same scrape session (see Track 2 design doc
+// docs/track2-photo-gallery.md, Track 1 regression section for why
+// storing-then-downloading-later fails).
+//
+// Strategy (validated by scripts/probes/probe-playwright-feasibility.js
+// on 2026-05-23, 10/10 places via residential Unraid IP, 0 CAPTCHAs):
+//   1. Navigate to /maps/place/?q=place_id:<id>&hl=en
+//   2. Dismiss consent if present
+//   3. Click the hero image (aria-label "Photo of <name>") — this opens
+//      the inline photo browser. We do NOT click the dedicated "Photos"
+//      tab because its DOM varies by locale + place type.
+//   4. Scroll the photo container ~6 times with 800ms waits to load
+//      lazy thumbnails
+//   5. Extract every lh3.googleusercontent.com URL from img srcs +
+//      background-image styles in the photo area
+//   6. Dedup by the stable photo ID embedded in the URL path
+//
+// CAPTCHA detection: returns { captcha: true } if Google shows the
+// /sorry/index challenge or a recaptcha frame. Caller's responsibility
+// to back off (Track 2 design: 6h backoff, 3-strike → 7-day cooldown).
+async function scrapePhotos(page, { googlePlaceId, maxPhotos = 10 } = {}) {
+    if (!googlePlaceId) return { photos: [], reason: "no googlePlaceId" };
+
+    try {
+        const url = `https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(googlePlaceId)}&hl=en`;
+        await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
+
+        // Dismiss consent — covers ES/EN/DE/IT/FR locales.
+        for (const sel of [
+            'button[aria-label*="Accept"]',
+            'button[aria-label*="Acepto"]',
+            'button[aria-label*="Aceptar"]',
+            'button[aria-label*="Akzeptieren"]',
+            'button[aria-label*="Accetta"]',
+            'button[aria-label*="Accepter"]',
+            'form[action*="consent"] button',
+        ]) {
+            const btn = await page.$(sel).catch(() => null);
+            if (btn) { await btn.click().catch(() => {}); await sleep(800); break; }
+        }
+
+        // Wait for the place panel to render. If the place doesn't
+        // exist or Google bounces us, this throws → caught below.
+        await page.waitForSelector('h1, button[data-item-id="address"]', { timeout: 15000 }).catch(() => null);
+
+        // CAPTCHA check after navigation
+        const earlyHtml = await page.content().catch(() => "");
+        if (/\/sorry\/index|recaptcha|unusual\s+traffic|automated\s+queries/i.test(earlyHtml)) {
+            return { photos: [], captcha: true };
+        }
+
+        // Open the photo browser. Try in priority order:
+        //   1. Button with aria-label "Photo of <Place Name>" (the hero
+        //      image overlay button)
+        //   2. Any button with aria-label starting "See photo" / "See all photo"
+        //   3. Tab-role element with text "Photos"
+        const openResult = await page.evaluate(() => {
+            for (const btn of document.querySelectorAll("button")) {
+                const aria = btn.getAttribute("aria-label") || "";
+                if (/^photo\s+of/i.test(aria)) {
+                    btn.click();
+                    return { ok: true, via: "hero", label: aria.slice(0, 80) };
+                }
+            }
+            for (const btn of document.querySelectorAll("button")) {
+                const aria = btn.getAttribute("aria-label") || "";
+                if (/^(see|see\s+all|show)\s+photo/i.test(aria) || /^photos?$/i.test(aria)) {
+                    btn.click();
+                    return { ok: true, via: "see-photos", label: aria.slice(0, 80) };
+                }
+            }
+            for (const el of document.querySelectorAll('[role="tab"]')) {
+                if (/^photos?$/i.test((el.textContent || "").trim())) {
+                    el.click();
+                    return { ok: true, via: "tab", label: "tab" };
+                }
+            }
+            return { ok: false };
+        }).catch(() => ({ ok: false }));
+
+        if (!openResult.ok) return { photos: [], reason: "no photo entrypoint" };
+
+        // Wait for photo container to populate
+        await sleep(2000);
+
+        // Scroll the photo container several times to load lazy thumbs.
+        // Try a few scroll targets — Google reshuffles the DOM enough
+        // that a single selector misses some layouts.
+        for (let i = 0; i < 6; i++) {
+            await page.evaluate(() => {
+                const candidates = [
+                    'div[role="dialog"] [role="feed"]',
+                    'div[role="dialog"]',
+                    '[role="main"] [role="feed"]',
+                    '[role="main"]',
+                ];
+                for (const sel of candidates) {
+                    const el = document.querySelector(sel);
+                    if (el && el.scrollHeight > el.clientHeight) {
+                        el.scrollBy(0, 1000);
+                        return;
+                    }
+                }
+                window.scrollBy(0, 1000);
+            }).catch(() => {});
+            await sleep(800);
+        }
+
+        // Extract lh3 URLs from img srcs + background-image styles.
+        // Parse the photo ID (the path segment after place-photos/ or
+        // p/) so we can dedup on re-scrape via the PlaceImage unique
+        // constraint.
+        const photos = await page.evaluate((max) => {
+            const seen = new Map(); // photoId → sourceUrl
+            const extractId = (u) => {
+                const m = u.match(/(?:place-photos\/|\/p\/)([A-Za-z0-9_\-]{20,})/);
+                return m ? m[1] : null;
+            };
+            const addUrl = (u) => {
+                if (!u || !/lh3\.googleusercontent\.com/.test(u)) return;
+                const id = extractId(u);
+                if (!id || seen.has(id)) return;
+                // Bump to a useful size if the URL has a size suffix.
+                // Format: ...AJRVUZxxx=s4800-w800 — replace with =w1600-h1200
+                // so we get a higher-quality copy. Fall back to bare URL
+                // if no size suffix.
+                let sized = u;
+                if (/=[sw]\d+/.test(u)) {
+                    sized = u.replace(/=[swh\-\d]+$/, "=w1600-h1200");
+                }
+                seen.set(id, sized);
+            };
+            for (const img of document.querySelectorAll("img")) addUrl(img.src || "");
+            for (const el of document.querySelectorAll('[style*="background-image"]')) {
+                const m = (el.getAttribute("style") || "").match(/url\(["']?(https?:[^"')]+)["']?\)/);
+                if (m) addUrl(m[1]);
+            }
+            return [...seen.entries()].slice(0, max).map(([id, url]) => ({
+                sourceRef: id,
+                sourceUrl: url,
+            }));
+        }, maxPhotos).catch(() => []);
+
+        return { photos, openVia: openResult.via };
+    } catch (err) {
+        return { photos: [], error: err.message };
+    }
+}
+
+module.exports = { createGmapsPage, lookup, scrapeReviews, scrapePhotos, loadCache, saveCache, CACHE_PATH };

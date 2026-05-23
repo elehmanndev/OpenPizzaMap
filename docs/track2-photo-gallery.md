@@ -1,6 +1,31 @@
 # Track 2 — Photo Gallery (Design Doc)
 
-**Status:** Planning complete 2026-05-23 · Not yet implemented · Phased rollout
+**Status:** Planning complete 2026-05-23 · Feasibility probe **PASSED** 2026-05-23 · Not yet implemented · Phased rollout
+
+## Feasibility probe results (2026-05-23)
+
+Ran [`scripts/probes/probe-playwright-feasibility.js`](../scripts/probes/probe-playwright-feasibility.js) against 10 sample places through Playwright on the Unraid opm-runner. Verdict: **HIGH confidence — Playwright fully replaces the paid Google Places API path.**
+
+| Capability | Result |
+|---|---|
+| CAPTCHAs | **0 / 10** across ~25s sustained scraping |
+| Mean navigation time | 850ms (677–1216ms range) |
+| place_id recovery | **10 / 10** (100%) via HTML regex fallback |
+| Name extraction | 9 / 10 (single mismatch was a real canonical-name difference) |
+| Address extraction | 10 / 10 — and often richer than DB (full postal codes, country) |
+| Rating accuracy | **10 / 10** within 0.2 stars |
+| Review count accuracy | 5 / 6 within 25% (rest is genuine drift from API fetch date) |
+| Phone extraction | 10 / 10 captured (4/10 raw "match" — rest is pure format: `055 796 5522` vs `+390557965522`; normalization fixes 100%) |
+| Website extraction | 10 / 10 both present |
+| Photo carousel yield | 9 / 10 produced 3-6 lh3 URLs in one quick scrape; 1 outlier (Forneria Firenze) got 0 due to first-place warm-up race |
+| Places hitting ≥5 photos | 4 / 10 with a quick non-tuned scroll loop |
+
+**Implications for Phase 1 implementation:**
+- The original "DOM doesn't expose place_id reliably" caveat at `providers.js:106` is **outdated** — the HTML-regex fallback is solid.
+- Photo carousel scraper needs slightly more aggressive scroll + wait to consistently hit 5-10 photos. With tuning, mean count should rise from 3.9 → 8-10.
+- Phone normalization (E.164) is a pre-write canonicalization step the Phase 1 code should do anyway — Playwright happens to expose it consistently in that form via `data-item-id="phone:tel:..."`.
+
+**Operational footnote discovered during probe:** the opm-runner `docker-entrypoint.sh:70-73` playwright force-install branch is silently broken because `NODE_ENV=production` makes `npm install --no-save` skip devDependencies entirely. Either change the install line to set `NODE_ENV=development` for that one command, or — cleaner — move `playwright` from devDependencies to dependencies in `package.json` (already on the Phase 1 prereq list).
 
 ## Goal
 

@@ -96,18 +96,62 @@ model Place {
   seoTitle      String?
   seoDescription String?    @db.VarChar(200)
   isVisible     Boolean     @default(true)
+  // Track 2 (docs/track2-photo-gallery.md): timestamp of last Playwright
+  // gallery scrape. Drives the yearly refresh queue + initial-backfill
+  // filter. Null = never scraped (eligible for first-ever scrape);
+  // older than 365 days = eligible for refresh.
+  galleryLastScrapedAt DateTime?
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   styles        PlaceStyle[]
   visits        Visit[]
   favorites     Favorite[]
   reviews       Review[]
+  images        PlaceImage[]
 
   @@index([city])
   @@index([lat])
   @@index([lng])
   @@index([lat, lng])
   @@index([tripadvisorLocationId])
+}
+
+// Gallery photos per Place — populated by the Track 2 Playwright Google
+// Maps scraper. Up to 10 rows per Place; position drives ordering and
+// hero-photo defaulting (position=1 is the default hero unless
+// Place.heroImageUrl was admin-pinned to something else).
+//
+// Why the columns:
+//   - source: 'google' | 'legacy' | 'tripadvisor' | 'website' | 'submitted'
+//     so future sources can drop rows in without schema migration
+//   - sourceRef: the stable Google photo ID parsed out of the lh3 URL,
+//     used by the unique constraint below to dedup on re-scrape
+//   - sourceUrl: original signed lh3 URL we downloaded from. Kept for
+//     audit + future reprocessing. Note that signed lh3 URLs expire in
+//     minutes per the 2026-05-23 Track 1 regression — this column is
+//     historical, not usable for re-downloads
+//   - width/height/bytes: nullable, populated by the download phase
+//     after sharp reads dimensions. Used by the carousel UI to set
+//     img dimensions and prevent layout shift
+//   - isHidden: admin-set "hide forever" flag. Survives re-scrapes
+//     because the dedup unique constraint matches on sourceRef
+model PlaceImage {
+  id          Int       @id @default(autoincrement())
+  placeId     Int
+  position    Int                            // 1..10, ordering within the place
+  localPath   String    @db.VarChar(255)     // /uploads/places/{placeId}/{position}.{ext}
+  source      String    @db.VarChar(20)
+  sourceRef   String?   @db.VarChar(255)     // Google photo ID for dedup-on-rescrape
+  sourceUrl   String?   @db.VarChar(500)     // original signed URL (audit only)
+  width       Int?
+  height      Int?
+  bytes       Int?
+  isHidden    Boolean   @default(false)
+  scrapedAt   DateTime  @default(now())
+  place       Place     @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@index([placeId, position])
+  @@unique([placeId, sourceRef])
 }
 
 model Visit {
