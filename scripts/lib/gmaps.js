@@ -745,16 +745,14 @@ async function scrapePhotos(page, {
             return { ok: false };
         }).catch(() => ({ ok: false }));
 
-        if (!openResult.ok) {
-            trace.finalUrl = (page.url() || "").slice(0, 200);
-            const snap = await snapshotPage();
-            return {
-                photos: [],
-                reason: "no photo entrypoint",
-                viaFallback,
-                debug: { ...trace, ...(snap || {}) },
-            };
-        }
+        // NOTE: we used to return early here when no entrypoint button
+        // matched. But the 2026-05-23 Marino/Vittoria debug runs showed
+        // that the fallback's search-results page sometimes lands DIRECTLY
+        // on a venue preview with 20+ lh3 photos already in the DOM, just
+        // without any clickable See-photos button. So we now try the
+        // extraction even when openResult.ok is false — if photos exist
+        // in the preview, grab them; if not, the existing 0-photo debug
+        // path catches it cleanly.
 
         // Wait for photo container to populate
         await sleep(2000);
@@ -793,13 +791,16 @@ async function scrapePhotos(page, {
             //   /p/AB.../                 (newer location-photo format)
             //   /gps-cs-s/AC9.../         (street-view contributions)
             //   /gps-proxy/AC9...         (proxy CDN flavour)
+            //   /grass-cs/ANx.../         (venue preview signature photos
+            //                              — seen 2026-05-23 in Marino
+            //                              fallback search-results page)
             //   /AKf.../                  (bare segment, older format)
             // Last-resort fallback: take the URL hash of the path-without-
             // size-suffix as the sourceRef so the PlaceImage unique
             // constraint still prevents dup inserts on re-scrape, even if
             // we don't know what photo-ID-encoding Google used.
             const extractId = (u) => {
-                const m = u.match(/(?:place-photos\/|\/p\/|\/gps-cs-s\/|\/gps-proxy\/)([A-Za-z0-9_\-]{15,})/);
+                const m = u.match(/(?:place-photos\/|\/p\/|\/gps-cs-s\/|\/gps-proxy\/|\/grass-cs\/)([A-Za-z0-9_\-]{15,})/);
                 if (m) return m[1];
                 const bare = u.match(/lh3\.googleusercontent\.com\/([A-Za-z0-9_\-]{20,})(?:[=\/]|$)/);
                 if (bare) return bare[1];
