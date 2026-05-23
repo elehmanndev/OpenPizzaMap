@@ -112,7 +112,10 @@ async function run({ limit = 10, disconnect = true } = {}) {
     }
 
     console.log(`[galleryScrape] queue ${queue.length} places`);
-    const { browser, page } = await createGmapsPage();
+    // allowImages=true: photo scrape needs Google's lazy-loaded lh3
+    // thumbnails to actually fetch so their src attributes get populated.
+    // See createGmapsPage comments.
+    const { browser, page } = await createGmapsPage({ allowImages: true });
     const jobs = [];
     const stats = { scraped: 0, captcha: 0, noPhotos: 0, failed: 0 };
     let captchaHit = false;

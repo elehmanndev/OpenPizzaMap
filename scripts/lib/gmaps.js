@@ -64,7 +64,7 @@ function saveCache(cache) {
 // (DOM-only), en-US locale + Chrome UA. Returns { browser, context, page };
 // the caller is responsible for browser.close() when done.
 
-async function createGmapsPage() {
+async function createGmapsPage({ allowImages = false } = {}) {
     // Single-process Chromium: required on Hostinger shared hosting
     // (multi-process mode hits a hidden cgroup/namespace cap when
     // child processes try to spawn threads — pthread_create EAGAIN
@@ -93,11 +93,28 @@ async function createGmapsPage() {
         { name: 'SOCS', value: 'CAESHAgBEhJnd3NfMjAyMzA3MDQtMF9SQzIaAmVuIAEaBgiAqIaqBg', domain: '.google.com', path: '/' },
     ]);
     const page = await context.newPage();
-    await page.route('**/*', (route) => {
-        const t = route.request().resourceType();
-        if (t === 'image' || t === 'media' || t === 'font') return route.abort();
-        return route.continue();
-    });
+    // Photo scraping (Track 2 galleryScrape) NEEDS images to load — Google
+    // Maps lazy-injects lh3 thumbnails via JS that swaps in `src` after the
+    // image request resolves. With the request aborted, half the carousel
+    // never gets a URL (observed 2026-05-23 tick 1: Elementi with 489
+    // reviews returned 0 photos despite having a packed grid in a real
+    // browser). The address-resolve / reviews flows still want the
+    // DOM-only fast path, so default keeps image-block on.
+    if (!allowImages) {
+        await page.route('**/*', (route) => {
+            const t = route.request().resourceType();
+            if (t === 'image' || t === 'media' || t === 'font') return route.abort();
+            return route.continue();
+        });
+    } else {
+        // Still block media/font even in photo mode — those don't help and
+        // they cost bandwidth.
+        await page.route('**/*', (route) => {
+            const t = route.request().resourceType();
+            if (t === 'media' || t === 'font') return route.abort();
+            return route.continue();
+        });
+    }
     return { browser, context, page };
 }
 

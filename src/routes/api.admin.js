@@ -327,6 +327,30 @@ router.post("/null-expired-lh3", async (req, res) => {
 // download time for 10 places × 10 photos ≈ 30s end-to-end (sharp variants
 // dominate); within the 30s cron-job.org budget the runner is NOT subject
 // to since it's calling us directly.
+// Track 2 — re-queue places that have a galleryLastScrapedAt stamp but
+// no PlaceImage row from Google. Used after a scraper fix to recover
+// places that got marked scraped during a buggy tick (e.g. 2026-05-23
+// image-block fix) without waiting the full year for the refresh
+// cadence. Idempotent — the next scrape attempt will re-stamp them.
+router.post("/gallery-requeue-zero", async (req, res) => {
+    try {
+        const result = await prisma.$executeRawUnsafe(`
+            UPDATE \`Place\` p
+            LEFT JOIN (
+                SELECT placeId FROM \`PlaceImage\`
+                WHERE source = 'google' GROUP BY placeId
+            ) g ON g.placeId = p.id
+            SET p.galleryLastScrapedAt = NULL
+            WHERE p.galleryLastScrapedAt IS NOT NULL
+              AND g.placeId IS NULL
+        `);
+        res.json({ ok: true, reset: result });
+    } catch (err) {
+        console.error("[gallery-requeue-zero] crashed:", err);
+        res.status(500).json({ ok: false, error: err.message, name: err.name });
+    }
+});
+
 router.post("/gallery-download", async (req, res) => {
     const jobs = Array.isArray(req.body?.jobs) ? req.body.jobs : null;
     if (!jobs) {
