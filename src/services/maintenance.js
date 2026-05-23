@@ -184,7 +184,20 @@ const PHASES = [
     },
     {
         name: "photos",
-        async run(opts) { return runPhotosBatch({ limit: opts.photos }); },
+        async run(opts) {
+            // Track 1 hero-photo backfill via Places Photo API. Superseded by
+            // Track 2's galleryScrape phase, which uses Playwright and gets
+            // full-resolution lh3 URLs without API quota. When
+            // ENRICHMENT_PROVIDER=playwright, the providers.js path doesn't
+            // expose getPhoto() so runPhotosBatch fails noisily every tick —
+            // skip cleanly instead. The fallback path is still kept for the
+            // rare case someone manually flips back to google_api for a
+            // diagnostic run.
+            if ((process.env.ENRICHMENT_PROVIDER || "").toLowerCase() === "playwright") {
+                return { ok: true, skipped: true, reason: "ENRICHMENT_PROVIDER=playwright (use galleryScrape instead)" };
+            }
+            return runPhotosBatch({ limit: opts.photos });
+        },
     },
     // Downloads remote heroImageUrl values (signed lh3 Google photo URLs,
     // scraper-host hotlinks) to public/uploads/places/{id}.{ext} so the
