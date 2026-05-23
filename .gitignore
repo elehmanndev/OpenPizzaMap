@@ -39,6 +39,13 @@ scripts/lib/.tripadvisor-budget.json
 # scripts on each Hostinger boot/deploy and must not be checked in.
 .builds/
 
+# User-uploaded content. On Hostinger this path is a symlink to
+# ~/domains/openpizzamap.com/persistent/uploads/ so runtime-created
+# subdirectories survive git deploys (set up 2026-05-23). The legacy
+# flat photos under public/uploads/places/*.jpg remain tracked for
+# history; do not commit NEW binaries here.
+public/uploads/
+
 # Script artifacts. Everything under data/ is regenerable: scrape outputs,
 # external-API caches, audit/dedup/error reports. The dirs themselves are
 # created on demand by scripts/lib/bootstrap.js.

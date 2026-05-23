@@ -168,6 +168,25 @@ if (process.env.NODE_ENV === "production") {
     app.use(morgan("dev"));
 }
 const staticOpts = { maxAge: "30d", immutable: true, etag: true };
+
+// Self-heal the public/uploads symlink on boot. On Hostinger, user-uploaded
+// photos live OUTSIDE the deploy dir at ~/domains/openpizzamap.com/persistent/
+// uploads so runtime-created subdirectories survive git deploys (the deploy
+// would otherwise wipe untracked subdirs). If a future deploy ever clobbers
+// the symlink we lay down manually, this recreates it before express.static
+// mounts. No-op locally (target dir doesn't exist on dev machines).
+const uploadsLink = path.join(__dirname, "..", "public", "uploads");
+const uploadsTarget = process.env.UPLOADS_DIR
+    || path.join(__dirname, "..", "..", "persistent", "uploads");
+if (fs.existsSync(uploadsTarget) && !fs.existsSync(uploadsLink)) {
+    try {
+        fs.symlinkSync(uploadsTarget, uploadsLink, "dir");
+        console.log(`uploads symlink restored: ${uploadsLink} -> ${uploadsTarget}`);
+    } catch (err) {
+        console.error(`uploads symlink restore failed: ${err.message}`);
+    }
+}
+
 app.use("/public", express.static(path.join(__dirname, "..", "public"), staticOpts));
 app.use("/uploads", express.static(path.join(__dirname, "..", "public", "uploads"), staticOpts));
 
