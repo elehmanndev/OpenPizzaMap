@@ -487,6 +487,20 @@ function headingMatchesName(heading, name) {
     return false;
 }
 
+// True when the Google Maps h1 looks like a street/square name rather
+// than a venue name — meaning the place_id resolved to an address card.
+// Catches the 2026-05-23 Marino/Vittoria/Diaz/Miracoli pattern where
+// the place_id pointed at "Via Giambattista Marino" / "P.za Vittoria"
+// etc. and the bare token-match heuristic mistook the street name for
+// the venue name (token "marino" matches both).
+//
+// Covers Italian, Spanish, French, English, German, Portuguese street
+// prefixes and their common abbreviations.
+function isStreetHeading(h) {
+    if (!h) return false;
+    return /^(via|viale|v\.le|piazza|p\.za|p\.zza|pza|corso|c\.so|vicolo|vco|largo|l\.go|strada|str\.|s\.da|salita|sal\.|calle|c\.|cl\.|avenida|avda|av\.|plaza|paseo|pso|carrer|carrera|cra\.|rue|avenue|av\.?|place|pl\.|boulevard|bd|bvd|street|st\.|road|rd\.|way|square|sq\.|drive|dr\.|straße|strasse|str\.|platz|pl\.|allee|gasse|weg|rua|travessa|tv\.|av\.|avenida)\s/i.test(h);
+}
+
 // Haversine distance in meters between two lat/lng pairs. Used to
 // detect when a googlePlaceId resolves to a venue that's far from
 // where we know the real place is, indicating a stale/wrong place_id.
@@ -598,6 +612,7 @@ async function scrapePhotos(page, {
         // is empty, so a single tick log shows why a place came back 0.
         const trace = {
             heading: null,
+            streetHeading: false,
             urlCoords: null,
             distM: null,
             coordMismatch: false,
@@ -636,12 +651,15 @@ async function scrapePhotos(page, {
                 ? haversineM(Number(lat), Number(lng), urlCoords.lat, urlCoords.lng)
                 : null;
             const coordMismatch = distM != null && distM > COORD_TRUST_M;
+            const streetHeading = isStreetHeading(heading);
             const wantsFallback = name && (
                 !heading
+                || streetHeading
                 || !headingMatchesName(heading, name)
                 || coordMismatch
             );
             trace.heading = heading ? heading.slice(0, 80) : null;
+            trace.streetHeading = streetHeading;
             trace.urlCoords = urlCoords;
             trace.distM = distM != null ? Math.round(distM) : null;
             trace.coordMismatch = !!coordMismatch;

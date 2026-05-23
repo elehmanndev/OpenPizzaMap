@@ -179,7 +179,8 @@ async function run({ limit = 10, disconnect = true } = {}) {
                 const dist = d.distM != null ? ` distM=${d.distM}` : "";
                 const wf = d.wantsFallback != null ? ` wantsFallback=${d.wantsFallback}` : "";
                 const cm = d.coordMismatch != null ? ` coordMismatch=${d.coordMismatch}` : "";
-                console.log(`[galleryScrape]   debug: via=${result.openVia || "n/a"}${fb}${wf}${cm}${dist} heading="${d.heading || ""}" imgs=${d.totalImgs} lh3=${d.lh3Imgs} bg=${d.bgUrls} dialog=${d.hasDialog} feed=${d.hasFeed} hasResults=${d.hasResults} title="${d.title || ""}"`);
+                const sh = d.streetHeading ? " streetHeading=true" : "";
+                console.log(`[galleryScrape]   debug: via=${result.openVia || "n/a"}${fb}${wf}${cm}${sh}${dist} heading="${d.heading || ""}" imgs=${d.totalImgs} lh3=${d.lh3Imgs} bg=${d.bgUrls} dialog=${d.hasDialog} feed=${d.hasFeed} hasResults=${d.hasResults} title="${d.title || ""}"`);
                 if (d.finalUrl) {
                     console.log(`[galleryScrape]   finalUrl: ${d.finalUrl}`);
                 }
