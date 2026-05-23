@@ -17,6 +17,7 @@ const {
 } = require("../services/maintenance");
 const { getCoverage, unstickVersionBumpedRows } = require("../services/audit-coverage");
 const { run: runDownloadGallery } = require("../../scripts/backfills/download-gallery");
+const { run: runMigrateLegacyHeroes } = require("../../scripts/backfills/migrate-legacy-heroes");
 
 const router = express.Router();
 
@@ -338,6 +339,39 @@ router.post("/gallery-download", async (req, res) => {
         console.error("[gallery-download] crashed:", err);
         res.status(500).json({ ok: false, error: err.message });
     }
+});
+
+// Track 2 — one-shot legacy-hero migration. Moves the ~1,820 existing
+// /uploads/places/{id}.{ext} hero files into the new per-place subdir
+// layout (/uploads/places/{id}/1.{ext}) and inserts a source='legacy'
+// PlaceImage row at position 1. See scripts/backfills/migrate-legacy-heroes.js
+// for the full logic; this endpoint wraps it so the work happens inside
+// the live Hostinger worker (avoids the bare-CLI Prisma "tokio timer
+// has gone away" panic — see feedback_hostinger_prisma_cli_panic memory).
+//
+// GET  → dry-run preview (lists candidates, moves nothing)
+// POST → apply
+// Both accept ?limit=N to batch. Idempotent — already-migrated rows
+// (heroImageUrl in /uploads/places/{id}/... form OR any PlaceImage row
+// for the place) are skipped automatically by the script.
+router.get("/migrate-legacy-heroes", async (req, res) => {
+    const limit = parseInt(req.query.limit, 10);
+    const result = await runMigrateLegacyHeroes({
+        apply: false,
+        limit: Number.isFinite(limit) && limit > 0 ? limit : null,
+        disconnect: false,
+    });
+    res.json(result);
+});
+
+router.post("/migrate-legacy-heroes", async (req, res) => {
+    const limit = parseInt(req.query.limit, 10);
+    const result = await runMigrateLegacyHeroes({
+        apply: true,
+        limit: Number.isFinite(limit) && limit > 0 ? limit : null,
+        disconnect: false,
+    });
+    res.json(result);
 });
 
 module.exports = router;
