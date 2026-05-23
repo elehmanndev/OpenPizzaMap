@@ -78,7 +78,19 @@ async function processJob(job) {
     const skipped = [];
     const failed = [];
 
-    let position = 1;
+    // Start AFTER any existing PlaceImage rows so the legacy hero (or
+    // any prior scrape's outputs) doesn't get overwritten by a new
+    // photo at the same position. Without this, places that came in
+    // via the 1,326-row legacy migration get position 1 wiped on first
+    // galleryScrape (file + DB row both replaced), losing the curated
+    // editorial photo we explicitly chose to preserve per the Track 2
+    // design doc decision #6.
+    const maxExisting = await prisma.placeImage.aggregate({
+        where: { placeId: job.placeId },
+        _max: { position: true },
+    }).catch(() => ({ _max: { position: null } }));
+    let position = (maxExisting?._max?.position || 0) + 1;
+
     for (const photo of job.photos.slice(0, 10)) {
         // Skip if this exact photo (by sourceRef) is already in the gallery
         // OR was explicitly hidden by an admin (preserve hide-forever intent).

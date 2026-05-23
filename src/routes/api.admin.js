@@ -327,6 +327,51 @@ router.post("/null-expired-lh3", async (req, res) => {
 // download time for 10 places × 10 photos ≈ 30s end-to-end (sharp variants
 // dominate); within the 30s cron-job.org budget the runner is NOT subject
 // to since it's calling us directly.
+// Track 2 — purge every source='google' PlaceImage row + reset all
+// affected Place.galleryLastScrapedAt back to NULL. Used after the
+// 2026-05-23 size-suffix bug + position-collision bug forced a
+// re-do of the entire gallery scrape pipeline. Does NOT touch legacy
+// rows (source='legacy'), so the curated editorial heroes survive.
+//
+// Returns: { ok, deletedRows, requeuedPlaces }
+router.post("/gallery-purge-google", async (req, res) => {
+    try {
+        const affectedPlaces = await prisma.placeImage.findMany({
+            where: { source: "google" },
+            select: { placeId: true },
+            distinct: ["placeId"],
+        });
+        const placeIds = affectedPlaces.map((r) => r.placeId);
+        const del = await prisma.placeImage.deleteMany({
+            where: { source: "google" },
+        });
+        // Null both galleryLastScrapedAt (re-queue) AND heroImageUrl
+        // (the legacy file at /uploads/places/{id}/1.{ext} was
+        // overwritten by the buggy first-tick scrape if exts matched,
+        // and the -large/-thumb variants were definitely overwritten
+        // by build-thumbs running on the bad source). The next scrape
+        // will set heroImageUrl to the new google photo. Brief 🍕
+        // emoji fallback in the meantime — acceptable given the
+        // alternative is rendering 807-byte pixelated blobs.
+        const reset = await prisma.place.updateMany({
+            where: { id: { in: placeIds.length ? placeIds : [-1] } },
+            data: {
+                galleryLastScrapedAt: null,
+                heroImageUrl: null,
+            },
+        });
+        res.json({
+            ok: true,
+            deletedRows: del.count,
+            affectedPlaces: placeIds.length,
+            requeuedPlaces: reset.count,
+        });
+    } catch (err) {
+        console.error("[gallery-purge-google] crashed:", err);
+        res.status(500).json({ ok: false, error: err.message, name: err.name });
+    }
+});
+
 // Track 2 — re-queue places that have a galleryLastScrapedAt stamp but
 // no PlaceImage row from Google. Used after a scraper fix to recover
 // places that got marked scraped during a buggy tick (e.g. 2026-05-23

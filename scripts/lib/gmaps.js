@@ -601,13 +601,18 @@ async function scrapePhotos(page, { googlePlaceId, maxPhotos = 10 } = {}) {
                 if (!u || !/lh3\.googleusercontent\.com/.test(u)) return;
                 const id = extractId(u);
                 if (!id || seen.has(id)) return;
-                // Bump to a useful size if the URL has a size suffix.
-                // Format: ...AJRVUZxxx=s4800-w800 — replace with =w1600-h1200
-                // so we get a higher-quality copy. Fall back to bare URL
-                // if no size suffix.
+                // Replace whatever size/modifier suffix is on the URL with
+                // a generous =w1600-h1200 so we download a real image, not
+                // the 203px grid thumbnail Google embeds in the carousel.
+                // Google's modifier chars include letters beyond s/w/h
+                // (e.g. =w203-h253-k-no, =s512-c, =w400-h400-p-k-no,
+                // =w512-h512-c-rp-mo-ba1-br100), so the character class
+                // here covers all word chars + hyphen up to end-of-URL.
                 let sized = u;
-                if (/=[sw]\d+/.test(u)) {
-                    sized = u.replace(/=[swh\-\d]+$/, "=w1600-h1200");
+                if (/=[\w\-]+$/.test(u)) {
+                    sized = u.replace(/=[\w\-]+$/, "=w1600-h1200");
+                } else {
+                    sized = u + "=w1600-h1200";
                 }
                 seen.set(id, sized);
             };
