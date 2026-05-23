@@ -497,6 +497,31 @@ async function relayoutApply() {
     };
 }
 
+// Debug: list the actual contents of public/uploads/places at the worker's
+// CWD. Used 2026-05-23 to verify whether legacy id-based dirs are on disk
+// vs ghost. Remove after settled.
+router.get("/uploads-ls", async (req, res) => {
+    try {
+        const dir = pathMod.join(PUBLIC_ROOT, "uploads", "places");
+        const exists = fsMod.existsSync(dir);
+        if (!exists) {
+            return res.json({ ok: true, dir, exists: false, entries: [] });
+        }
+        const entries = fsMod.readdirSync(dir).slice(0, 50);
+        const stats = entries.map((n) => {
+            try {
+                const s = fsMod.statSync(pathMod.join(dir, n));
+                return { name: n, isDir: s.isDirectory(), size: s.size };
+            } catch { return { name: n, error: "stat failed" }; }
+        });
+        const dir84 = pathMod.join(dir, "84");
+        const entries84 = fsMod.existsSync(dir84) ? fsMod.readdirSync(dir84) : null;
+        res.json({ ok: true, dir, exists: true, totalEntries: fsMod.readdirSync(dir).length, sample50: stats, dir84Entries: entries84 });
+    } catch (err) {
+        res.status(500).json({ ok: false, error: err.message });
+    }
+});
+
 router.get("/gallery-relayout-to-slug", async (req, res) => {
     try {
         const result = await relayoutDryRun();
