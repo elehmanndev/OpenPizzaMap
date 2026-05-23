@@ -124,6 +124,13 @@ function fmtPhase(p) {
         p.computed != null  && `computed=${p.computed}`,
         p.fetched != null   && `fetched=${p.fetched}`,
         p.published != null && `published=${p.published}`,
+        // galleryScrape stats (Track 2). selfHealed prints even at 0 so
+        // the line confirms the mechanism is running each tick.
+        p.scraped != null   && `scraped=${p.scraped}`,
+        p.noPhotos          && `noPhotos=${p.noPhotos}`,
+        p.captcha           && `captcha=${p.captcha}`,
+        p.failed            && `failed=${p.failed}`,
+        p.selfHealed != null && `selfHealed=${p.selfHealed}`,
         p.dupes ?            `dupes=${p.dupes}` : null,
         p.errors ?           `errors=${p.errors}` : null,
     ].filter(Boolean).join(' ');

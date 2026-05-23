@@ -136,7 +136,7 @@ async function run({ limit = 10, disconnect = true } = {}) {
     // attribute which Google sets even when the network fetch is aborted.
     const { browser, page } = await createGmapsPage();
     const jobs = [];
-    const stats = { scraped: 0, captcha: 0, noPhotos: 0, failed: 0 };
+    const stats = { scraped: 0, captcha: 0, noPhotos: 0, failed: 0, selfHealed: 0 };
     let captchaHit = false;
 
     for (const p of queue) {
@@ -238,15 +238,17 @@ async function run({ limit = 10, disconnect = true } = {}) {
             );
             if (distM != null && distM <= HEAL_COORD_TOLERANCE_M) {
                 console.log(`[galleryScrape]   self-heal #${p.id}: placeId ${p.googlePlaceId} → ${result.healedPlaceId} (dist=${distM}m)`);
-                await prisma.place.update({
+                const ok = await prisma.place.update({
                     where: { id: p.id },
                     data: {
                         googlePlaceId: result.healedPlaceId,
                         enrichmentVersion: 0,
                     },
-                }).catch((e) => {
+                }).then(() => true).catch((e) => {
                     console.warn(`[galleryScrape]   self-heal #${p.id} update failed: ${e.message}`);
+                    return false;
                 });
+                if (ok) stats.selfHealed++;
             } else {
                 console.log(`[galleryScrape]   self-heal #${p.id} skipped: coord dist=${distM}m > ${HEAL_COORD_TOLERANCE_M}m`);
             }
@@ -276,7 +278,10 @@ async function run({ limit = 10, disconnect = true } = {}) {
     }
 
     if (disconnect) await prisma.$disconnect();
-    return { ok: true, jobs, stats };
+    // Flatten stats into the top-level return so runner.js's fmtPhase
+    // formatter can render them on the per-tick summary line — without
+    // this the galleryScrape line shows "OK (Xms)" with no detail.
+    return { ok: true, jobs, stats, ...stats };
 }
 
 module.exports = { run };
