@@ -356,22 +356,32 @@ router.post("/gallery-download", async (req, res) => {
 // for the place) are skipped automatically by the script.
 router.get("/migrate-legacy-heroes", async (req, res) => {
     const limit = parseInt(req.query.limit, 10);
-    const result = await runMigrateLegacyHeroes({
-        apply: false,
-        limit: Number.isFinite(limit) && limit > 0 ? limit : null,
-        disconnect: false,
-    });
-    res.json(result);
+    try {
+        const result = await runMigrateLegacyHeroes({
+            apply: false,
+            limit: Number.isFinite(limit) && limit > 0 ? limit : null,
+            disconnect: false,
+        });
+        res.json(result);
+    } catch (err) {
+        console.error("[migrate-legacy-heroes] dry-run crashed:", err);
+        res.status(500).json({ ok: false, error: err.message, name: err.name, stack: err.stack?.split("\n").slice(0, 6) });
+    }
 });
 
 router.post("/migrate-legacy-heroes", async (req, res) => {
     const limit = parseInt(req.query.limit, 10);
-    const result = await runMigrateLegacyHeroes({
-        apply: true,
-        limit: Number.isFinite(limit) && limit > 0 ? limit : null,
-        disconnect: false,
-    });
-    res.json(result);
+    try {
+        const result = await runMigrateLegacyHeroes({
+            apply: true,
+            limit: Number.isFinite(limit) && limit > 0 ? limit : null,
+            disconnect: false,
+        });
+        res.json(result);
+    } catch (err) {
+        console.error("[migrate-legacy-heroes] apply crashed:", err);
+        res.status(500).json({ ok: false, error: err.message, name: err.name, stack: err.stack?.split("\n").slice(0, 6) });
+    }
 });
 
 module.exports = router;
