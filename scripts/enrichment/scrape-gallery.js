@@ -112,10 +112,13 @@ async function run({ limit = 10, disconnect = true } = {}) {
     }
 
     console.log(`[galleryScrape] queue ${queue.length} places`);
-    // allowImages=true: photo scrape needs Google's lazy-loaded lh3
-    // thumbnails to actually fetch so their src attributes get populated.
-    // See createGmapsPage comments.
-    const { browser, page } = await createGmapsPage({ allowImages: true });
+    // Default page setup (images/media/font blocked) — tick 2 (allowImages
+    // = true) yielded 3/10 successes vs tick 1's 6/10 with blocking on.
+    // The real bug was the click-order in scrapePhotos picking the single-
+    // photo lightbox before the See-photos grid (fixed 2026-05-23). Image
+    // blocking stays on by default; we get URLs from the img.src
+    // attribute which Google sets even when the network fetch is aborted.
+    const { browser, page } = await createGmapsPage();
     const jobs = [];
     const stats = { scraped: 0, captcha: 0, noPhotos: 0, failed: 0 };
     let captchaHit = false;

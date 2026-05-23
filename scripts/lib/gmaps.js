@@ -500,19 +500,22 @@ async function scrapePhotos(page, { googlePlaceId, maxPhotos = 10 } = {}) {
             return { photos: [], captcha: true };
         }
 
-        // Open the photo browser. Try in priority order:
-        //   1. Button with aria-label "Photo of <Place Name>" (the hero
-        //      image overlay button)
-        //   2. Any button with aria-label starting "See photo" / "See all photo"
-        //   3. Tab-role element with text "Photos"
+        // Open the photo browser. Order matters — the panel hero has an
+        // aria-label "Photo of <name>" button that, when clicked, opens
+        // a SINGLE-image lightbox of just that hero (not the grid). Our
+        // 2026-05-23 production rollout hit this: clicking the hero
+        // first gave us a one-photo state where the grid scroll-and-scan
+        // found nothing, so the place got marked scraped with 0 photos.
+        // The probe got 9/10 success by trying the "See photos" overlay
+        // button first, which opens the full grid.
+        //
+        // Priority (matches the validated probe order):
+        //   1. button[aria-label^="See photos"] / "See all photos" /
+        //      "Show photos" — the overlay button on the hero, opens grid
+        //   2. role="tab" "Photos" — the in-panel Photos tab when present
+        //   3. button[aria-label^="Photo of <name>"] — single-photo lightbox
+        //      fallback (better than nothing for places without a grid)
         const openResult = await page.evaluate(() => {
-            for (const btn of document.querySelectorAll("button")) {
-                const aria = btn.getAttribute("aria-label") || "";
-                if (/^photo\s+of/i.test(aria)) {
-                    btn.click();
-                    return { ok: true, via: "hero", label: aria.slice(0, 80) };
-                }
-            }
             for (const btn of document.querySelectorAll("button")) {
                 const aria = btn.getAttribute("aria-label") || "";
                 if (/^(see|see\s+all|show)\s+photo/i.test(aria) || /^photos?$/i.test(aria)) {
@@ -524,6 +527,13 @@ async function scrapePhotos(page, { googlePlaceId, maxPhotos = 10 } = {}) {
                 if (/^photos?$/i.test((el.textContent || "").trim())) {
                     el.click();
                     return { ok: true, via: "tab", label: "tab" };
+                }
+            }
+            for (const btn of document.querySelectorAll("button")) {
+                const aria = btn.getAttribute("aria-label") || "";
+                if (/^photo\s+of/i.test(aria)) {
+                    btn.click();
+                    return { ok: true, via: "hero", label: aria.slice(0, 80) };
                 }
             }
             return { ok: false };
@@ -563,9 +573,29 @@ async function scrapePhotos(page, { googlePlaceId, maxPhotos = 10 } = {}) {
         // constraint.
         const photos = await page.evaluate((max) => {
             const seen = new Map(); // photoId → sourceUrl
+            // Stable photo IDs come in several lh3 URL shapes — known ones:
+            //   /place-photos/AKf.../    (place photos, our primary case)
+            //   /p/AB.../                 (newer location-photo format)
+            //   /gps-cs-s/AC9.../         (street-view contributions)
+            //   /gps-proxy/AC9...         (proxy CDN flavour)
+            //   /AKf.../                  (bare segment, older format)
+            // Last-resort fallback: take the URL hash of the path-without-
+            // size-suffix as the sourceRef so the PlaceImage unique
+            // constraint still prevents dup inserts on re-scrape, even if
+            // we don't know what photo-ID-encoding Google used.
             const extractId = (u) => {
-                const m = u.match(/(?:place-photos\/|\/p\/)([A-Za-z0-9_\-]{20,})/);
-                return m ? m[1] : null;
+                const m = u.match(/(?:place-photos\/|\/p\/|\/gps-cs-s\/|\/gps-proxy\/)([A-Za-z0-9_\-]{15,})/);
+                if (m) return m[1];
+                const bare = u.match(/lh3\.googleusercontent\.com\/([A-Za-z0-9_\-]{20,})(?:[=\/]|$)/);
+                if (bare) return bare[1];
+                // Hash the path (minus query + size suffix) as a stable
+                // de-dup key for any other shape.
+                const cleaned = u.replace(/=[\w\-]+$/, "").replace(/\?.*$/, "");
+                let h = 0;
+                for (let i = 0; i < cleaned.length; i++) {
+                    h = ((h << 5) - h + cleaned.charCodeAt(i)) | 0;
+                }
+                return "h" + (h >>> 0).toString(36);
             };
             const addUrl = (u) => {
                 if (!u || !/lh3\.googleusercontent\.com/.test(u)) return;
