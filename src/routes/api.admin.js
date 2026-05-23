@@ -369,6 +369,109 @@ router.get("/migrate-legacy-heroes", async (req, res) => {
     }
 });
 
+// Debug: peek at DB schema state. Lists tables matching a pattern.
+// Used to confirm whether the Track 2 migration applied on the live
+// DB — `?like=PlaceImage` returns [{ Tables_in_X: "PlaceImage" }] when
+// the table exists, [] when it doesn't. Remove after Phase 1 settles.
+router.get("/db-tables", async (req, res) => {
+    const like = String(req.query.like || "%");
+    if (!/^[A-Za-z0-9_%]+$/.test(like)) {
+        return res.status(400).json({ ok: false, error: "bad like pattern" });
+    }
+    try {
+        const rows = await prisma.$queryRawUnsafe(`SHOW TABLES LIKE '${like}'`);
+        res.json({ ok: true, like, rows });
+    } catch (err) {
+        res.status(500).json({ ok: false, error: err.message, name: err.name });
+    }
+});
+
+// Debug: list migrations Prisma believes are applied. Reads
+// _prisma_migrations directly so we can compare against the
+// prisma/migrations directory and see if 20260523100000_place_image is
+// missing or marked failed. Remove after Phase 1 settles.
+router.get("/db-migrations", async (req, res) => {
+    try {
+        const rows = await prisma.$queryRawUnsafe(`
+            SELECT migration_name, started_at, finished_at, rolled_back_at, applied_steps_count
+            FROM _prisma_migrations
+            ORDER BY started_at DESC
+            LIMIT 20
+        `);
+        res.json({ ok: true, rows });
+    } catch (err) {
+        res.status(500).json({ ok: false, error: err.message, name: err.name });
+    }
+});
+
+// One-shot: apply the Track 2 migration SQL manually if `prisma migrate
+// deploy` silently skipped or partially applied it. Idempotent via
+// IF NOT EXISTS guards. Remove after Phase 1 settles.
+router.post("/db-apply-place-image", async (req, res) => {
+    try {
+        const before = await prisma.$queryRawUnsafe(`SHOW TABLES LIKE 'PlaceImage'`);
+
+        // 1. Place.galleryLastScrapedAt — guard with IF NOT EXISTS isn't
+        //    portable on MariaDB 10.x; check column first.
+        const colRows = await prisma.$queryRawUnsafe(`
+            SELECT COLUMN_NAME FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'Place'
+              AND COLUMN_NAME = 'galleryLastScrapedAt'
+        `);
+        if (!Array.isArray(colRows) || colRows.length === 0) {
+            await prisma.$executeRawUnsafe(`
+                ALTER TABLE \`Place\` ADD COLUMN \`galleryLastScrapedAt\` DATETIME(3) NULL
+            `);
+        }
+
+        // 2. PlaceImage table
+        await prisma.$executeRawUnsafe(`
+            CREATE TABLE IF NOT EXISTS \`PlaceImage\` (
+                \`id\`         INT NOT NULL AUTO_INCREMENT,
+                \`placeId\`    INT NOT NULL,
+                \`position\`   INT NOT NULL,
+                \`localPath\`  VARCHAR(255) NOT NULL,
+                \`source\`     VARCHAR(20) NOT NULL,
+                \`sourceRef\`  VARCHAR(255) NULL,
+                \`sourceUrl\`  VARCHAR(500) NULL,
+                \`width\`      INT NULL,
+                \`height\`     INT NULL,
+                \`bytes\`      INT NULL,
+                \`isHidden\`   BOOLEAN NOT NULL DEFAULT false,
+                \`scrapedAt\`  DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+                PRIMARY KEY (\`id\`),
+                INDEX \`PlaceImage_placeId_position_idx\` (\`placeId\`, \`position\`),
+                UNIQUE INDEX \`PlaceImage_placeId_sourceRef_key\` (\`placeId\`, \`sourceRef\`),
+                CONSTRAINT \`PlaceImage_placeId_fkey\`
+                    FOREIGN KEY (\`placeId\`) REFERENCES \`Place\`(\`id\`)
+                    ON DELETE CASCADE ON UPDATE CASCADE
+            ) ENGINE = InnoDB
+        `);
+
+        // 3. Mark the migration as applied so `prisma migrate deploy`
+        //    doesn't try to re-run it on the next deploy. Insert is
+        //    idempotent via INSERT IGNORE.
+        const migrationName = "20260523100000_place_image";
+        await prisma.$executeRawUnsafe(`
+            INSERT IGNORE INTO _prisma_migrations
+                (id, checksum, finished_at, migration_name, logs, rolled_back_at, started_at, applied_steps_count)
+            VALUES
+                (UUID(), 'manual-apply-track2', NOW(3), '${migrationName}', 'Applied via /api/admin/db-apply-place-image', NULL, NOW(3), 1)
+        `);
+
+        const after = await prisma.$queryRawUnsafe(`SHOW TABLES LIKE 'PlaceImage'`);
+        res.json({
+            ok: true,
+            before: before.length,
+            after: after.length,
+            migrationMarkedApplied: migrationName,
+        });
+    } catch (err) {
+        console.error("[db-apply-place-image] crashed:", err);
+        res.status(500).json({ ok: false, error: err.message, name: err.name, stack: err.stack?.split("\n").slice(0, 6) });
+    }
+});
+
 router.post("/migrate-legacy-heroes", async (req, res) => {
     const limit = parseInt(req.query.limit, 10);
     try {
