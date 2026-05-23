@@ -40,6 +40,17 @@ const { prisma, ROOT } = require("../lib/bootstrap");
 const PLACES_DIR = path.join(ROOT, "public", "uploads", "places");
 const UA = "OpenPizzaMap/0.1 (eric@openpizzamap.com)";
 
+// Slug-based subdirectory per place for SEO. Google image search
+// reads the URL path as a signal — /uploads/places/quattro-quarti-
+// pizzeria-con-cucina-bari/1.jpg outranks /uploads/places/84/1.jpg.
+// Places without a slug (shouldn't happen post-enrichment but the
+// DB allows it) get a deterministic place-{id} fallback so we never
+// write into the bare /uploads/places/ root.
+function placePathSegment(place) {
+    if (place && place.slug) return place.slug;
+    return `place-${place.id}`;
+}
+
 function extFromContentType(ct) {
     if (!ct) return null;
     const t = ct.split(";")[0].trim().toLowerCase();
@@ -71,7 +82,20 @@ async function downloadOne(url, outPath) {
 }
 
 async function processJob(job) {
-    const placeDir = path.join(PLACES_DIR, String(job.placeId));
+    // Resolve slug — caller (Unraid runner) sends it in the payload, but
+    // fall back to a DB lookup if older runner code is in flight or the
+    // job is missing it for any reason. Skip the lookup entirely when
+    // job.slug is already populated.
+    let slug = job.slug || null;
+    if (!slug) {
+        const p = await prisma.place.findUnique({
+            where: { id: job.placeId },
+            select: { slug: true },
+        }).catch(() => null);
+        slug = p?.slug || null;
+    }
+    const seg = placePathSegment({ id: job.placeId, slug });
+    const placeDir = path.join(PLACES_DIR, seg);
     fs.mkdirSync(placeDir, { recursive: true });
 
     const inserted = [];
@@ -106,7 +130,7 @@ async function processJob(job) {
         try {
             const outBase = path.join(placeDir, String(position));
             const r = await downloadOne(photo.sourceUrl, outBase);
-            const localPath = `/uploads/places/${job.placeId}/${position}.${r.ext}`;
+            const localPath = `/uploads/places/${seg}/${position}.${r.ext}`;
             await prisma.placeImage.create({
                 data: {
                     placeId: job.placeId,

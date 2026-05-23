@@ -327,6 +327,196 @@ router.post("/null-expired-lh3", async (req, res) => {
 // download time for 10 places × 10 photos ≈ 30s end-to-end (sharp variants
 // dominate); within the 30s cron-job.org budget the runner is NOT subject
 // to since it's calling us directly.
+// Track 2 — one-shot file-layout migration from
+// /uploads/places/{id}/N.{ext} to /uploads/places/{slug}/N.{ext}.
+// SEO win: Google image search reads the path as a ranking signal.
+//
+// Walks every PlaceImage row whose localPath starts with the id-based
+// form, moves the file (and its sibling -thumb.jpg / -large.jpg
+// variants) into the slug-based subdir, updates PlaceImage.localPath
+// and Place.heroImageUrl to point at the new path.
+//
+// Idempotent on rerun:
+//   - If the source id-dir is already gone (previous run moved it),
+//     the row is skipped and DB-only fixed if its localPath still
+//     looks id-based.
+//   - If the destination slug-dir already exists with the file in
+//     place, the source dir is left alone (could be re-import) and
+//     we just update DB.
+//
+// Places with null slug get place-{id} as the segment (same fallback
+// the runtime uses) so we never write into the bare uploads/places/
+// root.
+//
+// GET  → dry-run preview
+// POST → apply
+const fsMod = require("fs");
+const pathMod = require("path");
+const PUBLIC_ROOT = pathMod.resolve(__dirname, "..", "..", "public");
+
+function legacyIdPathSegment(placeId) { return String(placeId); }
+function slugPathSegment(place) {
+    if (place && place.slug) return place.slug;
+    return `place-${place.id}`;
+}
+
+async function relayoutDryRun() {
+    const rows = await prisma.placeImage.findMany({
+        select: {
+            id: true, placeId: true, localPath: true, position: true,
+            place: { select: { id: true, slug: true, heroImageUrl: true } },
+        },
+        orderBy: { id: "asc" },
+    });
+    let candidates = 0;
+    let slugDirAlreadyExists = 0;
+    let nothingToDo = 0;
+    const samples = [];
+    for (const r of rows) {
+        if (!r.localPath || !r.localPath.startsWith("/uploads/places/")) {
+            nothingToDo++;
+            continue;
+        }
+        const m = r.localPath.match(/^\/uploads\/places\/([^/]+)\/(.+)$/);
+        if (!m) { nothingToDo++; continue; }
+        const currentSeg = m[1];
+        const desiredSeg = slugPathSegment(r.place);
+        if (currentSeg === desiredSeg) { nothingToDo++; continue; }
+        candidates++;
+        const srcDir = pathMod.join(PUBLIC_ROOT, "uploads", "places", currentSeg);
+        const dstDir = pathMod.join(PUBLIC_ROOT, "uploads", "places", desiredSeg);
+        if (fsMod.existsSync(dstDir)) slugDirAlreadyExists++;
+        if (samples.length < 5) {
+            samples.push({ placeId: r.placeId, from: currentSeg, to: desiredSeg, srcExists: fsMod.existsSync(srcDir) });
+        }
+    }
+    return { totalRows: rows.length, candidates, slugDirAlreadyExists, nothingToDo, samples };
+}
+
+async function relayoutApply() {
+    const places = await prisma.place.findMany({
+        select: { id: true, slug: true, heroImageUrl: true },
+    });
+    const bySlug = new Map();
+    for (const p of places) bySlug.set(p.id, p);
+
+    const rows = await prisma.placeImage.findMany({
+        select: { id: true, placeId: true, localPath: true },
+        orderBy: { id: "asc" },
+    });
+
+    // Move directories ONCE per place (multiple PlaceImage rows can sit
+    // in the same dir). Track per-place: which segment moved → which.
+    const moved = new Map();   // placeId → { from, to }
+    let dirsMoved = 0;
+    let dirsAlreadyTarget = 0;
+    let dirsSrcMissing = 0;
+    let rowsUpdated = 0;
+    let heroesUpdated = 0;
+
+    // Pass 1: move directories
+    for (const r of rows) {
+        if (!r.localPath || !r.localPath.startsWith("/uploads/places/")) continue;
+        const m = r.localPath.match(/^\/uploads\/places\/([^/]+)\/(.+)$/);
+        if (!m) continue;
+        const currentSeg = m[1];
+        const place = bySlug.get(r.placeId);
+        if (!place) continue;
+        const desiredSeg = slugPathSegment(place);
+        if (currentSeg === desiredSeg) continue;
+        if (moved.has(r.placeId)) continue;
+
+        const srcDir = pathMod.join(PUBLIC_ROOT, "uploads", "places", currentSeg);
+        const dstDir = pathMod.join(PUBLIC_ROOT, "uploads", "places", desiredSeg);
+
+        if (!fsMod.existsSync(srcDir)) {
+            // Source dir already gone — could be a re-run. Still update
+            // DB so paths reflect reality.
+            moved.set(r.placeId, { from: currentSeg, to: desiredSeg, srcMissing: true });
+            dirsSrcMissing++;
+            continue;
+        }
+        if (fsMod.existsSync(dstDir)) {
+            // Destination already exists — leave source alone (no merge
+            // logic; would risk overwriting newer files). DB still gets
+            // updated below.
+            moved.set(r.placeId, { from: currentSeg, to: desiredSeg, dstExisted: true });
+            dirsAlreadyTarget++;
+            continue;
+        }
+        try {
+            fsMod.renameSync(srcDir, dstDir);
+            moved.set(r.placeId, { from: currentSeg, to: desiredSeg });
+            dirsMoved++;
+        } catch (err) {
+            console.warn(`[relayout] rename ${srcDir} -> ${dstDir} failed: ${err.message}`);
+        }
+    }
+
+    // Pass 2: update DB
+    for (const r of rows) {
+        if (!r.localPath || !r.localPath.startsWith("/uploads/places/")) continue;
+        const m = r.localPath.match(/^\/uploads\/places\/([^/]+)\/(.+)$/);
+        if (!m) continue;
+        const currentSeg = m[1];
+        const place = bySlug.get(r.placeId);
+        if (!place) continue;
+        const desiredSeg = slugPathSegment(place);
+        if (currentSeg === desiredSeg) continue;
+        const newPath = `/uploads/places/${desiredSeg}/${m[2]}`;
+        await prisma.placeImage.update({
+            where: { id: r.id },
+            data: { localPath: newPath },
+        }).catch((e) => console.warn(`[relayout] update row ${r.id}: ${e.message}`));
+        rowsUpdated++;
+    }
+
+    // Pass 3: update Place.heroImageUrl for any place we moved
+    for (const place of places) {
+        if (!place.heroImageUrl || !place.heroImageUrl.startsWith("/uploads/places/")) continue;
+        const m = place.heroImageUrl.match(/^\/uploads\/places\/([^/]+)\/(.+)$/);
+        if (!m) continue;
+        const currentSeg = m[1];
+        const desiredSeg = slugPathSegment(place);
+        if (currentSeg === desiredSeg) continue;
+        const newPath = `/uploads/places/${desiredSeg}/${m[2]}`;
+        await prisma.place.update({
+            where: { id: place.id },
+            data: { heroImageUrl: newPath },
+        }).catch((e) => console.warn(`[relayout] update place ${place.id} hero: ${e.message}`));
+        heroesUpdated++;
+    }
+
+    return {
+        ok: true,
+        dirsMoved,
+        dirsAlreadyTarget,
+        dirsSrcMissing,
+        rowsUpdated,
+        heroesUpdated,
+    };
+}
+
+router.get("/gallery-relayout-to-slug", async (req, res) => {
+    try {
+        const result = await relayoutDryRun();
+        res.json({ ok: true, mode: "dry-run", ...result });
+    } catch (err) {
+        console.error("[relayout dry-run] crashed:", err);
+        res.status(500).json({ ok: false, error: err.message, name: err.name });
+    }
+});
+
+router.post("/gallery-relayout-to-slug", async (req, res) => {
+    try {
+        const result = await relayoutApply();
+        res.json({ mode: "apply", ...result });
+    } catch (err) {
+        console.error("[relayout apply] crashed:", err);
+        res.status(500).json({ ok: false, error: err.message, name: err.name });
+    }
+});
+
 // Track 2 — purge every source='google' PlaceImage row + reset all
 // affected Place.galleryLastScrapedAt back to NULL. Used after the
 // 2026-05-23 size-suffix bug + position-collision bug forced a

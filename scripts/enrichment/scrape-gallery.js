@@ -83,7 +83,7 @@ async function pickQueue(limit) {
                 { galleryLastScrapedAt: { lt: ttlBoundary } },
             ],
         },
-        select: { id: true, name: true, city: true, googlePlaceId: true },
+        select: { id: true, name: true, city: true, slug: true, googlePlaceId: true },
         orderBy: { id: "asc" },
         take: limit,
     });
@@ -164,6 +164,7 @@ async function run({ limit = 10, disconnect = true } = {}) {
             placeId: p.id,
             name: p.name,
             city: p.city,
+            slug: p.slug,
             photos: result.photos,
         });
         stats.scraped++;
