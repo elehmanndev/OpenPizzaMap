@@ -666,6 +666,31 @@ router.post("/gallery-rescue-flat-to-slug", async (req, res) => {
     }
 });
 
+// TEMP: diagnostic — list contents of /uploads/places dir AND a specific
+// slug subdir. Used to investigate whether deploys wipe /uploads/ subdirs.
+router.get("/uploads-ls", async (req, res) => {
+    try {
+        const dir = pathMod.join(PUBLIC_ROOT, "uploads", "places");
+        if (!fsMod.existsSync(dir)) return res.json({ ok: true, exists: false });
+        const subdir = req.query.sub ? pathMod.join(dir, String(req.query.sub)) : null;
+        const out = {
+            ok: true,
+            placesDir: dir,
+            totalEntries: fsMod.readdirSync(dir).length,
+            subdirs: fsMod.readdirSync(dir, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).slice(0, 30),
+            firstFlatFiles: fsMod.readdirSync(dir).filter((n) => /^\d+\.(jpg|jpeg|png|webp|avif)$/.test(n)).slice(0, 10),
+        };
+        if (subdir && fsMod.existsSync(subdir)) {
+            out.subdirContents = fsMod.readdirSync(subdir).map((n) => ({ name: n, size: fsMod.statSync(pathMod.join(subdir, n)).size }));
+        } else if (subdir) {
+            out.subdirContents = "DOES NOT EXIST";
+        }
+        res.json(out);
+    } catch (err) {
+        res.status(500).json({ ok: false, error: err.message });
+    }
+});
+
 router.get("/gallery-relayout-to-slug", async (req, res) => {
     try {
         const result = await relayoutDryRun();
