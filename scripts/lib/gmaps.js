@@ -759,27 +759,39 @@ async function scrapePhotos(page, {
         await sleep(2000);
 
         // Try to switch to a curated photo category — Google groups photos
-        // by category (All / Pizza / Food / Drink / Vibe / Menu / By owner)
-        // and the "Pizza" tab specifically contains photos Google has
-        // classified as pizza shots. Same for "Food". Much better signal-
-        // to-noise than the default "All" view, which mixes in menus,
-        // receipts, parking lots, etc. Tabs only appear after a successful
-        // See-photos entrypoint click; skipped when openResult.ok is false
-        // (preview-only DOM with no carousel).
+        // by category (All / By owner / Pizza / Food / Drink / Vibe /
+        // Menu). Priority:
+        //   1. "By owner" — venue-uploaded marketing photos, professionally
+        //      curated, represents how the owner wants the place shown
+        //   2. "Pizza" — Google-classified pizza shots, the venue's
+        //      product
+        //   3. "Food" — broader food category fallback
+        //   4. default tab (All)
+        // Tabs only appear after a successful See-photos entrypoint click;
+        // skipped when openResult.ok is false (preview-only DOM with no
+        // carousel).
         let tabClicked = null;
         if (openResult.ok) {
             tabClicked = await page.evaluate(() => {
                 const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
                 if (!tabs.length) return null;
                 const textOf = (el) => (el.textContent || el.getAttribute("aria-label") || "").trim();
-                // Prefer Pizza (the venue type), then Food, then leave on
-                // current tab. Multilingual aria/text — hl=en gives English
-                // but the underlying DOM may keep the locale label depending
-                // on Google's A/B state, so we accept common translations.
+                // Multilingual matches — hl=en should give English but
+                // the underlying DOM sometimes keeps the venue's locale
+                // label depending on Google's A/B state.
+                //
+                // "By owner" / "Del propietari" / "Del propietario" /
+                // "Del proprietario" / "Du propriétaire" / "Vom Inhaber" /
+                // "Do proprietário"
+                const ownerRe = /(owner|propietari|propietario|proprietario|propri[ée]taire|inhaber|eigent[üu]mer|propriet[áa]rio)/i;
                 const pizzaRe = /^(pizza|pizze)$/i;
                 const foodRe = /^(food|menjar|comida|cibo|essen|nourriture|comidas)$/i;
-                let target = tabs.find((t) => pizzaRe.test(textOf(t)));
-                let label = target ? "pizza" : null;
+                let target = tabs.find((t) => ownerRe.test(textOf(t)));
+                let label = target ? "owner" : null;
+                if (!target) {
+                    target = tabs.find((t) => pizzaRe.test(textOf(t)));
+                    label = target ? "pizza" : null;
+                }
                 if (!target) {
                     target = tabs.find((t) => foodRe.test(textOf(t)));
                     label = target ? "food" : null;
@@ -789,7 +801,7 @@ async function scrapePhotos(page, {
                     return { clicked: false, label, alreadySelected: true };
                 }
                 target.click();
-                return { clicked: true, label, text: textOf(target).slice(0, 20) };
+                return { clicked: true, label, text: textOf(target).slice(0, 30) };
             }).catch(() => null);
             if (tabClicked && tabClicked.clicked) {
                 await sleep(1500); // let the tab content refresh
