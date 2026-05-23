@@ -69,7 +69,13 @@ fi
 # Force-install on every start. Idempotent: instant when already correct.
 if ! node -e "require.resolve('playwright')" 2>/dev/null; then
     log "playwright not loadable — force-installing"
-    SKIP_PLAYWRIGHT_INSTALL=1 npm install playwright@1.59.1 --no-save --ignore-scripts --no-audit --no-fund 2>&1 | tail -3
+    # NODE_ENV=development override needed: with NODE_ENV=production
+    # (set on the container for the live app), npm install silently
+    # skips devDependencies even with --no-save, so playwright stays
+    # missing and the next start hits this same branch in a loop.
+    # See notes/sessions/2026-05-23 — probe found the runner had been
+    # FAILing on playwrightFallback for at least a week because of this.
+    SKIP_PLAYWRIGHT_INSTALL=1 NODE_ENV=development npm install playwright@1.59.1 --no-save --include=dev --ignore-scripts --no-audit --no-fund 2>&1 | tail -3
 fi
 
 # ─── Regen Prisma client (fast, idempotent) ────────────────────────────────
