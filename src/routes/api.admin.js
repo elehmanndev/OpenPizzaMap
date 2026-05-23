@@ -497,6 +497,175 @@ async function relayoutApply() {
     };
 }
 
+// Track 2 — actual file rescue. Verified 2026-05-23 via /uploads-ls:
+// despite the earlier migrate-legacy-heroes endpoint reporting "1,131
+// moved", the fs.renameSync calls silently no-op'd on Hostinger.
+// 4,203 files are still sitting in the original FLAT layout at
+// /uploads/places/{id}.{ext} + /uploads/places/{id}-large.jpg +
+// /uploads/places/{id}-thumb.jpg, while every DB pointer was updated
+// to id-subdir then slug-subdir paths that don't exist.
+//
+// This endpoint actually does the move: for every place with a slug
+// and a flat-layout original file, mv {id}.{ext} → {slug}/1.{ext}
+// and the variants too. Repairs PlaceImage.localPath and
+// Place.heroImageUrl to point at the new subdir paths.
+//
+// Idempotent: skips places already migrated (slug subdir exists +
+// flat files absent).
+//
+// GET  → dry-run
+// POST → apply
+async function rescueScan({ apply, limit }) {
+    const places = await prisma.place.findMany({
+        select: { id: true, slug: true, heroImageUrl: true },
+        orderBy: { id: "asc" },
+    });
+    const placesDir = pathMod.join(PUBLIC_ROOT, "uploads", "places");
+    let foundFlat = 0;
+    let movedOriginal = 0;
+    let movedThumb = 0;
+    let movedLarge = 0;
+    let alreadyMigrated = 0;
+    let dbHeroesUpdated = 0;
+    let dbRowsUpdated = 0;
+    let skippedNoSlug = 0;
+    let appliedCount = 0;
+    const samples = [];
+    const errors = [];
+
+    for (const p of places) {
+        if (limit != null && appliedCount >= limit) break;
+
+        const seg = p.slug ? p.slug : `place-${p.id}`;
+        if (!p.slug) skippedNoSlug++;
+        const dstDir = pathMod.join(placesDir, seg);
+
+        // Find any flat-layout original for this id
+        let flatExt = null;
+        let flatSrc = null;
+        for (const ext of ["jpg", "jpeg", "png", "webp", "gif", "avif"]) {
+            const candidate = pathMod.join(placesDir, `${p.id}.${ext}`);
+            if (fsMod.existsSync(candidate)) {
+                flatExt = ext;
+                flatSrc = candidate;
+                break;
+            }
+        }
+        if (!flatSrc) {
+            const dstFile = pathMod.join(dstDir, `1.jpg`);
+            if (fsMod.existsSync(dstFile)) alreadyMigrated++;
+            continue;
+        }
+        foundFlat++;
+
+        if (samples.length < 10) {
+            samples.push({ id: p.id, slug: p.slug, ext: flatExt, from: `${p.id}.${flatExt}`, to: `${seg}/1.${flatExt}` });
+        }
+
+        if (!apply) continue;
+        appliedCount++;
+
+        const perPlaceLog = { id: p.id, seg, ext: flatExt, steps: {} };
+        try {
+            fsMod.mkdirSync(dstDir, { recursive: true });
+            perPlaceLog.steps.mkdir = "ok";
+            const dstOriginal = pathMod.join(dstDir, `1.${flatExt}`);
+            fsMod.renameSync(flatSrc, dstOriginal);
+            perPlaceLog.steps.renameOriginal = "ok";
+            movedOriginal++;
+
+            const thumbSrc = pathMod.join(placesDir, `${p.id}-thumb.jpg`);
+            if (fsMod.existsSync(thumbSrc)) {
+                try {
+                    fsMod.renameSync(thumbSrc, pathMod.join(dstDir, "1-thumb.jpg"));
+                    perPlaceLog.steps.renameThumb = "ok";
+                    movedThumb++;
+                } catch (e) { perPlaceLog.steps.renameThumb = `FAIL ${e.message}`; }
+            } else perPlaceLog.steps.renameThumb = "no-source";
+
+            const largeSrc = pathMod.join(placesDir, `${p.id}-large.jpg`);
+            if (fsMod.existsSync(largeSrc)) {
+                try {
+                    fsMod.renameSync(largeSrc, pathMod.join(dstDir, "1-large.jpg"));
+                    perPlaceLog.steps.renameLarge = "ok";
+                    movedLarge++;
+                } catch (e) { perPlaceLog.steps.renameLarge = `FAIL ${e.message}`; }
+            } else perPlaceLog.steps.renameLarge = "no-source";
+
+            const newLocalPath = `/uploads/places/${seg}/1.${flatExt}`;
+            try {
+                await prisma.place.update({
+                    where: { id: p.id },
+                    data: { heroImageUrl: newLocalPath },
+                });
+                perPlaceLog.steps.updateHero = "ok";
+                dbHeroesUpdated++;
+            } catch (e) { perPlaceLog.steps.updateHero = `FAIL ${e.message}`; }
+
+            try {
+                await prisma.placeImage.deleteMany({
+                    where: { placeId: p.id, source: "legacy" },
+                });
+                await prisma.placeImage.create({
+                    data: {
+                        placeId: p.id, position: 1, localPath: newLocalPath,
+                        source: "legacy", sourceRef: null, sourceUrl: null,
+                    },
+                });
+                perPlaceLog.steps.upsertLegacyRow = "ok";
+                dbRowsUpdated++;
+            } catch (e) { perPlaceLog.steps.upsertLegacyRow = `FAIL ${e.message}`; }
+        } catch (err) {
+            perPlaceLog.fatal = err.message;
+            errors.push(perPlaceLog);
+        }
+        if (errors.length < 10 || apply && limit != null) {
+            // Always include the first ~10 in the response while testing
+            // small batches.
+            if (samples.length < 20 && limit != null) {
+                samples.push({ ...perPlaceLog, _log: true });
+            }
+        }
+    }
+    return {
+        totalPlaces: places.length,
+        skippedNoSlug,
+        foundFlat,
+        alreadyMigrated,
+        movedOriginal,
+        movedThumb,
+        movedLarge,
+        dbHeroesUpdated,
+        dbRowsUpdated,
+        appliedCount,
+        samples,
+        errors,
+        applied: apply,
+    };
+}
+
+router.get("/gallery-rescue-flat-to-slug", async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit, 10);
+        const result = await rescueScan({ apply: false, limit: Number.isFinite(limit) && limit > 0 ? limit : null });
+        res.json({ ok: true, mode: "dry-run", ...result });
+    } catch (err) {
+        console.error("[rescue dry-run] crashed:", err);
+        res.status(500).json({ ok: false, error: err.message, name: err.name });
+    }
+});
+
+router.post("/gallery-rescue-flat-to-slug", async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit, 10);
+        const result = await rescueScan({ apply: true, limit: Number.isFinite(limit) && limit > 0 ? limit : null });
+        res.json({ ok: true, mode: "apply", ...result });
+    } catch (err) {
+        console.error("[rescue apply] crashed:", err);
+        res.status(500).json({ ok: false, error: err.message, name: err.name });
+    }
+});
+
 // Debug: list the actual contents of public/uploads/places at the worker's
 // CWD. Used 2026-05-23 to verify whether legacy id-based dirs are on disk
 // vs ghost. Remove after settled.
