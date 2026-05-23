@@ -487,8 +487,53 @@ function headingMatchesName(heading, name) {
     return false;
 }
 
-async function scrapePhotos(page, { googlePlaceId, name, city, maxPhotos = 10 } = {}) {
+// Haversine distance in meters between two lat/lng pairs. Used to
+// detect when a googlePlaceId resolves to a venue that's far from
+// where we know the real place is, indicating a stale/wrong place_id.
+function haversineM(lat1, lng1, lat2, lng2) {
+    if (lat1 == null || lng1 == null || lat2 == null || lng2 == null) return null;
+    const R = 6371000;
+    const toRad = (d) => (d * Math.PI) / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+// Parse lat/lng out of a Google Maps URL like
+//   /maps/place/...@40.8311208,14.2460136,815m/data=...
+// Returns {lat, lng} or null if no @ block found.
+function coordsFromUrl(url) {
+    const m = (url || "").match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (!m) return null;
+    return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
+}
+
+// Tolerance for "the place_id lands on the right venue, just slightly
+// off centroid". Anything beyond this and we trust our DB coords + name
+// over the place_id and fall back. Tuned to 200m to allow normal Maps
+// centroid drift while catching cases like Marino where the place_id
+// pointed at a different venue ~2km away.
+const COORD_TRUST_M = 200;
+
+async function scrapePhotos(page, {
+    googlePlaceId,
+    name,
+    city,
+    addressLine,
+    lat,
+    lng,
+    maxPhotos = 10,
+} = {}) {
     if (!googlePlaceId && !name) return { photos: [], reason: "no googlePlaceId or name" };
+
+    // Build the search query for the fallback path. Include addressLine
+    // when available so generic names like "Marino" or "Diaz" resolve to
+    // the correct venue out of 50 same-named results.
+    const buildSearchQuery = () => {
+        const parts = [name, addressLine, city].filter(Boolean);
+        return encodeURIComponent(parts.join(" ").trim());
+    };
 
     // Reused inside this function for both the place_id path and the
     // name+city fallback path. Inline to keep scrapePhotos self-contained.
@@ -531,16 +576,27 @@ async function scrapePhotos(page, { googlePlaceId, name, city, maxPhotos = 10 } 
 
             if (await detectCaptcha()) return { photos: [], captcha: true };
 
-            // If place_id resolved to an address-only card (no h1), or the
-            // h1 doesn't share a token with the place name, fall back to a
-            // name+city search. Catches the 2026-05-23 case where ~5-10
-            // places have stale googlePlaceIds pointing at addresses Google
-            // no longer associates with the venue.
+            // Decide whether to fall back to a name+addr+city search:
+            //   1. No h1 → address-only card (stale place_id, e.g. Forneria)
+            //   2. h1 doesn't share a token with our name → wrong entity
+            //   3. URL coords differ from our DB coords by > COORD_TRUST_M →
+            //      place_id resolved to a venue, but it's the WRONG venue
+            //      (e.g. Marino #261 where ChIJRfA09zIJOxMRX8PpisYlyao
+            //      points at a different Marino ~2km away from our coords)
             const heading = await getHeading();
-            const wantsFallback = name && (!heading || !headingMatchesName(heading, name));
+            const urlCoords = coordsFromUrl(page.url());
+            const distM = urlCoords && lat != null && lng != null
+                ? haversineM(Number(lat), Number(lng), urlCoords.lat, urlCoords.lng)
+                : null;
+            const coordMismatch = distM != null && distM > COORD_TRUST_M;
+            const wantsFallback = name && (
+                !heading
+                || !headingMatchesName(heading, name)
+                || coordMismatch
+            );
             if (wantsFallback) {
                 viaFallback = true;
-                const q = encodeURIComponent(`${name} ${city || ""}`.trim());
+                const q = buildSearchQuery();
                 await page.goto(`https://www.google.com/maps/search/${q}`, { waitUntil: "domcontentloaded", timeout: 30000 });
                 await dismissConsent();
                 await Promise.race([
@@ -560,9 +616,9 @@ async function scrapePhotos(page, { googlePlaceId, name, city, maxPhotos = 10 } 
                 }
             }
         } else {
-            // No place_id given — go straight to name+city search.
+            // No place_id given — go straight to name+addr+city search.
             viaFallback = true;
-            const q = encodeURIComponent(`${name} ${city || ""}`.trim());
+            const q = buildSearchQuery();
             await page.goto(`https://www.google.com/maps/search/${q}`, { waitUntil: "domcontentloaded", timeout: 30000 });
             await dismissConsent();
             await Promise.race([

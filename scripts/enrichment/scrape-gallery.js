@@ -83,7 +83,11 @@ async function pickQueue(limit) {
                 { galleryLastScrapedAt: { lt: ttlBoundary } },
             ],
         },
-        select: { id: true, name: true, city: true, slug: true, googlePlaceId: true },
+        select: {
+            id: true, name: true, city: true, slug: true,
+            addressLine: true, lat: true, lng: true,
+            googlePlaceId: true,
+        },
         orderBy: { id: "asc" },
         take: limit,
     });
@@ -124,13 +128,18 @@ async function run({ limit = 10, disconnect = true } = {}) {
     let captchaHit = false;
 
     for (const p of queue) {
-        // Pass name + city so scrapePhotos can fall back to a name+city
-        // search if the place_id resolves to an address card or wrong
-        // entity (2026-05-23 Forneria Firenze case).
+        // Pass name + addressLine + city + lat/lng so scrapePhotos can:
+        //   1. Fall back to name+addr+city search if the place_id resolves
+        //      to an address card or wrong entity (Forneria case)
+        //   2. Detect coord mismatch when place_id points at a venue
+        //      that's > 200m from our DB lat/lng (Marino case)
         const result = await scrapePhotos(page, {
             googlePlaceId: p.googlePlaceId,
             name: p.name,
             city: p.city,
+            addressLine: p.addressLine,
+            lat: p.lat,
+            lng: p.lng,
             maxPhotos: 10,
         });
 
