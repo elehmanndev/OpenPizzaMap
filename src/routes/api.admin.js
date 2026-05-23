@@ -691,6 +691,69 @@ router.get("/uploads-ls", async (req, res) => {
     }
 });
 
+// EMERGENCY: roll DB pointers back to flat-layout paths because the
+// Hostinger deploy mechanism wipes /uploads/ subdirs every push.
+// For every Place where /uploads/places/{id}.{ext} exists on disk:
+//   - Set Place.heroImageUrl = /uploads/places/{id}.{ext}
+//   - Delete all PlaceImage rows for that place (they all point at
+//     slug-based paths that don't exist)
+// Idempotent: skips places whose hero already points at flat layout.
+//
+// Use ONLY after confirming the deploy-wipe issue is unfixed. Once
+// /uploads/ persists across deploys, this rollback can be undone by
+// re-running gallery-rescue-flat-to-slug.
+router.post("/gallery-rollback-to-flat", async (req, res) => {
+    try {
+        const placesDir = pathMod.join(PUBLIC_ROOT, "uploads", "places");
+        const places = await prisma.place.findMany({
+            select: { id: true, heroImageUrl: true },
+        });
+        let updated = 0;
+        let skippedAlready = 0;
+        let skippedNoFile = 0;
+        for (const p of places) {
+            // Find a flat file for this id
+            let ext = null;
+            for (const e of ["jpg", "jpeg", "png", "webp", "gif", "avif"]) {
+                if (fsMod.existsSync(pathMod.join(placesDir, `${p.id}.${e}`))) {
+                    ext = e;
+                    break;
+                }
+            }
+            if (!ext) {
+                if (p.heroImageUrl) {
+                    // No flat file AND DB thought there was one — null it out
+                    await prisma.place.update({ where: { id: p.id }, data: { heroImageUrl: null } }).catch(() => {});
+                }
+                skippedNoFile++;
+                continue;
+            }
+            const flatPath = `/uploads/places/${p.id}.${ext}`;
+            if (p.heroImageUrl === flatPath) {
+                skippedAlready++;
+                continue;
+            }
+            await prisma.place.update({
+                where: { id: p.id },
+                data: { heroImageUrl: flatPath },
+            }).catch(() => {});
+            updated++;
+        }
+        // Wipe all PlaceImage rows — they're all broken pointers right now.
+        const del = await prisma.placeImage.deleteMany({});
+        res.json({
+            ok: true,
+            placesUpdated: updated,
+            skippedAlreadyFlat: skippedAlready,
+            skippedNoFile: skippedNoFile,
+            placeImagesDeleted: del.count,
+        });
+    } catch (err) {
+        console.error("[gallery-rollback-to-flat] crashed:", err);
+        res.status(500).json({ ok: false, error: err.message, name: err.name });
+    }
+});
+
 router.get("/gallery-relayout-to-slug", async (req, res) => {
     try {
         const result = await relayoutDryRun();
