@@ -133,7 +133,10 @@ async function fetchPage(browser, url) {
         const html = await p.content();
         return { ok: true, html: html.length > MAX_HTML_BYTES ? html.slice(0, MAX_HTML_BYTES) : html };
     } catch (e) {
-        return { ok: false, error: e.name || 'browser-error' };
+        // Preserve as much error context as possible — name alone collapses
+        // proxy/network failures to "Error" which hides the actual cause.
+        const detail = (e.message || '').slice(0, 200);
+        return { ok: false, error: `${e.name || 'browser-error'}: ${detail}` };
     }
 }
 
@@ -437,7 +440,9 @@ async function run({ apply = false, log = '/tmp/socials-all.log', limit = null, 
         try { r = await reverify(browser, hit, place); }
         catch (e) {
             stats.errors++;
-            results.push({ ...hit, decision: 'unknown', score: null, reason: `error: ${e.message.slice(0, 80)}`, signals: {} });
+            const errMsg = `${e.name || 'error'}: ${(e.message || '').slice(0, 200)}`;
+            console.log(`  ! [${place.id}] ${place.name} ${hit.platform.toUpperCase()} → exception: ${errMsg}`);
+            results.push({ ...hit, decision: 'unknown', score: null, reason: errMsg, signals: { error: errMsg } });
             continue;
         }
 
