@@ -195,6 +195,12 @@ async function runPublishReadyBatch({ limit = 50 } = {}) {
             isVisible: false,
             status: "active",
             enrichedAt: { not: null },
+            // enrichmentVersion = -1 is the "admin-hidden, do not auto-publish"
+            // sentinel set by merge-pair.js / hide-places.js. Without this
+            // guard publishReady would silently un-hide every manually-hidden
+            // duplicate on the next tick (verified 2026-05-24 against #406,
+            // #1620, #984, #1360, #1685 — all kept reappearing on the map).
+            enrichmentVersion: { not: -1 },
             OR: [
                 { heroImageUrl: { not: null } },
                 { descriptionHtml: { not: null } },

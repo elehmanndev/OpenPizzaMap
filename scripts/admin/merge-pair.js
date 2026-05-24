@@ -305,7 +305,11 @@ async function main() {
         if (dropFaqs.length) {
             await tx.faq.updateMany({ where: { placeId: dv.id }, data: { placeId: sv.id } });
         }
-        await tx.place.update({ where: { id: dv.id }, data: { isVisible: false } });
+        // enrichmentVersion = -1 marks drop as "admin-hidden, do not
+        // auto-publish" so publishReady leaves it alone every tick.
+        // Without this, any drop with enrichedAt + content gets re-flipped
+        // back to visible 10 minutes later.
+        await tx.place.update({ where: { id: dv.id }, data: { isVisible: false, enrichmentVersion: -1 } });
     });
 
     console.log('\nMERGED. Drop hidden.');

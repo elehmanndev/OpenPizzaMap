@@ -39,11 +39,13 @@ async function main() {
         console.log('\nDry run. Pass --apply to commit.');
         return;
     }
+    // enrichmentVersion = -1 marks the row as "admin-hidden, do not
+    // auto-publish" so publishReady leaves it alone every tick.
     const result = await prisma.place.updateMany({
         where: { id: { in: ids } },
-        data: { isVisible: false },
+        data: { isVisible: false, enrichmentVersion: -1 },
     });
-    console.log(`\nHidden ${result.count} rows.`);
+    console.log(`\nHidden ${result.count} rows (enrichmentVersion=-1).`);
 }
 
 main()
