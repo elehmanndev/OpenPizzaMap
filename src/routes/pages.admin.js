@@ -562,4 +562,42 @@ router.post("/admin/sitemap/rebuild", requireAdmin, async (req, res) => {
     }
 });
 
+// Dedup merge tool — UI wrapper around scripts/admin/merge-pair.js logic.
+// Same field-by-field merge: drop's better data lands on survivor, drop's
+// PlaceImage / Review / Visit / Favorite / Faq rows reassign to survivor
+// where unique constraints allow, drop is hidden + tagged with
+// enrichmentVersion=-1 so publishReady never auto-revives it.
+const { buildMergePlan, applyMergePlan } = require("../services/dedupMerge");
+
+router.get("/admin/merge", requireAdmin, async (req, res) => {
+    const survivor = Number(req.query.survivor) || null;
+    const drop = Number(req.query.drop) || null;
+    const action = String(req.query.action || "");
+
+    let plan = null;
+    let result = null;
+    let error = null;
+    if (survivor && drop) {
+        try {
+            plan = await buildMergePlan(prisma, survivor, drop);
+            if (plan.error) { error = plan.error; plan = null; }
+            else if (action === "apply") {
+                result = await applyMergePlan(prisma, plan);
+            }
+        } catch (e) {
+            error = e.message;
+        }
+    }
+    res.render("admin_merge", { user: req.session.user, survivor, drop, plan, result, error });
+});
+
+router.post("/admin/merge", requireAdmin, async (req, res) => {
+    const survivor = Number(req.body.survivor);
+    const drop = Number(req.body.drop);
+    const action = String(req.body.action || "preview");
+    if (!survivor || !drop) return res.redirect("/admin/merge");
+    const qs = new URLSearchParams({ survivor: String(survivor), drop: String(drop), action }).toString();
+    res.redirect(`/admin/merge?${qs}`);
+});
+
 module.exports = router;

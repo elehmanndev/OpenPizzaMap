@@ -1,0 +1,96 @@
+<%
+const fmt = (v) => v == null ? "(null)" : String(v).length > 70 ? String(v).slice(0,67) + "…" : String(v);
+%>
+<%- include("layout", { title: "Admin · Merge duplicates", user, leaflet: false, body: String.raw`
+  <h1>Merge duplicate places</h1>
+
+  <div class="card">
+    <p class="small">
+      Drop's better fields land on survivor (longer text wins, higher review counts replace ratings, https wins, etc.).
+      Drop's photos, reviews, visits, favorites, FAQs reassign to survivor where unique constraints allow.
+      Drop is then hidden + tagged so the publishReady cron never auto-revives it.
+    </p>
+    <form method="get" action="/admin/merge" class="row">
+      <div style="min-width: 160px;">
+        <label>Survivor ID (keep)</label>
+        <input type="number" name="survivor" required min="1" value="${escapeAttr(survivor || "")}" placeholder="e.g. 177" />
+      </div>
+      <div style="min-width: 160px;">
+        <label>Drop ID (hide)</label>
+        <input type="number" name="drop" required min="1" value="${escapeAttr(drop || "")}" placeholder="e.g. 1618" />
+      </div>
+      <div style="align-self:end;">
+        <button type="submit" name="action" value="preview">Preview</button>
+      </div>
+    </form>
+  </div>
+
+  ${error ? `<div class="card" style="border-color:#c33;color:#c33;"><strong>Error:</strong> ${escapeHtml(error)}</div>` : ""}
+
+  ${result ? `
+    <div class="card" style="border-color:#2a7;color:#2a7;">
+      <strong>Merged.</strong>
+      Survivor #${result.survivorId} absorbed #${result.droppedId}:
+      ${result.fieldsPatched} fields,
+      ${result.sourcesCopied} sources,
+      ${result.imagesMoved} images,
+      ${result.reviewsMoved} reviews,
+      ${result.visitsMoved} visits,
+      ${result.favoritesMoved} favorites,
+      ${result.faqsMoved} FAQs.
+      Drop is now hidden.
+    </div>
+  ` : ""}
+
+  ${plan ? `
+    <div class="card">
+      <h2 style="margin-top:0;">
+        Survivor <a href="/place/${plan.survivor.id}" target="_blank">#${plan.survivor.id}</a> "${escapeHtml(plan.survivor.name)}"
+        <span class="small">(${escapeHtml(plan.survivor.city || "?")}, ${escapeHtml(plan.survivor.country || "?")}, visible=${plan.survivor.isVisible})</span>
+      </h2>
+      <h2>
+        Drop <a href="/place/${plan.drop.id}" target="_blank">#${plan.drop.id}</a> "${escapeHtml(plan.drop.name)}"
+        <span class="small">(${escapeHtml(plan.drop.city || "?")}, ${escapeHtml(plan.drop.country || "?")}, visible=${plan.drop.isVisible})</span>
+      </h2>
+
+      <h3>Field patch (${plan.decisions.length})</h3>
+      ${plan.decisions.length ? `
+        <table class="small" style="width:100%; border-collapse: collapse;">
+          <thead><tr><th align="left">Field</th><th align="left">Survivor before</th><th align="left">→</th><th align="left">After</th><th align="left">Reason</th></tr></thead>
+          <tbody>
+            ${plan.decisions.map(d => `
+              <tr>
+                <td><code>${escapeHtml(d.field)}</code></td>
+                <td>${escapeHtml(fmt(d.before))}</td>
+                <td>→</td>
+                <td>${escapeHtml(fmt(d.after))}</td>
+                <td>${escapeHtml(d.reason)}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      ` : `<p class="small">No field-level changes — survivor already has the better data.</p>`}
+
+      <h3>Sources to copy (${plan.sourcesToCopy.length})</h3>
+      ${plan.sourcesToCopy.length ? `<ul class="small">${plan.sourcesToCopy.map(s => `<li><code>${escapeHtml(s.source)}</code>${s.rank != null ? ` (rank=${s.rank})` : ""}</li>`).join("")}</ul>` : `<p class="small">No new sources.</p>`}
+
+      <h3>Photos (${plan.imagesToMove.length} move, ${plan.imagesSkipped.length} skip)</h3>
+      ${plan.imagesToMove.length ? `<ul class="small">${plan.imagesToMove.slice(0,8).map(m => `<li>move id=${m.id} → position ${m.newPosition} (<code>${escapeHtml(m.source)}</code>, ${escapeHtml(m.localPath)})</li>`).join("")}${plan.imagesToMove.length > 8 ? `<li>…and ${plan.imagesToMove.length - 8} more</li>` : ""}</ul>` : `<p class="small">No photos to move.</p>`}
+
+      <h3>User-scoped relations</h3>
+      <p class="small">Reviews: move ${plan.reviewsToMove.length}, skip ${plan.reviewsSkipped.length} (userId collision)<br/>
+      Visits: move ${plan.visitsToMove.length}, skip ${plan.visitsSkipped.length}<br/>
+      Favorites: move ${plan.favoritesToMove.length}, skip ${plan.favoritesSkipped.length}<br/>
+      FAQs: move ${plan.faqsToMove.length}</p>
+
+      <hr/>
+      <form method="post" action="/admin/merge">
+        <input type="hidden" name="survivor" value="${plan.survivor.id}" />
+        <input type="hidden" name="drop" value="${plan.drop.id}" />
+        <input type="hidden" name="action" value="apply" />
+        <button type="submit" style="background:#c33; color:white;">Apply merge — hide #${plan.drop.id}</button>
+        <span class="small" style="margin-left: 8px;">Sets drop isVisible=false + enrichmentVersion=-1 (so publishReady can't revive it). Transactional.</span>
+      </form>
+    </div>
+  ` : ""}
+` }) %>
