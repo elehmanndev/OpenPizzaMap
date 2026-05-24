@@ -75,6 +75,50 @@
         return li;
     }
 
+    // Open a fresh empty bot bubble and return its inner <p> for the
+    // typewriter to append characters into.
+    function openBotBubble() {
+        const li = document.createElement("li");
+        li.className = "addspot-bubble addspot-bubble--bot";
+        const p = document.createElement("p");
+        li.appendChild(p);
+        log.appendChild(li);
+        scrollToBottom();
+        return p;
+    }
+
+    // Type out a bot reply into one or more bubbles, splitting at sentence
+    // boundaries with a beat between bubbles (iMessage / WhatsApp feel).
+    // Resolves once the entire reply has been typed and any final pause has
+    // elapsed.
+    function typeBotReply(text) {
+        return new Promise((resolve) => {
+            if (!text) {
+                appendBubble("bot", "…");
+                resolve();
+                return;
+            }
+            // Hide the typing indicator the moment the first character lands.
+            let typingHidden = false;
+            const tw = window.OpmTypewriter.createTypewriter({
+                onOpenBubble: openBotBubble,
+                onChar: (bubbleEl, ch) => {
+                    const span = document.createElement("span");
+                    span.className = "addspot-char-fade";
+                    span.textContent = ch;
+                    bubbleEl.appendChild(span);
+                    if (!typingHidden) {
+                        typing.hidden = true;
+                        typingHidden = true;
+                    }
+                },
+                onAfterAppend: scrollToBottom,
+                onDone: resolve,
+            });
+            tw.play(text);
+        });
+    }
+
     async function postJSON(url, body) {
         const resp = await fetch(url, {
             method: "POST",
@@ -105,7 +149,11 @@
             const data = await postJSON("/api/chat/add-spot", { history });
             history.push({ role: "assistant", text: data.reply });
             collected = data.collected || collected;
-            appendBubble("bot", data.reply || "…");
+            // Type the reply out across multiple bubbles instead of dropping
+            // the whole wall of text at once. Wait for the typewriter to
+            // drain before considering the turn complete — otherwise the
+            // compose bar would re-enable mid-animation.
+            await typeBotReply(data.reply || "…");
             if (data.complete) {
                 finalized = true;
                 await finalize();
