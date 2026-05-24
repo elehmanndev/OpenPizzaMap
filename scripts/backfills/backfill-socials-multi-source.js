@@ -489,6 +489,9 @@ async function run({ apply = false, ids = null, limit = null, country = null, ve
         scoreSum: 0,           // for average reporting
         scoreN: 0,
     };
+    // Review queues — surfaced at the end so Eric can scan and patch manually.
+    const missList = [];   // [{id, name, city, country, hasWebsite}]
+    const weakList = [];   // [{id, name, platform, url, signals}]
 
     for (const p of places) {
         let result;
@@ -505,6 +508,7 @@ async function run({ apply = false, ids = null, limit = null, country = null, ve
 
         if (!result.ig && !result.fb) {
             counters.miss++;
+            missList.push({ id: p.id, name: p.name, city: p.city, country: p.country, hasWebsite: !!p.websiteUrl });
             const why = rejN ? ` rejected=${rejN}` : '';
             console.log(`  [${p.id}] ${p.name} — no hit (tried ${result.surfacesTried.join('+')}${why})`);
             for (const r of [...result.rejected.ig, ...result.rejected.fb]) {
@@ -522,7 +526,13 @@ async function run({ apply = false, ids = null, limit = null, country = null, ve
             const tag = score === null ? '' : ` (score=${score}${score === 1 ? ' weak' : ''})`;
             bits.push(`IG=${result.ig.url} via ${result.source.ig}${tag}`);
             counters[`igBy${cap(result.source.ig)}`]++;
-            if (score !== null) { counters.scoreSum += score; counters.scoreN++; if (score === 1) counters.weakAccept++; }
+            if (score !== null) {
+                counters.scoreSum += score; counters.scoreN++;
+                if (score === 1) {
+                    counters.weakAccept++;
+                    weakList.push({ id: p.id, name: p.name, platform: 'IG', url: result.ig.url, signals: result.verifySignals.ig });
+                }
+            }
         }
         if (result.fb && !p.facebookUrl) {
             patch.facebookUrl = result.fb.url;
@@ -530,7 +540,13 @@ async function run({ apply = false, ids = null, limit = null, country = null, ve
             const tag = score === null ? '' : ` (score=${score}${score === 1 ? ' weak' : ''})`;
             bits.push(`FB=${result.fb.url} via ${result.source.fb}${tag}`);
             counters[`fbBy${cap(result.source.fb)}`]++;
-            if (score !== null) { counters.scoreSum += score; counters.scoreN++; if (score === 1) counters.weakAccept++; }
+            if (score !== null) {
+                counters.scoreSum += score; counters.scoreN++;
+                if (score === 1) {
+                    counters.weakAccept++;
+                    weakList.push({ id: p.id, name: p.name, platform: 'FB', url: result.fb.url, signals: result.verifySignals.fb });
+                }
+            }
         }
         console.log(`  [${p.id}] ${p.name} — ${bits.join(' | ')}`);
 
@@ -558,7 +574,31 @@ async function run({ apply = false, ids = null, limit = null, country = null, ve
     if (apply) console.log(`[multi] applied: instagramUrl=${counters.igFilled} facebookUrl=${counters.fbFilled}`);
     else       console.log(`[multi] DRY RUN — re-run with --apply to write.`);
 
-    return { ok: true, ...counters, total: places.length, igTotal, fbTotal };
+    // Review queues — surfaced explicitly at the end so the human can scan
+    // them in one shot instead of grepping the per-row log.
+    if (missList.length) {
+        console.log('');
+        console.log(`[multi] === MISSED (${missList.length}) — no surface returned a usable hit ===`);
+        for (const m of missList) {
+            const flags = [];
+            if (!m.hasWebsite) flags.push('no-website');
+            const tag = flags.length ? ` [${flags.join(',')}]` : '';
+            console.log(`  #${m.id} ${m.name} — ${m.city}, ${m.country}${tag}`);
+        }
+    }
+    if (weakList.length) {
+        console.log('');
+        console.log(`[multi] === WEAK (${weakList.length}) — score=1 accepts, eyeball before trusting ===`);
+        for (const w of weakList) {
+            const sig = Object.entries(w.signals || {})
+                .filter(([k, v]) => v && k !== 'ogTitle' && k !== 'ogDesc')
+                .map(([k]) => k.replace('Match', ''))
+                .join('+') || 'name-token-only';
+            console.log(`  #${w.id} ${w.name} — ${w.platform}=${w.url} (matched: ${sig})`);
+        }
+    }
+
+    return { ok: true, ...counters, total: places.length, igTotal, fbTotal, missList, weakList };
 }
 
 function cap(s) { return 'tripadvisor' === s ? 'Ta' : s.charAt(0).toUpperCase() + s.slice(1); }
