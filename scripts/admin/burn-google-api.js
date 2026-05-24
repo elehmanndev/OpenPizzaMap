@@ -83,7 +83,7 @@ async function main() {
     if (!rows.length) return;
 
     const provider = new GoogleApiProvider({ prisma, apiKey: process.env.GOOGLE_MAPS_API_KEY });
-    const stats = { resolved: 0, missed: 0, errors: 0, patched: 0, alreadyFull: 0, quotaHit: false };
+    const stats = { resolved: 0, missed: 0, errors: 0, patched: 0, alreadyFull: 0, dupConflicts: 0, quotaHit: false };
     const startedAt = Date.now();
 
     for (let i = 0; i < rows.length; i++) {
@@ -132,12 +132,38 @@ async function main() {
             console.log('already full (no new fields)');
             stats.alreadyFull++;
         } else {
-            console.log(`fill: ${newKeys.join(',')}`);
-            if (args.apply) {
-                await prisma.place.update({ where: { id: p.id }, data: patch }).catch((e) => {
-                    console.warn(`  update failed: ${e.message}`);
+            // Pre-flight: if the patch wants to write googlePlaceId, check
+            // whether another row already owns it. If so, the Places API
+            // just resolved two of our rows to the same real venue — log
+            // it as a dup candidate, drop the placeId field from the
+            // patch, but still fill the other metadata fields.
+            let conflict = null;
+            if (patch.googlePlaceId) {
+                const other = await prisma.place.findUnique({
+                    where: { googlePlaceId: patch.googlePlaceId },
+                    select: { id: true, name: true, city: true, isVisible: true },
                 });
-                stats.patched++;
+                if (other && other.id !== p.id) {
+                    conflict = other;
+                    delete patch.googlePlaceId;
+                    delete patch.googlePlaceUrl;
+                    delete patch.enrichmentVersion;
+                    stats.dupConflicts = (stats.dupConflicts || 0) + 1;
+                }
+            }
+            if (conflict) {
+                console.log(`DUP-CONFLICT with #${conflict.id} "${conflict.name}" (${conflict.city}, visible=${conflict.isVisible}) — wrote metadata only`);
+            } else {
+                console.log(`fill: ${newKeys.join(',')}`);
+            }
+            if (args.apply) {
+                const remainingKeys = Object.keys(patch).filter((k) => k !== 'enrichedAt');
+                if (remainingKeys.length) {
+                    await prisma.place.update({ where: { id: p.id }, data: patch }).catch((e) => {
+                        console.warn(`  update failed: ${e.message.slice(0, 120)}`);
+                    });
+                    stats.patched++;
+                }
             }
         }
         await sleep(PACE_MS);
@@ -145,7 +171,10 @@ async function main() {
 
     const dur = ((Date.now() - startedAt) / 1000).toFixed(1);
     console.log('');
-    console.log(`[burn] done in ${dur}s  api-calls=${provider.callsMade}  resolved=${stats.resolved}  missed=${stats.missed}  errors=${stats.errors}  patched=${stats.patched}  already-full=${stats.alreadyFull}${stats.quotaHit ? '  QUOTA_EXCEEDED' : ''}`);
+    console.log(`[burn] done in ${dur}s  api-calls=${provider.callsMade}  resolved=${stats.resolved}  missed=${stats.missed}  errors=${stats.errors}  patched=${stats.patched}  already-full=${stats.alreadyFull}  dup-conflicts=${stats.dupConflicts}${stats.quotaHit ? '  QUOTA_EXCEEDED' : ''}`);
+    if (stats.dupConflicts) {
+        console.log(`[burn] ${stats.dupConflicts} dup-conflicts — two of our rows resolved to the same Google place. Grep \"DUP-CONFLICT\" in the log and merge those pairs via /admin/merge.`);
+    }
     if (!args.apply) console.log('Dry run — pass --apply to commit patches.');
 }
 
