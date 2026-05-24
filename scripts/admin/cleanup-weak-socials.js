@@ -34,6 +34,13 @@
 //   node scripts/admin/cleanup-weak-socials.js --apply --limit=50
 //   node scripts/admin/cleanup-weak-socials.js --apply --csv=/tmp/cleanup.csv
 //
+// To beat IG/FB rate-limiting, route each verification through Apify's
+// residential proxy pool. Grab your API token from
+// https://console.apify.com/settings/integrations and pass it as:
+//   node scripts/admin/cleanup-weak-socials.js --proxy=apify-residential --proxy-token=apify_api_xxx --limit=20
+// Costs ~$8/GB of residential bandwidth from your Apify free credit
+// (~$3 for a full ~1,775-row cleanup at ~200KB per page).
+//
 // Output CSV columns: placeId,name,platform,url,decision,score,signals,reason
 // One row per re-verified weak hit. Open in Excel/Sheets to spot-check.
 
@@ -77,7 +84,11 @@ function decodeHtml(s) {
             .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#x27;/g, "'");
 }
 
-async function makeBrowser() {
+// CloakBrowser launcher with optional Apify residential proxy. When proxy
+// is enabled, each browser request routes through a random residential IP
+// from Apify's pool — defeats per-IP rate-limits (the reason IG locked us
+// out after the long 2026-05-24 main run).
+async function makeBrowser({ proxy = null, proxyToken = null } = {}) {
     let browser, page, unavailable = null;
     return {
         async getPage() {
@@ -89,7 +100,23 @@ async function makeBrowser() {
                     unavailable = `cloakbrowser not installed — ${e.message}`;
                     throw new Error(unavailable);
                 }
-                browser = await cb.launch();
+                const launchOpts = {};
+                if (proxy === 'apify-residential') {
+                    const token = proxyToken || process.env.APIFY_TOKEN;
+                    if (!token) {
+                        throw new Error('--proxy=apify-residential requires --proxy-token=<token> or APIFY_TOKEN env var. Grab token from https://console.apify.com/settings/integrations');
+                    }
+                    // Apify residential pool: each request rotates to a different IP.
+                    // Username format: groups-RESIDENTIAL[,session-X for sticky session]
+                    // We deliberately omit session-X so every request gets a fresh IP.
+                    launchOpts.proxy = {
+                        server: 'http://proxy.apify.com:8000',
+                        username: 'groups-RESIDENTIAL',
+                        password: token,
+                    };
+                    console.log(`[cleanup] using Apify residential proxy`);
+                }
+                browser = await cb.launch(launchOpts);
                 page = await browser.newPage();
             }
             return page;
@@ -308,6 +335,8 @@ function parseArgs(argv) {
         limit: null,
         csv: null,
         ids: null,
+        proxy: null,
+        proxyToken: null,
     };
     for (const a of argv) {
         const eq = (k) => a.startsWith(`--${k}=`) ? a.split('=').slice(1).join('=') : null;
@@ -316,6 +345,8 @@ function parseArgs(argv) {
         else if (eq('limit')) out.limit = parseInt(eq('limit'), 10);
         else if (eq('csv')) out.csv = eq('csv');
         else if (eq('ids')) out.ids = eq('ids').split(',').map(Number).filter(Boolean);
+        else if (eq('proxy')) out.proxy = eq('proxy');
+        else if (eq('proxy-token')) out.proxyToken = eq('proxy-token');
     }
     if (!out.csv) {
         const stamp = new Date().toISOString().slice(0, 10);
@@ -341,7 +372,7 @@ function writeCsv(csvPath, rows) {
     fs.writeFileSync(csvPath, header + lines.join('\n') + '\n');
 }
 
-async function run({ apply = false, log = '/tmp/socials-all.log', limit = null, csv = null, ids = null } = {}) {
+async function run({ apply = false, log = '/tmp/socials-all.log', limit = null, csv = null, ids = null, proxy = null, proxyToken = null } = {}) {
     if (!csv) {
         const stamp = new Date().toISOString().slice(0, 10);
         csv = `data/cleanup-weak-socials-${stamp}.csv`;
@@ -381,7 +412,7 @@ async function run({ apply = false, log = '/tmp/socials-all.log', limit = null, 
     });
     const placeById = new Map(places.map(p => [p.id, p]));
 
-    const browser = await makeBrowser();
+    const browser = await makeBrowser({ proxy, proxyToken });
     const results = [];
     const stats = { keep: 0, null: 0, unknown: 0, borderline: 0, skipped: 0, errors: 0 };
 
