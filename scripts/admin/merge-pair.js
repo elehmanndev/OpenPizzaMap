@@ -208,6 +208,63 @@ async function main() {
         for (const s of sourcesToCopy) console.log(`  ${s.source}${s.rank != null ? `  (rank=${s.rank})` : ''}`);
     }
 
+    // PlaceImage — reassign drop's photos to survivor, bumping positions
+    // past survivor's existing max. Skip rows whose sourceRef already
+    // exists on survivor (would violate (placeId, sourceRef) unique).
+    // localPath stays as-is — files remain at /uploads/places/{drop_slug}/N
+    // and continue to serve fine; URLs just reference the old slug until
+    // a path-rewrite pass runs separately.
+    const dropImages = await prisma.placeImage.findMany({ where: { placeId: dv.id }, orderBy: { position: 'asc' } });
+    const svImages = await prisma.placeImage.findMany({ where: { placeId: sv.id }, select: { position: true, sourceRef: true } });
+    const svImageRefs = new Set(svImages.map((i) => i.sourceRef).filter(Boolean));
+    let nextPosition = svImages.reduce((m, i) => Math.max(m, i.position), 0) + 1;
+    const imagesToMove = [];
+    const imagesSkipped = [];
+    for (const img of dropImages) {
+        if (img.sourceRef && svImageRefs.has(img.sourceRef)) {
+            imagesSkipped.push(img);
+        } else {
+            imagesToMove.push({ id: img.id, newPosition: nextPosition++, source: img.source, localPath: img.localPath });
+        }
+    }
+    if (dropImages.length) {
+        console.log();
+        console.log(`PlaceImage from drop: ${dropImages.length} total — moving ${imagesToMove.length}, skipping ${imagesSkipped.length} (sourceRef collision)`);
+        for (const m of imagesToMove.slice(0, 5)) console.log(`  move id=${m.id} → position ${m.newPosition}  source=${m.source}  ${m.localPath}`);
+        if (imagesToMove.length > 5) console.log(`  …and ${imagesToMove.length - 5} more`);
+    }
+
+    // Review / Visit / Favorite — reassign to survivor, skipping rows
+    // whose (userId, placeId) would collide with an existing survivor row.
+    const moveUserScoped = async (model, label) => {
+        const dropRows = await prisma[model].findMany({ where: { placeId: dv.id }, select: { id: true, userId: true } });
+        if (!dropRows.length) return { move: [], skip: [] };
+        const svUserIds = new Set((await prisma[model].findMany({
+            where: { placeId: sv.id }, select: { userId: true },
+        })).map((r) => r.userId));
+        const move = [];
+        const skip = [];
+        for (const r of dropRows) {
+            if (svUserIds.has(r.userId)) skip.push(r);
+            else move.push(r);
+        }
+        if (dropRows.length) {
+            console.log();
+            console.log(`${label} from drop: ${dropRows.length} total — moving ${move.length}, skipping ${skip.length} (userId collision)`);
+        }
+        return { move, skip };
+    };
+    const reviewsPlan = await moveUserScoped('review', 'Reviews');
+    const visitsPlan = await moveUserScoped('visit', 'Visits');
+    const favoritesPlan = await moveUserScoped('favorite', 'Favorites');
+
+    // Faq — reassign all to survivor (no unique constraint on placeId).
+    const dropFaqs = await prisma.faq.findMany({ where: { placeId: dv.id }, select: { id: true, question: true } });
+    if (dropFaqs.length) {
+        console.log();
+        console.log(`FAQs from drop: ${dropFaqs.length} — reassigning all to survivor`);
+    }
+
     console.log();
     console.log(`After merge: hide drop #${dv.id} (isVisible=false).`);
 
@@ -229,6 +286,24 @@ async function main() {
             await tx.placeSource.create({
                 data: { placeId: sv.id, source: s.source, rank: s.rank },
             });
+        }
+        for (const m of imagesToMove) {
+            await tx.placeImage.update({
+                where: { id: m.id },
+                data: { placeId: sv.id, position: m.newPosition },
+            });
+        }
+        for (const r of reviewsPlan.move) {
+            await tx.review.update({ where: { id: r.id }, data: { placeId: sv.id } });
+        }
+        for (const r of visitsPlan.move) {
+            await tx.visit.update({ where: { id: r.id }, data: { placeId: sv.id } });
+        }
+        for (const r of favoritesPlan.move) {
+            await tx.favorite.update({ where: { id: r.id }, data: { placeId: sv.id } });
+        }
+        if (dropFaqs.length) {
+            await tx.faq.updateMany({ where: { placeId: dv.id }, data: { placeId: sv.id } });
         }
         await tx.place.update({ where: { id: dv.id }, data: { isVisible: false } });
     });
