@@ -1,15 +1,18 @@
 #!/usr/bin/env node
-// Fill Place.instagramUrl / Place.facebookUrl by querying DuckDuckGo for
-// "{name} {city} instagram" and "{name} {city} facebook". Better hit rate
-// than scraping each restaurant's website (most Wix/Squarespace sites use
-// SVG icon fonts, not <a href> links — extractor can't see them).
+// Fill Place.instagramUrl / Place.facebookUrl by querying Google
+// (`site:instagram.com X city` / `site:facebook.com X city`) through
+// CloakBrowser so we get past Google's bot detection. Better index
+// coverage than DDG for small/local restaurants (DDG returned 0 hits
+// on a 20-row sample, Google has the profiles).
 //
 // Tradeoff vs. the website-scraper backfill:
 //   + Works regardless of how the venue's own site renders socials
 //   + Finds profiles for venues with no website at all
+//   + Uses Google's index (best coverage of small businesses)
 //   - Risk of false positives for chain names (e.g. multiple "Joe's Pizza")
-//     — mitigated by requiring city in the query + filtering to handles
+//     — mitigated by requiring city in the query + preferring handles
 //     that share at least one 4+ char token with the venue name
+//   - Slow: ~4s per query (browser nav + JS settle), so ~8s per place
 //
 // Usage:
 //   node scripts/backfills/backfill-socials-via-search.js                       # dry run
@@ -17,14 +20,15 @@
 //   node scripts/backfills/backfill-socials-via-search.js --apply --limit=50
 //   node scripts/backfills/backfill-socials-via-search.js --apply --ids=1,2,3
 //
-// Rate-limit: 2.5s between queries (DDG tolerates this comfortably; faster
-// will get rate-capped within 50-100 queries).
+// Requires `cloakbrowser` package — install once with:
+//   docker exec opm-runner npm install --no-save cloakbrowser
 
 const { prisma } = require('../lib/bootstrap');
-const { ddgSearch, normalizeName, sleep } = require('../lib/utils');
+const { normalizeName, sleep } = require('../lib/utils');
 
-const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36';
-const QUERY_DELAY_MS = 2500;
+const QUERY_DELAY_MS = 1500;
+const BROWSER_TIMEOUT_MS = 30000;
+const JS_SETTLE_MS = 1500;
 
 // Same blocklists the website-scraper uses — keeps us from grabbing
 // /p/ post URLs or /sharer.php links as if they were profiles.
@@ -76,40 +80,91 @@ function handleMatchesName(handle, name) {
     return tokens.some((t) => lower.includes(t));
 }
 
-async function findSocialViaDDG(platform, name, city) {
-    // `site:` operator forces DDG to return only URLs from that domain —
-    // much higher hit rate than a generic query, which usually returns
-    // the venue's own website first.
+// Lazy-load CloakBrowser. The 535MB binary boots in 3-8s, so we want to
+// reuse the same browser+page across every search in the run.
+async function makeBrowser() {
+    let browser, page, unavailable = null;
+    let consentDismissed = false;
+    return {
+        async getPage() {
+            if (unavailable) throw new Error(unavailable);
+            if (!browser) {
+                let cb;
+                try { cb = await import('cloakbrowser'); }
+                catch (e) {
+                    unavailable = `cloakbrowser not installed (docker exec opm-runner npm install --no-save cloakbrowser) — ${e.message}`;
+                    throw new Error(unavailable);
+                }
+                browser = await cb.launch();
+                page = await browser.newPage();
+            }
+            return page;
+        },
+        async dismissConsentOnce() {
+            // Google's EU consent screen pops on first navigation. Click
+            // "Accept all" (or any localised variant) so subsequent queries
+            // don't get blocked behind it.
+            if (consentDismissed || !page) return;
+            consentDismissed = true;
+            for (const sel of [
+                'button[aria-label*="Accept"]',
+                'button[aria-label*="Acepto"]',
+                'button[aria-label*="Aceptar"]',
+                'button[aria-label*="Accetta"]',
+                'button[aria-label*="Accepter"]',
+                'button[aria-label*="Akzeptieren"]',
+                'form[action*="consent"] button',
+                'button:has-text("Accept all")',
+            ]) {
+                const btn = await page.$(sel).catch(() => null);
+                if (btn) { await btn.click().catch(() => {}); await page.waitForTimeout(1000).catch(() => {}); return; }
+            }
+        },
+        async close() {
+            if (browser) await browser.close().catch(() => {});
+            browser = null; page = null;
+        },
+    };
+}
+
+async function findSocialViaGoogle(browser, platform, name, city) {
     const domain = platform === 'instagram' ? 'instagram.com' : 'facebook.com';
     const query = `site:${domain} ${name} ${city || ''}`.trim();
-    let results;
-    try {
-        results = await ddgSearch(query, { userAgent: UA });
-    } catch (e) {
-        return { error: e.message.slice(0, 60) };
-    }
-    const norm = platform === 'instagram' ? normalizeInstagram : normalizeFacebook;
-    const hostPattern = platform === 'instagram'
-        ? /(^|\.)instagram\.com$/i
-        : /(^|\.)(facebook|fb)\.com$/i;
+    const url = `https://www.google.com/search?q=${encodeURIComponent(query)}&hl=en`;
 
-    // Collect all normalized candidates, then pick the best one.
+    let html;
+    try {
+        const page = await browser.getPage();
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: BROWSER_TIMEOUT_MS });
+        await browser.dismissConsentOnce();
+        await page.waitForTimeout(JS_SETTLE_MS).catch(() => {});
+        html = await page.content();
+    } catch (e) {
+        return { error: `browser-${e.name || 'error'}` };
+    }
+
+    const norm = platform === 'instagram' ? normalizeInstagram : normalizeFacebook;
+    // Pull every social URL out of the rendered SERP. Google occasionally
+    // wraps result links in /url?q=... — strip those, plus the direct
+    // anchors most cards now use.
     const candidates = [];
-    for (const url of results) {
-        let u;
-        try { u = new URL(url); } catch { continue; }
-        if (!hostPattern.test(u.hostname)) continue;
-        const normalized = norm(url);
+    const seen = new Set();
+    const URL_RE = /\bhttps?:\/\/(?:www\.|m\.|business\.|l\.)?(?:instagram|facebook|fb)\.com\/[^\s"'<>)]+/gi;
+    let m;
+    while ((m = URL_RE.exec(html)) !== null) {
+        // Strip trailing punctuation that the regex sometimes greedily catches.
+        const cleaned = m[0].replace(/[.,);\]]+$/, '');
+        if (seen.has(cleaned)) continue;
+        seen.add(cleaned);
+        const normalized = norm(cleaned);
         if (!normalized) continue;
         const handleOnly = normalized.split('/').pop();
         candidates.push({ url: normalized, handle: handleOnly });
     }
     if (!candidates.length) return null;
 
-    // Prefer candidates whose handle has token overlap with the venue name.
-    // Fall back to the first candidate if nothing matches (DDG's site:
-    // query already restricts to the right domain, so the first hit is
-    // usually right even when the handle is abstract).
+    // Prefer name-token overlap. Fall back to the first hit — site:
+    // restricted the domain already, so the first result is usually right.
     const matched = candidates.find((c) => handleMatchesName(c.handle, name));
     return matched || candidates[0];
 }
@@ -145,6 +200,7 @@ async function run({ apply = false, ids = null, limit = null } = {}) {
     const places = limit ? all.slice(0, limit) : all;
     console.log(`[search-socials] ${places.length} candidates (apply=${apply})`);
 
+    const browser = await makeBrowser();
     let igFound = 0, fbFound = 0, igFilled = 0, fbFilled = 0, errors = 0;
 
     for (const p of places) {
@@ -154,13 +210,13 @@ async function run({ apply = false, ids = null, limit = null } = {}) {
 
         let ig = null, fb = null;
         if (needIg) {
-            const r = await findSocialViaDDG('instagram', p.name, p.city);
+            const r = await findSocialViaGoogle(browser, 'instagram', p.name, p.city);
             if (r && r.error) errors++;
             else if (r && r.url) { ig = r.url; igFound++; }
             await sleep(QUERY_DELAY_MS);
         }
         if (needFb) {
-            const r = await findSocialViaDDG('facebook', p.name, p.city);
+            const r = await findSocialViaGoogle(browser, 'facebook', p.name, p.city);
             if (r && r.error) errors++;
             else if (r && r.url) { fb = r.url; fbFound++; }
             await sleep(QUERY_DELAY_MS);
@@ -184,6 +240,8 @@ async function run({ apply = false, ids = null, limit = null } = {}) {
             }
         }
     }
+
+    await browser.close();
 
     console.log('');
     console.log(`[search-socials] done. ig=${igFound} fb=${fbFound} errors=${errors}`);
