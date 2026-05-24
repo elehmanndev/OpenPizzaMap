@@ -1,0 +1,854 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OPM profile · stamps + wishlist + reviews</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Special+Elite&display=swap" rel="stylesheet">
+<!-- MingCute icons via Iconify — MIT, 3000+ icons, on-demand SVG load -->
+<script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js" async></script>
+<style>
+  :root {
+    --bg:        #fafaf7;
+    --paper:     #f7f2e7;            /* aged passport page */
+    --card:      #ffffff;
+    --ink:       #1a1a1a;
+    --ink-soft:  #555;
+    --ink-mute:  #888;
+    --line:      #e8e6e0;
+    --accent:    #c9483a;
+    --accent-2:  #2d6e5c;
+    --shadow:    0 1px 3px rgba(0,0,0,.04), 0 1px 2px rgba(0,0,0,.06);
+
+    /* Stamp ink colors — one per country */
+    --ink-it:    #c9483a;     /* Italian red */
+    --ink-es:    #a8741e;     /* Spanish ochre */
+    --ink-fr:    #1e3a8a;     /* French navy */
+    --ink-de:    #2a2a2a;     /* German black */
+    --ink-uk:    #5a1f1f;     /* UK burgundy */
+    --ink-pt:    #1e6041;     /* Portuguese green */
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Demo chrome */
+  .demo-frame {
+    max-width: 760px;
+    margin: 24px auto;
+    background: var(--card);
+    border-radius: 14px;
+    box-shadow: 0 8px 28px rgba(0,0,0,.08);
+    overflow: hidden;
+    border: 1px solid var(--line);
+  }
+  .demo-urlbar {
+    display: flex; align-items: center; gap: 8px;
+    background: #f4f2ec;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .demo-urlbar::before {
+    content: "";
+    display: inline-block;
+    width: 36px; height: 10px;
+    background:
+      radial-gradient(circle at 5px 5px, #ff6058 4px, transparent 4px),
+      radial-gradient(circle at 17px 5px, #febc2e 4px, transparent 4px),
+      radial-gradient(circle at 29px 5px, #2bc840 4px, transparent 4px);
+  }
+  .demo-urlbar code {
+    font-family: 'SFMono-Regular', Menlo, monospace;
+    font-size: 12px;
+    background: white;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    color: var(--ink);
+  }
+  .demo-label {
+    background: var(--ink);
+    color: white;
+    padding: 6px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* Top nav */
+  .nav-top {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-brand { font-weight: 700; font-size: 18px; text-decoration: none; color: var(--ink); }
+  .nav-brand span { color: var(--accent); }
+  .nav-right { display: flex; align-items: center; gap: 14px; font-size: 14px; color: var(--ink-soft); }
+  .nav-right .burger { font-size: 18px; color: var(--ink-mute); }
+
+  .page { padding: 20px 22px 36px; max-width: 720px; margin: 0 auto; }
+
+  /* Profile card */
+  .profile-card {
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 22px;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    box-shadow: var(--shadow);
+    margin-bottom: 28px;
+  }
+  .avatar {
+    width: 86px; height: 86px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    border: 3px solid #e8b830;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .avatar-cam {
+    position: absolute;
+    bottom: -4px; right: -4px;
+    background: var(--accent);
+    color: white;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    border: 2px solid white;
+  }
+  .profile-identity { flex: 1; min-width: 0; }
+  .profile-name { font-size: 28px; font-weight: 700; margin: 0 0 2px; }
+  .profile-handle { color: var(--ink-mute); font-size: 14px; margin-bottom: 4px; }
+  .profile-since { color: var(--ink-mute); font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; }
+
+  /* Counts moved into the profile header card */
+  .profile-counts {
+    display: flex;
+    gap: 22px;
+    padding-left: 22px;
+    border-left: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+  .pcount { text-align: center; min-width: 56px; }
+  .pcount-num {
+    display: block;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .pcount-label {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-top: 5px;
+    font-weight: 500;
+  }
+  @media (max-width: 600px) {
+    .profile-card { flex-wrap: wrap; }
+    .profile-counts {
+      border-left: none;
+      border-top: 1px solid var(--line);
+      padding-left: 0;
+      padding-top: 16px;
+      margin-top: 4px;
+      width: 100%;
+      justify-content: space-around;
+    }
+  }
+
+  /* Section chrome */
+  .section { margin: 0 0 32px; }
+  .section-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .section-head h2 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+  }
+  .section-count {
+    color: var(--ink-mute);
+    font-weight: 500;
+    margin-left: 4px;
+  }
+  .nav-arrows { display: flex; gap: 6px; }
+  .nav-arrow {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: white;
+    border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink);
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .nav-arrow.disabled { color: var(--ink-mute); cursor: default; }
+
+  /* ── STAMPS ───────────────────────────────────────────────────── */
+  .stamps-rail {
+    display: flex;
+    gap: 18px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding: 16px 4px 24px;
+    margin: 0 -4px;
+  }
+  .stamps-rail::-webkit-scrollbar { display: none; }
+  .stamps-rail { scrollbar-width: none; }
+
+  .stamp-item {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+    text-decoration: none;
+    color: inherit;
+    text-align: center;
+    width: 156px;
+  }
+
+  .stamp {
+    width: 144px;
+    height: 144px;
+    border-radius: 50%;
+    border: 3.5px solid currentColor;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 11px;
+    background: transparent;
+    margin: 0 auto 12px;
+    opacity: 0.92;
+    filter: contrast(1.05);
+  }
+  /* Inner ring — the classic double-circle passport-stamp look */
+  .stamp::before {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+    opacity: 0.45;
+    pointer-events: none;
+  }
+  /* Outer dashed ring for extra stamp authenticity */
+  .stamp::after {
+    content: "";
+    position: absolute;
+    inset: -7px;
+    border-radius: 50%;
+    border: 1px dashed currentColor;
+    opacity: 0.18;
+    pointer-events: none;
+  }
+
+  .stamp-city {
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1.1;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 100%;
+  }
+  /* Auto-shrink classes for longer city names */
+  .stamp-city.len-9  { font-size: 13px; letter-spacing: 0.02em; }
+  .stamp-city.len-10 { font-size: 12px; letter-spacing: 0.01em; }
+  .stamp-city.len-11 { font-size: 11px; letter-spacing: 0;       }
+  .stamp-city.len-12 { font-size: 10px; letter-spacing: -0.01em; }
+  .stamp-country {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-top: 2px;
+    opacity: 0.75;
+  }
+  .stamp-icon {
+    /* MingCute via iconify-icon web component — inline SVG, inherits color */
+    font-size: 42px;
+    line-height: 1;
+    margin: 2px 0 1px;
+    opacity: 0.88;
+    color: currentColor;
+    display: inline-block;
+  }
+  iconify-icon.stamp-icon {
+    /* iconify-icon's inner SVG uses width="1em" height="1em" — it
+       scales by font-size, not CSS width. Set font-size to the actual
+       display size we want. */
+    font-size: 52px;
+    line-height: 1;
+    display: inline-block;
+    margin: 2px 0 1px;
+  }
+  /* Inline-SVG variant for famous cities without a stock match
+     (Sagrada Familia, etc). Same sizing/color as iconify-icon. */
+  svg.stamp-icon {
+    width: 44px;
+    height: 44px;
+    display: inline-block;
+    margin: 2px 0 1px;
+    opacity: 0.88;
+    color: currentColor;
+    stroke: currentColor;
+    fill: none;
+  }
+  .stamp-divider {
+    width: 38%;
+    border-top: 1px solid currentColor;
+    margin: 6px auto 5px;
+    opacity: 0.4;
+  }
+  .stamp-date {
+    font-family: 'Special Elite', 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    font-weight: 400;
+    opacity: 0.8;
+  }
+  .stamp-mark {
+    position: absolute;
+    bottom: -4px;
+    right: 6px;
+    font-size: 13px;
+    opacity: 0.5;
+    background: var(--bg);
+    border-radius: 50%;
+    width: 20px; height: 20px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* Place caption below the stamp */
+  .stamp-place {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 1px;
+    line-height: 1.2;
+  }
+
+  /* 8-color stamp ink palette — picked deterministically per city
+     (hash(citySlug) % 8 in real impl). Same city = same color, always. */
+  .ink-1 { color: #c9483a; }  /* pizza red */
+  .ink-2 { color: #1e3a8a; }  /* deep navy */
+  .ink-3 { color: #2d6e5c; }  /* basil green */
+  .ink-4 { color: #a8741e; }  /* spanish ochre */
+  .ink-5 { color: #7b3961; }  /* burgundy wine */
+  .ink-6 { color: #2d6770; }  /* vintage teal */
+  .ink-7 { color: #6b4423; }  /* sepia brown */
+  .ink-8 { color: #5f4b8b; }  /* faded violet */
+
+  /* Per-stamp rotation — applied via inline style for variety */
+
+  /* ── WISHLIST + REVIEWS — shared scard style ─────────────────── */
+  .cards-rail {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding: 4px 4px 16px;
+    margin: 0 -4px;
+  }
+  .cards-rail::-webkit-scrollbar { display: none; }
+  .cards-rail { scrollbar-width: none; }
+
+  .scard {
+    flex: 0 0 220px;
+    scroll-snap-align: start;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+  }
+  .scard-img {
+    aspect-ratio: 4/3;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+  }
+  .scard-fav {
+    position: absolute;
+    top: 7px; right: 7px;
+    background: rgba(255,255,255,0.95);
+    border-radius: 50%;
+    width: 30px; height: 30px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    color: var(--accent);
+    box-shadow: 0 2px 6px rgba(0,0,0,.12);
+  }
+  .scard-fav.is-active { color: var(--accent); }
+  .scard-tag {
+    position: absolute;
+    top: 7px; left: 7px;
+    background: rgba(26,26,26,0.85);
+    color: white;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+  .scard-saved {
+    position: absolute;
+    bottom: 7px; left: 7px;
+    background: rgba(255,255,255,0.95);
+    color: var(--ink-soft);
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .scard-body { padding: 10px 11px 12px; }
+  .scard-name {
+    font-size: 14px; font-weight: 600;
+    margin: 0 0 5px;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 36px;
+  }
+  .scard-rating { display: flex; align-items: center; gap: 5px; font-size: 12px; margin-bottom: 4px; }
+  .scard-dots { color: var(--accent); letter-spacing: -1.5px; font-size: 13px; }
+  .scard-dots .empty { color: #e1c8c4; }
+  .scard-score { font-weight: 600; color: var(--ink); font-size: 12px; }
+  .scard-count { color: var(--ink-mute); font-size: 11.5px; }
+  .scard-meta {
+    font-size: 11.5px;
+    color: var(--ink-mute);
+    margin-bottom: 5px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .scard-status { font-size: 11.5px; font-weight: 600; color: var(--accent-2); }
+  .scard-status.closed { color: var(--ink-mute); }
+  .scard-status::before { content: "●"; font-size: 8px; vertical-align: middle; margin-right: 4px; }
+
+  /* ── REVIEWS ─────────────────────────────────────────────────── */
+  .reviews-rail {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding: 4px 4px 16px;
+    margin: 0 -4px;
+  }
+  .reviews-rail::-webkit-scrollbar { display: none; }
+  .reviews-rail { scrollbar-width: none; }
+
+  .review-card {
+    flex: 0 0 260px;
+    scroll-snap-align: start;
+    padding: 4px 2px;
+  }
+  .review-head { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+  .review-place-photo {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background-size: cover; background-position: center;
+    flex-shrink: 0;
+  }
+  .review-place-id { display: flex; flex-direction: column; }
+  .review-place-name { font-size: 14px; font-weight: 600; color: var(--ink); line-height: 1.2; }
+  .review-place-where { font-size: 12.5px; color: var(--ink-mute); margin-top: 1px; }
+  .review-date { font-size: 12.5px; color: var(--ink-mute); margin-bottom: 8px; }
+  .review-stars { color: var(--accent); letter-spacing: -1.5px; font-size: 14px; margin-bottom: 6px; }
+  .review-stars .empty { color: #e1c8c4; }
+  .review-text {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    margin: 0 0 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 7;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .review-more { font-size: 13px; color: var(--ink); text-decoration: underline; font-weight: 600; cursor: pointer; }
+  .show-all {
+    margin-top: 10px;
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 30px;
+    padding: 10px 22px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--ink);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* Header banner */
+  .preview-header {
+    max-width: 760px;
+    margin: 28px auto 8px;
+    padding: 0 16px;
+    text-align: center;
+    color: var(--ink-mute);
+    font-size: 13px;
+  }
+  .preview-header h1 {
+    color: var(--ink);
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 6px;
+  }
+
+  @media (max-width: 540px) {
+    .stamp-item { width: 140px; }
+    .stamp { width: 130px; height: 130px; padding: 12px; }
+    .stamp-city { font-size: 15px; }
+    .scard { flex: 0 0 200px; }
+    .review-card { flex: 0 0 220px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="preview-header">
+  <h1>Profile · stamps, wishlist, reviews</h1>
+  <p>Stats card &amp; tab strip removed. Three standalone sections with count in the header.</p>
+</div>
+
+<div class="demo-frame">
+  <div class="demo-label">/me · Eric's profile (proposed upgrade · v2)</div>
+  <div class="demo-urlbar">
+    <code>openpizzamap.com/me</code>
+  </div>
+
+  <div class="nav-top">
+    <a class="nav-brand" href="#">Open<span>Pizza</span>Map</a>
+    <div class="nav-right">
+      <span>Hi, Eric</span>
+      <span class="burger">☰</span>
+    </div>
+  </div>
+
+  <div class="page">
+
+    <!-- Profile card with counts moved in from the standalone stats row -->
+    <div class="profile-card">
+      <div class="avatar" style="background-image:url('https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=200&h=200&fit=crop&q=80');">
+        <span class="avatar-cam">📷</span>
+      </div>
+      <div class="profile-identity">
+        <h1 class="profile-name">Eric</h1>
+        <div class="profile-handle">@Eric</div>
+        <div class="profile-since">Member since Feb 2026</div>
+      </div>
+      <div class="profile-counts">
+        <a class="pcount" href="#section-visited" style="text-decoration:none;color:inherit;">
+          <span class="pcount-num">5</span>
+          <span class="pcount-label">Visited</span>
+        </a>
+        <a class="pcount" href="#section-reviews" style="text-decoration:none;color:inherit;">
+          <span class="pcount-num">5</span>
+          <span class="pcount-label">Reviews</span>
+        </a>
+        <a class="pcount" href="#section-wishlist" style="text-decoration:none;color:inherit;">
+          <span class="pcount-num">1</span>
+          <span class="pcount-label">Wishlist</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- ── 1. Visited ─────────────────────────────────────────── -->
+    <div class="section" id="section-visited">
+      <div class="section-head">
+        <h2>Visited</h2>
+        <div class="nav-arrows">
+          <span class="nav-arrow disabled">‹</span>
+          <span class="nav-arrow">›</span>
+        </div>
+      </div>
+
+      <div class="stamps-rail">
+
+        <a class="stamp-item" href="#">
+          <div class="stamp ink-1" style="transform: rotate(-7deg);">
+            <span class="stamp-city">Caiazzo</span>
+            <iconify-icon class="stamp-icon" icon="mingcute:tree-line"></iconify-icon>
+            <span class="stamp-divider"></span>
+            <span class="stamp-country">Italia</span>
+            <span class="stamp-mark">🍕</span>
+          </div>
+          <div class="stamp-place">Pepe in Grani</div>
+        </a>
+
+        <a class="stamp-item" href="#">
+          <div class="stamp ink-5" style="transform: rotate(4deg);">
+            <span class="stamp-city">Napoli</span>
+            <iconify-icon class="stamp-icon" icon="mingcute:fire-line"></iconify-icon>
+            <span class="stamp-divider"></span>
+            <span class="stamp-country">Italia</span>
+            <span class="stamp-mark">🍕</span>
+          </div>
+          <div class="stamp-place">Sorbillo</div>
+        </a>
+
+        <a class="stamp-item" href="#">
+          <div class="stamp ink-5" style="transform: rotate(-3deg);">
+            <span class="stamp-city">Napoli</span>
+            <iconify-icon class="stamp-icon" icon="mingcute:fire-line"></iconify-icon>
+            <span class="stamp-divider"></span>
+            <span class="stamp-country">Italia</span>
+            <span class="stamp-mark">🍕</span>
+          </div>
+          <div class="stamp-place">L'Antica da Michele</div>
+        </a>
+
+        <a class="stamp-item" href="#">
+          <div class="stamp ink-4" style="transform: rotate(6deg);">
+            <span class="stamp-city len-9">Barcelona</span>
+            <!-- Sagrada Familia silhouette — inline SVG override for famous cities
+                 without an Iconify match. Eight spires of varying heights. -->
+            <svg class="stamp-icon" viewBox="0 0 32 32" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round" aria-label="Sagrada Familia">
+              <!-- Base -->
+              <line x1="3" y1="27" x2="29" y2="27"/>
+              <!-- Left short tower -->
+              <path d="M5 27 L5 17 L6.5 14 L8 17 L8 27"/>
+              <!-- Left mid tower -->
+              <path d="M9 27 L9 14 L10.5 10 L12 14 L12 27"/>
+              <!-- Centre tallest spire (Jesus tower) -->
+              <path d="M13 27 L13 10 L16 4 L19 10 L19 27"/>
+              <!-- Right mid tower -->
+              <path d="M20 27 L20 14 L21.5 10 L23 14 L23 27"/>
+              <!-- Right short tower -->
+              <path d="M24 27 L24 17 L25.5 14 L27 17 L27 27"/>
+              <!-- Honeycomb detail on centre tower -->
+              <line x1="14" y1="14" x2="18" y2="14"/>
+              <line x1="14" y1="18" x2="18" y2="18"/>
+              <line x1="14" y1="22" x2="18" y2="22"/>
+              <!-- Tiny cross on centre spire tip -->
+              <line x1="16" y1="3" x2="16" y2="6"/>
+              <line x1="15" y1="4.5" x2="17" y2="4.5"/>
+            </svg>
+            <span class="stamp-divider"></span>
+            <span class="stamp-country">España</span>
+            <span class="stamp-mark">🍕</span>
+          </div>
+          <div class="stamp-place">Sartoria Panatieri</div>
+        </a>
+
+        <a class="stamp-item" href="#">
+          <div class="stamp ink-3" style="transform: rotate(-5deg);">
+            <span class="stamp-city">Firenze</span>
+            <iconify-icon class="stamp-icon" icon="mingcute:church-line"></iconify-icon>
+            <span class="stamp-divider"></span>
+            <span class="stamp-country">Italia</span>
+            <span class="stamp-mark">🍕</span>
+          </div>
+          <div class="stamp-place">Berberè</div>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- ── 2. My reviews ────────────────────────────────────── -->
+    <div class="section" id="section-reviews">
+      <div class="section-head">
+        <h2>My reviews</h2>
+        <div class="nav-arrows">
+          <span class="nav-arrow disabled">‹</span>
+          <span class="nav-arrow">›</span>
+        </div>
+      </div>
+
+      <div class="reviews-rail">
+
+        <div class="review-card">
+          <div class="review-head">
+            <div class="review-place-photo" style="background-image:url('https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?w=120&h=120&fit=crop&q=80');"></div>
+            <div class="review-place-id">
+              <span class="review-place-name">Pepe in Grani</span>
+              <span class="review-place-where">Caiazzo, Italy</span>
+            </div>
+          </div>
+          <div class="review-stars">●●●●●</div>
+          <div class="review-date">May 2026</div>
+          <p class="review-text">
+            La masa de Franco Pepe es otra liga — fermentación larga,
+            cornicione ligero pero con sabor a pan de verdad. Pedimos
+            el menú degustación y cada pizza tenía un porqué.
+            Merece el viaje desde Nápoles.
+          </p>
+          <a class="review-more">Show more</a>
+        </div>
+
+        <div class="review-card">
+          <div class="review-head">
+            <div class="review-place-photo" style="background-image:url('https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=120&h=120&fit=crop&q=80');"></div>
+            <div class="review-place-id">
+              <span class="review-place-name">Sorbillo</span>
+              <span class="review-place-where">Naples, Italy</span>
+            </div>
+          </div>
+          <div class="review-stars">●●●●<span class="empty">●</span></div>
+          <div class="review-date">April 2026</div>
+          <p class="review-text">
+            Cola en la calle, pero se mueve rápido. La margherita es de
+            libro: dough flotante, tomate San Marzano, mozzarella fior
+            di latte. Bullicio típico de Tribunali. Buen punto de
+            partida si nunca has hecho la peregrinación a Nápoles.
+          </p>
+          <a class="review-more">Show more</a>
+        </div>
+
+        <div class="review-card">
+          <div class="review-head">
+            <div class="review-place-photo" style="background-image:url('https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=120&h=120&fit=crop&q=80');"></div>
+            <div class="review-place-id">
+              <span class="review-place-name">L'Antica da Michele</span>
+              <span class="review-place-where">Naples, Italy</span>
+            </div>
+          </div>
+          <div class="review-stars">●●●●<span class="empty">●</span></div>
+          <div class="review-date">April 2026</div>
+          <p class="review-text">
+            Dos opciones (margherita o marinara), precio justo, sin
+            postureo. Es ir a comer pizza, no a sacarse fotos. La
+            cornicione es más fina de lo que esperaba — más napoletana
+            clásica que contemporánea.
+          </p>
+          <a class="review-more">Show more</a>
+        </div>
+
+        <div class="review-card">
+          <div class="review-head">
+            <div class="review-place-photo" style="background-image:url('https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=120&h=120&fit=crop&q=80');"></div>
+            <div class="review-place-id">
+              <span class="review-place-name">Sartoria Panatieri</span>
+              <span class="review-place-where">Barcelona, Spain</span>
+            </div>
+          </div>
+          <div class="review-stars">●●●●●</div>
+          <div class="review-date">March 2026</div>
+          <p class="review-text">
+            La mejor pizza napolitana en Barcelona, sin discusión.
+            Rafa y Jorge llevan el producto al límite — masa larga
+            fermentación, ingredientes de proximidad cuando se puede,
+            servicio cero pretencioso. Reservar con antelación.
+          </p>
+          <a class="review-more">Show more</a>
+        </div>
+
+        <div class="review-card">
+          <div class="review-head">
+            <div class="review-place-photo" style="background-image:url('https://images.unsplash.com/photo-1593504049359-74330189a345?w=120&h=120&fit=crop&q=80');"></div>
+            <div class="review-place-id">
+              <span class="review-place-name">Berberè</span>
+              <span class="review-place-where">Florence, Italy</span>
+            </div>
+          </div>
+          <div class="review-stars">●●●●<span class="empty">●</span></div>
+          <div class="review-date">Feb 2026</div>
+          <p class="review-text">
+            La versión Berberè de la napoletana — más alveolada, más
+            ligera. Toppings de temporada bien pensados. No es la
+            ortodoxia, pero está hecha con criterio. Local moderno
+            en Oltrarno.
+          </p>
+          <a class="review-more">Show more</a>
+        </div>
+
+      </div>
+
+      <button class="show-all">Show all 5 reviews</button>
+    </div>
+
+    <!-- ── 3. Wishlist ───────────────────────────────────────── -->
+    <div class="section" id="section-wishlist">
+      <div class="section-head">
+        <h2>Wishlist</h2>
+        <div class="nav-arrows">
+          <span class="nav-arrow disabled">‹</span>
+          <span class="nav-arrow disabled">›</span>
+        </div>
+      </div>
+
+      <div class="cards-rail">
+        <a class="scard" href="#">
+          <div class="scard-img" style="background-image:url('https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?w=400&h=300&fit=crop&q=80');">
+            <span class="scard-tag">#1 in Caiazzo</span>
+            <span class="scard-fav is-active">♥</span>
+            <span class="scard-saved">Saved May 18</span>
+          </div>
+          <div class="scard-body">
+            <h3 class="scard-name">Pepe in Grani</h3>
+            <div class="scard-rating">
+              <span class="scard-dots">●●●●●</span>
+              <span class="scard-score">4.8</span>
+              <span class="scard-count">(3,200)</span>
+            </div>
+            <div class="scard-meta">Caiazzo, Italy · Contemporary</div>
+            <div class="scard-status">Open now</div>
+          </div>
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="preview-header" style="margin-top:18px;margin-bottom:60px;">
+  <p style="max-width:600px;margin:0 auto;text-align:left;">
+    <strong>Stamp mechanics:</strong> pure CSS — no external assets needed.
+    Each stamp is a double-ring circle (classic passport silhouette),
+    rotated 3–7° in a randomized direction so the page doesn't look
+    machine-printed. Ink color comes from an 8-color palette, picked
+    deterministically per <em>city</em> (<code>hash(citySlug) % 8</code>) —
+    so same city is always the same color, but Naples + Caiazzo + Florence
+    each get their own ink. Two Naples stamps in the demo share the burgundy
+    because that's exactly what would happen in production.
+    City name in heavy display sans (auto-shrinks for names > 8 chars),
+    date in a typewriter serif (Special Elite) for the rubber-stamp feel.
+    <br><br>
+    <strong>Palette:</strong>
+    <span style="display:inline-block;width:14px;height:14px;background:#c9483a;border-radius:50%;vertical-align:middle;margin:0 2px;"></span>
+    <span style="display:inline-block;width:14px;height:14px;background:#1e3a8a;border-radius:50%;vertical-align:middle;margin:0 2px;"></span>
+    <span style="display:inline-block;width:14px;height:14px;background:#2d6e5c;border-radius:50%;vertical-align:middle;margin:0 2px;"></span>
+    <span style="display:inline-block;width:14px;height:14px;background:#a8741e;border-radius:50%;vertical-align:middle;margin:0 2px;"></span>
+    <span style="display:inline-block;width:14px;height:14px;background:#7b3961;border-radius:50%;vertical-align:middle;margin:0 2px;"></span>
+    <span style="display:inline-block;width:14px;height:14px;background:#2d6770;border-radius:50%;vertical-align:middle;margin:0 2px;"></span>
+    <span style="display:inline-block;width:14px;height:14px;background:#6b4423;border-radius:50%;vertical-align:middle;margin:0 2px;"></span>
+    <span style="display:inline-block;width:14px;height:14px;background:#5f4b8b;border-radius:50%;vertical-align:middle;margin:0 2px;"></span>
+    — pizza red, deep navy, basil green, Spanish ochre, burgundy wine,
+    vintage teal, sepia brown, faded violet. All ink-like, none neon.
+    <br><br>
+    If procedural ever feels too thin, the same component swaps cleanly to
+    SVG stamp images — supply 5–10 designs and the CSS class becomes a
+    <code>background-image</code>. Same data shape either way.
+  </p>
+</div>
+
+</body>
+</html>

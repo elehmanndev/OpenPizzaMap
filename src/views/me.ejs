@@ -23,6 +23,82 @@ function placeCard(place, meta) {
     `;
 }
 
+// Passport-stamp card for the Visited section. Each stamp shows:
+//   city name · landmark icon · country · month/year date
+// Icon source comes from City.iconSlug (svg:<file> or mingcute:<name>);
+// missing → falls back to the generic pizza-slice stamp. Ink color is
+// picked deterministically from an 8-colour palette via the city slug
+// hash, so the same city always lands the same colour across the rail.
+//
+// See docs/preview-traced-stamps.html for the visual reference and
+// public/img/stamps/ for the 19 traced SVGs that ship with this view.
+const STAMP_INK_PALETTE = [
+    "#c9483a", // pizza red
+    "#1e3a8a", // deep navy
+    "#2d6e5c", // basil green
+    "#a8741e", // spanish ochre
+    "#7b3961", // burgundy wine
+    "#2d6770", // vintage teal
+    "#6b4423", // sepia brown
+    "#5f4b8b", // faded violet
+];
+function pickInkColor(citySlug) {
+    const key = String(citySlug || "fallback");
+    let h = 0;
+    for (let i = 0; i < key.length; i++) h = ((h * 31) + key.charCodeAt(i)) | 0;
+    return STAMP_INK_PALETTE[Math.abs(h) % STAMP_INK_PALETTE.length];
+}
+function pickTilt(citySlug, idx) {
+    // Pseudo-random tilt 3-7° in either direction, deterministic so the
+    // rail doesn't reshuffle on every render.
+    const key = String(citySlug || idx);
+    let h = 0;
+    for (let i = 0; i < key.length; i++) h = ((h * 17) + key.charCodeAt(i)) | 0;
+    const sign = (h & 1) ? -1 : 1;
+    return sign * (3 + (Math.abs(h) % 5));
+}
+function stampIconHtml(iconSlug) {
+    if (!iconSlug) {
+        // No City row or no iconSlug — render the generic pizza-slice
+        // fallback (mingcute). Always visible so a stamp is never empty.
+        return `<iconify-icon class="opm-stamp__icon" icon="mingcute:pizza-line"></iconify-icon>`;
+    }
+    if (iconSlug.startsWith("svg:")) {
+        const file = iconSlug.slice(4);
+        // Inline <img> referencing the static SVG; CSS mask in opm-stamp__icon
+        // applies the ink colour to the silhouette.
+        return `<span class="opm-stamp__icon opm-stamp__icon--svg" style="--stamp-icon: url('/img/stamps/${file}.svg')"></span>`;
+    }
+    // mingcute:* / hugeicons:* / tabler:* etc. — Iconify web component
+    // resolves the slug at render time.
+    return `<iconify-icon class="opm-stamp__icon" icon="${escapeAttr(iconSlug)}"></iconify-icon>`;
+}
+function stampMonthYear(d) {
+    if (!d) return "";
+    const date = new Date(d);
+    const m = date.toLocaleString("en-US", { month: "short" }).toUpperCase();
+    return `${m}·${date.getFullYear()}`;
+}
+function stampCard(place, when, idx) {
+    const citySlug = (place.cityRef && place.cityRef.slug) || (place.city || "").toLowerCase().replace(/\s+/g, "-");
+    const iconSlug = place.cityRef && place.cityRef.iconSlug;
+    const ink = pickInkColor(citySlug);
+    const tilt = pickTilt(citySlug, idx);
+    const country = place.country || "";
+    return `
+      <a class="opm-stamp-item" href="/place/${place.id}">
+        <div class="opm-stamp" style="color: ${ink}; transform: rotate(${tilt}deg);">
+          <span class="opm-stamp__city">${escapeHtml(place.city || place.name)}</span>
+          ${stampIconHtml(iconSlug)}
+          <span class="opm-stamp__divider"></span>
+          <span class="opm-stamp__country">${escapeHtml(country)}</span>
+        </div>
+        <div class="opm-stamp__place">${escapeHtml(place.name)}</div>
+        <div class="opm-stamp__date">${stampMonthYear(when)}</div>
+      </a>
+    `;
+}
+
 function fmtDate(d) {
     if (!d) return "";
     const date = new Date(d);
@@ -89,7 +165,7 @@ function stars(value) {
 
   <section id="tab-been" class="profile-tabpanel" role="tabpanel" hidden>
     ${beenThere.length
-        ? `<div class="profile-list">${beenThere.map((b) => placeCard(b.place, `Visited ${fmtDate(b.visitedAt)}${b.favoritedAt ? " · ❤" : ""}`)).join("")}</div>`
+        ? `<div class="opm-stamps-rail">${beenThere.map((b, i) => stampCard(b.place, b.visitedAt, i)).join("")}</div>`
         : `<div class="profile-empty">
              <strong>No visits logged yet.</strong>
              <span>Mark a place as visited from its page to start your map.</span>
@@ -122,6 +198,133 @@ function stars(value) {
     </form>
   </footer>
 </section>
+
+<!-- Iconify web component for the mingcute:* fallback stamps. Loads
+     on demand per slug, ~3KB, no bundle bloat. Self-defers via async. -->
+<script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js" async></script>
+
+<style>
+  /* ─── Visited section · passport stamps ──────────────────────── */
+  .opm-stamps-rail {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px 14px;
+    padding: 8px 4px 16px;
+  }
+  @media (min-width: 720px) {
+    .opm-stamps-rail {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding-bottom: 12px;
+      margin: 0 -4px;
+      padding-left: 4px;
+      padding-right: 4px;
+    }
+    .opm-stamps-rail > * { flex: 0 0 168px; scroll-snap-align: start; }
+  }
+  .opm-stamps-rail::-webkit-scrollbar { display: none; }
+  .opm-stamps-rail { scrollbar-width: none; }
+
+  .opm-stamp-item {
+    text-decoration: none;
+    color: inherit;
+    text-align: center;
+    display: block;
+  }
+  .opm-stamp {
+    width: 144px;
+    height: 144px;
+    border-radius: 50%;
+    border: 3.5px solid currentColor;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 11px;
+    margin: 0 auto 10px;
+    background: transparent;
+    opacity: 0.92;
+    filter: contrast(1.05);
+  }
+  .opm-stamp::before {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+    opacity: 0.45;
+    pointer-events: none;
+  }
+  .opm-stamp::after {
+    content: "";
+    position: absolute;
+    inset: -7px;
+    border-radius: 50%;
+    border: 1px dashed currentColor;
+    opacity: 0.18;
+    pointer-events: none;
+  }
+  .opm-stamp__city {
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1.1;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 100%;
+  }
+  .opm-stamp__divider {
+    width: 38%;
+    border-top: 1px solid currentColor;
+    margin: 5px auto 4px;
+    opacity: 0.4;
+  }
+  .opm-stamp__country {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 700;
+    opacity: 0.75;
+  }
+  /* Icon area — three rendering modes share the same dimensions */
+  .opm-stamp__icon {
+    width: 46px;
+    height: 46px;
+    margin: 4px 0 2px;
+    color: currentColor;
+    display: inline-block;
+  }
+  iconify-icon.opm-stamp__icon {
+    font-size: 56px;        /* compensates for source-SVG internal padding */
+    line-height: 1;
+    width: 56px;
+    height: 56px;
+    margin: -2px 0;
+  }
+  .opm-stamp__icon--svg {
+    background-color: currentColor;
+    -webkit-mask: var(--stamp-icon) center / contain no-repeat;
+    mask: var(--stamp-icon) center / contain no-repeat;
+  }
+
+  /* Caption below the stamp */
+  .opm-stamp__place {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 1px;
+    line-height: 1.25;
+  }
+  .opm-stamp__date {
+    font-size: 11.5px;
+    color: var(--ink-mute, #888);
+    letter-spacing: 0.04em;
+  }
+</style>
 
 <script>
   (function () {

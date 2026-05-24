@@ -501,8 +501,19 @@ router.get("/me", requireAuth, async (req, res) => {
         }),
         prisma.visit.findMany({
             where: { userId },
-            orderBy: { createdAt: "desc" },
-            include: { place: { select: { id: true, name: true, city: true, country: true, isVisible: true } } },
+            orderBy: [{ visitedAt: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }],
+            include: {
+                place: {
+                    select: {
+                        id: true, name: true, city: true, country: true, isVisible: true,
+                        // cityRef lets the stamp pick up its iconSlug
+                        // (svg:<file> or mingcute:<name>) — used by me.ejs
+                        // stampCard renderer. Null cityId silently falls
+                        // back to the pizza-slice generic in the view.
+                        cityRef: { select: { iconSlug: true, slug: true, countryCode: true } },
+                    },
+                },
+            },
         }),
         prisma.favorite.findMany({
             where: { userId },
@@ -530,9 +541,12 @@ router.get("/me", requireAuth, async (req, res) => {
     // metadata where the visit happened to be a saved place. Visits drive
     // ordering (most recent first), favourites annotate.
     const favByPlace = new Map(beenFromFavorites.map((f) => [f.placeId, f]));
+    // visitedAt: user-supplied "when I was actually there", populated by
+    // the visit-date capture flow (Phase added 2026-05-25). Falls back to
+    // createdAt for legacy rows that pre-date the capture column.
     const beenThere = visits.map((v) => ({
         place: v.place,
-        visitedAt: v.createdAt,
+        visitedAt: v.visitedAt || v.createdAt,
         favoritedAt: favByPlace.has(v.placeId) ? favByPlace.get(v.placeId).createdAt : null,
     }));
 
