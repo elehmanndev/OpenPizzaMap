@@ -266,7 +266,7 @@ async function reverify(browser, hit, place) {
     if (pageContainsDomain(res.html, place.websiteUrl)) { score++; signals.domain = true; }
     if (pageContainsPhone(res.html, place.phone)) { score++; signals.phone = true; }
 
-    // CONCEPT 1: pizza-context + expanded blocklist
+    // CONCEPT 1: pizza-context + expanded blocklist + handle-name match
     const handle = (hit.url.split('/').pop() || '').toLowerCase();
     if (EXPANDED_BLOCKLIST.has(handle)) {
         score -= 3;
@@ -276,6 +276,17 @@ async function reverify(browser, hit, place) {
     if (PIZZA_CONTEXT_RE.test(desc) || PIZZA_CONTEXT_RE.test(title)) {
         score++;
         signals.pizzaContext = true;
+    }
+    // Handle-name match: venue name tokens appearing in the URL handle.
+    // Catches owner-named accounts where og:title shows the owner's name but
+    // the handle is the venue (e.g. Lucali #199 — og:title "Mark Iacono"
+    // but handle "lucali_bk"). normalizeName strips parenthesized (@handle)
+    // content so the og:title check missed it.
+    const nameTokens = normalizeName(place.name || '').split(/\s+/).filter(t => t.length >= 4);
+    const handleStripped = handle.replace(/[._-]/g, '');
+    if (nameTokens.length && nameTokens.some(t => handleStripped.includes(t))) {
+        score++;
+        signals.handleMatch = true;
     }
 
     // Decision point after Concept 1
