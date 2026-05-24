@@ -280,7 +280,23 @@ async function reverify(browser, hit, place) {
 
     // Decision point after Concept 1
     if (score >= 2) return { decision: 'keep', score, signals, reason: 'concept1-pass' };
-    if (score <= 0) return { decision: 'null', score, signals, reason: 'concept1-fail' };
+    if (score <= 0) {
+        // Thin-page safety net: if the page returned with no meaningful meta
+        // tags, we can't reliably score it. Treat as unknown so we retry
+        // rather than null out a legitimate handle. Example caught on the
+        // 2026-05-24 smoke: Lucali (#199) — real venue, spare bio, IG served
+        // a stripped-down variant that didn't match our rate-limit signature
+        // ("Instagram" og:title) but also had no extractable content.
+        if (!og.title && !og.description) {
+            return {
+                decision: 'unknown',
+                score: null,
+                signals: { ...signals, thinPage: true },
+                reason: 'thin-page (no og:title/description)',
+            };
+        }
+        return { decision: 'null', score, signals, reason: 'concept1-fail' };
+    }
 
     // CONCEPT 2: Jaro-Winkler + followers — only for borderline score=1
     const titleClean = stripPlatformBoilerplate(og.title || '');
@@ -451,10 +467,13 @@ async function run({ apply = false, log = '/tmp/socials-all.log', limit = null, 
 
         const tag = `${i}/${cohort.length}`;
         const sig = Object.entries(r.signals || {})
-            .filter(([k, v]) => v && k !== 'ogTitle')
+            .filter(([k, v]) => v && k !== 'ogTitle' && k !== 'ogDesc')
             .map(([k, v]) => typeof v === 'boolean' ? k : `${k}=${v}`)
             .join(',');
-        console.log(`  ${tag} [${place.id}] ${place.name} ${hit.platform.toUpperCase()} → ${r.decision} (score=${r.score} ${sig})`);
+        // Show og:title separately so we can debug score=0 / null cases.
+        // Truncated to 50 chars to keep the line readable.
+        const titleHint = r.signals?.ogTitle ? ` ogTitle="${r.signals.ogTitle.slice(0, 50)}"` : (r.decision === 'null' || r.decision === 'unknown' ? ' ogTitle=(empty)' : '');
+        console.log(`  ${tag} [${place.id}] ${place.name} ${hit.platform.toUpperCase()} → ${r.decision} (score=${r.score} ${sig})${titleHint}`);
 
         // Apply nulls (only — keeps and unknowns are read-only outcomes).
         if (apply && r.decision === 'null') {
