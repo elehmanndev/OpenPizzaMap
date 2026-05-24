@@ -509,5 +509,4 @@ module.exports = {
     getMaintenanceStatus,
     abortMaintenance,
     MODE_PRESETS,
-    HOUR_GATES,
 };
