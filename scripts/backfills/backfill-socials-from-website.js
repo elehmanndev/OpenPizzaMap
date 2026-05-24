@@ -23,10 +23,21 @@
 const { prisma } = require('../lib/bootstrap');
 const { fetchWithTimeout, sleep, AGGREGATOR_HOSTS } = require('../lib/utils');
 
-const UA = 'OpenPizzaMap-socials-backfill/0.1 (eric@openpizzamap.com)';
+// Real-browser UA: most restaurant sites are behind Cloudflare/Wix/Squarespace
+// and reject identifying bot UAs (403). Verified 2026-05-25 against the
+// previous identifying UA — failure rate dropped from ~80% to ~30% just by
+// changing this string. CloakBrowser handles the residual Cloudflare-JS
+// challenge sites.
+const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36';
 const POLITE_DELAY_MS = 800;
 const FETCH_TIMEOUT_MS = 15000;
+const BROWSER_TIMEOUT_MS = 30000;
 const MAX_HTML_BYTES = 1_500_000;   // 1.5MB cap — restaurant homepages are typically <500KB
+
+// Native-fetch errors that suggest the site is bot-protected (vs. genuinely
+// dead). These warrant a CloakBrowser retry; 404 / non-html / DNS failures
+// don't (no browser would help).
+const BROWSER_RETRY_PATTERN = /^(http-(403|429|503|521|530)|TypeError|AbortError|ECONNRESET|ENOTFOUND|ETIMEDOUT)$/i;
 
 // Instagram URL path segments that aren't a profile handle.
 const IG_PATH_BLOCKLIST = new Set([
@@ -141,6 +152,51 @@ async function fetchHomepage(url) {
     return { ok: true, html: Buffer.from(slice).toString('utf8') };
 }
 
+// Lazy-load CloakBrowser. The 535MB binary boots in 3-8s, so we want to
+// reuse the same browser+page across all fallback attempts in a run.
+// If cloakbrowser isn't installed (opt-in dep), cache the failure so we
+// don't retry-import on every row.
+async function makeBrowserFallback() {
+    let browser, page, unavailableReason = null;
+    return {
+        async getPage() {
+            if (unavailableReason) throw new Error(unavailableReason);
+            if (!browser) {
+                let cb;
+                try {
+                    cb = await import('cloakbrowser');
+                } catch (e) {
+                    unavailableReason = `cloakbrowser not installed (npm install --no-save cloakbrowser) — ${e.message}`;
+                    throw new Error(unavailableReason);
+                }
+                browser = await cb.launch();
+                page = await browser.newPage();
+            }
+            return page;
+        },
+        async close() {
+            if (browser) await browser.close().catch(() => {});
+            browser = null; page = null;
+        },
+        isOpen() { return !!browser; },
+        unavailable() { return unavailableReason; },
+    };
+}
+
+// Browser-backed homepage fetch. Slower (~3-5s per page) but bypasses
+// Cloudflare-JS challenges + UA filters that native fetch can't.
+async function fetchHomepageViaBrowser(fallback, url) {
+    try {
+        const p = await fallback.getPage();
+        await p.goto(url, { waitUntil: 'domcontentloaded', timeout: BROWSER_TIMEOUT_MS });
+        const html = await p.content();
+        const slice = html.length > MAX_HTML_BYTES ? html.slice(0, MAX_HTML_BYTES) : html;
+        return { ok: true, html: slice, viaBrowser: true };
+    } catch (e) {
+        return { ok: false, error: `browser-${e.name || 'error'}`, viaBrowser: true };
+    }
+}
+
 async function run({ apply = false, ids = null, limit = null } = {}) {
     let where;
     if (ids) where = { id: { in: ids } };
@@ -161,7 +217,8 @@ async function run({ apply = false, ids = null, limit = null } = {}) {
     console.log(`[socials] ${places.length} candidates (apply=${apply})`);
 
     let fetched = 0, igFound = 0, fbFound = 0, igFilled = 0, fbFilled = 0;
-    let skippedAgg = 0, fetchErr = 0;
+    let skippedAgg = 0, fetchErr = 0, browserRetries = 0, browserWins = 0;
+    const fallback = await makeBrowserFallback();
 
     for (const p of places) {
         let url = p.websiteUrl;
@@ -172,8 +229,25 @@ async function run({ apply = false, ids = null, limit = null } = {}) {
         if (AGGREGATOR_HOSTS.test(url)) { skippedAgg++; continue; }
         if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
 
-        const res = await fetchHomepage(url);
+        let res = await fetchHomepage(url);
         fetched++;
+        // Two-pass: if native fetch was blocked (Cloudflare / WAF / connection
+        // reset) but the site isn't outright dead (404 / DNS failure), retry
+        // through CloakBrowser. Skip the fallback for genuinely dead targets
+        // — booting a browser to confirm 404 is wasted compute.
+        if (!res.ok && BROWSER_RETRY_PATTERN.test(res.error) && !fallback.unavailable()) {
+            const nativeError = res.error;
+            browserRetries++;
+            const r2 = await fetchHomepageViaBrowser(fallback, url);
+            if (r2.ok) {
+                res = r2;
+                browserWins++;
+                console.log(`  [${p.id}] ${p.name} — browser fallback OK (native was ${nativeError})`);
+            } else {
+                console.log(`  [${p.id}] ${p.name} — both failed: native=${nativeError} / browser=${r2.error}`);
+                res = r2;
+            }
+        }
         if (!res.ok) {
             fetchErr++;
             console.log(`  [${p.id}] ${p.name} — fetch ${res.error}`);
@@ -203,15 +277,18 @@ async function run({ apply = false, ids = null, limit = null } = {}) {
         await sleep(POLITE_DELAY_MS);
     }
 
+    await fallback.close();
+
     console.log('');
     console.log(`[socials] done. fetched=${fetched} ig=${igFound} fb=${fbFound} skipped-agg=${skippedAgg} fetch-err=${fetchErr}`);
+    if (browserRetries) console.log(`[socials] browser fallback: ${browserWins}/${browserRetries} retries succeeded`);
     if (apply) console.log(`[socials] applied: instagramUrl=${igFilled} facebookUrl=${fbFilled}`);
     else       console.log(`[socials] DRY RUN — re-run with --apply to write.`);
 
     return {
         ok: true,
         fetched, igFound, fbFound, igFilled, fbFilled,
-        skippedAgg, fetchErr,
+        skippedAgg, fetchErr, browserRetries, browserWins,
         total: places.length,
     };
 }
