@@ -77,7 +77,11 @@ function handleMatchesName(handle, name) {
 }
 
 async function findSocialViaDDG(platform, name, city) {
-    const query = `${name} ${city || ''} ${platform}`.trim();
+    // `site:` operator forces DDG to return only URLs from that domain —
+    // much higher hit rate than a generic query, which usually returns
+    // the venue's own website first.
+    const domain = platform === 'instagram' ? 'instagram.com' : 'facebook.com';
+    const query = `site:${domain} ${name} ${city || ''}`.trim();
     let results;
     try {
         results = await ddgSearch(query, { userAgent: UA });
@@ -89,6 +93,8 @@ async function findSocialViaDDG(platform, name, city) {
         ? /(^|\.)instagram\.com$/i
         : /(^|\.)(facebook|fb)\.com$/i;
 
+    // Collect all normalized candidates, then pick the best one.
+    const candidates = [];
     for (const url of results) {
         let u;
         try { u = new URL(url); } catch { continue; }
@@ -96,10 +102,16 @@ async function findSocialViaDDG(platform, name, city) {
         const normalized = norm(url);
         if (!normalized) continue;
         const handleOnly = normalized.split('/').pop();
-        if (!handleMatchesName(handleOnly, name)) continue;
-        return { url: normalized, handle: handleOnly };
+        candidates.push({ url: normalized, handle: handleOnly });
     }
-    return null;
+    if (!candidates.length) return null;
+
+    // Prefer candidates whose handle has token overlap with the venue name.
+    // Fall back to the first candidate if nothing matches (DDG's site:
+    // query already restricts to the right domain, so the first hit is
+    // usually right even when the handle is abstract).
+    const matched = candidates.find((c) => handleMatchesName(c.handle, name));
+    return matched || candidates[0];
 }
 
 function parseArgs(argv) {
