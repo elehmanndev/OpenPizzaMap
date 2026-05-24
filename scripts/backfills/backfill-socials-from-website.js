@@ -36,8 +36,9 @@ const MAX_HTML_BYTES = 1_500_000;   // 1.5MB cap — restaurant homepages are ty
 
 // Native-fetch errors that suggest the site is bot-protected (vs. genuinely
 // dead). These warrant a CloakBrowser retry; 404 / non-html / DNS failures
-// don't (no browser would help).
-const BROWSER_RETRY_PATTERN = /^(http-(403|429|503|521|530)|TypeError|AbortError|ECONNRESET|ENOTFOUND|ETIMEDOUT)$/i;
+// don't (no browser would help). 500/502 added 2026-05-25 after the smoke
+// test — Cloudflare/Wix sometimes return 500 instead of 503 when blocking.
+const BROWSER_RETRY_PATTERN = /^(http-(403|429|500|502|503|520|521|522|524|530)|TypeError|AbortError|ECONNRESET|ENOTFOUND|ETIMEDOUT)$/i;
 
 // Instagram URL path segments that aren't a profile handle.
 const IG_PATH_BLOCKLIST = new Set([
@@ -184,11 +185,19 @@ async function makeBrowserFallback() {
 }
 
 // Browser-backed homepage fetch. Slower (~3-5s per page) but bypasses
-// Cloudflare-JS challenges + UA filters that native fetch can't.
+// Cloudflare-JS challenges + UA filters that native fetch can't. Also
+// waits for the DOM to settle past the initial HTML parse — most modern
+// restaurant sites (Wix/Squarespace/React) inject social icons via JS
+// after domcontentloaded, so reading p.content() too early returns
+// raw markup with no social links. networkidle is the right signal but
+// often hangs on sites with persistent polling; domcontentloaded +
+// a short fixed wait gets the JS-rendered footer + social icons in
+// practice without the hang risk.
 async function fetchHomepageViaBrowser(fallback, url) {
     try {
         const p = await fallback.getPage();
         await p.goto(url, { waitUntil: 'domcontentloaded', timeout: BROWSER_TIMEOUT_MS });
+        await p.waitForTimeout(2500).catch(() => {});
         const html = await p.content();
         const slice = html.length > MAX_HTML_BYTES ? html.slice(0, MAX_HTML_BYTES) : html;
         return { ok: true, html: slice, viaBrowser: true };
@@ -231,6 +240,7 @@ async function run({ apply = false, ids = null, limit = null } = {}) {
 
         let res = await fetchHomepage(url);
         fetched++;
+        let alreadyLogged = false;
         // Two-pass: if native fetch was blocked (Cloudflare / WAF / connection
         // reset) but the site isn't outright dead (404 / DNS failure), retry
         // through CloakBrowser. Skip the fallback for genuinely dead targets
@@ -243,14 +253,16 @@ async function run({ apply = false, ids = null, limit = null } = {}) {
                 res = r2;
                 browserWins++;
                 console.log(`  [${p.id}] ${p.name} — browser fallback OK (native was ${nativeError})`);
+                alreadyLogged = true;
             } else {
                 console.log(`  [${p.id}] ${p.name} — both failed: native=${nativeError} / browser=${r2.error}`);
                 res = r2;
+                alreadyLogged = true;
             }
         }
         if (!res.ok) {
             fetchErr++;
-            console.log(`  [${p.id}] ${p.name} — fetch ${res.error}`);
+            if (!alreadyLogged) console.log(`  [${p.id}] ${p.name} — fetch ${res.error}`);
             await sleep(POLITE_DELAY_MS);
             continue;
         }
