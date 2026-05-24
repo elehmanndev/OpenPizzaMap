@@ -23,6 +23,14 @@
 //      as backfill-socials-via-browser.js. The floor; works when neither
 //      Google nor TA has anything.
 //
+// Each candidate is verified before acceptance: the candidate IG/FB URL is
+// opened and scored against multiple DB signals — name in og:title (+1),
+// city in page text (+1), website host/stem in page text (+1), phone digits
+// (+1). Score=0 rejects and falls through to the next surface. Score>=1
+// accepts (score=1 is logged as "weak"). This catches wrong-venue handles
+// that share a token with the venue name but belong to a different business.
+// Disable with --no-verify (faster, less safe).
+//
 // Stops as soon as both IG and FB are filled (or the surface chain is
 // exhausted). Fill-only — never overwrites existing values.
 //
@@ -31,6 +39,7 @@
 //   node scripts/backfills/backfill-socials-multi-source.js --apply
 //   node scripts/backfills/backfill-socials-multi-source.js --apply --limit=20 --country=Italy
 //   node scripts/backfills/backfill-socials-multi-source.js --apply --ids=1,2,3
+//   node scripts/backfills/backfill-socials-multi-source.js --apply --no-verify
 //
 // Requires cloakbrowser in opm-runner (see [[reference_cloakbrowser]]).
 
@@ -57,6 +66,7 @@ const FB_PATH_BLOCKLIST = new Set([
     'about', 'careers', 'business', 'pages', 'groups', 'events',
     'watch', 'gaming', 'marketplace', 'fundraisers', 'reel',
     'photo.php', 'permalink.php', 'squarespace', 'tripadvisor',
+    'p',  // /p is FB's generic share-link path, never a page slug
 ]);
 
 function normalizeInstagram(href) {
@@ -216,6 +226,107 @@ async function fetchPage(browser, url, settleMs) {
     }
 }
 
+// Multi-signal verification — open the candidate IG/FB URL and score it
+// against multiple DB signals (not just name). Token-only matching is too
+// permissive for short / generic / chain names; cross-checking the venue's
+// city, website domain, and phone catches wrong-venue handles that share a
+// token but belong to a different business.
+//
+// Scoring:
+//   +1  name token appears in og:title
+//   +1  city appears in og:description (or page body)
+//   +1  websiteUrl host or stem appears in the page (bio link / text)
+//   +1  phone (last 7 digits) appears in the page
+//
+// Reject score = 0 outright. Score 1 = weak (logged but accepted — better
+// than the unfiltered baseline). Score >= 2 = high confidence.
+const OG_META_RE = /<meta\s+[^>]*property\s*=\s*["']og:([a-z_]+)["'][^>]*content\s*=\s*["']([^"']+)["']/gi;
+const OG_META_RE_ALT = /<meta\s+[^>]*content\s*=\s*["']([^"']+)["'][^>]*property\s*=\s*["']og:([a-z_]+)["']/gi;
+
+function extractOgTags(html) {
+    const out = {};
+    let m;
+    OG_META_RE.lastIndex = 0;
+    while ((m = OG_META_RE.exec(html)) !== null) out[m[1]] = decodeHtml(m[2]);
+    OG_META_RE_ALT.lastIndex = 0;
+    while ((m = OG_META_RE_ALT.exec(html)) !== null) if (!out[m[2]]) out[m[2]] = decodeHtml(m[1]);
+    return out;
+}
+function decodeHtml(s) {
+    return s.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#039;/g, "'")
+            .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#x27;/g, "'");
+}
+
+async function verifyHandle(browser, candidateUrl, place) {
+    const res = await fetchPage(browser, candidateUrl, 2000);
+    if (!res.ok) return { ok: false, score: 0, signals: { error: res.error } };
+
+    const og = extractOgTags(res.html);
+    const title = (og.title || '').toLowerCase();
+    const desc = (og.description || '').toLowerCase();
+    const htmlLower = res.html.toLowerCase();
+
+    // Defensive: IG/FB "not found" pages still 200, og:title gives them away.
+    if (/page not found|content unavailable|page isn['’]t available|log in or sign up to view/i.test(og.title || og.description || '')) {
+        return { ok: true, score: 0, signals: { dead: true, ogTitle: og.title } };
+    }
+
+    const signals = { ogTitle: og.title?.slice(0, 80), ogDesc: og.description?.slice(0, 80) };
+    let score = 0;
+
+    // Name token in og:title — strip the "(@handle) • Instagram..." / " | Facebook" boilerplate first.
+    const titleClean = title
+        .replace(/\(@[^)]+\)/g, '')
+        .replace(/•\s*instagram[^"]*$/i, '')
+        .replace(/[-|]\s*(posts|facebook|profile)[^"]*$/i, '')
+        .trim();
+    const nameTokens = normalizeName(place.name || '').split(/\s+/).filter(t => t.length >= 4);
+    if (nameTokens.length && titleClean) {
+        const titleNorm = normalizeName(titleClean);
+        if (nameTokens.some(t => titleNorm.includes(t))) { score++; signals.nameMatch = true; }
+    }
+
+    // City in og:description or anywhere in the page.
+    if (place.city) {
+        const cityLower = place.city.toLowerCase();
+        if (cityLower.length >= 4 && (desc.includes(cityLower) || htmlLower.includes(cityLower))) {
+            score++;
+            signals.cityMatch = true;
+        }
+    }
+
+    // Website domain — strongest signal. Bio's "website" link OR any mention
+    // of the canonical host/stem in the page.
+    if (place.websiteUrl) {
+        try {
+            const host = new URL(place.websiteUrl).hostname.replace(/^www\./, '').toLowerCase();
+            const stem = host.split('.')[0];
+            if (host.length >= 5 && htmlLower.includes(host)) {
+                score++;
+                signals.domainMatch = true;
+            } else if (stem.length >= 5 && htmlLower.includes(stem)) {
+                // Weaker — just the stem (might be coincidence for very short stems).
+                score++;
+                signals.domainMatch = 'stem';
+            }
+        } catch { /* ignore */ }
+    }
+
+    // Phone — last 7 digits should be globally unique enough.
+    if (place.phone) {
+        const digits = place.phone.replace(/\D/g, '');
+        if (digits.length >= 7) {
+            const last7 = digits.slice(-7);
+            if (res.html.replace(/\D/g, '').includes(last7)) {
+                score++;
+                signals.phoneMatch = true;
+            }
+        }
+    }
+
+    return { ok: true, score, signals };
+}
+
 // SURFACE 1: Google knowledge panel.
 async function tryGoogle(browser, place) {
     const q = `${place.name} ${place.city || ''}`.trim();
@@ -262,12 +373,19 @@ async function tryWebsite(browser, place, stillNeedIg, stillNeedFb) {
     return { ig: bestIg, fb: bestFb, err: lastErr };
 }
 
-// Cascade controller. Tries each surface in order, accumulates findings,
-// short-circuits as soon as both IG and FB are covered (either already in
-// the DB or found by a prior surface).
-async function harvest(browser, place) {
+// Cascade controller. Tries each surface in order, verifies each candidate
+// before accepting, falls through on verification reject. Short-circuits as
+// soon as both IG and FB are covered.
+async function harvest(browser, place, { verify = true } = {}) {
     const need = { ig: !place.instagramUrl, fb: !place.facebookUrl };
-    const result = { ig: null, fb: null, source: { ig: null, fb: null }, surfacesTried: [] };
+    const result = {
+        ig: null, fb: null,
+        source: { ig: null, fb: null },
+        verifyScore: { ig: null, fb: null },
+        verifySignals: { ig: null, fb: null },
+        surfacesTried: [],
+        rejected: { ig: [], fb: [] },  // [{url, source, score, signals}]
+    };
 
     const surfaces = [
         ['google', () => tryGoogle(browser, place)],
@@ -279,26 +397,58 @@ async function harvest(browser, place) {
         )],
     ];
 
-    for (const [name, fn] of surfaces) {
+    for (const [surfaceName, fn] of surfaces) {
         const stillNeedIg = need.ig && !result.ig;
         const stillNeedFb = need.fb && !result.fb;
         if (!stillNeedIg && !stillNeedFb) break;
 
-        result.surfacesTried.push(name);
+        result.surfacesTried.push(surfaceName);
         const r = await fn();
 
-        if (stillNeedIg && r.ig) { result.ig = r.ig; result.source.ig = name; }
-        if (stillNeedFb && r.fb) { result.fb = r.fb; result.source.fb = name; }
+        // Each surface returned at most one candidate per platform. Verify
+        // before accepting. On verification reject, log to `rejected` and
+        // fall through to the next surface for that platform.
+        if (stillNeedIg && r.ig) {
+            if (!verify) {
+                result.ig = r.ig; result.source.ig = surfaceName;
+            } else {
+                const v = await verifyHandle(browser, r.ig.url, place);
+                if (v.score > 0) {
+                    result.ig = r.ig;
+                    result.source.ig = surfaceName;
+                    result.verifyScore.ig = v.score;
+                    result.verifySignals.ig = v.signals;
+                } else {
+                    result.rejected.ig.push({ url: r.ig.url, source: surfaceName, score: v.score, signals: v.signals });
+                }
+            }
+        }
+        if (stillNeedFb && r.fb) {
+            if (!verify) {
+                result.fb = r.fb; result.source.fb = surfaceName;
+            } else {
+                const v = await verifyHandle(browser, r.fb.url, place);
+                if (v.score > 0) {
+                    result.fb = r.fb;
+                    result.source.fb = surfaceName;
+                    result.verifyScore.fb = v.score;
+                    result.verifySignals.fb = v.signals;
+                } else {
+                    result.rejected.fb.push({ url: r.fb.url, source: surfaceName, score: v.score, signals: v.signals });
+                }
+            }
+        }
     }
 
     return result;
 }
 
 function parseArgs(argv) {
-    const out = { apply: false, ids: null, limit: null, country: null };
+    const out = { apply: false, ids: null, limit: null, country: null, verify: true };
     for (const a of argv) {
         const eq = (k) => a.startsWith(`--${k}=`) ? a.split('=').slice(1).join('=') : null;
         if (a === '--apply') out.apply = true;
+        else if (a === '--no-verify') out.verify = false;
         else if (eq('ids')) out.ids = eq('ids').split(',').map(Number).filter(Boolean);
         else if (eq('limit')) out.limit = parseInt(eq('limit'), 10);
         else if (eq('country')) out.country = eq('country');
@@ -306,7 +456,7 @@ function parseArgs(argv) {
     return out;
 }
 
-async function run({ apply = false, ids = null, limit = null, country = null } = {}) {
+async function run({ apply = false, ids = null, limit = null, country = null, verify = true } = {}) {
     let where;
     if (ids) where = { id: { in: ids } };
     else {
@@ -319,14 +469,14 @@ async function run({ apply = false, ids = null, limit = null, country = null } =
     const all = await prisma.place.findMany({
         where,
         select: {
-            id: true, name: true, city: true, country: true,
+            id: true, name: true, city: true, country: true, phone: true,
             websiteUrl: true, tripadvisorUrl: true,
             instagramUrl: true, facebookUrl: true,
         },
         orderBy: [{ id: 'asc' }],
     });
     const places = limit ? all.slice(0, limit) : all;
-    console.log(`[multi] ${places.length} candidates (apply=${apply}${country ? ` country=${country}` : ''})`);
+    console.log(`[multi] ${places.length} candidates (apply=${apply}${country ? ` country=${country}` : ''} verify=${verify})`);
 
     const browser = await makeBrowser();
     const counters = {
@@ -334,11 +484,15 @@ async function run({ apply = false, ids = null, limit = null, country = null } =
         fbByGoogle: 0, fbByTa: 0, fbBySite: 0,
         igFilled: 0, fbFilled: 0,
         miss: 0, errors: 0,
+        rejected: 0,           // candidates that failed verification
+        weakAccept: 0,         // candidates accepted at score=1
+        scoreSum: 0,           // for average reporting
+        scoreN: 0,
     };
 
     for (const p of places) {
         let result;
-        try { result = await harvest(browser, p); }
+        try { result = await harvest(browser, p, { verify }); }
         catch (e) {
             counters.errors++;
             console.log(`  [${p.id}] ${p.name} — harvest error: ${e.message.slice(0, 80)}`);
@@ -346,9 +500,16 @@ async function run({ apply = false, ids = null, limit = null, country = null } =
             continue;
         }
 
+        const rejN = result.rejected.ig.length + result.rejected.fb.length;
+        counters.rejected += rejN;
+
         if (!result.ig && !result.fb) {
             counters.miss++;
-            console.log(`  [${p.id}] ${p.name} — no hit (tried ${result.surfacesTried.join('+')})`);
+            const why = rejN ? ` rejected=${rejN}` : '';
+            console.log(`  [${p.id}] ${p.name} — no hit (tried ${result.surfacesTried.join('+')}${why})`);
+            for (const r of [...result.rejected.ig, ...result.rejected.fb]) {
+                console.log(`      rejected: ${r.url} via ${r.source} score=${r.score} ${JSON.stringify(r.signals).slice(0, 100)}`);
+            }
             await sleep(POLITE_DELAY_MS);
             continue;
         }
@@ -357,13 +518,19 @@ async function run({ apply = false, ids = null, limit = null, country = null } =
         const patch = {};
         if (result.ig && !p.instagramUrl) {
             patch.instagramUrl = result.ig.url;
-            bits.push(`IG=${result.ig.url} via ${result.source.ig}${result.ig.matched ? '' : ' (no-name-match)'}`);
+            const score = result.verifyScore.ig;
+            const tag = score === null ? '' : ` (score=${score}${score === 1 ? ' weak' : ''})`;
+            bits.push(`IG=${result.ig.url} via ${result.source.ig}${tag}`);
             counters[`igBy${cap(result.source.ig)}`]++;
+            if (score !== null) { counters.scoreSum += score; counters.scoreN++; if (score === 1) counters.weakAccept++; }
         }
         if (result.fb && !p.facebookUrl) {
             patch.facebookUrl = result.fb.url;
-            bits.push(`FB=${result.fb.url} via ${result.source.fb}${result.fb.matched ? '' : ' (no-name-match)'}`);
+            const score = result.verifyScore.fb;
+            const tag = score === null ? '' : ` (score=${score}${score === 1 ? ' weak' : ''})`;
+            bits.push(`FB=${result.fb.url} via ${result.source.fb}${tag}`);
             counters[`fbBy${cap(result.source.fb)}`]++;
+            if (score !== null) { counters.scoreSum += score; counters.scoreN++; if (score === 1) counters.weakAccept++; }
         }
         console.log(`  [${p.id}] ${p.name} — ${bits.join(' | ')}`);
 
@@ -382,10 +549,12 @@ async function run({ apply = false, ids = null, limit = null, country = null } =
 
     const igTotal = counters.igByGoogle + counters.igByTa + counters.igBySite;
     const fbTotal = counters.fbByGoogle + counters.fbByTa + counters.fbBySite;
+    const avgScore = counters.scoreN ? (counters.scoreSum / counters.scoreN).toFixed(2) : 'n/a';
     console.log('');
     console.log(`[multi] done. total=${places.length} miss=${counters.miss} errors=${counters.errors}`);
     console.log(`[multi] IG hits: google=${counters.igByGoogle} ta=${counters.igByTa} site=${counters.igBySite} total=${igTotal}`);
     console.log(`[multi] FB hits: google=${counters.fbByGoogle} ta=${counters.fbByTa} site=${counters.fbBySite} total=${fbTotal}`);
+    if (verify) console.log(`[multi] verify: rejected=${counters.rejected} weak(score=1)=${counters.weakAccept} avg-score=${avgScore}`);
     if (apply) console.log(`[multi] applied: instagramUrl=${counters.igFilled} facebookUrl=${counters.fbFilled}`);
     else       console.log(`[multi] DRY RUN — re-run with --apply to write.`);
 
