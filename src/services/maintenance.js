@@ -16,10 +16,12 @@
 //
 // Phase frequency:
 //   Some phases (resolve, photos, reviews, descriptions, osm) run every
-//   tick. Others (tripadvisor, socials, opmRating) only run when the
-//   current UTC hour matches the phase's scheduled hour — exactly the
-//   pattern the old GitHub workflows had, just collapsed into one
-//   endpoint instead of six.
+//   tick. Others (tripadvisor, socials, opmRating) are flagged `daily`
+//   and run at most once per UTC day — the first tick after midnight UTC
+//   that picks them up fires them. `lastDailyRun` per phase is persisted
+//   to status JSON so a container restart can't reset the schedule
+//   (the previous `gateHour` model lost the entire day's run if a
+//   restart landed outside the 60-min window).
 //
 // Fire-and-forget: the route handler kicks this off and returns 202
 // immediately. cron-job.org has a ~30s response timeout on free tier;
@@ -110,14 +112,12 @@ const MODE_PRESETS = {
     },
 };
 
-// Hour-gated phases — only run on the matching UTC hour, regardless of
-// how often the cron pings us. Same daily schedule the old GitHub
-// workflows had, collapsed into the single maintenance endpoint.
-const HOUR_GATES = {
-    tripadvisor: 2,   // 02:xx UTC (was: cron '30 2 * * *')
-    socials:     3,   // 03:xx UTC (was: cron '0 3 * * *')
-    opmRating:   4,   // 04:xx UTC (was: cron '17 4 * * *')
-};
+// Daily-gated phases are marked with `daily: true` on their PHASES entry
+// below. Restart-resilient: we persist `status.lastDailyRun[phaseName]
+// = YYYY-MM-DD` to disk, so a container restart doesn't reset the
+// schedule (the old `HOUR_GATES` model lost the entire day's run
+// whenever a restart landed outside the gate hour — verified 2026-05-24
+// against TA enricher silent for 72h).
 
 // All phases now run in-process; child_process is no longer used. The
 // fire-and-forget pattern in tryStartMaintenance() means a slow phase
@@ -240,21 +240,21 @@ const PHASES = [
     },
     {
         name: "tripadvisor",
-        gateHour: HOUR_GATES.tripadvisor,
+        daily: true,
         async run(opts) {
             return runTripadvisor({ apply: true, limit: opts.tripadvisor });
         },
     },
     {
         name: "socials",
-        gateHour: HOUR_GATES.socials,
+        daily: true,
         async run(opts) {
             return runSocials({ apply: true, limit: opts.socials });
         },
     },
     {
         name: "opmRating",
-        gateHour: HOUR_GATES.opmRating,
+        daily: true,
         async run() {
             return runOpmRating({ apply: true });
         },
@@ -318,14 +318,26 @@ const PHASES = [
 
 // ─── Orchestrator ───────────────────────────────────────────────────────────
 
-function shouldRunPhase(phase, { force, skip, only, hour }) {
+// Today's UTC date as YYYY-MM-DD — the key we persist for "did the
+// daily phase run yet today?".
+function utcDateKey(d = new Date()) {
+    return d.toISOString().slice(0, 10);
+}
+
+function shouldRunPhase(phase, { force, skip, only, lastDailyRun, today }) {
     // `only` is the strongest filter: when set, ONLY listed phases run.
     // Used by the opm-runner ping that targets just `localizeImages` on
     // Hostinger (the file-writing phase that can't run on Unraid).
     if (only && only.length && !only.includes(phase.name)) return false;
     if (skip && skip.includes(phase.name)) return false;
     if (force && force.includes(phase.name)) return true;
-    if (phase.gateHour != null) return phase.gateHour === hour;
+    // Daily phases: skip if we've already recorded a successful run for
+    // today's UTC date. First tick of the UTC day that picks this phase
+    // up fires it; subsequent ticks within the same UTC day skip it.
+    if (phase.daily) {
+        const last = (lastDailyRun || {})[phase.name];
+        return last !== today;
+    }
     return true;
 }
 
@@ -349,7 +361,12 @@ async function runMaintenance({ mode = "min", force = null, skip = null, only = 
     const preset = MODE_PRESETS[mode] || MODE_PRESETS.min;
     const opts = { ...preset, ...overrides };
     const startedAt = new Date();
-    const hour = startedAt.getUTCHours();
+    const today = utcDateKey(startedAt);
+
+    // Daily-phase bookkeeping: read the persisted map of "last UTC date
+    // this phase ran" from disk so the schedule survives container restarts.
+    const initialStatus = loadStatus();
+    const lastDailyRun = { ...(initialStatus.lastDailyRun || {}) };
 
     const lockState = { mode, startedAt: startedAt.getTime(), pid: process.pid, currentPhase: null };
     writeLock(lockState);
@@ -375,10 +392,12 @@ async function runMaintenance({ mode = "min", force = null, skip = null, only = 
     };
 
     for (const phase of PHASES) {
-        if (!shouldRunPhase(phase, { force, skip, only, hour })) {
+        if (!shouldRunPhase(phase, { force, skip, only, lastDailyRun, today })) {
             const reason = only && only.length
                 ? `not in only=[${only.join(",")}]`
-                : "not scheduled this hour";
+                : phase.daily
+                    ? `already ran today (${lastDailyRun[phase.name]})`
+                    : "skipped";
             phaseResults.push({ name: phase.name, skipped: true, reason });
             persistProgress();
             continue;
@@ -402,6 +421,12 @@ async function runMaintenance({ mode = "min", force = null, skip = null, only = 
             durationMs: Date.now() - phaseStart,
             ...result,
         });
+        // Mark daily phases as run for today only on a non-error outcome.
+        // Errors / hard failures shouldn't burn the day's slot — next tick
+        // gets another shot.
+        if (phase.daily && result && result.ok !== false) {
+            lastDailyRun[phase.name] = today;
+        }
         persistProgress();
         // Never abort the chain — Hostinger MySQL flaps, third-party APIs
         // blip, next cron tick retries. Same continue-on-error
@@ -420,6 +445,7 @@ async function runMaintenance({ mode = "min", force = null, skip = null, only = 
 
     const status = loadStatus();
     status.runs = [run, ...(status.runs || []).filter(r => !r.inFlight)].slice(0, 20);
+    status.lastDailyRun = lastDailyRun;
     saveStatus(status);
     clearLock();
 
