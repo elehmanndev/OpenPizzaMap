@@ -17,7 +17,6 @@
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:seed": "node prisma/seed.js",
     "users:backfill": "node scripts/backfills/backfill-usernames.js",
-    "seed:city-icons": "node scripts/backfills/seed-city-icons.js",
     "admin:password": "node scripts/admin/set-admin-password.js",
     "sitemap:build": "node scripts/deploy/build-sitemap.js",
     "landing:recompute": "node scripts/backfills/recompute-landing.js",

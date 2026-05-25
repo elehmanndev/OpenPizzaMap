@@ -36,11 +36,7 @@ model Place {
   name          String
   addressLine   String
   city          String
-  region        String?     // Province / Comunidad — populated by enricher
-                            // from Google Places administrative_area_level_2.
-                            // Used by the city-hub metro view (Tier 2:
-                            // "near {city}") to match places in the same
-                            // admin region as the landing-city.
+  region        String?
   postalCode    String?
   country       String
   lat           Decimal     @db.Decimal(10, 7)
@@ -105,12 +101,6 @@ model Place {
   // filter. Null = never scraped (eligible for first-ever scrape);
   // older than 365 days = eligible for refresh.
   galleryLastScrapedAt DateTime?
-  // AI-generated "Pizza Lovers say" summary — distilled from external
-  // reviews by the enricher. Refresh schedule: regenerate when review
-  // count drifts >10% or summary is older than 6 months. Stored as
-  // plain text (no HTML); the render path wraps it in paragraph tags.
-  aiReviewSummary    String?  @db.Text
-  aiReviewSummaryAt  DateTime?
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   styles        PlaceStyle[]
@@ -169,11 +159,6 @@ model Visit {
   userId    Int
   placeId   Int
   createdAt DateTime @default(now())
-  // User-supplied month-precision "when did you actually visit". Drives
-  // the passport-stamp date display + future time-based discovery
-  // ("places visited in 2026"). Null fallback to createdAt so legacy
-  // rows still render a date.
-  visitedAt DateTime?
 
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   place     Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
@@ -217,11 +202,6 @@ model Review {
   isVisible Boolean  @default(true)     // moderation hatch
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  // User-supplied month-precision "when did you actually visit" — same
-  // semantics as Visit.visitedAt. The review modal will capture this
-  // alongside the 4 category scores so the date in the review card
-  // reflects the visit, not the write moment.
-  visitedAt DateTime?
 
   place     Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -257,22 +237,6 @@ model City {
   seoTitle      String?
   seoDescription String? @db.VarChar(200)
   isVisible     Boolean  @default(false)
-  // Stamp icon slug — drives the passport-stamp illustration on the
-  // /me visited section + city-page hero. Two formats:
-  //   "svg:colosseum"          → renders /public/img/stamps/colosseum.svg
-  //   "mingcute:tower-2-line"  → renders via iconify-icon web component
-  // Null = falls through to category-based fallback in render code.
-  iconSlug      String?  @db.VarChar(80)
-  // Geo + metro grouping for the city-hub "Near {city}" Tier 2 query.
-  // lat/lng are the city centroid (geocoded once via Nominatim).
-  // metroRadiusKm overrides the default 40km when null; tuneable per
-  // city via admin UI for outliers (Naples = 60km to grab Caiazzo).
-  // region holds the canonical admin_level_2 string that places in
-  // this city report — used for Tier 2 region-match alongside radius.
-  lat           Float?
-  lng           Float?
-  region        String?
-  metroRadiusKm Float?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 

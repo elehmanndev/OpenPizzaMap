@@ -68,8 +68,3 @@ data/
 # Screenshots and reference images dropped at the repo root. Keeps
 # public/uploads/places/*.png (committed deliberately) untouched.
 /*.png
-
-# stamp-icon pipeline (one-off tools, not committed)
-docs/trace-tool/
-docs/svg-from-png/
-docs/source-icons/
