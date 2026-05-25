@@ -37,7 +37,19 @@ const path = require("path");
 const { spawnSync } = require("child_process");
 const { prisma, ROOT } = require("../lib/bootstrap");
 
-const PLACES_DIR = path.join(ROOT, "public", "uploads", "places");
+// Mirror src/app.js's uploads-serving logic: write to the persistent dir
+// when it exists (Hostinger), fall back to public/uploads for local dev.
+// Without this, gallery photos write to public/uploads/places/<slug>/ which
+// Hostinger's deploy pipeline wipes on every git push — files are lost
+// within hours, the DB references dead paths, and the live site 404s.
+const PLACES_DIR = (() => {
+    const persistentTarget = process.env.UPLOADS_DIR
+        || path.join(ROOT, "..", "persistent", "uploads");
+    if (fs.existsSync(persistentTarget)) {
+        return path.join(persistentTarget, "places");
+    }
+    return path.join(ROOT, "public", "uploads", "places");
+})();
 const UA = "OpenPizzaMap/0.1 (eric@openpizzamap.com)";
 
 // Slug-based subdirectory per place for SEO. Google image search
