@@ -188,7 +188,15 @@ if (fs.existsSync(uploadsTarget) && !fs.existsSync(uploadsLink)) {
 }
 
 app.use("/public", express.static(path.join(__dirname, "..", "public"), staticOpts));
-app.use("/uploads", express.static(path.join(__dirname, "..", "public", "uploads"), staticOpts));
+// Serve /uploads/* from the persistent dir directly when available — bypasses
+// the per-deploy churn of public/uploads (Hostinger's build pipeline restores
+// public/uploads from .builds/last-source on every deploy, overwriting any
+// symlink we put down). Falls back to public/uploads for local dev where
+// persistent/ doesn't exist.
+const uploadsServePath = fs.existsSync(uploadsTarget)
+    ? uploadsTarget
+    : path.join(__dirname, "..", "public", "uploads");
+app.use("/uploads", express.static(uploadsServePath, staticOpts));
 
 // Health endpoint. Always mounted (even in maintenance mode) so external
 // monitoring can distinguish "intentionally down" from "actually broken".
