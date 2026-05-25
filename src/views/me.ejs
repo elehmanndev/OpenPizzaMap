@@ -164,14 +164,10 @@ function wishlistCard(fav) {
 
   <!-- ─── Profile header · avatar + identity + inline counts ─────── -->
   <section class="profile-header profile-header--v2">
-    <div class="profile-avatar" data-profile-avatar>
+    <div class="profile-avatar">
       ${account.avatarUrl
-          ? `<img src="${escapeAttr(account.avatarUrl)}" alt="" referrerpolicy="no-referrer" data-profile-avatar-img />`
-          : `<span class="profile-avatar-initials" data-profile-avatar-initials>${escapeHtml(initials)}</span>`}
-      <label class="profile-avatar-edit" title="Change profile picture">
-        <span class="material-symbols-rounded" aria-hidden="true">photo_camera</span>
-        <input type="file" name="avatar" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" data-profile-avatar-input hidden />
-      </label>
+          ? `<img src="${escapeAttr(account.avatarUrl)}" alt="" referrerpolicy="no-referrer" />`
+          : `<span class="profile-avatar-initials">${escapeHtml(initials)}</span>`}
     </div>
     <div class="profile-identity">
       <h1 class="profile-name">${escapeHtml(account.displayName || account.username || "Pizza fan")}</h1>
@@ -347,7 +343,7 @@ function wishlistCard(fav) {
     margin: 0 -4px;
     scroll-behavior: smooth;
   }
-  .opm-stamps-rail > * { flex: 0 0 168px; scroll-snap-align: start; }
+  .opm-stamps-rail > * { flex: 0 0 150px; scroll-snap-align: start; }
   .opm-stamps-rail::-webkit-scrollbar { display: none; }
   .opm-stamps-rail { scrollbar-width: none; }
 
@@ -358,16 +354,16 @@ function wishlistCard(fav) {
     display: block;
   }
   .opm-stamp {
-    width: 144px;
-    height: 144px;
+    width: 130px;
+    height: 130px;
     border-radius: 50%;
-    border: 3.5px solid currentColor;
+    border: 3px solid currentColor;
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 11px;
+    padding: 9px;
     margin: 0 auto 10px;
     background: transparent;
     opacity: 0.92;
@@ -393,7 +389,7 @@ function wishlistCard(fav) {
   }
   .opm-stamp__city {
     font-family: 'Outfit', sans-serif;
-    font-size: 14px;
+    font-size: 12.5px;
     font-weight: 900;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -417,17 +413,17 @@ function wishlistCard(fav) {
     opacity: 0.75;
   }
   .opm-stamp__icon {
-    width: 46px;
-    height: 46px;
-    margin: 4px 0 2px;
+    width: 40px;
+    height: 40px;
+    margin: 3px 0 2px;
     color: currentColor;
     display: inline-block;
   }
   iconify-icon.opm-stamp__icon {
-    font-size: 56px;
+    font-size: 48px;
     line-height: 1;
-    width: 56px;
-    height: 56px;
+    width: 48px;
+    height: 48px;
     margin: -2px 0;
   }
   .opm-stamp__icon--svg {
@@ -496,7 +492,7 @@ function wishlistCard(fav) {
   .opm-reviews-rail::-webkit-scrollbar { display: none; }
   .opm-reviews-rail { scrollbar-width: none; }
   .opm-review-card {
-    flex: 0 0 250px;
+    flex: 0 0 218px;
     scroll-snap-align: start;
     padding: 14px 18px 16px 16px;
     text-decoration: none;
@@ -592,7 +588,7 @@ function wishlistCard(fav) {
       padding-left: 4px;
       padding-right: 4px;
     }
-    .opm-wish-rail > * { flex: 0 0 220px; scroll-snap-align: start; }
+    .opm-wish-rail > * { flex: 0 0 218px; scroll-snap-align: start; }
   }
   .opm-wish-rail::-webkit-scrollbar { display: none; }
   .opm-wish-rail { scrollbar-width: none; }
@@ -710,43 +706,6 @@ function wishlistCard(fav) {
       });
     }
 
-    // Avatar upload. Single hidden <input type=file> next to the avatar;
-    // the camera icon label triggers it. On change → POST multipart to
-    // /api/auth/avatar → swap the image in place + cache-bust.
-    const avatarInput = document.querySelector("[data-profile-avatar-input]");
-    const avatarBox = document.querySelector("[data-profile-avatar]");
-    if (avatarInput && avatarBox) {
-      avatarInput.addEventListener("change", async () => {
-        const file = avatarInput.files && avatarInput.files[0];
-        if (!file) return;
-        avatarBox.classList.add("is-uploading");
-        try {
-          const fd = new FormData();
-          fd.append("avatar", file);
-          const resp = await fetch("/api/auth/avatar", { method: "POST", body: fd });
-          const data = await resp.json().catch(() => ({}));
-          if (!resp.ok || data.ok === false) {
-            alert(data.error || "Couldn't upload that picture.");
-            return;
-          }
-          let img = avatarBox.querySelector("[data-profile-avatar-img]");
-          if (!img) {
-            avatarBox.querySelectorAll("[data-profile-avatar-initials]").forEach((n) => n.remove());
-            img = document.createElement("img");
-            img.setAttribute("data-profile-avatar-img", "");
-            img.setAttribute("referrerpolicy", "no-referrer");
-            img.alt = "";
-            avatarBox.insertBefore(img, avatarBox.firstChild);
-          }
-          img.src = data.avatarUrl;
-        } catch (err) {
-          alert("Upload failed. Try again.");
-        } finally {
-          avatarBox.classList.remove("is-uploading");
-          avatarInput.value = "";
-        }
-      });
-    }
   })();
 </script>
 ` }) %>

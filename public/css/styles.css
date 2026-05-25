@@ -3561,33 +3561,6 @@ a.place-review:hover {
   color: #b8424d;
   letter-spacing: -0.5px;
 }
-/* Tiny camera badge that overlays the bottom-right of the avatar and
-   triggers the hidden <input type=file>. Clicking anywhere on the
-   label dispatches a click on the input. */
-.profile-avatar-edit {
-  position: absolute;
-  right: -2px;
-  bottom: -2px;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: var(--c-accent);
-  color: #fff;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  border: 2px solid #fff;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
-  transition: background 120ms ease, transform 80ms ease;
-}
-.profile-avatar-edit:hover { background: var(--c-accent-strong); }
-.profile-avatar-edit:active { transform: scale(0.92); }
-.profile-avatar-edit .material-symbols-rounded {
-  font-size: 14px;
-  font-variation-settings: 'wght' 600;
-}
-.profile-avatar.is-uploading { opacity: 0.7; pointer-events: none; }
 .profile-identity {
   min-width: 0;
 }

@@ -1,0 +1,524 @@
+<%
+const initials = (account.displayName || account.username || "?")
+    .trim()
+    .split(/\s+/)
+    .map((w) => w[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+%>
+<%- include("layout", { title: "Settings", user, leaflet: false, bodyClass: "settings-page", body: String.raw`
+<section class="settings-wrap">
+  <header class="settings-head">
+    <h1 class="settings-title">Settings</h1>
+    <p class="settings-sub">Edit your profile, preferences and account.</p>
+  </header>
+
+  <!-- ─── Profile card · avatar + display name + username ───────────── -->
+  <div class="settings-card">
+    <h2 class="settings-card-title">Profile</h2>
+
+    <div class="settings-avatar-row">
+      <div class="settings-avatar" data-settings-avatar>
+        ${account.avatarUrl
+            ? `<img src="${escapeAttr(account.avatarUrl)}" alt="" referrerpolicy="no-referrer" data-settings-avatar-img />`
+            : `<span class="settings-avatar-initials" data-settings-avatar-initials>${escapeHtml(initials)}</span>`}
+        <label class="settings-avatar-edit" title="Change profile picture">
+          <span class="material-symbols-rounded" aria-hidden="true">photo_camera</span>
+          <input type="file" name="avatar" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" data-settings-avatar-input hidden />
+        </label>
+      </div>
+      <div class="settings-avatar-text">
+        <div class="settings-avatar-label">Profile picture</div>
+        <div class="settings-avatar-hint">JPG, PNG, WebP or GIF. Max 5 MB.</div>
+      </div>
+    </div>
+
+    <form class="settings-form" id="profile-form" novalidate>
+      <label class="settings-row">
+        <span class="settings-label">Display name</span>
+        <input
+          name="displayName"
+          type="text"
+          value="${escapeAttr(account.displayName || "")}"
+          required
+          minlength="1"
+          maxlength="60"
+          class="settings-input"
+        />
+      </label>
+
+      <label class="settings-row">
+        <span class="settings-label">Username</span>
+        <div class="settings-field">
+          <span class="settings-prefix">@</span>
+          <input
+            name="username"
+            type="text"
+            value="${escapeAttr(account.username || "")}"
+            required
+            minlength="3"
+            maxlength="20"
+            pattern="^[A-Za-z0-9_]{3,20}$"
+          />
+        </div>
+        <small class="settings-hint">3–20 chars · letters, numbers, underscores</small>
+      </label>
+
+      <div class="settings-actions">
+        <button type="submit" class="settings-save">Save changes</button>
+        <span class="settings-msg" id="profile-msg" aria-live="polite"></span>
+      </div>
+    </form>
+  </div>
+
+  <!-- ─── Account card · email (read-only) ──────────────────────────── -->
+  <div class="settings-card">
+    <h2 class="settings-card-title">Account</h2>
+    <div class="settings-row">
+      <span class="settings-label">Email</span>
+      <input class="settings-input is-readonly" type="email" value="${escapeAttr(account.email || "")}" readonly />
+      <small class="settings-hint">Linked to your Google account. Can't be changed here.</small>
+    </div>
+  </div>
+
+  <!-- ─── Communications card · newsletter toggle ───────────────────── -->
+  <div class="settings-card">
+    <h2 class="settings-card-title">Communications</h2>
+    <label class="settings-toggle">
+      <input type="checkbox" id="newsletter-toggle" ${account.newsletterOptIn ? "checked" : ""} />
+      <span class="settings-toggle-track"><span class="settings-toggle-thumb"></span></span>
+      <span class="settings-toggle-text">
+        <strong>Newsletter</strong>
+        <small>Occasional emails about new places, features and pizza news.</small>
+      </span>
+    </label>
+    <span class="settings-msg" id="newsletter-msg" aria-live="polite"></span>
+  </div>
+
+  <!-- ─── Danger zone ───────────────────────────────────────────────── -->
+  <div class="settings-card settings-card--danger">
+    <h2 class="settings-card-title">Delete account</h2>
+    <p class="settings-card-help">
+      Removes your profile, reviews, visits and wishlist. This cannot be undone.
+    </p>
+    <button type="button" class="settings-danger" id="delete-account-btn">Delete my account</button>
+  </div>
+</section>
+
+<!-- ─── Delete-confirm modal ───────────────────────────────────────── -->
+<div class="settings-modal" id="delete-modal" hidden>
+  <div class="settings-modal__backdrop" data-close></div>
+  <div class="settings-modal__panel" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
+    <h3 id="delete-modal-title" class="settings-modal__title">Delete your account?</h3>
+    <p class="settings-modal__body">
+      Type <strong>${escapeHtml(account.username || account.email)}</strong> below to confirm. Your reviews, visits and wishlist will be permanently removed.
+    </p>
+    <input type="text" id="delete-confirm-input" class="settings-input" placeholder="${escapeAttr(account.username || account.email)}" autocomplete="off" />
+    <div class="settings-modal__actions">
+      <button type="button" class="settings-modal__cancel" data-close>Cancel</button>
+      <button type="button" class="settings-danger" id="delete-confirm-btn" disabled>Delete account</button>
+    </div>
+    <span class="settings-msg" id="delete-msg" aria-live="polite"></span>
+  </div>
+</div>
+
+<style>
+  .settings-page { background: var(--bg, #faf6ee); }
+  .settings-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 24px 16px 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .settings-head { margin-bottom: 4px; }
+  .settings-title { font-size: 26px; font-weight: 700; margin: 0 0 4px; }
+  .settings-sub { color: var(--ink-mute, #888); margin: 0; font-size: 14px; }
+
+  .settings-card {
+    background: #fff;
+    border: 1px solid var(--line, #e8e6e0);
+    border-radius: 12px;
+    padding: 20px 22px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 1px 2px rgba(0,0,0,.06);
+  }
+  .settings-card-title { font-size: 16px; font-weight: 700; margin: 0 0 6px; }
+  .settings-card-help { color: var(--ink-mute, #888); font-size: 13px; margin: 0 0 14px; }
+
+  /* ─── Avatar uploader ─────────────────────────────────────────── */
+  .settings-avatar-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+  .settings-avatar {
+    position: relative;
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: #f1ead6;
+    flex-shrink: 0;
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 2px #e9bb3c;
+    overflow: hidden;
+  }
+  .settings-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .settings-avatar-initials {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 26px; color: #c9483a;
+  }
+  .settings-avatar-edit {
+    position: absolute;
+    right: -4px; bottom: -4px;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: var(--accent, #c9483a);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,.22);
+    border: 2px solid #fff;
+  }
+  .settings-avatar-edit .material-symbols-rounded { font-size: 16px; }
+  .settings-avatar.is-uploading { opacity: 0.6; }
+  .settings-avatar-text { display: flex; flex-direction: column; }
+  .settings-avatar-label { font-weight: 600; font-size: 14px; }
+  .settings-avatar-hint { color: var(--ink-mute, #888); font-size: 12.5px; margin-top: 2px; }
+
+  /* ─── Form rows ─────────────────────────────────────────────── */
+  .settings-form { display: flex; flex-direction: column; gap: 14px; }
+  .settings-row { display: flex; flex-direction: column; gap: 6px; }
+  .settings-label { font-size: 13px; font-weight: 600; color: #333; }
+  .settings-hint { font-size: 12px; color: var(--ink-mute, #888); }
+
+  .settings-input {
+    border: 1px solid var(--line, #e8e6e0);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 15px;
+    font-family: inherit;
+    background: #fff;
+    color: inherit;
+    outline: none;
+  }
+  .settings-input:focus { border-color: var(--accent, #c9483a); box-shadow: 0 0 0 3px rgba(201,72,58,.15); }
+  .settings-input.is-readonly { background: #faf6ee; color: var(--ink-mute, #888); }
+
+  .settings-field {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid var(--line, #e8e6e0);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+  }
+  .settings-field:focus-within { border-color: var(--accent, #c9483a); box-shadow: 0 0 0 3px rgba(201,72,58,.15); }
+  .settings-prefix {
+    padding: 0 12px;
+    display: flex; align-items: center;
+    background: #faf6ee;
+    color: var(--ink-mute, #888);
+    font-size: 15px;
+    border-right: 1px solid var(--line, #e8e6e0);
+  }
+  .settings-field input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 10px 12px;
+    font-size: 15px;
+    font-family: inherit;
+    background: transparent;
+    color: inherit;
+  }
+
+  .settings-actions { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
+  .settings-save {
+    background: var(--accent, #c9483a);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .settings-save:hover { filter: brightness(0.95); }
+  .settings-save:disabled { opacity: 0.6; cursor: default; }
+
+  .settings-msg { font-size: 13px; color: var(--ink-mute, #888); }
+  .settings-msg.is-ok { color: #2d6e5c; }
+  .settings-msg.is-err { color: var(--accent, #c9483a); }
+
+  /* ─── Toggle ─────────────────────────────────────────────────── */
+  .settings-toggle {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .settings-toggle input { position: absolute; opacity: 0; pointer-events: none; }
+  .settings-toggle-track {
+    flex: 0 0 44px;
+    width: 44px; height: 24px;
+    background: #d8d4ca;
+    border-radius: 14px;
+    position: relative;
+    transition: background 0.15s ease;
+    margin-top: 2px;
+  }
+  .settings-toggle-thumb {
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 20px; height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,.18);
+    transition: left 0.15s ease;
+  }
+  .settings-toggle input:checked + .settings-toggle-track {
+    background: var(--accent, #c9483a);
+  }
+  .settings-toggle input:checked + .settings-toggle-track .settings-toggle-thumb {
+    left: 22px;
+  }
+  .settings-toggle-text { display: flex; flex-direction: column; gap: 2px; }
+  .settings-toggle-text strong { font-size: 14px; font-weight: 600; }
+  .settings-toggle-text small { font-size: 12.5px; color: var(--ink-mute, #888); }
+
+  /* ─── Danger zone ───────────────────────────────────────────── */
+  .settings-card--danger { border-color: #e9c9c5; }
+  .settings-card--danger .settings-card-title { color: var(--accent, #c9483a); }
+  .settings-danger {
+    background: #fff;
+    color: var(--accent, #c9483a);
+    border: 1px solid var(--accent, #c9483a);
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .settings-danger:hover:not(:disabled) { background: var(--accent, #c9483a); color: #fff; }
+  .settings-danger:disabled { opacity: 0.45; cursor: default; }
+
+  /* ─── Modal ─────────────────────────────────────────────────── */
+  .settings-modal[hidden] { display: none; }
+  .settings-modal {
+    position: fixed; inset: 0;
+    z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px;
+  }
+  .settings-modal__backdrop {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,.45);
+  }
+  .settings-modal__panel {
+    position: relative;
+    background: #fff;
+    border-radius: 14px;
+    padding: 22px 24px 18px;
+    max-width: 440px;
+    width: 100%;
+    box-shadow: 0 20px 50px rgba(0,0,0,.25);
+  }
+  .settings-modal__title { margin: 0 0 8px; font-size: 18px; font-weight: 700; }
+  .settings-modal__body { margin: 0 0 14px; font-size: 14px; color: #444; line-height: 1.45; }
+  .settings-modal__actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 14px; }
+  .settings-modal__cancel {
+    background: transparent;
+    color: #555;
+    border: 1px solid var(--line, #e8e6e0);
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .settings-modal__cancel:hover { background: #faf6ee; }
+</style>
+
+<script>
+  (function () {
+    const profileForm = document.getElementById("profile-form");
+    const profileMsg = document.getElementById("profile-msg");
+    const nameInput = profileForm.querySelector("input[name='displayName']");
+    const usernameInput = profileForm.querySelector("input[name='username']");
+    const initialName = nameInput.value;
+    const initialUsername = usernameInput.value;
+
+    profileForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      profileMsg.className = "settings-msg";
+      profileMsg.textContent = "";
+      const name = nameInput.value.trim();
+      const username = usernameInput.value.trim();
+      const nameChanged = name !== initialName;
+      const userChanged = username !== initialUsername;
+      if (!nameChanged && !userChanged) { profileMsg.textContent = "No changes."; return; }
+      if (!profileForm.checkValidity()) {
+        profileMsg.className = "settings-msg is-err";
+        profileMsg.textContent = "Check the highlighted fields.";
+        return;
+      }
+      try {
+        if (userChanged) {
+          const r = await fetch("/api/auth/set-username", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username }),
+          });
+          const d = await r.json().catch(() => ({}));
+          if (!r.ok || d.ok === false) {
+            profileMsg.className = "settings-msg is-err";
+            profileMsg.textContent = typeof d.error === "string" ? d.error : "Username save failed.";
+            return;
+          }
+        }
+        if (nameChanged) {
+          const r = await fetch("/api/auth/profile", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ displayName: name }),
+          });
+          const d = await r.json().catch(() => ({}));
+          if (!r.ok || d.ok === false) {
+            profileMsg.className = "settings-msg is-err";
+            profileMsg.textContent = typeof d.error === "string" ? d.error : "Name save failed.";
+            return;
+          }
+        }
+        profileMsg.className = "settings-msg is-ok";
+        profileMsg.textContent = "Saved.";
+        setTimeout(() => location.reload(), 600);
+      } catch (_) {
+        profileMsg.className = "settings-msg is-err";
+        profileMsg.textContent = "Network error.";
+      }
+    });
+
+    // ── Avatar uploader (moved from /me) ──
+    const avatarInput = document.querySelector("[data-settings-avatar-input]");
+    const avatarBox = document.querySelector("[data-settings-avatar]");
+    if (avatarInput && avatarBox) {
+      avatarInput.addEventListener("change", async () => {
+        const file = avatarInput.files && avatarInput.files[0];
+        if (!file) return;
+        avatarBox.classList.add("is-uploading");
+        try {
+          const fd = new FormData();
+          fd.append("avatar", file);
+          const resp = await fetch("/api/auth/avatar", { method: "POST", body: fd });
+          const data = await resp.json().catch(() => ({}));
+          if (!resp.ok || data.ok === false) {
+            alert(data.error || "Couldn't upload that picture.");
+            return;
+          }
+          let img = avatarBox.querySelector("[data-settings-avatar-img]");
+          if (!img) {
+            avatarBox.querySelectorAll("[data-settings-avatar-initials]").forEach((n) => n.remove());
+            img = document.createElement("img");
+            img.setAttribute("data-settings-avatar-img", "");
+            img.setAttribute("referrerpolicy", "no-referrer");
+            img.alt = "";
+            avatarBox.insertBefore(img, avatarBox.firstChild);
+          }
+          img.src = data.avatarUrl;
+        } catch (_) {
+          alert("Upload failed. Try again.");
+        } finally {
+          avatarBox.classList.remove("is-uploading");
+          avatarInput.value = "";
+        }
+      });
+    }
+
+    // ── Newsletter toggle ──
+    const nl = document.getElementById("newsletter-toggle");
+    const nlMsg = document.getElementById("newsletter-msg");
+    if (nl) {
+      nl.addEventListener("change", async () => {
+        nlMsg.className = "settings-msg";
+        nlMsg.textContent = "";
+        try {
+          const r = await fetch("/api/auth/profile", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ newsletterOptIn: nl.checked }),
+          });
+          const d = await r.json().catch(() => ({}));
+          if (!r.ok || d.ok === false) {
+            nl.checked = !nl.checked;
+            nlMsg.className = "settings-msg is-err";
+            nlMsg.textContent = typeof d.error === "string" ? d.error : "Save failed.";
+            return;
+          }
+          nlMsg.className = "settings-msg is-ok";
+          nlMsg.textContent = nl.checked ? "Subscribed." : "Unsubscribed.";
+          setTimeout(() => { nlMsg.textContent = ""; }, 1800);
+        } catch (_) {
+          nl.checked = !nl.checked;
+          nlMsg.className = "settings-msg is-err";
+          nlMsg.textContent = "Network error.";
+        }
+      });
+    }
+
+    // ── Delete account modal ──
+    const modal = document.getElementById("delete-modal");
+    const openBtn = document.getElementById("delete-account-btn");
+    const confirmBtn = document.getElementById("delete-confirm-btn");
+    const confirmInput = document.getElementById("delete-confirm-input");
+    const expected = confirmInput.getAttribute("placeholder") || "";
+    const delMsg = document.getElementById("delete-msg");
+
+    function openModal() {
+      modal.hidden = false;
+      confirmInput.value = "";
+      confirmBtn.disabled = true;
+      delMsg.textContent = "";
+      setTimeout(() => confirmInput.focus(), 30);
+    }
+    function closeModal() { modal.hidden = true; }
+
+    openBtn.addEventListener("click", openModal);
+    modal.querySelectorAll("[data-close]").forEach((el) => el.addEventListener("click", closeModal));
+    confirmInput.addEventListener("input", () => {
+      confirmBtn.disabled = confirmInput.value.trim().toLowerCase() !== expected.toLowerCase();
+    });
+    confirmBtn.addEventListener("click", async () => {
+      delMsg.className = "settings-msg";
+      delMsg.textContent = "";
+      confirmBtn.disabled = true;
+      try {
+        const r = await fetch("/api/auth/account", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ confirm: confirmInput.value.trim() }),
+        });
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok || d.ok === false) {
+          delMsg.className = "settings-msg is-err";
+          delMsg.textContent = typeof d.error === "string" ? d.error : "Delete failed.";
+          confirmBtn.disabled = false;
+          return;
+        }
+        location.href = "/";
+      } catch (_) {
+        delMsg.className = "settings-msg is-err";
+        delMsg.textContent = "Network error.";
+        confirmBtn.disabled = false;
+      }
+    });
+  })();
+</script>
+` }) %>

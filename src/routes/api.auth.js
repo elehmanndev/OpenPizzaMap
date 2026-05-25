@@ -180,4 +180,97 @@ async function handleAvatar(req, res) {
     return res.json({ ok: true, avatarUrl: updated.avatarUrl });
 }
 
+// ─── PATCH /api/auth/profile — edit displayName + newsletter opt-in ──
+//
+// Settings page sends a partial body. Both fields are optional; only
+// supplied keys are written. Returns the updated user shape so the
+// client can refresh the session-derived UI without a full reload.
+router.patch("/profile", async (req, res) => {
+    try {
+        if (!req.session || !req.session.user) {
+            return res.status(401).json({ ok: false, error: "Sign in required" });
+        }
+        const schema = z.object({
+            displayName: z.string().trim().min(1, "Name is required").max(60).optional(),
+            newsletterOptIn: z.boolean().optional(),
+        });
+        const parsed = schema.safeParse(req.body || {});
+        if (!parsed.success) return res.status(400).json({ ok: false, error: parsed.error.flatten() });
+        const data = parsed.data;
+        if (Object.keys(data).length === 0) {
+            return res.status(400).json({ ok: false, error: "Nothing to update" });
+        }
+        const updated = await prisma.user.update({
+            where: { id: req.session.user.id },
+            data,
+            select: { id: true, email: true, displayName: true, username: true, role: true, avatarUrl: true, newsletterOptIn: true },
+        });
+        req.session.user = {
+            id: updated.id,
+            email: updated.email,
+            displayName: updated.displayName,
+            username: updated.username,
+            role: updated.role,
+            avatarUrl: updated.avatarUrl,
+        };
+        return res.json({ ok: true, user: updated });
+    } catch (err) {
+        console.error("Profile patch failed:", err);
+        return res.status(500).json({ ok: false, error: "Update failed" });
+    }
+});
+
+// ─── DELETE /api/auth/account — permanently remove the account ──────
+//
+// Cascade rules (per prisma/schema.prisma):
+//   Visit / Favorite / Review → onDelete: Cascade (handled by FK)
+//   Submission.userId is NOT NULL — wipe the user's own submissions
+//   Submission.reviewedByUserId is nullable — null it out so moderation
+//     history survives without the dangling reference
+//
+// Required body: { confirm: "<current username or email>" } — the client
+// asks the user to type their handle. Belt-and-braces against accidental
+// double-clicks on the danger button.
+router.delete("/account", async (req, res) => {
+    try {
+        if (!req.session || !req.session.user) {
+            return res.status(401).json({ ok: false, error: "Sign in required" });
+        }
+        const userId = req.session.user.id;
+        const me = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { id: true, username: true, email: true },
+        });
+        if (!me) return res.status(404).json({ ok: false, error: "Account not found" });
+
+        const expected = me.username || me.email;
+        const supplied = String((req.body && req.body.confirm) || "").trim();
+        if (!supplied || supplied.toLowerCase() !== expected.toLowerCase()) {
+            return res.status(400).json({ ok: false, error: "Confirmation does not match" });
+        }
+
+        await prisma.$transaction([
+            prisma.submission.updateMany({
+                where: { reviewedByUserId: userId },
+                data: { reviewedByUserId: null },
+            }),
+            prisma.submission.deleteMany({ where: { userId } }),
+            prisma.user.delete({ where: { id: userId } }),
+        ]);
+
+        // Best-effort avatar cleanup — failures here shouldn't block account deletion.
+        try {
+            const avatarPath = path.join(process.cwd(), "public", "uploads", "avatars", `${userId}.jpg`);
+            await fs.unlink(avatarPath);
+        } catch (_) { /* file may not exist */ }
+
+        req.session.destroy(() => {
+            res.json({ ok: true });
+        });
+    } catch (err) {
+        console.error("Account delete failed:", err);
+        return res.status(500).json({ ok: false, error: "Delete failed" });
+    }
+});
+
 module.exports = router;

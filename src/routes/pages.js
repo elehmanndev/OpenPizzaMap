@@ -183,6 +183,14 @@ router.get("/set-username", requireAuth, async (req, res) => {
     res.render("set_username", { user: req.session.user || null });
 });
 
+router.get("/settings", requireAuth, async (req, res) => {
+    const account = await prisma.user.findUnique({
+        where: { id: req.session.user.id },
+        select: { id: true, email: true, displayName: true, username: true, avatarUrl: true, newsletterOptIn: true },
+    });
+    res.render("settings", { user: req.session.user || null, account });
+});
+
 router.post("/logout", (req, res) => req.session.destroy(() => res.redirect("/")));
 
 router.get("/about", async (req, res) => {
