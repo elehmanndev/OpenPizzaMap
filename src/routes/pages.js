@@ -53,7 +53,6 @@ router.get("/place/:id/:slug?", async (req, res) => {
         },
     });
     if (!place) return res.status(404).send("Not found");
-    const id = place.id;
     // If the slug in the URL is wrong/missing/outdated, 301 to canonical.
     // Skips the redirect for not-yet-public creator-bypass rows so the chat
     // intake's success redirect (which knows the id but maybe not the slug)
