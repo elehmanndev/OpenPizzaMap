@@ -12,19 +12,9 @@ const memberSince = account.createdAt
     ? new Date(account.createdAt).toLocaleDateString(undefined, { month: "short", year: "numeric" })
     : "";
 
-function placeCard(place, meta) {
-    const where = [place.city, place.country].filter(Boolean).join(", ");
-    return `
-      <a class="profile-place" href="/place/${place.id}">
-        <div class="profile-place-name">${escapeHtml(place.name)}</div>
-        ${where ? `<div class="profile-place-where">${escapeHtml(where)}</div>` : ""}
-        ${meta ? `<div class="profile-place-meta">${meta}</div>` : ""}
-      </a>
-    `;
-}
-
+// ────────────────────────────────────────────────────────────────
 // Passport-stamp card for the Visited section. Each stamp shows:
-//   city name · landmark icon · country · month/year date
+//   city name · landmark icon · country
 // Icon source comes from City.iconSlug (svg:<file> or mingcute:<name>);
 // missing → falls back to the generic pizza-slice stamp. Ink color is
 // picked deterministically from an 8-colour palette via the city slug
@@ -32,6 +22,7 @@ function placeCard(place, meta) {
 //
 // See docs/preview-traced-stamps.html for the visual reference and
 // public/img/stamps/ for the 19 traced SVGs that ship with this view.
+// ────────────────────────────────────────────────────────────────
 const STAMP_INK_PALETTE = [
     "#c9483a", // pizza red
     "#1e3a8a", // deep navy
@@ -49,8 +40,6 @@ function pickInkColor(citySlug) {
     return STAMP_INK_PALETTE[Math.abs(h) % STAMP_INK_PALETTE.length];
 }
 function pickTilt(citySlug, idx) {
-    // Pseudo-random tilt 3-7° in either direction, deterministic so the
-    // rail doesn't reshuffle on every render.
     const key = String(citySlug || idx);
     let h = 0;
     for (let i = 0; i < key.length; i++) h = ((h * 17) + key.charCodeAt(i)) | 0;
@@ -59,18 +48,12 @@ function pickTilt(citySlug, idx) {
 }
 function stampIconHtml(iconSlug) {
     if (!iconSlug) {
-        // No City row or no iconSlug — render the generic pizza-slice
-        // fallback (mingcute). Always visible so a stamp is never empty.
         return `<iconify-icon class="opm-stamp__icon" icon="mingcute:pizza-line"></iconify-icon>`;
     }
     if (iconSlug.startsWith("svg:")) {
         const file = iconSlug.slice(4);
-        // Inline <img> referencing the static SVG; CSS mask in opm-stamp__icon
-        // applies the ink colour to the silhouette.
         return `<span class="opm-stamp__icon opm-stamp__icon--svg" style="--stamp-icon: url('/img/stamps/${file}.svg')"></span>`;
     }
-    // mingcute:* / hugeicons:* / tabler:* etc. — Iconify web component
-    // resolves the slug at render time.
     return `<iconify-icon class="opm-stamp__icon" icon="${escapeAttr(iconSlug)}"></iconify-icon>`;
 }
 function stampMonthYear(d) {
@@ -99,23 +82,75 @@ function stampCard(place, when, idx) {
     `;
 }
 
-function fmtDate(d) {
+// ────────────────────────────────────────────────────────────────
+// Review card for the "My reviews" rail. Inspired by Airbnb host
+// reviews — place photo as the avatar, name + city, date, rating
+// dots, review text truncated to ~7 lines.
+// ────────────────────────────────────────────────────────────────
+function fmtMonthYear(d) {
     if (!d) return "";
     const date = new Date(d);
-    return date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+    return date.toLocaleDateString(undefined, { month: "short", year: "numeric" });
 }
-
-function stars(value) {
+function ratingDots(value) {
     const v = Math.max(0, Math.min(5, Number(value) || 0));
     const full = Math.floor(v);
-    const half = v - full >= 0.5 ? 1 : 0;
-    const empty = 5 - full - half;
-    return "★".repeat(full) + (half ? "½" : "") + "☆".repeat(empty);
+    const half = (v - full) >= 0.5;
+    let html = "";
+    for (let i = 0; i < full; i++) html += "●";
+    if (half && full < 5) { html += `<span class="opm-dots--half">●</span>`; }
+    const remaining = 5 - full - (half ? 1 : 0);
+    for (let i = 0; i < remaining; i++) html += `<span class="opm-dots--empty">●</span>`;
+    return html;
+}
+function reviewCard(r) {
+    const avg = ((Number(r.pizza) + Number(r.local) + Number(r.servicio) + Number(r.precio)) / 4);
+    const where = [r.place.city, r.place.country].filter(Boolean).join(", ");
+    const photo = r.place.heroImageUrl || null;
+    return `
+      <a class="opm-review-card" href="/place/${r.place.id}">
+        <div class="opm-review__head">
+          ${photo
+            ? `<span class="opm-review__avatar" style="background-image:url('${escapeAttr(photo)}')"></span>`
+            : `<span class="opm-review__avatar opm-review__avatar--empty">${escapeHtml((r.place.name || "?")[0].toUpperCase())}</span>`}
+          <div class="opm-review__id">
+            <span class="opm-review__name">${escapeHtml(r.place.name)}</span>
+            ${where ? `<span class="opm-review__where">${escapeHtml(where)}</span>` : ""}
+          </div>
+        </div>
+        <div class="opm-review__dots">${ratingDots(avg)}</div>
+        <div class="opm-review__date">${escapeHtml(fmtMonthYear(r.visitedAt || r.createdAt))}</div>
+        ${r.comment ? `<p class="opm-review__text">${escapeHtml(r.comment)}</p>` : `<p class="opm-review__text opm-review__text--muted"><em>No comment</em></p>`}
+      </a>
+    `;
+}
+
+// ────────────────────────────────────────────────────────────────
+// Wishlist scard — photo on top + name + city + saved-date pill.
+// ────────────────────────────────────────────────────────────────
+function wishlistCard(fav) {
+    const place = fav.place;
+    const photo = place.heroImageUrl;
+    const where = [place.city, place.country].filter(Boolean).join(", ");
+    return `
+      <a class="opm-wish-card" href="/place/${place.id}">
+        <div class="opm-wish__img" ${photo ? `style="background-image:url('${escapeAttr(photo)}')"` : ""}>
+          <span class="opm-wish__fav" aria-hidden="true">♥</span>
+          <span class="opm-wish__saved">Saved ${escapeHtml(fmtMonthYear(fav.createdAt))}</span>
+        </div>
+        <div class="opm-wish__body">
+          <div class="opm-wish__name">${escapeHtml(place.name)}</div>
+          ${where ? `<div class="opm-wish__where">${escapeHtml(where)}</div>` : ""}
+        </div>
+      </a>
+    `;
 }
 %>
 <%- include("layout", { title: "My profile", user, leaflet: false, bodyClass: "profile-page", body: String.raw`
-<section class="profile-wrap">
-  <section class="profile-header">
+<section class="profile-wrap profile-wrap--v2">
+
+  <!-- ─── Profile header · avatar + identity + inline counts ─────── -->
+  <section class="profile-header profile-header--v2">
     <div class="profile-avatar" data-profile-avatar>
       ${account.avatarUrl
           ? `<img src="${escapeAttr(account.avatarUrl)}" alt="" referrerpolicy="no-referrer" data-profile-avatar-img />`
@@ -130,40 +165,27 @@ function stars(value) {
       ${account.username ? `<div class="profile-username">@${escapeHtml(account.username)}</div>` : ""}
       ${memberSince ? `<div class="profile-since">Member since ${escapeHtml(memberSince)}</div>` : ""}
     </div>
+    <div class="profile-counts">
+      <a class="profile-count" href="#section-visited">
+        <span class="profile-count__num">${counts.been}</span>
+        <span class="profile-count__label">Visited</span>
+      </a>
+      <a class="profile-count" href="#section-reviews">
+        <span class="profile-count__num">${counts.reviews}</span>
+        <span class="profile-count__label">Reviews</span>
+      </a>
+      <a class="profile-count" href="#section-wishlist">
+        <span class="profile-count__num">${counts.wishlist}</span>
+        <span class="profile-count__label">Wishlist</span>
+      </a>
+    </div>
   </section>
 
-  <div class="profile-stats">
-    <div class="profile-stat">
-      <span class="profile-stat-num">${counts.been}</span>
-      <span class="profile-stat-label">Visited</span>
-    </div>
-    <div class="profile-stat">
-      <span class="profile-stat-num">${counts.wishlist}</span>
-      <span class="profile-stat-label">Wishlist</span>
-    </div>
-    <div class="profile-stat">
-      <span class="profile-stat-num">${counts.reviews}</span>
-      <span class="profile-stat-label">Reviews</span>
-    </div>
-  </div>
-
-  <nav class="profile-tabs" role="tablist">
-    <button class="profile-tab is-active" role="tab" data-target="tab-wishlist" aria-selected="true">Wishlist · ${counts.wishlist}</button>
-    <button class="profile-tab" role="tab" data-target="tab-been" aria-selected="false">Been there · ${counts.been}</button>
-    <button class="profile-tab" role="tab" data-target="tab-reviews" aria-selected="false">Reviews · ${counts.reviews}</button>
-  </nav>
-
-  <section id="tab-wishlist" class="profile-tabpanel is-active" role="tabpanel">
-    ${wishlist.length
-        ? `<div class="profile-list">${wishlist.map((f) => placeCard(f.place, `Saved ${fmtDate(f.createdAt)}`)).join("")}</div>`
-        : `<div class="profile-empty">
-             <strong>Nothing on your wishlist yet.</strong>
-             <span>Tap the heart on any pizzeria to save it for later.</span>
-             <a class="profile-cta" href="/map">Browse the map</a>
-           </div>`}
-  </section>
-
-  <section id="tab-been" class="profile-tabpanel" role="tabpanel" hidden>
+  <!-- ─── 1. Visited · passport stamps ────────────────────────────── -->
+  <section class="opm-section" id="section-visited">
+    <header class="opm-section__head">
+      <h2 class="opm-section__title">Visited</h2>
+    </header>
     ${beenThere.length
         ? `<div class="opm-stamps-rail">${beenThere.map((b, i) => stampCard(b.place, b.visitedAt, i)).join("")}</div>`
         : `<div class="profile-empty">
@@ -173,22 +195,30 @@ function stars(value) {
            </div>`}
   </section>
 
-  <section id="tab-reviews" class="profile-tabpanel" role="tabpanel" hidden>
+  <!-- ─── 2. My reviews · review cards rail ───────────────────────── -->
+  <section class="opm-section" id="section-reviews">
+    <header class="opm-section__head">
+      <h2 class="opm-section__title">My reviews</h2>
+    </header>
     ${reviews.length
-        ? `<div class="profile-reviews">${reviews.map((r) => `
-            <article class="profile-review">
-              <a class="profile-review-place" href="/place/${r.place.id}">
-                <span class="profile-review-name">${escapeHtml(r.place.name)}</span>
-                <span class="profile-review-where">${escapeHtml([r.place.city, r.place.country].filter(Boolean).join(", "))}</span>
-              </a>
-              <div class="profile-review-stars" aria-label="Pizza ${r.pizza} out of 5">${stars(r.pizza)}</div>
-              ${r.comment ? `<p class="profile-review-comment">${escapeHtml(r.comment)}</p>` : ""}
-              <div class="profile-review-date">${fmtDate(r.createdAt)}</div>
-            </article>
-          `).join("")}</div>`
+        ? `<div class="opm-reviews-rail">${reviews.map(reviewCard).join("")}</div>`
         : `<div class="profile-empty">
              <strong>No reviews yet.</strong>
              <span>Rate a place once you've tried it — your review helps the community.</span>
+           </div>`}
+  </section>
+
+  <!-- ─── 3. Wishlist · saved-place scards ────────────────────────── -->
+  <section class="opm-section" id="section-wishlist">
+    <header class="opm-section__head">
+      <h2 class="opm-section__title">Wishlist</h2>
+    </header>
+    ${wishlist.length
+        ? `<div class="opm-wish-rail">${wishlist.map(wishlistCard).join("")}</div>`
+        : `<div class="profile-empty">
+             <strong>Nothing on your wishlist yet.</strong>
+             <span>Tap the heart on any pizzeria to save it for later.</span>
+             <a class="profile-cta" href="/map">Browse the map</a>
            </div>`}
   </section>
 
@@ -199,12 +229,75 @@ function stars(value) {
   </footer>
 </section>
 
-<!-- Iconify web component for the mingcute:* fallback stamps. Loads
-     on demand per slug, ~3KB, no bundle bloat. Self-defers via async. -->
+<!-- Iconify web component for the mingcute:* fallback stamp icons. -->
 <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js" async></script>
 
 <style>
-  /* ─── Visited section · passport stamps ──────────────────────── */
+  /* ─── Profile header v2 — avatar + identity + counts in one card ─ */
+  .profile-header--v2 {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    flex-wrap: wrap;
+  }
+  .profile-header--v2 .profile-identity { flex: 1; min-width: 200px; }
+  .profile-counts {
+    display: flex;
+    gap: 22px;
+    padding-left: 22px;
+    border-left: 1px solid var(--line, #e8e6e0);
+    flex-shrink: 0;
+  }
+  .profile-count {
+    text-align: center;
+    min-width: 56px;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+  .profile-count__num {
+    display: block;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--accent, #c9483a);
+    line-height: 1;
+  }
+  .profile-count__label {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-mute, #888);
+    margin-top: 5px;
+    font-weight: 500;
+  }
+  @media (max-width: 540px) {
+    .profile-counts {
+      border-left: none;
+      border-top: 1px solid var(--line, #e8e6e0);
+      padding-left: 0;
+      padding-top: 14px;
+      margin-top: 6px;
+      width: 100%;
+      justify-content: space-around;
+    }
+  }
+
+  /* ─── Section chrome ─────────────────────────────────────────────── */
+  .opm-section { margin: 28px 0; }
+  .opm-section__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .opm-section__title {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  /* ─── Visited · passport stamps ─────────────────────────────────── */
   .opm-stamps-rail {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -291,7 +384,6 @@ function stars(value) {
     font-weight: 700;
     opacity: 0.75;
   }
-  /* Icon area — three rendering modes share the same dimensions */
   .opm-stamp__icon {
     width: 46px;
     height: 46px;
@@ -300,7 +392,7 @@ function stars(value) {
     display: inline-block;
   }
   iconify-icon.opm-stamp__icon {
-    font-size: 56px;        /* compensates for source-SVG internal padding */
+    font-size: 56px;
     line-height: 1;
     width: 56px;
     height: 56px;
@@ -311,8 +403,6 @@ function stars(value) {
     -webkit-mask: var(--stamp-icon) center / contain no-repeat;
     mask: var(--stamp-icon) center / contain no-repeat;
   }
-
-  /* Caption below the stamp */
   .opm-stamp__place {
     font-size: 13px;
     font-weight: 600;
@@ -324,28 +414,167 @@ function stars(value) {
     color: var(--ink-mute, #888);
     letter-spacing: 0.04em;
   }
+
+  /* ─── My reviews · carousel of review cards ─────────────────────── */
+  .opm-reviews-rail {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding: 4px 4px 16px;
+    margin: 0 -4px;
+  }
+  .opm-reviews-rail::-webkit-scrollbar { display: none; }
+  .opm-reviews-rail { scrollbar-width: none; }
+  .opm-review-card {
+    flex: 0 0 260px;
+    scroll-snap-align: start;
+    padding: 4px 2px;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+  .opm-review__head {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .opm-review__avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+    background-color: #f1ede4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .opm-review__avatar--empty { background-image: none; }
+  .opm-review__id { display: flex; flex-direction: column; min-width: 0; }
+  .opm-review__name {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .opm-review__where {
+    font-size: 12.5px;
+    color: var(--ink-mute, #888);
+    margin-top: 1px;
+  }
+  .opm-review__dots {
+    color: var(--accent, #c9483a);
+    letter-spacing: -1.5px;
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+  .opm-dots--empty { color: #e1c8c4; }
+  .opm-dots--half  { color: var(--accent, #c9483a); opacity: 0.5; }
+  .opm-review__date {
+    font-size: 12.5px;
+    color: var(--ink-mute, #888);
+    margin-bottom: 8px;
+  }
+  .opm-review__text {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.5;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 7;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .opm-review__text--muted { color: #aaa; }
+
+  /* ─── Wishlist · scards (photo + name + saved pill) ─────────────── */
+  .opm-wish-rail {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  @media (min-width: 720px) {
+    .opm-wish-rail {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding-bottom: 6px;
+      margin: 0 -4px;
+      padding-left: 4px;
+      padding-right: 4px;
+    }
+    .opm-wish-rail > * { flex: 0 0 220px; scroll-snap-align: start; }
+  }
+  .opm-wish-rail::-webkit-scrollbar { display: none; }
+  .opm-wish-rail { scrollbar-width: none; }
+  .opm-wish-card {
+    background: white;
+    border: 1px solid var(--line, #e8e6e0);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+  }
+  .opm-wish__img {
+    aspect-ratio: 4/3;
+    background-size: cover;
+    background-position: center;
+    background-color: #f1ede4;
+    position: relative;
+  }
+  .opm-wish__fav {
+    position: absolute;
+    top: 8px; right: 8px;
+    background: rgba(255,255,255,0.95);
+    border-radius: 50%;
+    width: 30px; height: 30px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--accent, #c9483a);
+    font-size: 14px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.12);
+  }
+  .opm-wish__saved {
+    position: absolute;
+    bottom: 8px; left: 8px;
+    background: rgba(255,255,255,0.95);
+    color: #555;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .opm-wish__body {
+    padding: 10px 11px 12px;
+  }
+  .opm-wish__name {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 3px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .opm-wish__where {
+    font-size: 12px;
+    color: var(--ink-mute, #888);
+  }
 </style>
 
 <script>
   (function () {
-    const tabs = document.querySelectorAll(".profile-tab");
-    const panels = document.querySelectorAll(".profile-tabpanel");
-    tabs.forEach((tab) => {
-      tab.addEventListener("click", () => {
-        const target = tab.getAttribute("data-target");
-        tabs.forEach((t) => {
-          const active = t === tab;
-          t.classList.toggle("is-active", active);
-          t.setAttribute("aria-selected", active ? "true" : "false");
-        });
-        panels.forEach((p) => {
-          const show = p.id === target;
-          p.classList.toggle("is-active", show);
-          if (show) p.removeAttribute("hidden"); else p.setAttribute("hidden", "");
-        });
-      });
-    });
-
     const logoutBtn = document.getElementById("logout-btn");
     if (logoutBtn) {
       logoutBtn.addEventListener("click", async () => {
@@ -375,7 +604,6 @@ function stars(value) {
             alert(data.error || "Couldn't upload that picture.");
             return;
           }
-          // Swap initials → <img>, or update existing <img> src.
           let img = avatarBox.querySelector("[data-profile-avatar-img]");
           if (!img) {
             avatarBox.querySelectorAll("[data-profile-avatar-initials]").forEach((n) => n.remove());

@@ -518,13 +518,13 @@ router.get("/me", requireAuth, async (req, res) => {
         prisma.favorite.findMany({
             where: { userId },
             orderBy: { createdAt: "desc" },
-            include: { place: { select: { id: true, name: true, city: true, country: true, isVisible: true } } },
+            include: { place: { select: { id: true, name: true, city: true, country: true, isVisible: true, heroImageUrl: true } } },
         }),
         prisma.review.findMany({
             where: { userId, isVisible: true },
             orderBy: { createdAt: "desc" },
             take: 10,
-            include: { place: { select: { id: true, name: true, city: true, country: true } } },
+            include: { place: { select: { id: true, name: true, city: true, country: true, heroImageUrl: true } } },
         }),
         prisma.submission.count({ where: { userId } }),
     ]);

@@ -20,49 +20,49 @@ const { prisma } = require("../lib/bootstrap");
 // Mapping lives inline here (not in scripts/data/ — that path is gitignored
 // by the catch-all `data/` rule). If this grows, move to a sibling
 // `city-icons-data.js` in this folder and require it back in.
+// OPM's City.slug column uses English-only names (rome not roma,
+// florence not firenze, naples not napoli, etc.) — confirmed against
+// the live DB 2026-05-25. Any city we don't have a custom landmark
+// SVG for falls back to a MingCute generic at render time.
 const mapping = [
     // ── Italy · landmark-specific (traced from PNGs) ─────────────
-    { country: "IT", slug: "roma",     iconSlug: "svg:colosseum" },
-    { country: "IT", slug: "milano",   iconSlug: "svg:duomo-di-milano" },
-    { country: "IT", slug: "firenze",  iconSlug: "svg:florence" },
+    { country: "IT", slug: "rome",     iconSlug: "svg:colosseum" },
+    { country: "IT", slug: "milan",    iconSlug: "svg:duomo-di-milano" },
+    { country: "IT", slug: "florence", iconSlug: "svg:florence" },
     { country: "IT", slug: "pisa",     iconSlug: "svg:pisa" },
-    { country: "IT", slug: "venezia",  iconSlug: "svg:gondola" },
-    { country: "IT", slug: "torino",   iconSlug: "svg:mole-antonelliana" },
-    { country: "IT", slug: "napoli",   iconSlug: "svg:volcano" },
-    { country: "IT", slug: "pompei",   iconSlug: "svg:temple" },
+    { country: "IT", slug: "venice",   iconSlug: "svg:gondola" },
+    { country: "IT", slug: "turin",    iconSlug: "svg:mole-antonelliana" },
+    { country: "IT", slug: "naples",   iconSlug: "svg:volcano" },
+    { country: "IT", slug: "pompeii",  iconSlug: "svg:temple" },
 
-    // ── Italy · MingCute fallback ────────────────────────────────
+    // ── Italy · MingCute / hugeicons fallback ────────────────────
     { country: "IT", slug: "bologna",  iconSlug: "mingcute:tower-2-line" },
     { country: "IT", slug: "caserta",  iconSlug: "mingcute:palace-line" },
     { country: "IT", slug: "catania",  iconSlug: "svg:volcano" },              // shares Vesuvius/Etna
-    { country: "IT", slug: "genova",   iconSlug: "hugeicons:lighthouse" },
+    { country: "IT", slug: "genoa",    iconSlug: "hugeicons:lighthouse" },
     { country: "IT", slug: "palermo",  iconSlug: "mingcute:church-line" },
     { country: "IT", slug: "sorrento", iconSlug: "mingcute:wave-line" },
     { country: "IT", slug: "salerno",  iconSlug: "mingcute:wave-line" },
     { country: "IT", slug: "bari",     iconSlug: "mingcute:wave-line" },
     { country: "IT", slug: "verona",   iconSlug: "mingcute:tower-line" },
+    { country: "IT", slug: "lecce",    iconSlug: "mingcute:church-line" },
     { country: "IT", slug: "caiazzo",  iconSlug: "mingcute:tree-line" },
 
     // ── Spain · landmark-specific (traced from PNGs) ─────────────
     { country: "ES", slug: "barcelona", iconSlug: "svg:sagrada-familia" },
     { country: "ES", slug: "madrid",    iconSlug: "svg:royal-palace" },
-    { country: "ES", slug: "sevilla",   iconSlug: "svg:giralda" },
-    { country: "ES", slug: "granada",   iconSlug: "svg:alhambra-granada" },
-    { country: "ES", slug: "segovia",   iconSlug: "svg:aqueduct" },
+    { country: "ES", slug: "seville",   iconSlug: "svg:giralda" },
 
     // ── Spain · MingCute fallback ────────────────────────────────
     { country: "ES", slug: "valencia",  iconSlug: "mingcute:wave-line" },
-    { country: "ES", slug: "cordoba",   iconSlug: "mingcute:church-line" },
-    { country: "ES", slug: "malaga",    iconSlug: "mingcute:wave-line" },
     { country: "ES", slug: "bilbao",    iconSlug: "mingcute:building-3-line" },
-    { country: "ES", slug: "toledo",    iconSlug: "tabler:building-fortress" },
 
     // ── Wildcards (traced from PNGs) ─────────────────────────────
     { country: "FR", slug: "paris",    iconSlug: "svg:eiffel-tower" },
     { country: "GB", slug: "london",   iconSlug: "svg:big-ben" },
     { country: "DE", slug: "berlin",   iconSlug: "svg:brandenburg-gate" },
-    { country: "PT", slug: "lisboa",   iconSlug: "svg:belem-tower" },
-    { country: "GR", slug: "athina",   iconSlug: "svg:parthenon" },
+    { country: "PT", slug: "lisbon",   iconSlug: "svg:belem-tower" },
+    { country: "GR", slug: "athens",   iconSlug: "svg:parthenon" },
     { country: "US", slug: "new-york", iconSlug: "svg:statue-of-liberty" },
 ];
 
