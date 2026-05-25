@@ -50,10 +50,15 @@ router.get("/admin/uploads-debug", (req, res) => {
                 const entries = fs.readdirSync(p).slice(0, 12);
                 out.sample = entries;
             } catch (e) { out.listErr = e.message; }
-            // Inner places dir
+            // Inner places dir — count + categorize entries
             try {
-                const places = fs.readdirSync(path.join(p, "places")).slice(0, 12);
-                out.placesSample = places;
+                const entries = fs.readdirSync(path.join(p, "places"), { withFileTypes: true });
+                const dirs = entries.filter((e) => e.isDirectory()).map((e) => e.name);
+                const files = entries.filter((e) => e.isFile()).map((e) => e.name);
+                out.placesDirCount = dirs.length;
+                out.placesFileCount = files.length;
+                out.placesDirsSample = dirs.slice(0, 20);
+                out.placesFilesSample = files.slice(0, 6);
             } catch (e) { out.placesErr = e.message; }
             return out;
         } catch (e) {
