@@ -427,20 +427,36 @@ async function run({ apply = false, log = '/tmp/socials-all.log', limit = null, 
         }
         cohort = parseWeakHits(log);
     }
-    if (limit) cohort = cohort.slice(0, limit);
-    console.log(`[cleanup] ${cohort.length} weak hits to re-verify (apply=${apply})`);
-    if (!cohort.length) { console.log('[cleanup] nothing to do.'); return { ok: true, total: 0 }; }
-
-    // Hydrate place data once
-    const placeIds = [...new Set(cohort.map(c => c.placeId))];
-    const places = await prisma.place.findMany({
-        where: { id: { in: placeIds } },
+    // Hydrate place data once for the full cohort (before applying --limit)
+    // so we can filter out rows where the URL has already been changed since
+    // the source log was written. That filter has to happen BEFORE --limit
+    // is applied — otherwise chunked invocations (loop with --limit=30) keep
+    // hitting the same first-30 rows, instantly skipping the already-done
+    // ones, never reaching cohort row 31+.
+    const fullCohortIds = [...new Set(cohort.map(c => c.placeId))];
+    const allPlaces = await prisma.place.findMany({
+        where: { id: { in: fullCohortIds } },
         select: {
             id: true, name: true, city: true, country: true, phone: true,
             websiteUrl: true, instagramUrl: true, facebookUrl: true,
         },
     });
-    const placeById = new Map(places.map(p => [p.id, p]));
+    const placeById = new Map(allPlaces.map(p => [p.id, p]));
+
+    // Filter cohort to only rows whose current URL still matches the
+    // recorded weak URL. Already-nulled (or replaced) rows fall out here.
+    const needsWork = cohort.filter(hit => {
+        const p = placeById.get(hit.placeId);
+        if (!p) return false;
+        const currentUrl = hit.platform === 'ig' ? p.instagramUrl : p.facebookUrl;
+        return currentUrl === hit.url;
+    });
+    const alreadyDone = cohort.length - needsWork.length;
+    cohort = needsWork;
+
+    if (limit) cohort = cohort.slice(0, limit);
+    console.log(`[cleanup] ${cohort.length} weak hits to re-verify (apply=${apply}, ${alreadyDone} already done)`);
+    if (!cohort.length) { console.log('[cleanup] nothing to do.'); return { ok: true, total: 0 }; }
 
     const browser = await makeBrowser({ proxy, proxyToken });
     const results = [];
