@@ -56,6 +56,9 @@ const mapping = [
     // ── Spain · MingCute fallback ────────────────────────────────
     { country: "ES", slug: "valencia",  iconSlug: "mingcute:wave-line" },
     { country: "ES", slug: "bilbao",    iconSlug: "mingcute:building-3-line" },
+    { country: "ES", slug: "reus",      iconSlug: "mingcute:flower-line" }, // Gaudí's birthplace
+    { country: "ES", slug: "tarragona", iconSlug: "mingcute:tower-2-line" }, // Roman amphitheatre town
+    { country: "ES", slug: "sant-cugat-del-valles", iconSlug: "mingcute:church-line" },
 
     // ── Wildcards (traced from PNGs) ─────────────────────────────
     { country: "FR", slug: "paris",    iconSlug: "svg:eiffel-tower" },
