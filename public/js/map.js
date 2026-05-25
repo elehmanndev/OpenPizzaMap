@@ -721,26 +721,11 @@ ${fav}
         searchInput.value = c.city;
         state.query = c.city;
         searchClear.hidden = false;
-        // Fly to bounds of all places in this city. Some imported rows have
-        // a correct city/country but a wrong lat/lng (e.g. one Naples, Italy
-        // entry that geocoded to Naples, Florida). Drop those outliers using
-        // the median of the cluster so a single bad row doesn't blow the
-        // bounds open across an ocean.
         const matches = allEntries.filter((e) =>
             e.place.city === c.city && (!c.country || e.place.country === c.country)
         );
         if (matches.length) {
-            const latlngs = matches.map((m) => [Number(m.place.lat), Number(m.place.lng)]);
-            const sortedLat = [...latlngs.map((p) => p[0])].sort((a, b) => a - b);
-            const sortedLng = [...latlngs.map((p) => p[1])].sort((a, b) => a - b);
-            const medLat = sortedLat[Math.floor(sortedLat.length / 2)];
-            const medLng = sortedLng[Math.floor(sortedLng.length / 2)];
-            // Keep points within ~50 km of the cluster median (≈0.5°).
-            const MAX_DEG = 0.5;
-            const clean = latlngs.filter(([la, ln]) =>
-                Math.abs(la - medLat) <= MAX_DEG && Math.abs(ln - medLng) <= MAX_DEG
-            );
-            const bounds = L.latLngBounds(clean.length ? clean : latlngs);
+            const bounds = L.latLngBounds(matches.map((m) => [Number(m.place.lat), Number(m.place.lng)]));
             map.flyToBounds(bounds, { padding: [48, 48], maxZoom: 14, duration: 0.6 });
         }
         updateSearchCenter();
