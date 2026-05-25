@@ -194,8 +194,8 @@ function wishlistCard(fav) {
     </div>
   </section>
 
-  <!-- ─── 1. Visited · passport stamps ────────────────────────────── -->
-  <section class="opm-section" id="section-visited">
+  <!-- ─── 1. Visited · passport stamps (wrapped in section card) ──── -->
+  <section class="opm-section opm-section--carded" id="section-visited">
     <div class="opm-section__head">
       <h2 class="opm-section__title">Visited</h2>
     </div>
@@ -310,6 +310,19 @@ function wishlistCard(fav) {
 
   /* ─── Section chrome ─────────────────────────────────────────────── */
   .opm-section { margin: 28px 0; }
+  /* Carded variant — wraps the section (heading + rail) in a white
+     panel matching the profile-header and review-card chrome. Used
+     on Visited so the stamps don't float on bare cream background. */
+  .opm-section--carded {
+    background: white;
+    border: 1px solid var(--line, #e8e6e0);
+    border-radius: 12px;
+    padding: 20px 22px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 1px 2px rgba(0,0,0,.06);
+  }
+  .opm-section--carded .opm-section__head { margin-bottom: 12px; }
+  .opm-section--carded .opm-rail-arrow--prev { left: 2px; }
+  .opm-section--carded .opm-rail-arrow--next { right: 2px; }
   .opm-section__head {
     display: flex;
     align-items: baseline;
