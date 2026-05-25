@@ -16,6 +16,28 @@ const { buildSitemapXml, writeSitemapFiles } = require("../services/sitemap");
 
 const router = express.Router();
 
+// Quick filesystem inspection of data/cache on Hostinger (deploy wipes this too).
+router.get("/admin/cache-state", (req, res) => {
+    try {
+        const appRoot = path.join(__dirname, "..", "..");
+        const cacheDir = path.join(appRoot, "data", "cache");
+        const out = { cacheDir, exists: fs.existsSync(cacheDir) };
+        if (out.exists) {
+            const entries = fs.readdirSync(cacheDir);
+            out.files = entries.map((name) => {
+                const p = path.join(cacheDir, name);
+                try {
+                    const s = fs.statSync(p);
+                    return { name, size: s.size, mtime: s.mtime };
+                } catch { return { name, error: "stat failed" }; }
+            });
+        }
+        res.json(out);
+    } catch (err) {
+        res.status(500).json({ ok: false, error: err.message });
+    }
+});
+
 // One-shot: move existing slug-keyed dirs to id-keyed dirs.
 //   <persistent>/uploads/places/<slug>/   →   <persistent>/uploads/places/<id>/
 // New URL pattern is /uploads/places/<id>/<slug>/<n>.<ext> with the slug
