@@ -8,11 +8,72 @@
 // to drop a route in the wrong scope.
 
 const express = require("express");
+const fs = require("fs");
+const path = require("path");
 const { prisma } = require("../db");
 const { requireAdmin } = require("../middleware/auth");
 const { buildSitemapXml, writeSitemapFiles } = require("../services/sitemap");
 
 const router = express.Router();
+
+// Diagnostic: dump the upload-serving path state so we can debug 404s on
+// /uploads/* without SSH. The fix in commit 5a5b53b made Express serve
+// /uploads from persistent/uploads when it exists; this endpoint shows
+// whether that's actually happening on this instance.
+router.get("/admin/uploads-debug", requireAdmin, (req, res) => {
+    const cwd = process.cwd();
+    const appRoot = path.join(__dirname, "..", "..");
+    const uploadsLink = path.join(appRoot, "public", "uploads");
+    const uploadsTargetDefault = path.join(appRoot, "..", "persistent", "uploads");
+    const uploadsTarget = process.env.UPLOADS_DIR || uploadsTargetDefault;
+    const fallback = path.join(appRoot, "public", "uploads");
+
+    function inspect(p) {
+        try {
+            const exists = fs.existsSync(p);
+            if (!exists) return { path: p, exists: false };
+            const stat = fs.lstatSync(p);
+            const out = {
+                path: p,
+                exists: true,
+                isSymlink: stat.isSymbolicLink(),
+                isDirectory: stat.isDirectory(),
+            };
+            if (stat.isSymbolicLink()) {
+                try { out.linkTarget = fs.readlinkSync(p); } catch (e) { out.linkTargetErr = e.message; }
+            }
+            // Top-level listing
+            try {
+                const entries = fs.readdirSync(p).slice(0, 12);
+                out.sample = entries;
+            } catch (e) { out.listErr = e.message; }
+            // Inner places dir
+            try {
+                const places = fs.readdirSync(path.join(p, "places")).slice(0, 12);
+                out.placesSample = places;
+            } catch (e) { out.placesErr = e.message; }
+            return out;
+        } catch (e) {
+            return { path: p, error: e.message };
+        }
+    }
+
+    const serveBranch = fs.existsSync(uploadsTarget) ? "persistent" : "fallback (public/uploads)";
+
+    res.json({
+        cwd,
+        appRoot,
+        env: {
+            UPLOADS_DIR: process.env.UPLOADS_DIR || null,
+            PWD: process.env.PWD || null,
+        },
+        uploadsServePath: fs.existsSync(uploadsTarget) ? uploadsTarget : fallback,
+        serveBranch,
+        uploadsTarget: inspect(uploadsTarget),
+        uploadsLinkPublic: inspect(uploadsLink),
+        fallbackPublic: inspect(fallback),
+    });
+});
 
 // /admin/pages CMS was removed on 2026-05-18 — it managed the bodyHtml
 // for /about and the intro on /faq, but Eric didn't recall it existing
