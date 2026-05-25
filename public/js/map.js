@@ -1102,10 +1102,12 @@ ${fav}
         map.setView([geo.lat, geo.lng], 13);
         // Sort stays on Popular by default; user can switch to "Near me".
     } else {
-        // Default to a Europe-centred view when geolocation is denied or
-        // unavailable — most of the data lives there and the world view at
-        // zoom 2-3 shows nothing legible.
-        map.setView([48, 10], 4);
+        // Geolocation denied or unavailable — fall back to the server-side
+        // geoip lookup (passed in from /map route via window.__OPM_MAP_FALLBACK).
+        // The service returns the IP block's centroid at zoom 5, or a
+        // Europe default if the IP couldn't be resolved.
+        const fb = window.__OPM_MAP_FALLBACK || { lat: 48, lng: 10, zoom: 4 };
+        map.setView([fb.lat, fb.lng], fb.zoom);
     }
 
     rescaleMarkers();

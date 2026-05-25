@@ -6,13 +6,17 @@ const { prisma } = require("../db");
 const { requireAuth, requireAdmin } = require("../middleware/auth");
 const { buildSitemapXml, writeSitemapFiles } = require("../services/sitemap");
 const { isGoogleAuthConfigured } = require("../services/googleAuth");
+const { getDefaultMapView } = require("../services/geoip");
 
 const router = express.Router();
 
 router.get("/", (req, res) => res.render("maintenance"));
 
 router.get("/map", (req, res) => {
-    res.render("map", { user: req.session.user || null });
+    res.render("map", {
+        user: req.session.user || null,
+        defaultMapView: getDefaultMapView(req),
+    });
 });
 
 router.get("/place/:id", async (req, res) => {

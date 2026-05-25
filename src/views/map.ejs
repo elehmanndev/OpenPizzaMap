@@ -61,6 +61,9 @@
         <div id="map" aria-label="Pizza map"></div>
       </div>
     </div>
-    <script>window.__OPM_USER__ = ${user ? "true" : "false"};</script>
+    <script>
+      window.__OPM_USER__ = ${user ? "true" : "false"};
+      window.__OPM_MAP_FALLBACK = ${JSON.stringify(defaultMapView)};
+    </script>
     <script src="${asset("/public/js/map.js")}"></script>
 ` }) %>
