@@ -20,7 +20,10 @@ const router = express.Router();
 // /uploads/* without SSH. The fix in commit 5a5b53b made Express serve
 // /uploads from persistent/uploads when it exists; this endpoint shows
 // whether that's actually happening on this instance.
-router.get("/admin/uploads-debug", requireAdmin, (req, res) => {
+//
+// Public read-only — only exposes path strings + directory entry names,
+// no file contents or DB rows. Remove once the upload-serving bug is fixed.
+router.get("/admin/uploads-debug", (req, res) => {
     const cwd = process.cwd();
     const appRoot = path.join(__dirname, "..", "..");
     const uploadsLink = path.join(appRoot, "public", "uploads");
