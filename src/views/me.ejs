@@ -127,7 +127,10 @@ function reviewCard(r) {
 // ────────────────────────────────────────────────────────────────
 function wishlistCard(fav) {
     const place = fav.place;
-    const photo = place.heroImageUrl;
+    // Prefer heroImageUrl (Track 1 / admin-pinned). Fall back to the first
+    // gallery image (Track 2 PlaceImage) if hero is null.
+    const galleryFirst = place.images && place.images[0] && place.images[0].localPath;
+    const photo = place.heroImageUrl || galleryFirst || null;
     const where = [place.city, place.country].filter(Boolean).join(", ");
     return `
       <a class="opm-wish-card" href="/place/${place.id}">
@@ -517,10 +520,11 @@ function wishlistCard(fav) {
   .opm-review__name {
     font-size: 14px;
     font-weight: 600;
-    line-height: 1.2;
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
   .opm-review__where {
     font-size: 12.5px;

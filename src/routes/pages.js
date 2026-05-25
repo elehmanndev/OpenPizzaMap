@@ -518,7 +518,22 @@ router.get("/me", requireAuth, async (req, res) => {
         prisma.favorite.findMany({
             where: { userId },
             orderBy: { createdAt: "desc" },
-            include: { place: { select: { id: true, name: true, city: true, country: true, isVisible: true, heroImageUrl: true } } },
+            include: {
+                place: {
+                    select: {
+                        id: true, name: true, city: true, country: true, isVisible: true, heroImageUrl: true,
+                        // Pull the first gallery image so the wishlist card can fall
+                        // back to it when heroImageUrl is null. Cheap — at most one
+                        // row per favorite, indexed on (placeId, position).
+                        images: {
+                            where: { isHidden: false },
+                            orderBy: { position: "asc" },
+                            take: 1,
+                            select: { localPath: true },
+                        },
+                    },
+                },
+            },
         }),
         prisma.review.findMany({
             where: { userId, isVisible: true },
