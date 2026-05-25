@@ -102,8 +102,12 @@ router.get("/admin/uploads-debug", (req, res) => {
                 const files = entries.filter((e) => e.isFile()).map((e) => e.name);
                 out.placesDirCount = dirs.length;
                 out.placesFileCount = files.length;
-                out.placesDirsSample = dirs.slice(0, 20);
+                out.placesDirsSample = dirs.sort().slice(0, 60);
                 out.placesFilesSample = files.slice(0, 6);
+                // Probe a specific dir for the user-named case (debugging).
+                try {
+                    out.dir42Listing = fs.readdirSync(path.join(p, "places", "42"));
+                } catch (e) { out.dir42Err = e.message; }
             } catch (e) { out.placesErr = e.message; }
             return out;
         } catch (e) {
