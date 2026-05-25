@@ -46,7 +46,10 @@ const {
 } = require('../lib/utils');
 const taBudget = require('../lib/tripadvisor-budget');
 
-const UPLOADS_DIR = path.join(ROOT, 'public', 'uploads', 'places');
+// See scripts/lib/uploads-dir.js — writes to persistent/uploads/ on
+// Hostinger so files survive deploys; falls back to public/uploads/ locally.
+const { getPlacesUploadDir } = require('../lib/uploads-dir');
+const UPLOADS_DIR = getPlacesUploadDir({ repoRoot: ROOT });
 const UA = 'OpenPizzaMap-scrape-venue/0.1 (eric@openpizzamap.com)';
 
 // ─── CLI parsing ─────────────────────────────────────────────────────────────
