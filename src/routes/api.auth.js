@@ -11,6 +11,16 @@ router.post("/logout", async (req, res) => {
     req.session.destroy(() => res.json({ ok: true }));
 });
 
+// Same-origin path validator for ?returnTo=. Only relative paths starting
+// with a single "/" are accepted — blocks "//evil.com" protocol-relative
+// open-redirects and any absolute URL.
+function safeReturnTo(value) {
+    if (typeof value !== "string") return null;
+    if (!value.startsWith("/") || value.startsWith("//")) return null;
+    if (value.length > 500) return null;
+    return value;
+}
+
 router.get("/google", (req, res, next) => {
     if (!isGoogleAuthConfigured()) {
         return res.status(503).send("Google auth not configured");
@@ -18,6 +28,12 @@ router.get("/google", (req, res, next) => {
     const callbackURL = getGoogleCallbackUrl(req);
     if (!callbackURL) {
         return res.status(500).send("Google callback URL not available");
+    }
+    // Stash returnTo in session — survives the round-trip through Google's
+    // OAuth redirect. Cleared in the callback once consumed.
+    const rt = safeReturnTo(req.query && req.query.returnTo);
+    if (rt && req.session) {
+        req.session.postAuthReturnTo = rt;
     }
     return passport.authenticate("google", {
         scope: ["profile", "email"],
@@ -50,7 +66,14 @@ router.get("/google/callback", (req, res, next) => {
             role: user.role,
             avatarUrl: user.avatarUrl || null,
         };
-        const target = user.username ? "/me" : "/set-username";
+        // Prefer the page the user was on when they hit the sign-in popover.
+        // Falls through to /set-username for first-time accounts so they
+        // pick a handle before continuing, then /me as the default landing.
+        const returnTo = req.session && req.session.postAuthReturnTo;
+        if (req.session) delete req.session.postAuthReturnTo;
+        const target = !user.username
+            ? "/set-username"
+            : (returnTo || "/me");
         // Force the session to persist before responding. PrismaSessionStore
         // writes to MySQL; the implicit save inside res.end has races on
         // shared hosting that occasionally let the 302 fire before the row

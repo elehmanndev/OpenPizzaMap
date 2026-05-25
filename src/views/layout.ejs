@@ -155,6 +155,9 @@
     })();
   </script>
   <% } %>
+  <% if (typeof user !== "undefined" && !user) { %>
+    <script src="<%= asset("/public/js/signin-popover.js") %>" defer></script>
+  <% } %>
 </body>
 
 </html>

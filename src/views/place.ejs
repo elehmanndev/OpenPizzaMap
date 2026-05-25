@@ -265,7 +265,11 @@
           btn.addEventListener("click", async (ev) => {
             ev.preventDefault();
             ev.stopPropagation();
-            if (!userIn) { window.location.href = "/auth"; return; }
+            if (!userIn) {
+              window.OPM && window.OPM.signinPopover &&
+                window.OPM.signinPopover.openFor(btn, { returnTo: "/place/" + btn.dataset.placeId });
+              return;
+            }
             const id = btn.dataset.placeId;
             const wasOn = btn.classList.contains("is-active");
             btn.classList.toggle("is-active", !wasOn);

@@ -489,7 +489,11 @@ ${fav}
 
     async function toggleFavorite(place, btn) {
         if (!window.__OPM_USER__) {
-            window.location.href = "/auth";
+            if (window.OPM && window.OPM.signinPopover) {
+                window.OPM.signinPopover.openFor(btn, { returnTo: "/map" });
+            } else {
+                window.location.href = "/auth";
+            }
             return;
         }
         // Optimistic toggle
