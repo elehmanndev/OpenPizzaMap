@@ -34,7 +34,7 @@
         <button class="auth-submit auth-submit-solid" type="submit">Submit suggestion</button>
         <p class="auth-msg" id="msg"></p>
       </form>
-      <p class="auth-footer"><a href="/place/${place.id}">Back to place</a></p>
+      <p class="auth-footer"><a href="/place/${place.id}${place.slug ? '/' + place.slug : ''}">Back to place</a></p>
     </div>
   </section>
 

@@ -69,7 +69,7 @@ function stampCard(place, when, idx) {
     const tilt = pickTilt(citySlug, idx);
     const country = place.country || "";
     return `
-      <a class="opm-stamp-item" href="/place/${place.id}">
+      <a class="opm-stamp-item" href="/place/${place.id}${place.slug ? '/' + place.slug : ''}">
         <div class="opm-stamp" style="color: ${ink}; transform: rotate(${tilt}deg);">
           <span class="opm-stamp__city">${escapeHtml(place.city || place.name)}</span>
           ${stampIconHtml(iconSlug)}
@@ -107,7 +107,7 @@ function reviewCard(r) {
     const avg = ((Number(r.pizza) + Number(r.local) + Number(r.servicio) + Number(r.precio)) / 4);
     const where = [r.place.city, r.place.country].filter(Boolean).join(", ");
     return `
-      <a class="opm-review-card" href="/place/${r.place.id}">
+      <a class="opm-review-card" href="/place/${r.place.id}${r.place.slug ? '/' + r.place.slug : ''}">
         <div class="opm-review__head">
           <span class="opm-review__rating" title="${avg.toFixed(1)} / 5 (avg of pizza, setting, service, value)"><strong>${avg.toFixed(1)}</strong></span>
           <div class="opm-review__id">
@@ -145,7 +145,7 @@ function wishlistCard(fav) {
            onerror="(function(el){var f=(el.dataset.fallbacks||'').split('|').filter(Boolean); if(f.length){el.src=f[0]; el.dataset.fallbacks=f.slice(1).join('|');} else {el.remove();}})(this)" />`
       : "";
     return `
-      <a class="opm-wish-card" href="/place/${place.id}">
+      <a class="opm-wish-card" href="/place/${place.id}${place.slug ? '/' + place.slug : ''}">
         <div class="opm-wish__img">
           ${imgChain}
           <span class="opm-wish__fav" aria-hidden="true">♥</span>

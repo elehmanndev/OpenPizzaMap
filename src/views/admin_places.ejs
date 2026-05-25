@@ -79,7 +79,7 @@
             <td>
               <div class="row" style="gap:6px; justify-content:flex-end;">
                 <a class="btn primary" href="/admin/places/${p.id}">Edit</a>
-                <a class="btn" href="/place/${p.id}" target="_blank">↗</a>
+                <a class="btn" href="/place/${p.id}${p.slug ? '/' + p.slug : ''}" target="_blank">↗</a>
               </div>
             </td>
           </tr>

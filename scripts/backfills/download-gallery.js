@@ -41,15 +41,27 @@ const { getPlacesUploadDir } = require("../lib/uploads-dir");
 const PLACES_DIR = getPlacesUploadDir({ repoRoot: ROOT });
 const UA = "OpenPizzaMap/0.1 (eric@openpizzamap.com)";
 
-// Slug-based subdirectory per place for SEO. Google image search
-// reads the URL path as a signal — /uploads/places/quattro-quarti-
-// pizzeria-con-cucina-bari/1.jpg outranks /uploads/places/84/1.jpg.
-// Places without a slug (shouldn't happen post-enrichment but the
-// DB allows it) get a deterministic place-{id} fallback so we never
-// write into the bare /uploads/places/ root.
-function placePathSegment(place) {
-    if (place && place.slug) return place.slug;
-    return `place-${place.id}`;
+// Storage layout (id-keyed) vs URL layout (id + slug):
+//   Disk:  <persistent>/uploads/places/<id>/<n>.<ext>
+//   URL:   /uploads/places/<id>/<slug>/<n>.<ext>
+// id is the stable lookup key — slug renames never require disk moves.
+// The Express middleware in src/app.js strips the slug before resolving
+// to the file. Google Image Search still sees the slug tokens in the URL.
+
+// Resolve a /uploads/... URL to a disk path and check existence. Supports
+// three URL forms produced by the various scrapers over time:
+//   /uploads/places/<id>/<slug>/<n>.<ext>   (new canonical)
+//   /uploads/places/<slug>/<n>.<ext>        (transitional, pre-id-prefix)
+//   /uploads/places/<id>.<ext>              (legacy flat, pre-Track-2)
+function heroExistsOnDisk(url) {
+    if (!url || !url.startsWith("/uploads/")) return false;
+    const rel = url.replace(/^\/uploads\//, "");
+    const idSlug = rel.match(/^places\/(\d+)\/[^/]+\/([^/?#]+)$/);
+    if (idSlug) {
+        return fs.existsSync(path.join(PLACES_DIR, idSlug[1], idSlug[2]));
+    }
+    // Other forms: try the URL as-is relative to the uploads dir.
+    return fs.existsSync(path.join(PLACES_DIR, "..", rel));
 }
 
 function extFromContentType(ct) {
@@ -95,9 +107,11 @@ async function processJob(job) {
         }).catch(() => null);
         slug = p?.slug || null;
     }
-    const seg = placePathSegment({ id: job.placeId, slug });
-    const placeDir = path.join(PLACES_DIR, seg);
+    // Disk dir is id-keyed (slug-renames don't touch disk).
+    const placeDir = path.join(PLACES_DIR, String(job.placeId));
     fs.mkdirSync(placeDir, { recursive: true });
+    // URL keeps the slug for SEO. Falls back to id when slug is null.
+    const urlSegment = slug ? `${job.placeId}/${slug}` : String(job.placeId);
 
     const inserted = [];
     const skipped = [];
@@ -131,7 +145,7 @@ async function processJob(job) {
         try {
             const outBase = path.join(placeDir, String(position));
             const r = await downloadOne(photo.sourceUrl, outBase);
-            const localPath = `/uploads/places/${seg}/${position}.${r.ext}`;
+            const localPath = `/uploads/places/${urlSegment}/${position}.${r.ext}`;
             await prisma.placeImage.create({
                 data: {
                     placeId: job.placeId,
@@ -161,8 +175,10 @@ async function processJob(job) {
             where: { id: job.placeId },
             select: { heroImageUrl: true },
         });
-        const heroMissing = !place?.heroImageUrl
-            || !fs.existsSync(path.join(ROOT, "public", place.heroImageUrl.replace(/^\//, "")));
+        // Map URL → disk: /uploads/places/<id>/<slug>/<n>.<ext> lives at
+        // <PLACES_DIR>/<id>/<n>.<ext> on disk (slug is URL-only). Legacy
+        // /uploads/places/<id>.<ext> and slug-only URLs map best-effort.
+        const heroMissing = !place?.heroImageUrl || !heroExistsOnDisk(place.heroImageUrl);
         if (heroMissing) {
             updates.heroImageUrl = inserted[0].localPath;
         }

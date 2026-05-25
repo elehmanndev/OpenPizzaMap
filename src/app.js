@@ -196,6 +196,15 @@ app.use("/public", express.static(path.join(__dirname, "..", "public"), staticOp
 const uploadsServePath = fs.existsSync(uploadsTarget)
     ? uploadsTarget
     : path.join(__dirname, "..", "public", "uploads");
+// URL pattern includes the slug for SEO (/uploads/places/<id>/<slug>/<n>.jpg)
+// but the disk path is id-keyed only (<persistent>/uploads/places/<id>/<n>.jpg)
+// so slug renames never require disk moves. This middleware strips the slug
+// segment before express.static resolves the file.
+app.use((req, res, next) => {
+    const m = req.url.match(/^\/uploads\/places\/(\d+)\/[^/]+\/([^/?#]+)(\?.*)?$/);
+    if (m) req.url = `/uploads/places/${m[1]}/${m[2]}${m[3] || ""}`;
+    next();
+});
 app.use("/uploads", express.static(uploadsServePath, staticOpts));
 
 // Health endpoint. Always mounted (even in maintenance mode) so external

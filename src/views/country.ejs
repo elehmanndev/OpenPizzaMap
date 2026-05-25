@@ -70,7 +70,7 @@
       ${c.topPlaces && c.topPlaces.length ? `
         <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
           ${c.topPlaces.map(p => `
-            <a class="map-sidebar-card" href="/place/${p.id}" role="listitem">
+            <a class="map-sidebar-card" href="/place/${p.id}${p.slug ? '/' + p.slug : ''}" role="listitem">
               ${p.heroImageUrl ? `
                 <div class="msc-hero" style="height:100%;">
                   <img class="msc-hero-img" src="${escapeHtml(p.heroImageUrl)}" alt="" loading="lazy" onerror="this.parentElement.classList.add('msc-hero--fallback');this.replaceWith(Object.assign(document.createElement('span'),{className:'msc-hero-emoji',textContent:'🍕'}))" />

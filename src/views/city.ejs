@@ -115,7 +115,7 @@
     })()}
     <div data-city-cards style="display:flex; flex-direction:column; gap:16px; margin-top:4px;">
       ${places.map(p => `
-        <a class="map-sidebar-card" href="/place/${p.id}" role="listitem" data-lat="${p.lat != null ? p.lat : ''}" data-lng="${p.lng != null ? p.lng : ''}">
+        <a class="map-sidebar-card" href="/place/${p.id}${p.slug ? '/' + p.slug : ''}" role="listitem" data-lat="${p.lat != null ? p.lat : ''}" data-lng="${p.lng != null ? p.lng : ''}">
           ${p.heroImageUrl ? `
             <div class="msc-hero" style="height:100%;">
               <img class="msc-hero-img" src="${escapeHtml(p.heroImageUrl)}" alt="" loading="lazy" onerror="this.parentElement.classList.add('msc-hero--fallback');this.replaceWith(Object.assign(document.createElement('span'),{className:'msc-hero-emoji',textContent:'🍕'}))" />

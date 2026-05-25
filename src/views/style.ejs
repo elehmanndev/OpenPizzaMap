@@ -9,7 +9,7 @@
       <div><strong>${escapeHtml(p.name)}</strong></div>
       <div class="small">${escapeHtml(p.city)}${p.country ? ` · ${escapeHtml(p.country)}` : ""}</div>
       <div style="margin-top:8px;">
-        <a class="btn primary" href="/place/${p.id}">View place</a>
+        <a class="btn primary" href="/place/${p.id}${p.slug ? '/' + p.slug : ''}">View place</a>
       </div>
     </div>
   `).join("")}</div>` : "<p class=\"small\">No places yet.</p>"}

@@ -19,8 +19,25 @@ router.get("/map", (req, res) => {
     });
 });
 
-router.get("/place/:id", async (req, res) => {
-    const id = Number(req.params.id);
+// /place/:id/:slug — canonical URL.
+// Id is the stable lookup key; slug is decorative for SEO. If the slug in
+// the URL is outdated (place was renamed since the link was created),
+// 301-redirect to the current canonical slug. Legacy /place/:id (no slug)
+// also 301s to canonical.
+router.get("/place/:id/:slug?", async (req, res) => {
+    const idRaw = String(req.params.id || "");
+    if (!/^\d+$/.test(idRaw)) {
+        // Old slug-only URLs from any pre-id+slug links: look up by slug then 301.
+        const bySlug = await prisma.place.findUnique({
+            where: { slug: idRaw },
+            select: { id: true, slug: true },
+        });
+        if (bySlug && bySlug.slug) {
+            return res.redirect(301, `/place/${bySlug.id}/${bySlug.slug}`);
+        }
+        return res.status(404).send("Not found");
+    }
+    const id = Number(idRaw);
     const place = await prisma.place.findUnique({
         where: { id },
         include: {
@@ -36,6 +53,15 @@ router.get("/place/:id", async (req, res) => {
         },
     });
     if (!place) return res.status(404).send("Not found");
+    const id = place.id;
+    // If the slug in the URL is wrong/missing/outdated, 301 to canonical.
+    // Skips the redirect for not-yet-public creator-bypass rows so the chat
+    // intake's success redirect (which knows the id but maybe not the slug)
+    // doesn't bounce through a redirect loop.
+    const urlSlug = String(req.params.slug || "");
+    if (place.slug && place.isVisible !== false && urlSlug !== place.slug) {
+        return res.redirect(301, `/place/${place.id}/${place.slug}`);
+    }
     // Creator bypass: spots added via the chatbot intake start as
     // isVisible=false. The session-tracked just-created list lets the
     // submitter view + review the new row before the enrichment cron
@@ -313,6 +339,7 @@ router.get("/country/:code", async (req, res) => {
                     const firstStyle = p.styles && p.styles[0] && p.styles[0].style;
                     return {
                         id: p.id,
+                        slug: p.slug,
                         name: p.name,
                         rating,
                         heroImageUrl: thumb,
@@ -384,7 +411,7 @@ router.get("/country/:code/city/:slug", async (req, res) => {
             OR: [{ cityId: city.id }, { cityId: null, city: city.name }],
         },
         select: {
-            id: true, name: true, lat: true, lng: true, heroImageUrl: true,
+            id: true, slug: true, name: true, lat: true, lng: true, heroImageUrl: true,
             priceLevel: true,
             opmRating: true, googleRating: true, tripadvisorRating: true, yelpRating: true,
             googleReviewCount: true, tripadvisorReviewCount: true, yelpReviewCount: true,
@@ -485,10 +512,16 @@ router.get("/country/:code/city/:slug", async (req, res) => {
     });
 });
 
-router.get("/place/:id/suggest-edit", requireAuth, async (req, res) => {
-    const id = Number(req.params.id);
+router.get("/place/:id/:slug?/suggest-edit", requireAuth, async (req, res) => {
+    const idRaw = String(req.params.id || "");
+    if (!/^\d+$/.test(idRaw)) return res.status(404).send("Not found");
+    const id = Number(idRaw);
     const place = await prisma.place.findUnique({ where: { id } });
     if (!place || place.isVisible === false) return res.status(404).send("Not found");
+    const urlSlug = String(req.params.slug || "");
+    if (place.slug && urlSlug !== place.slug) {
+        return res.redirect(301, `/place/${place.id}/${place.slug}/suggest-edit`);
+    }
     res.render("suggest_edit", { user: req.session.user, place });
 });
 
@@ -517,7 +550,7 @@ router.get("/me", requireAuth, async (req, res) => {
             include: {
                 place: {
                     select: {
-                        id: true, name: true, city: true, country: true, isVisible: true,
+                        id: true, slug: true, name: true, city: true, country: true, isVisible: true,
                         // cityRef lets the stamp pick up its iconSlug
                         // (svg:<file> or mingcute:<name>) — used by me.ejs
                         // stampCard renderer. Null cityId silently falls
@@ -533,7 +566,7 @@ router.get("/me", requireAuth, async (req, res) => {
             include: {
                 place: {
                     select: {
-                        id: true, name: true, city: true, country: true, isVisible: true, heroImageUrl: true,
+                        id: true, slug: true, name: true, city: true, country: true, isVisible: true, heroImageUrl: true,
                         // Pull the first gallery image so the wishlist card can fall
                         // back to it when heroImageUrl is null. Cheap — at most one
                         // row per favorite, indexed on (placeId, position).
@@ -551,7 +584,7 @@ router.get("/me", requireAuth, async (req, res) => {
             where: { userId, isVisible: true },
             orderBy: { createdAt: "desc" },
             take: 10,
-            include: { place: { select: { id: true, name: true, city: true, country: true, heroImageUrl: true } } },
+            include: { place: { select: { id: true, slug: true, name: true, city: true, country: true, heroImageUrl: true } } },
         }),
         prisma.submission.count({ where: { userId } }),
     ]);

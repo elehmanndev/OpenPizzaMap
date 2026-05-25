@@ -8,7 +8,7 @@ async function buildSitemapXml(prisma, baseUrlOverride) {
     try {
         places = await prisma.place.findMany({
             where: { status: "active", isVisible: true },
-            select: { id: true, updatedAt: true }
+            select: { id: true, slug: true, updatedAt: true }
         });
     } catch (err) {
         // Keep sitemap generation non-fatal (e.g., build-time DB auth issues).
@@ -83,7 +83,7 @@ async function buildSitemapXml(prisma, baseUrlOverride) {
     places.forEach(place => {
         xml += `
   <url>
-    <loc>${baseUrl}/place/${place.id}</loc>
+    <loc>${baseUrl}/place/${place.id}${place.slug ? '/' + place.slug : ''}</loc>
     <lastmod>${place.updatedAt.toISOString().split("T")[0]}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

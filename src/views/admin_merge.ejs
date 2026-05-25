@@ -202,13 +202,13 @@ const counts = plan ? {
       <div class="merge-pair">
         <div class="place-card keep">
           <span class="tag">Keeping</span>
-          <h2 class="place-name"><a href="/place/${plan.survivor.id}" target="_blank">${escapeHtml(plan.survivor.name)}</a></h2>
+          <h2 class="place-name"><a href="/place/${plan.survivor.id}${plan.survivor.slug ? '/' + plan.survivor.slug : ''}" target="_blank">${escapeHtml(plan.survivor.name)}</a></h2>
           <div class="place-meta">${escapeHtml(plan.survivor.city || "—")}, ${escapeHtml(plan.survivor.country || "—")}</div>
           <div class="place-id">#${plan.survivor.id} · ${plan.survivor.isVisible ? "live" : "hidden"}</div>
         </div>
         <div class="place-card drop">
           <span class="tag">Removing</span>
-          <h2 class="place-name"><a href="/place/${plan.drop.id}" target="_blank">${escapeHtml(plan.drop.name)}</a></h2>
+          <h2 class="place-name"><a href="/place/${plan.drop.id}${plan.drop.slug ? '/' + plan.drop.slug : ''}" target="_blank">${escapeHtml(plan.drop.name)}</a></h2>
           <div class="place-meta">${escapeHtml(plan.drop.city || "—")}, ${escapeHtml(plan.drop.country || "—")}</div>
           <div class="place-id">#${plan.drop.id} · ${plan.drop.isVisible ? "live" : "hidden"}</div>
         </div>

@@ -617,7 +617,7 @@ router.post("/finalize-spot", requireApiAuth, submitLimiter, async (req, res) =>
         return res.json({
             ok: true,
             duplicate: true,
-            redirect: `/place/${verdict.existing.id}?welcome=1`,
+            redirect: `/place/${verdict.existing.id}${verdict.existing.slug ? '/' + verdict.existing.slug : ''}?welcome=1`,
             message: `${verdict.existing.name} is already on the map — drop your review here.`,
         });
     }
@@ -746,7 +746,7 @@ router.post("/finalize-spot", requireApiAuth, submitLimiter, async (req, res) =>
     res.json({
         ok: true,
         placeId: place.id,
-        redirect: `/place/${place.id}?welcome=1`,
+        redirect: `/place/${place.id}${place.slug ? '/' + place.slug : ''}?welcome=1`,
     });
 });
 

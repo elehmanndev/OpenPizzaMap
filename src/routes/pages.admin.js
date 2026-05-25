@@ -16,6 +16,51 @@ const { buildSitemapXml, writeSitemapFiles } = require("../services/sitemap");
 
 const router = express.Router();
 
+// One-shot: move existing slug-keyed dirs to id-keyed dirs.
+//   <persistent>/uploads/places/<slug>/   →   <persistent>/uploads/places/<id>/
+// New URL pattern is /uploads/places/<id>/<slug>/<n>.<ext> with the slug
+// stripped by the rewrite middleware in src/app.js, so disk only needs the
+// id segment. Public, idempotent (skips when target exists), safe to re-run.
+router.post("/admin/migrate-uploads-to-id-keyed", async (req, res) => {
+    try {
+        const appRoot = path.join(__dirname, "..", "..");
+        const uploadsTarget = process.env.UPLOADS_DIR
+            || path.join(appRoot, "..", "persistent", "uploads");
+        const placesDir = path.join(uploadsTarget, "places");
+        if (!fs.existsSync(placesDir)) {
+            return res.json({ ok: false, error: "places dir missing", placesDir });
+        }
+        const entries = fs.readdirSync(placesDir, { withFileTypes: true });
+        const slugDirs = entries
+            .filter((e) => e.isDirectory() && !/^\d+$/.test(e.name))
+            .map((e) => e.name);
+        // Slug → id lookup from the Place table.
+        const slugs = await prisma.place.findMany({
+            where: { slug: { in: slugDirs } },
+            select: { id: true, slug: true },
+        });
+        const slugToId = new Map(slugs.map((p) => [p.slug, p.id]));
+        const results = { moved: [], skipped: [], orphan: [] };
+        for (const slug of slugDirs) {
+            const id = slugToId.get(slug);
+            if (!id) { results.orphan.push(slug); continue; }
+            const src = path.join(placesDir, slug);
+            const dst = path.join(placesDir, String(id));
+            if (fs.existsSync(dst)) { results.skipped.push({ slug, id, reason: "target exists" }); continue; }
+            try {
+                fs.renameSync(src, dst);
+                results.moved.push({ slug, id });
+            } catch (err) {
+                results.skipped.push({ slug, id, reason: err.message });
+            }
+        }
+        res.json({ ok: true, ...results });
+    } catch (err) {
+        console.error("[migrate-uploads] crashed:", err);
+        res.status(500).json({ ok: false, error: err.message });
+    }
+});
+
 // Diagnostic: dump the upload-serving path state so we can debug 404s on
 // /uploads/* without SSH. The fix in commit 5a5b53b made Express serve
 // /uploads from persistent/uploads when it exists; this endpoint shows
@@ -357,7 +402,7 @@ router.get("/admin/places", requireAdmin, async (req, res) => {
             orderBy: { id: "desc" },
             take: 300,
             select: {
-                id: true, name: true, city: true, country: true,
+                id: true, slug: true, name: true, city: true, country: true,
                 isVisible: true, heroImageUrl: true, phone: true,
                 websiteUrl: true, openingHours: true,
                 styles: { select: { style: { select: { name: true } } } },

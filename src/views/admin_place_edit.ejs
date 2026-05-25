@@ -173,7 +173,7 @@
 
       <div class="admin-actions">
         <a class="btn" href="/admin/places">← Back</a>
-        <a class="btn" href="/place/${place.id}" target="_blank" rel="noopener">View</a>
+        <a class="btn" href="/place/${place.id}${place.slug ? '/' + place.slug : ''}" target="_blank" rel="noopener">View</a>
         <button type="submit" class="btn primary">Save changes</button>
       </div>
     </form>

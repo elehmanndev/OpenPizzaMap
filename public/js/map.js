@@ -170,7 +170,7 @@
     <a class="ppc-directions" href="${esc(directions)}" target="_blank" rel="noopener">${esc(address)}</a>
     ${chips ? `<div class="ppc-styles">${chips}</div>` : ""}
     <p class="ppc-summary">${esc(summaryFor(p))}</p>
-    <a class="ppc-cta" href="/place/${p.id}">View profile</a>
+    <a class="ppc-cta" href="/place/${p.id}${p.slug ? '/' + p.slug : ''}">View profile</a>
   </div>
 </article>`.trim();
     }
@@ -448,7 +448,7 @@ ${fav}
         for (const e of entries) {
             const card = document.createElement("a");
             card.className = "map-sidebar-card";
-            card.href = `/place/${e.place.id}`;
+            card.href = `/place/${e.place.id}${e.place.slug ? '/' + e.place.slug : ''}`;
             card.setAttribute("role", "listitem");
             card.dataset.placeId = String(e.place.id);
             card.innerHTML = cardHtml(e.place);
