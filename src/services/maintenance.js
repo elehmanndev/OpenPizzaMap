@@ -95,7 +95,12 @@ const MODE_PRESETS = {
         opmRating: true,
         playwrightFallback: 20,
         localizeImages: 200,
-        galleryScrape: 10,
+        // Bumped 10 → 30 on 2026-05-25 to accelerate Track 2 rescrape after
+        // the persistent/uploads symlink fix landed. Current 10/tick took
+        // ~137s; 30/tick projects ~7min, leaves headroom under the 10-min
+        // tick interval. ~2000 places remaining at 30/tick × 144 ticks/day
+        // = ~12-15h to clear. Revert to 10 once caught up.
+        galleryScrape: 30,
     },
     min: {
         resolve: 20,
