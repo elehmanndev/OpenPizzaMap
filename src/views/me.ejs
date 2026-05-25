@@ -323,24 +323,18 @@ function wishlistCard(fav) {
   }
 
   /* ─── Visited · passport stamps ─────────────────────────────────── */
+  /* Always-horizontal scroll rail (Airbnb pattern). Mobile: swipe.
+     Desktop: chevron buttons (.opm-rail-arrow) appear on hover. */
   .opm-stamps-rail {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 16px 14px;
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
     padding: 8px 4px 16px;
+    margin: 0 -4px;
+    scroll-behavior: smooth;
   }
-  @media (min-width: 720px) {
-    .opm-stamps-rail {
-      display: flex;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      padding-bottom: 12px;
-      margin: 0 -4px;
-      padding-left: 4px;
-      padding-right: 4px;
-    }
-    .opm-stamps-rail > * { flex: 0 0 168px; scroll-snap-align: start; }
-  }
+  .opm-stamps-rail > * { flex: 0 0 168px; scroll-snap-align: start; }
   .opm-stamps-rail::-webkit-scrollbar { display: none; }
   .opm-stamps-rail { scrollbar-width: none; }
 
@@ -489,9 +483,9 @@ function wishlistCard(fav) {
   .opm-reviews-rail::-webkit-scrollbar { display: none; }
   .opm-reviews-rail { scrollbar-width: none; }
   .opm-review-card {
-    flex: 0 0 290px;
+    flex: 0 0 250px;
     scroll-snap-align: start;
-    padding: 14px 20px 16px 18px;
+    padding: 14px 18px 16px 16px;
     text-decoration: none;
     color: inherit;
     display: flex;
