@@ -105,12 +105,6 @@ model Place {
   // filter. Null = never scraped (eligible for first-ever scrape);
   // older than 365 days = eligible for refresh.
   galleryLastScrapedAt DateTime?
-  // AI-generated "Pizza Lovers say" summary — distilled from external
-  // reviews by the enricher. Refresh schedule: regenerate when review
-  // count drifts >10% or summary is older than 6 months. Stored as
-  // plain text (no HTML); the render path wraps it in paragraph tags.
-  aiReviewSummary    String?  @db.Text
-  aiReviewSummaryAt  DateTime?
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   styles        PlaceStyle[]
