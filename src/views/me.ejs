@@ -106,13 +106,10 @@ function ratingDots(value) {
 function reviewCard(r) {
     const avg = ((Number(r.pizza) + Number(r.local) + Number(r.servicio) + Number(r.precio)) / 4);
     const where = [r.place.city, r.place.country].filter(Boolean).join(", ");
-    const photo = r.place.heroImageUrl || null;
     return `
       <a class="opm-review-card" href="/place/${r.place.id}">
         <div class="opm-review__head">
-          ${photo
-            ? `<span class="opm-review__avatar" style="background-image:url('${escapeAttr(photo)}')"></span>`
-            : `<span class="opm-review__avatar opm-review__avatar--empty">${escapeHtml((r.place.name || "?")[0].toUpperCase())}</span>`}
+          <span class="opm-review__rating" title="${avg.toFixed(1)} / 5 (avg of pizza, setting, service, value)"><strong>${avg.toFixed(1)}</strong></span>
           <div class="opm-review__id">
             <span class="opm-review__name">${escapeHtml(r.place.name)}</span>
             ${where ? `<span class="opm-review__where">${escapeHtml(where)}</span>` : ""}
@@ -187,7 +184,11 @@ function wishlistCard(fav) {
       <h2 class="opm-section__title">Visited</h2>
     </div>
     ${beenThere.length
-        ? `<div class="opm-stamps-rail">${beenThere.map((b, i) => stampCard(b.place, b.visitedAt, i)).join("")}</div>`
+        ? `<div class="opm-rail-wrap" data-rail-wrap>
+             <button class="opm-rail-arrow opm-rail-arrow--prev" data-rail-prev type="button" aria-label="Scroll left" hidden>‹</button>
+             <div class="opm-stamps-rail" data-rail>${beenThere.map((b, i) => stampCard(b.place, b.visitedAt, i)).join("")}</div>
+             <button class="opm-rail-arrow opm-rail-arrow--next" data-rail-next type="button" aria-label="Scroll right" hidden>›</button>
+           </div>`
         : `<div class="profile-empty">
              <strong>No visits logged yet.</strong>
              <span>Mark a place as visited from its page to start your map.</span>
@@ -201,7 +202,11 @@ function wishlistCard(fav) {
       <h2 class="opm-section__title">My reviews</h2>
     </div>
     ${reviews.length
-        ? `<div class="opm-reviews-rail">${reviews.map(reviewCard).join("")}</div>`
+        ? `<div class="opm-rail-wrap" data-rail-wrap>
+             <button class="opm-rail-arrow opm-rail-arrow--prev" data-rail-prev type="button" aria-label="Scroll left" hidden>‹</button>
+             <div class="opm-reviews-rail" data-rail>${reviews.map(reviewCard).join("")}</div>
+             <button class="opm-rail-arrow opm-rail-arrow--next" data-rail-next type="button" aria-label="Scroll right" hidden>›</button>
+           </div>`
         : `<div class="profile-empty">
              <strong>No reviews yet.</strong>
              <span>Rate a place once you've tried it — your review helps the community.</span>
@@ -214,7 +219,11 @@ function wishlistCard(fav) {
       <h2 class="opm-section__title">Wishlist</h2>
     </div>
     ${wishlist.length
-        ? `<div class="opm-wish-rail">${wishlist.map(wishlistCard).join("")}</div>`
+        ? `<div class="opm-rail-wrap" data-rail-wrap>
+             <button class="opm-rail-arrow opm-rail-arrow--prev" data-rail-prev type="button" aria-label="Scroll left" hidden>‹</button>
+             <div class="opm-wish-rail" data-rail>${wishlist.map(wishlistCard).join("")}</div>
+             <button class="opm-rail-arrow opm-rail-arrow--next" data-rail-next type="button" aria-label="Scroll right" hidden>›</button>
+           </div>`
         : `<div class="profile-empty">
              <strong>Nothing on your wishlist yet.</strong>
              <span>Tap the heart on any pizzeria to save it for later.</span>
@@ -415,24 +424,70 @@ function wishlistCard(fav) {
     letter-spacing: 0.04em;
   }
 
+  /* ─── Rail-wrap chrome: position context for the scroll arrows ───── */
+  .opm-rail-wrap {
+    position: relative;
+  }
+  .opm-rail-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: white;
+    border: 1px solid var(--line, #e8e6e0);
+    box-shadow: 0 2px 8px rgba(0,0,0,.12);
+    color: var(--ink, #1a1a1a);
+    font-size: 22px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 5;
+    font-family: inherit;
+    padding: 0;
+    padding-bottom: 4px;
+  }
+  .opm-rail-arrow:hover { background: #fafaf7; }
+  .opm-rail-arrow:disabled { opacity: 0.35; cursor: default; }
+  .opm-rail-arrow--prev { left: -6px; }
+  .opm-rail-arrow--next { right: -6px; }
+  @media (max-width: 720px) {
+    /* Hide arrows on mobile — swipe is the natural gesture */
+    .opm-rail-arrow { display: none; }
+  }
+
   /* ─── My reviews · carousel of review cards ─────────────────────── */
   .opm-reviews-rail {
     display: flex;
-    gap: 16px;
+    gap: 14px;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     padding: 4px 4px 16px;
     margin: 0 -4px;
+    scroll-behavior: smooth;
   }
   .opm-reviews-rail::-webkit-scrollbar { display: none; }
   .opm-reviews-rail { scrollbar-width: none; }
   .opm-review-card {
     flex: 0 0 260px;
     scroll-snap-align: start;
-    padding: 4px 2px;
+    padding: 14px 16px 16px;
     text-decoration: none;
     color: inherit;
-    display: block;
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border: 1px solid var(--line, #e8e6e0);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    transition: box-shadow 0.15s ease, transform 0.15s ease;
+  }
+  .opm-review-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,.08);
+    transform: translateY(-1px);
   }
   .opm-review__head {
     display: flex;
@@ -440,23 +495,24 @@ function wishlistCard(fav) {
     align-items: center;
     margin-bottom: 8px;
   }
-  .opm-review__avatar {
-    width: 38px;
-    height: 38px;
+  /* OPM-style rating badge — replaces the photo avatar */
+  .opm-review__rating {
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
-    background-size: cover;
-    background-position: center;
-    flex-shrink: 0;
-    background-color: #f1ede4;
+    background: var(--accent, #c9483a);
+    color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #888;
+    flex-shrink: 0;
     font-weight: 700;
-    font-size: 14px;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+    box-shadow: 0 1px 3px rgba(201,72,58,.25);
   }
-  .opm-review__avatar--empty { background-image: none; }
-  .opm-review__id { display: flex; flex-direction: column; min-width: 0; }
+  .opm-review__rating strong { font-weight: 700; }
+  .opm-review__id { display: flex; flex-direction: column; min-width: 0; flex: 1; }
   .opm-review__name {
     font-size: 14px;
     font-weight: 600;
@@ -575,6 +631,43 @@ function wishlistCard(fav) {
 
 <script>
   (function () {
+    // Wire scroll chevrons on each rail. Each wrap contains:
+    //   <button data-rail-prev> + <div data-rail> + <button data-rail-next>
+    // The arrows scroll the rail by ~80% of its width and show/hide
+    // themselves based on whether more content exists in that direction.
+    document.querySelectorAll("[data-rail-wrap]").forEach((wrap) => {
+      const rail = wrap.querySelector("[data-rail]");
+      const prev = wrap.querySelector("[data-rail-prev]");
+      const next = wrap.querySelector("[data-rail-next]");
+      if (!rail || !prev || !next) return;
+
+      function updateArrows() {
+        const maxScroll = rail.scrollWidth - rail.clientWidth;
+        const overflowing = maxScroll > 4;
+        // Show next arrow when there's anywhere to scroll right.
+        // Show prev arrow only when we've already scrolled some.
+        if (!overflowing) {
+          prev.hidden = true;
+          next.hidden = true;
+          return;
+        }
+        prev.hidden = rail.scrollLeft <= 4;
+        next.hidden = rail.scrollLeft >= maxScroll - 4;
+      }
+
+      function scrollByAmount(dir) {
+        const amount = Math.max(200, Math.round(rail.clientWidth * 0.8));
+        rail.scrollBy({ left: dir * amount, behavior: "smooth" });
+      }
+
+      prev.addEventListener("click", () => scrollByAmount(-1));
+      next.addEventListener("click", () => scrollByAmount(1));
+      rail.addEventListener("scroll", updateArrows, { passive: true });
+      window.addEventListener("resize", updateArrows);
+      // Initial state — wait one tick so layout settled.
+      setTimeout(updateArrows, 50);
+    });
+
     const logoutBtn = document.getElementById("logout-btn");
     if (logoutBtn) {
       logoutBtn.addEventListener("click", async () => {
