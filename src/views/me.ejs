@@ -183,9 +183,9 @@ function wishlistCard(fav) {
 
   <!-- ─── 1. Visited · passport stamps ────────────────────────────── -->
   <section class="opm-section" id="section-visited">
-    <header class="opm-section__head">
+    <div class="opm-section__head">
       <h2 class="opm-section__title">Visited</h2>
-    </header>
+    </div>
     ${beenThere.length
         ? `<div class="opm-stamps-rail">${beenThere.map((b, i) => stampCard(b.place, b.visitedAt, i)).join("")}</div>`
         : `<div class="profile-empty">
@@ -197,9 +197,9 @@ function wishlistCard(fav) {
 
   <!-- ─── 2. My reviews · review cards rail ───────────────────────── -->
   <section class="opm-section" id="section-reviews">
-    <header class="opm-section__head">
+    <div class="opm-section__head">
       <h2 class="opm-section__title">My reviews</h2>
-    </header>
+    </div>
     ${reviews.length
         ? `<div class="opm-reviews-rail">${reviews.map(reviewCard).join("")}</div>`
         : `<div class="profile-empty">
@@ -210,9 +210,9 @@ function wishlistCard(fav) {
 
   <!-- ─── 3. Wishlist · saved-place scards ────────────────────────── -->
   <section class="opm-section" id="section-wishlist">
-    <header class="opm-section__head">
+    <div class="opm-section__head">
       <h2 class="opm-section__title">Wishlist</h2>
-    </header>
+    </div>
     ${wishlist.length
         ? `<div class="opm-wish-rail">${wishlist.map(wishlistCard).join("")}</div>`
         : `<div class="profile-empty">
