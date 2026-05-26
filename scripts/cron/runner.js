@@ -82,34 +82,60 @@ async function pingHostingerLocalize() {
     }
 }
 
-// Track 2 — dispatch the galleryScrape jobs collected on Unraid this
-// tick to Hostinger so the bytes get downloaded before the lh3 URLs
-// expire. Unlike pingHostingerLocalize this is NOT fire-and-forget: we
-// await the response so the runner log shows per-place insert/skip
-// counts in the same tick, and so a 5xx surfaces here instead of being
-// silently swallowed by the live worker.
+// Dispatch the photo-download jobs collected on Unraid this tick to
+// Hostinger so the bytes get fetched before lh3 URLs expire. Splits
+// the jobs into chunks small enough to fit under Hostinger's LiteSpeed
+// proxy timeout (~30-60s typical) — large batches were timing out at
+// 500 even though the work itself completed in the live worker.
+const PUSH_CHUNK_SIZE = 8; // ~40 photos per chunk = ~30-40s on Hostinger
 async function pushGalleryJobs(jobs) {
     if (!HOSTINGER_URL || !ADMIN_API_KEY) {
         return { skipped: true, reason: 'HOSTINGER_URL or ADMIN_API_KEY not set' };
     }
     if (!Array.isArray(jobs) || jobs.length === 0) {
-        return { skipped: true, reason: 'no jobs from galleryScrape this tick' };
+        return { skipped: true, reason: 'no jobs this tick' };
     }
     const url = `${HOSTINGER_URL}/api/admin/gallery-download`;
-    try {
-        const res = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'x-api-key': ADMIN_API_KEY,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ jobs }),
-        });
-        const body = await res.text().catch(() => '');
-        return { ok: res.ok, status: res.status, body: body.slice(0, 400) };
-    } catch (err) {
-        return { ok: false, error: err.message };
+    const chunks = [];
+    for (let i = 0; i < jobs.length; i += PUSH_CHUNK_SIZE) {
+        chunks.push(jobs.slice(i, i + PUSH_CHUNK_SIZE));
     }
+    const totals = { processed: 0, inserted: 0, skipped: 0, failed: 0, chunkFails: 0 };
+    const errors = [];
+    for (let i = 0; i < chunks.length; i++) {
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'x-api-key': ADMIN_API_KEY,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ jobs: chunks[i] }),
+            });
+            const body = await res.text().catch(() => '');
+            if (!res.ok) {
+                totals.chunkFails++;
+                errors.push(`chunk ${i+1}/${chunks.length}: ${res.status} ${body.slice(0,120)}`);
+                continue;
+            }
+            const parsed = (() => { try { return JSON.parse(body); } catch { return null; } })();
+            if (parsed) {
+                totals.processed += parsed.processed || 0;
+                totals.inserted  += parsed.inserted  || 0;
+                totals.skipped   += parsed.skipped   || 0;
+                totals.failed    += parsed.failed    || 0;
+            }
+        } catch (err) {
+            totals.chunkFails++;
+            errors.push(`chunk ${i+1}/${chunks.length}: ${err.message}`);
+        }
+    }
+    return {
+        ok: totals.chunkFails === 0,
+        chunks: chunks.length,
+        ...totals,
+        errors: errors.length ? errors.slice(0, 3) : undefined,
+    };
 }
 
 let stopping = false;
@@ -200,11 +226,10 @@ async function tick(n) {
             const tag = `gallery=${galleryJobs.length} burn=${burnJobs.length}`;
             if (push.skipped) {
                 console.log(`[runner]   photo push: SKIP (${push.reason})  [${tag}]`);
-            } else if (push.ok) {
-                console.log(`[runner]   photo push: ${push.status} ${push.body}  [${tag}]`);
             } else {
-                console.warn(`[runner]   photo push: FAIL (${push.error || push.status})  [${tag}]`);
-                if (push.body) console.warn(`[runner]   photo push body: ${push.body}`);
+                const status = push.ok ? 'OK' : `FAIL (${push.chunkFails}/${push.chunks} chunks)`;
+                console.log(`[runner]   photo push: ${status}  chunks=${push.chunks} processed=${push.processed} inserted=${push.inserted} skipped=${push.skipped} failed=${push.failed}  [${tag}]`);
+                if (push.errors) push.errors.forEach((e) => console.warn(`[runner]     ${e}`));
             }
         }
     } catch (err) {
