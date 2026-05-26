@@ -639,18 +639,18 @@
         })()}
 
         <div class="review-modal__row2">
-          <fieldset class="review-modal__price" data-review-price>
-            <legend class="review-modal__legend">How pricey?</legend>
+          <div class="review-modal__col" data-review-price>
+            <h4 class="review-modal__legend">Price range</h4>
             <div class="price-input" role="radiogroup" aria-label="Price range">
               <button type="button" class="price-input__chip" data-price-chip="1" aria-pressed="false">€<span class="visually-hidden"> — cheap</span></button>
               <button type="button" class="price-input__chip" data-price-chip="2" aria-pressed="false">€€<span class="visually-hidden"> — mid</span></button>
               <button type="button" class="price-input__chip" data-price-chip="3" aria-pressed="false">€€€<span class="visually-hidden"> — splurge</span></button>
             </div>
             <input type="hidden" name="priceLevel" data-price-input value="${place.priceLevel || ''}" />
-          </fieldset>
+          </div>
 
-          <fieldset class="review-modal__date-wrap">
-            <legend class="review-modal__legend">When did you visit?</legend>
+          <div class="review-modal__col">
+            <h4 class="review-modal__legend">When did you visit?</h4>
             ${(() => {
               const now = new Date();
               const cy = now.getUTCFullYear();
@@ -679,7 +679,7 @@
                 </div>
               `;
             })()}
-          </fieldset>
+          </div>
         </div>
 
         <label class="review-modal__comment-wrap">

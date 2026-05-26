@@ -3567,9 +3567,9 @@ a.place-review:hover {
 @media (max-width: 480px) {
     .review-modal__row2 { grid-template-columns: 1fr; }
 }
-.review-modal__row2 > fieldset {
-    border: 0;
-    padding: 0;
+.review-modal__col {
+    display: flex;
+    flex-direction: column;
     margin: 0;
 }
 .review-modal__date-wrap {
