@@ -105,6 +105,14 @@ model Place {
   // filter. Null = never scraped (eligible for first-ever scrape);
   // older than 365 days = eligible for refresh.
   galleryLastScrapedAt DateTime?
+  // External review snapshots (up to 5 per source) — cached so the /place
+  // page can render them inline without an outbound API call. JSON shape:
+  //   [{ author, rating, text, relativeTime, profilePhoto?, lang? }, ...]
+  // Refresh cadence handled by maintenance.js; missing = never fetched.
+  googleReviewsJson        String?  @db.Text
+  googleReviewsFetchedAt   DateTime?
+  tripadvisorReviewsJson   String?  @db.Text
+  tripadvisorReviewsFetchedAt DateTime?
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   styles        PlaceStyle[]

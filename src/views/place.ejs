@@ -365,73 +365,167 @@
       </section>
     ` : ""}
 
-    ${place.reviewsTotal > 0 ? `
-      <section class="card place-community-reviews">
-        <div class="place-community-reviews__header">
-          <div class="place-community-reviews__heading">
-            <h2 class="place-section-title">Community reviews</h2>
-            <span class="place-community-reviews__count">${place.reviewsTotal}</span>
-          </div>
-          <div class="place-community-reviews__nav-wrap">
-            <button type="button" class="place-community-reviews__nav" data-rail-prev aria-label="Previous reviews" hidden>
-              <span class="material-symbols-rounded" aria-hidden="true">chevron_left</span>
-            </button>
-            <button type="button" class="place-community-reviews__nav" data-rail-next aria-label="More reviews" hidden>
-              <span class="material-symbols-rounded" aria-hidden="true">chevron_right</span>
-            </button>
-          </div>
-        </div>
+    ${(() => {
+      // Unified reviews block: OPM + Google + TripAdvisor, mixed.
+      // Per-source: { author, rating, text, relativeTime, profilePhoto?, lang? }
+      const opmAll = place.reviewsFirstPage.map((r) => {
+        const avg = (Number(r.pizza) + Number(r.local) + Number(r.servicio) + Number(r.precio)) / 4;
+        return {
+          source: "opm",
+          author: r.userName,
+          authorAvatar: r.userAvatar || null,
+          rating: avg,
+          text: r.comment || "",
+          createdAt: r.createdAt,
+        };
+      });
+      const googleAll = (place.googleReviews || []).map((r) => ({
+        source: "google",
+        author: r.author || "Anonymous",
+        authorAvatar: r.profilePhoto || null,
+        rating: r.rating != null ? Number(r.rating) : null,
+        text: r.text || "",
+        relativeTime: r.relativeTime || null,
+      }));
+      const taAll = (place.tripadvisorReviews || []).map((r) => ({
+        source: "tripadvisor",
+        author: r.author || "Anonymous",
+        authorAvatar: r.profilePhoto || null,
+        rating: r.rating != null ? Number(r.rating) : null,
+        text: r.text || "",
+        relativeTime: r.relativeTime || null,
+      }));
+      // Combine for the distribution chart + summary number. Excludes
+      // ratingless entries (some external sources omit star value).
+      const allRated = [...opmAll, ...googleAll, ...taAll].filter((r) => r.rating != null);
+      const totalShown = opmAll.length + googleAll.length + taAll.length;
+      if (totalShown === 0) return "";
 
-        ${place.reviewAverages ? `
-          <ul class="place-rating-summary" aria-label="Average ratings by category">
-            ${[
-              { label: "Pizza",   value: place.reviewAverages.pizza },
-              { label: "Setting", value: place.reviewAverages.local },
-              { label: "Service", value: place.reviewAverages.servicio },
-              { label: "Value",   value: place.reviewAverages.precio },
-            ].map((row) => `
-              <li class="place-rating-summary__row">
-                <span class="place-rating-summary__label">${row.label}</span>
-                <span class="place-rating-summary__stars">${row.value != null ? renderStars(row.value, "stars--sm") : ""}</span>
-                <span class="place-rating-summary__num">${row.value != null ? row.value.toFixed(1) : "—"}</span>
-              </li>
-            `).join("")}
-          </ul>
-        ` : ""}
+      const avg = allRated.length
+        ? allRated.reduce((s, r) => s + r.rating, 0) / allRated.length
+        : null;
 
-        <div class="place-community-reviews__rail" data-reviews-rail>
-        <ul class="place-community-reviews__list" data-reviews-list data-place-id="${place.id}" data-loaded-count="${place.reviewsFirstPage.length}" data-total="${place.reviewsTotal}" data-page-size="${place.reviewPageSize}">
-          ${place.reviewsFirstPage.map((r) => {
-            const avg = ((Number(r.pizza) + Number(r.local) + Number(r.servicio) + Number(r.precio)) / 4);
-            const initial = (r.userName || "?").trim().charAt(0).toUpperCase();
-            const avatarHtml = r.userAvatar
-              ? `<span class="opm-review__avatar opm-review__avatar--img"><img src="${escapeAttr(r.userAvatar)}" alt="" referrerpolicy="no-referrer" onerror="this.parentNode.outerHTML='<span class=&quot;opm-review__avatar&quot; aria-hidden=&quot;true&quot;>${escapeHtml(initial)}</span>'" /></span>`
-              : `<span class="opm-review__avatar" aria-hidden="true">${escapeHtml(initial)}</span>`;
-            return `
-            <li class="opm-review">
-              <div class="opm-review__head">
-                <div class="opm-review__who">
-                  ${avatarHtml}
-                  <div class="opm-review__id">
-                    <span class="opm-review__user">${escapeHtml(r.userName)}</span>
-                    <time class="opm-review__time" datetime="${escapeAttr(new Date(r.createdAt).toISOString())}" data-rel-time>${escapeHtml(relTime(r.createdAt))}</time>
-                  </div>
-                </div>
-                <div class="opm-review__badge" title="Average across Pizza, Setting, Service, Value (out of 5)" aria-label="${avg.toFixed(1)} out of 5">
-                  <strong>${avg.toFixed(1)}</strong>
+      // Trustpilot-style 5-bucket distribution
+      const buckets = [
+        { key: "excellent", label: "Excellent", min: 4.5,  hex: "#1ea672" },
+        { key: "good",      label: "Good",      min: 3.5,  hex: "#73cf11" },
+        { key: "average",   label: "Average",   min: 2.5,  hex: "#ffce00" },
+        { key: "poor",      label: "Poor",      min: 1.5,  hex: "#ff8622" },
+        { key: "terrible",  label: "Terrible",  min: 0,    hex: "#ff3722" },
+      ];
+      function bucketFor(rating) {
+        for (const b of buckets) if (rating >= b.min) return b.key;
+        return "terrible";
+      }
+      const counts = Object.fromEntries(buckets.map((b) => [b.key, 0]));
+      for (const r of allRated) counts[bucketFor(r.rating)]++;
+      const maxCount = Math.max(1, ...Object.values(counts));
+
+      const avgLabel = avg == null
+        ? "—"
+        : avg >= 4.5 ? "Excellent"
+        : avg >= 3.5 ? "Good"
+        : avg >= 2.5 ? "Average"
+        : avg >= 1.5 ? "Poor"
+        : "Terrible";
+
+      function sourceBadge(source) {
+        if (source === "opm")        return `<span class="src-badge src-badge--opm" title="OpenPizzaMap community review">OPM</span>`;
+        if (source === "google")     return `<span class="src-badge src-badge--google" title="From Google Maps">G</span>`;
+        if (source === "tripadvisor") return `<span class="src-badge src-badge--ta" title="From TripAdvisor">TA</span>`;
+        return "";
+      }
+
+      function reviewCard(r) {
+        const initial = (r.author || "?").trim().charAt(0).toUpperCase();
+        const avatarHtml = r.authorAvatar
+          ? `<span class="opm-review__avatar opm-review__avatar--img"><img src="${escapeAttr(r.authorAvatar)}" alt="" referrerpolicy="no-referrer" onerror="this.parentNode.outerHTML='<span class=&quot;opm-review__avatar&quot; aria-hidden=&quot;true&quot;>${escapeHtml(initial)}</span>'" /></span>`
+          : `<span class="opm-review__avatar" aria-hidden="true">${escapeHtml(initial)}</span>`;
+        const timeHtml = r.createdAt
+          ? `<time class="opm-review__time" datetime="${escapeAttr(new Date(r.createdAt).toISOString())}" data-rel-time>${escapeHtml(relTime(r.createdAt))}</time>`
+          : r.relativeTime
+          ? `<span class="opm-review__time">${escapeHtml(r.relativeTime)}</span>`
+          : "";
+        const badge = r.rating != null
+          ? `<div class="opm-review__badge" aria-label="${r.rating.toFixed(1)} out of 5"><strong>${r.rating.toFixed(1)}</strong></div>`
+          : "";
+        return `
+          <li class="opm-review" data-source="${r.source}">
+            <div class="opm-review__head">
+              <div class="opm-review__who">
+                ${avatarHtml}
+                <div class="opm-review__id">
+                  <span class="opm-review__user">
+                    ${escapeHtml(r.author)}
+                    ${sourceBadge(r.source)}
+                  </span>
+                  ${timeHtml}
                 </div>
               </div>
-              ${r.comment ? `<blockquote class="opm-review__comment">${escapeHtml(r.comment)}</blockquote>` : ""}
-            </li>
-          `;
-          }).join("")}
-        </ul>
-        </div>
-        ${place.reviewsTotal > place.reviewsFirstPage.length ? `
-          <button type="button" class="btn opm-reviews-more" data-load-more-reviews>Show more</button>
-        ` : ""}
-      </section>
-    ` : ""}
+              ${badge}
+            </div>
+            ${r.text ? `<blockquote class="opm-review__comment">${escapeHtml(r.text)}</blockquote>` : ""}
+          </li>
+        `;
+      }
+
+      return `
+        <section class="card place-reviews">
+          <div class="place-reviews__header">
+            <h2 class="place-section-title">Reviews</h2>
+            <span class="place-reviews__count">${totalShown}</span>
+          </div>
+
+          <div class="place-reviews__summary">
+            <div class="place-reviews__big">
+              <strong class="place-reviews__num">${avg != null ? avg.toFixed(1) : "—"}</strong>
+              <span class="place-reviews__label place-reviews__label--${avgLabel.toLowerCase()}">${avgLabel}</span>
+              ${renderStars(avg, "stars--md")}
+              <span class="place-reviews__total">(${allRated.length} ${allRated.length === 1 ? "review" : "reviews"})</span>
+            </div>
+            <ul class="place-reviews__distribution" aria-label="Rating distribution">
+              ${buckets.map((b) => {
+                const n = counts[b.key];
+                const pct = Math.round((n / maxCount) * 100);
+                return `
+                  <li class="place-reviews__dist-row">
+                    <span class="place-reviews__dist-label">${b.label}</span>
+                    <span class="place-reviews__dist-bar"><span class="place-reviews__dist-fill" style="width:${pct}%;background:${b.hex};"></span></span>
+                    <span class="place-reviews__dist-count">${n}</span>
+                  </li>
+                `;
+              }).join("")}
+            </ul>
+          </div>
+
+          ${place.reviewAverages ? `
+            <ul class="place-rating-summary" aria-label="Average ratings by category (community)">
+              ${[
+                { label: "Pizza",   value: place.reviewAverages.pizza },
+                { label: "Setting", value: place.reviewAverages.local },
+                { label: "Service", value: place.reviewAverages.servicio },
+                { label: "Value",   value: place.reviewAverages.precio },
+              ].map((row) => `
+                <li class="place-rating-summary__row">
+                  <span class="place-rating-summary__label">${row.label}</span>
+                  <span class="place-rating-summary__stars">${row.value != null ? renderStars(row.value, "stars--sm") : ""}</span>
+                  <span class="place-rating-summary__num">${row.value != null ? row.value.toFixed(1) : "—"}</span>
+                </li>
+              `).join("")}
+            </ul>
+          ` : ""}
+
+          <ul class="place-reviews__list" data-reviews-list data-place-id="${place.id}" data-loaded-count="${place.reviewsFirstPage.length}" data-total="${place.reviewsTotal}" data-page-size="${place.reviewPageSize}">
+            ${opmAll.map(reviewCard).join("")}
+            ${googleAll.map(reviewCard).join("")}
+            ${taAll.map(reviewCard).join("")}
+          </ul>
+          ${place.reviewsTotal > place.reviewsFirstPage.length ? `
+            <button type="button" class="btn opm-reviews-more" data-load-more-reviews>Show more community reviews</button>
+          ` : ""}
+        </section>
+      `;
+    })()}
 
     ${place.faqs && place.faqs.length ? `
       <section class="place-faqs">

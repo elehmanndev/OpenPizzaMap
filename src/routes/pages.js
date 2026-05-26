@@ -133,6 +133,19 @@ router.get("/place/:id/:slug?", async (req, res) => {
         precio:   reviewAverages._avg.precio   != null ? Number(reviewAverages._avg.precio)   : null,
     } : null;
 
+    // Parse external review snapshots from the JSON columns. Each item:
+    //   { author, rating, text, relativeTime, profilePhoto?, lang? }
+    function parseReviews(json) {
+        if (!json) return [];
+        try { const arr = JSON.parse(json); return Array.isArray(arr) ? arr : []; }
+        catch { return []; }
+    }
+    place.googleReviews = parseReviews(place.googleReviewsJson);
+    place.tripadvisorReviews = parseReviews(place.tripadvisorReviewsJson);
+    // Free up the raw JSON from the view scope; the view only needs the parsed array.
+    delete place.googleReviewsJson;
+    delete place.tripadvisorReviewsJson;
+
     res.render("place", { user: req.session.user || null, place });
 });
 

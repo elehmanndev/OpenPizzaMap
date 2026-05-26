@@ -2994,13 +2994,13 @@ a.place-review:hover {
     .place-rating-primary { margin-left: 0; }
 }
 
-.place-community-reviews__header {
+.place-reviews__header {
     display: flex;
     align-items: baseline;
     gap: 10px;
     margin-bottom: 16px;
 }
-.place-community-reviews__count {
+.place-reviews__count {
     color: var(--text-muted, #6b7280);
     font-size: 0.95rem;
     font-variant-numeric: tabular-nums;
@@ -3013,7 +3013,7 @@ a.place-review:hover {
      Negative margins + padding extend the scroll surface to the card
      gutter so the snap feels natural from edge to edge.
    - Desktop: CSS grid, 4 equal columns, no overflow. */
-.place-community-reviews__list {
+.place-reviews__list {
     list-style: none;
     margin: 0;
     padding: 0;
@@ -3031,35 +3031,35 @@ a.place-review:hover {
     padding-inline: 4px;
     padding-bottom: 8px; /* space for any scrollbar UA quirks */
 }
-.place-community-reviews__list::-webkit-scrollbar { display: none; }
+.place-reviews__list::-webkit-scrollbar { display: none; }
 /* Desktop keeps the same horizontal-carousel mechanics as mobile —
    the only thing that changes is each card takes ~48% of the viewport
    so two are visible side-by-side with a peek of the next.
    Snap-scroll still applies. */
 @media (min-width: 720px) {
-    .place-community-reviews__list { gap: 16px; }
+    .place-reviews__list { gap: 16px; }
 }
 
 /* Carousel chevron nav — lives in the section header next to the
    "Community reviews" title (Netflix / Spotify pattern). Sitting in
    the header instead of overlaying the carousel means the chevrons
    never cover comment text. */
-.place-community-reviews__heading {
+.place-reviews__heading {
     display: flex;
     align-items: baseline;
     gap: 10px;
     flex: 1;
     min-width: 0;
 }
-.place-community-reviews__nav-wrap {
+.place-reviews__nav-wrap {
     display: none;
     gap: 6px;
     flex: 0 0 auto;
 }
 @media (min-width: 720px) {
-    .place-community-reviews__nav-wrap { display: inline-flex; }
+    .place-reviews__nav-wrap { display: inline-flex; }
 }
-.place-community-reviews__nav {
+.place-reviews__nav {
     width: 32px;
     height: 32px;
     border-radius: 50%;
@@ -3073,13 +3073,13 @@ a.place-review:hover {
     padding: 0;
     transition: background 120ms ease, opacity 120ms ease, transform 80ms ease;
 }
-.place-community-reviews__nav .material-symbols-rounded {
+.place-reviews__nav .material-symbols-rounded {
     font-size: 20px;
     font-variation-settings: 'wght' 600;
 }
-.place-community-reviews__nav:hover { background: var(--c-input-bg); }
-.place-community-reviews__nav:active { transform: scale(0.9); }
-.place-community-reviews__nav[disabled] {
+.place-reviews__nav:hover { background: var(--c-input-bg); }
+.place-reviews__nav:active { transform: scale(0.9); }
+.place-reviews__nav[disabled] {
     opacity: 0.35;
     cursor: not-allowed;
     pointer-events: none;
@@ -3087,15 +3087,111 @@ a.place-review:hover {
 /* Our display: inline-flex above outranks the UA's [hidden] rule, so
    the `hidden` attribute does nothing on these buttons by default.
    Re-assert display:none for hidden chevrons. */
-.place-community-reviews__nav[hidden] { display: none; }
+.place-reviews__nav[hidden] { display: none; }
 /* Make the section header a flex row so the heading hugs the left
    and the chevron-wrap floats to the right. */
-.place-community-reviews__header {
+.place-reviews__header {
     display: flex;
     align-items: center;
     gap: 12px;
     margin-bottom: 16px;
 }
+
+/* ─── Reviews summary + Trustpilot-style distribution ─────────────── */
+.place-reviews__summary {
+    display: grid;
+    grid-template-columns: minmax(140px, 1fr) minmax(220px, 2fr);
+    gap: 24px;
+    align-items: center;
+    padding: 16px 0 18px;
+    border-bottom: 1px solid var(--c-line, #e8e6e0);
+    margin-bottom: 18px;
+}
+@media (max-width: 540px) {
+    .place-reviews__summary {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+.place-reviews__big {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+.place-reviews__num {
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--c-text, #1a1a1a);
+}
+.place-reviews__label {
+    font-size: 16px;
+    font-weight: 700;
+    margin-top: 2px;
+}
+.place-reviews__label--excellent { color: #1ea672; }
+.place-reviews__label--good      { color: #73cf11; }
+.place-reviews__label--average   { color: #c89800; }
+.place-reviews__label--poor      { color: #ff8622; }
+.place-reviews__label--terrible  { color: #ff3722; }
+.place-reviews__total {
+    font-size: 13px;
+    color: var(--c-text-muted, #888);
+    margin-top: 2px;
+}
+.place-reviews__distribution {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.place-reviews__dist-row {
+    display: grid;
+    grid-template-columns: 70px 1fr 36px;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+}
+.place-reviews__dist-label { color: #555; }
+.place-reviews__dist-bar {
+    display: block;
+    height: 8px;
+    background: #ececec;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.place-reviews__dist-fill {
+    display: block;
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.25s ease;
+}
+.place-reviews__dist-count {
+    text-align: right;
+    color: #555;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ─── Source badge on each review card ───────────────────────────── */
+.src-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 6px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    vertical-align: middle;
+    line-height: 1.4;
+}
+.src-badge--opm    { background: var(--c-accent, #c9483a); color: #fff; }
+.src-badge--google { background: #4285F4; color: #fff; }
+.src-badge--ta     { background: #00aa6c; color: #fff; }
 
 /* Community review — testimonial-card layout. Each review is a
    self-contained card. Card sizing differs by viewport — see the
