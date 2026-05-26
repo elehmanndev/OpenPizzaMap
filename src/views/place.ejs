@@ -498,23 +498,6 @@
             </ul>
           </div>
 
-          ${place.reviewAverages ? `
-            <ul class="place-rating-summary" aria-label="Average ratings by category (community)">
-              ${[
-                { label: "Pizza",   value: place.reviewAverages.pizza },
-                { label: "Setting", value: place.reviewAverages.local },
-                { label: "Service", value: place.reviewAverages.servicio },
-                { label: "Value",   value: place.reviewAverages.precio },
-              ].map((row) => `
-                <li class="place-rating-summary__row">
-                  <span class="place-rating-summary__label">${row.label}</span>
-                  <span class="place-rating-summary__stars">${row.value != null ? renderStars(row.value, "stars--sm") : ""}</span>
-                  <span class="place-rating-summary__num">${row.value != null ? row.value.toFixed(1) : "—"}</span>
-                </li>
-              `).join("")}
-            </ul>
-          ` : ""}
-
           <ul class="place-reviews__list" data-reviews-list data-place-id="${place.id}" data-loaded-count="${place.reviewsFirstPage.length}" data-total="${place.reviewsTotal}" data-page-size="${place.reviewPageSize}">
             ${opmAll.map(reviewCard).join("")}
             ${googleAll.map(reviewCard).join("")}
