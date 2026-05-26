@@ -3549,20 +3549,28 @@ a.place-review:hover {
     gap: 10px;
 }
 .review-row__icon {
-    font-size: 20px;
-    line-height: 1;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
     color: var(--c-accent, #c9483a);
-    font-variation-settings: 'wght' 500, 'FILL' 1;
 }
 
-/* Side-by-side row: price + date of visit. Stacks on mobile. */
+/* Side-by-side row: price + date of visit. Stacks on mobile. The two
+   fieldsets share a 44px control height so the chip row and select
+   row line up across the gutter. */
 .review-modal__row2 {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1.1fr;
     gap: 14px;
+    align-items: start;
 }
 @media (max-width: 480px) {
     .review-modal__row2 { grid-template-columns: 1fr; }
+}
+.review-modal__row2 > fieldset {
+    border: 0;
+    padding: 0;
+    margin: 0;
 }
 .review-modal__date-wrap {
     border: 0;
@@ -3585,7 +3593,8 @@ a.place-review:hover {
     border: 1px solid rgba(201, 72, 58, 0.2);
     background: #fff;
     border-radius: 10px;
-    padding: 11px 28px 11px 14px;
+    height: 44px;
+    padding: 0 32px 0 14px;
     font-family: inherit;
     font-size: 15px;
     font-weight: 500;
@@ -4315,7 +4324,8 @@ a.place-review:hover {
 .price-input__chip {
   flex: 1 1 0;
   min-width: 56px;
-  padding: 11px 14px;
+  height: 44px;
+  padding: 0 14px;
   border-radius: 10px;
   border: 1px solid rgba(201, 72, 58, 0.2);
   background: #fff;
@@ -4324,6 +4334,9 @@ a.place-review:hover {
   font-weight: 600;
   color: #2a221a;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease, transform 0.05s ease;
 }
 .price-input__chip:hover { border-color: var(--c-accent, #c9483a); }
