@@ -33,7 +33,14 @@ async function main() {
     console.log(`URL: ${url.replace(apiKey, "***")}`);
     console.log("");
 
-    const res = await fetch(url, { headers: { Accept: "application/json" } });
+    // TA's free Content API gates by Referer header — must match the
+    // registered domain on the API key. Without it, /details returns 403.
+    const res = await fetch(url, {
+        headers: {
+            Accept: "application/json",
+            Referer: "https://www.openpizzamap.com/",
+        },
+    });
     console.log(`HTTP ${res.status}`);
     const body = await res.text();
     if (!res.ok) {

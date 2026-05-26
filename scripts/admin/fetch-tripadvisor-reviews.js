@@ -61,8 +61,13 @@ function normalizeTaReview(r) {
 
 async function fetchOne(apiKey, locationId) {
     const url = `${TA_BASE}/location/${locationId}/reviews?key=${apiKey}&language=en&limit=5`;
+    // TA's free Content API gates by Referer header — must match the
+    // registered domain on the API key. Same pattern as scripts/lib/tripadvisor.js.
     const res = await fetch(url, {
-        headers: { Accept: "application/json" },
+        headers: {
+            Accept: "application/json",
+            Referer: "https://www.openpizzamap.com/",
+        },
     });
     if (res.status === 429) throw new Error("TA_RATE_LIMITED");
     if (!res.ok) {
