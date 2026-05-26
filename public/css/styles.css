@@ -3516,16 +3516,18 @@ a.place-review:hover {
     margin-bottom: 10px;
     padding: 0;
 }
+/* Heading sits as a regular small-caps line above the card — not wrapped
+   inside a fieldset, so there's no broken-border floating-legend look. */
+.review-modal__group { display: flex; flex-direction: column; }
 .review-modal__rows {
-    border: 0;
-    padding: 16px 14px 8px;
+    padding: 4px 14px;
     margin: 0;
     display: flex;
     flex-direction: column;
     gap: 2px;
     background: rgba(255, 255, 255, 0.5);
     border-radius: 12px;
-    border: 1px dashed rgba(201, 72, 58, 0.22);
+    border: 1px solid rgba(201, 72, 58, 0.14);
 }
 .review-row {
     display: flex;
@@ -3544,12 +3546,13 @@ a.place-review:hover {
     color: #2a221a;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
-.review-row__emoji {
-    font-weight: 400;
-    font-size: 18px;
+.review-row__icon {
+    font-size: 20px;
     line-height: 1;
+    color: var(--c-accent, #c9483a);
+    font-variation-settings: 'wght' 500, 'FILL' 1;
 }
 
 /* Side-by-side row: price + date of visit. Stacks on mobile. */
@@ -3561,19 +3564,42 @@ a.place-review:hover {
 @media (max-width: 480px) {
     .review-modal__row2 { grid-template-columns: 1fr; }
 }
-.review-modal__date-wrap { display: flex; flex-direction: column; }
+.review-modal__date-wrap {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+/* Two side-by-side custom selects (Month + Year), matching the price-chip
+   height so the price row and date row align cleanly. */
 .review-modal__date {
+    display: grid;
+    grid-template-columns: 1fr 100px;
+    gap: 8px;
+}
+.review-modal__date-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
     border: 1px solid rgba(201, 72, 58, 0.2);
     background: #fff;
     border-radius: 10px;
-    padding: 11px 14px;
+    padding: 11px 28px 11px 14px;
     font-family: inherit;
     font-size: 15px;
+    font-weight: 500;
     color: #2a221a;
     outline: none;
+    cursor: pointer;
+    /* Custom chevron — inline SVG, brand accent. */
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'><path d='M1 1.5L6 6.5L11 1.5' stroke='%23c9483a' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-.review-modal__date:focus {
+.review-modal__date-select:hover { border-color: var(--c-accent, #c9483a); }
+.review-modal__date-select:focus {
     border-color: var(--c-accent, #c9483a);
     box-shadow: 0 0 0 3px rgba(201, 72, 58, 0.15);
 }

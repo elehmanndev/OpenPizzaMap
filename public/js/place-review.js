@@ -183,9 +183,10 @@
             const comment = commentEl ? commentEl.value.trim() : "";
             const priceLevelRaw = priceInput ? priceInput.value : "";
             const priceLevel = priceLevelRaw ? Number(priceLevelRaw) : undefined;
-            const visitedAtEl = modal.querySelector("[data-review-visitedat]");
-            const visitedAt = visitedAtEl && /^\d{4}-\d{2}$/.test(visitedAtEl.value)
-                ? visitedAtEl.value
+            const visitMonthEl = modal.querySelector("[data-review-visit-month]");
+            const visitYearEl = modal.querySelector("[data-review-visit-year]");
+            const visitedAt = (visitMonthEl && visitYearEl && visitMonthEl.value && visitYearEl.value)
+                ? `${visitYearEl.value}-${visitMonthEl.value}`
                 : null;
             submitBtn.disabled = true;
             const prevLabel = submitBtn.innerHTML;

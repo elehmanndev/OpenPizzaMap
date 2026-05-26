@@ -588,25 +588,39 @@
         <div class="review-modal__sub">How was your visit?</div>
       </header>
       <form class="review-modal__form" data-review-form>
-        <fieldset class="review-modal__rows">
-          <legend class="review-modal__legend">Rate the basics</legend>
-          <div class="review-row" data-review-cat="pizza">
-            <span class="review-row__label"><span class="review-row__emoji" aria-hidden="true">🍕</span> Pizza</span>
-            <div class="star-input" data-star-input data-name="pizza"></div>
+        <div class="review-modal__group" role="group" aria-labelledby="review-rate-heading">
+          <h3 class="review-modal__legend" id="review-rate-heading">Rate the basics</h3>
+          <div class="review-modal__rows">
+            <div class="review-row" data-review-cat="pizza">
+              <span class="review-row__label">
+                <span class="review-row__icon material-symbols-rounded" aria-hidden="true">local_pizza</span>
+                Pizza
+              </span>
+              <div class="star-input" data-star-input data-name="pizza"></div>
+            </div>
+            <div class="review-row" data-review-cat="local">
+              <span class="review-row__label">
+                <span class="review-row__icon material-symbols-rounded" aria-hidden="true">weekend</span>
+                Setting
+              </span>
+              <div class="star-input" data-star-input data-name="local"></div>
+            </div>
+            <div class="review-row" data-review-cat="servicio">
+              <span class="review-row__label">
+                <span class="review-row__icon material-symbols-rounded" aria-hidden="true">room_service</span>
+                Service
+              </span>
+              <div class="star-input" data-star-input data-name="servicio"></div>
+            </div>
+            <div class="review-row" data-review-cat="precio">
+              <span class="review-row__label">
+                <span class="review-row__icon material-symbols-rounded" aria-hidden="true">savings</span>
+                Value
+              </span>
+              <div class="star-input" data-star-input data-name="precio"></div>
+            </div>
           </div>
-          <div class="review-row" data-review-cat="local">
-            <span class="review-row__label"><span class="review-row__emoji" aria-hidden="true">🏠</span> Setting</span>
-            <div class="star-input" data-star-input data-name="local"></div>
-          </div>
-          <div class="review-row" data-review-cat="servicio">
-            <span class="review-row__label"><span class="review-row__emoji" aria-hidden="true">🤵</span> Service</span>
-            <div class="star-input" data-star-input data-name="servicio"></div>
-          </div>
-          <div class="review-row" data-review-cat="precio">
-            <span class="review-row__label"><span class="review-row__emoji" aria-hidden="true">💶</span> Value</span>
-            <div class="star-input" data-star-input data-name="precio"></div>
-          </div>
-        </fieldset>
+        </div>
 
         <div class="review-modal__row2">
           <fieldset class="review-modal__price" data-review-price>
@@ -619,17 +633,37 @@
             <input type="hidden" name="priceLevel" data-price-input value="${place.priceLevel || ''}" />
           </fieldset>
 
-          <label class="review-modal__date-wrap">
-            <span class="review-modal__legend">When did you visit?</span>
-            <input
-              type="month"
-              class="review-modal__date"
-              data-review-visitedat
-              max="${new Date().toISOString().slice(0,7)}"
-              value="${new Date().toISOString().slice(0,7)}"
-              aria-label="Month and year of your visit"
-            />
-          </label>
+          <fieldset class="review-modal__date-wrap">
+            <legend class="review-modal__legend">When did you visit?</legend>
+            ${(() => {
+              const now = new Date();
+              const cy = now.getUTCFullYear();
+              const cm = now.getUTCMonth() + 1; // 1-12
+              const months = [
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December",
+              ];
+              // Last 5 years feels right — people review recent visits.
+              const years = [];
+              for (let y = cy; y >= cy - 5; y--) years.push(y);
+              const monthOpts = months.map((name, i) => {
+                const m = i + 1;
+                const selected = m === cm ? " selected" : "";
+                const val = String(m).padStart(2, "0");
+                return `<option value="${val}"${selected}>${name}</option>`;
+              }).join("");
+              const yearOpts = years.map((y) => {
+                const selected = y === cy ? " selected" : "";
+                return `<option value="${y}"${selected}>${y}</option>`;
+              }).join("");
+              return `
+                <div class="review-modal__date">
+                  <select class="review-modal__date-select" data-review-visit-month aria-label="Month">${monthOpts}</select>
+                  <select class="review-modal__date-select" data-review-visit-year aria-label="Year">${yearOpts}</select>
+                </div>
+              `;
+            })()}
+          </fieldset>
         </div>
 
         <label class="review-modal__comment-wrap">
