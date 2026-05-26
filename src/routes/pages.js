@@ -12,6 +12,34 @@ const router = express.Router();
 
 router.get("/", (req, res) => res.render("maintenance"));
 
+// Public-launch homepage preview. Lives at /home-preview while the
+// maintenance page still owns /. Flip the route above when ready to
+// open to the public.
+router.get("/home-preview", async (req, res) => {
+    const homepage = require("../services/homepage");
+    const tab = String(req.query.tab || "top-rated");
+    const [cityCards, styleCards, counters, featured, collage, footerLinks] = await Promise.all([
+        homepage.getCityCards(4),
+        homepage.getStyleCards(),
+        homepage.getCounters(),
+        homepage.getFeaturedPlaces(tab, 8),
+        homepage.getHeroCollage(),
+        homepage.getFooterLinks(),
+    ]);
+    const blogStubs = homepage.getBlogStubs();
+    res.render("home_preview", {
+        user: req.session.user || null,
+        cityCards,
+        styleCards,
+        counters,
+        featured,
+        collage,
+        blogStubs,
+        footerLinks,
+        activeTab: tab,
+    });
+});
+
 router.get("/map", (req, res) => {
     res.render("map", {
         user: req.session.user || null,

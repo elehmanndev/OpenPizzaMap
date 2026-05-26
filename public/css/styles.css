@@ -4386,3 +4386,925 @@ a.place-review:hover {
 .place-welcome__cta {
   flex: 0 0 auto;
 }
+
+/* ──────────────────────────────────────────────────────────────────
+   Public-launch homepage (/home-preview).
+   Standalone surface — does not use the inner-app layout.ejs. Palette
+   matches maintenance.ejs (green accent on cream), so the public flow
+   maintenance → homepage feels like one brand. Mobile-first at 375px.
+   ────────────────────────────────────────────────────────────────── */
+body.opm-home {
+  /* Inherits --c-accent (#c0392b warm red) from :root so the homepage
+     reads as part of the same brand family as the inner-app pages.
+     The earlier green palette was carried over from maintenance.ejs;
+     dropping it here unifies the look. */
+  margin: 0;
+  background: var(--c-bg);
+  color: var(--c-text);
+  font-family: 'Outfit', sans-serif;
+}
+
+.opm-home-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.opm-home-brand {
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--c-text);
+  text-decoration: none;
+  letter-spacing: -0.01em;
+}
+.opm-home-nav {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.opm-home-nav a {
+  color: var(--c-text);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+}
+.opm-home-signin {
+  background: var(--c-accent);
+  color: #fff !important;
+  padding: 8px 16px;
+  border-radius: 999px;
+}
+.opm-home-signin:hover { background: var(--c-accent-strong); }
+
+/* User avatar chip in the home header (logged-in state) */
+.opm-home-userchip {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--c-accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  text-decoration: none;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(30, 30, 30, 0.12);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.opm-home-userchip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(30, 30, 30, 0.18);
+}
+.opm-home-userchip img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.opm-home-userchip-fallback {
+  line-height: 1;
+}
+
+/* Hamburger button — sits to the right of the avatar/sign-in */
+.opm-home-menu {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  color: var(--c-text);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.opm-home-menu:hover {
+  background: rgba(30, 30, 30, 0.06);
+}
+.opm-home-menu .material-symbols-rounded {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.opm-hero {
+  padding: 24px 20px 36px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.opm-hero-inner { max-width: 720px; }
+.opm-hero-eyebrow {
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--c-accent-strong);
+  margin-bottom: 14px;
+}
+.opm-hero h1 {
+  font-size: clamp(2.2rem, 7vw, 4rem);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  margin: 0 0 18px;
+}
+.opm-hero-tagline {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--c-muted);
+  margin: 0 0 24px;
+  max-width: 540px;
+}
+.opm-hero-search {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--c-border);
+  border-radius: 999px;
+  padding: 4px 4px 4px 16px;
+  box-shadow: 0 1px 2px rgba(30, 30, 30, 0.04);
+  max-width: 520px;
+}
+.opm-hero-search:focus-within {
+  border-color: var(--c-accent);
+  box-shadow: 0 0 0 3px rgba(var(--c-accent-rgb), 0.18);
+}
+.opm-hero-search-icon {
+  color: var(--c-muted);
+  display: flex;
+  align-items: center;
+  margin-right: 8px;
+}
+.opm-hero-search input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: 16px;
+  height: 44px;
+  min-width: 0;
+}
+.opm-hero-search button {
+  border: none;
+  border-radius: 999px;
+  background: var(--c-accent);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  padding: 0 20px;
+  height: 40px;
+  cursor: pointer;
+}
+.opm-hero-search button:hover { background: var(--c-accent-strong); }
+.opm-hero-maplink {
+  display: inline-block;
+  margin-top: 14px;
+  color: var(--c-muted);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+.opm-hero-maplink:hover { color: var(--c-accent-strong); }
+
+.opm-home-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 8px 0 48px;
+}
+
+.opm-row { margin: 28px 0 8px; }
+.opm-row-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 20px;
+  margin-bottom: 14px;
+}
+.opm-row-head h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--c-accent-strong);
+  letter-spacing: -0.01em;
+}
+.opm-row-sub {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--c-muted);
+}
+.opm-row-viewall {
+  color: var(--c-accent-strong);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+}
+.opm-row-viewall:hover { text-decoration: underline; }
+
+.opm-row-scroll {
+  position: relative;
+}
+.opm-row-track {
+  display: flex;
+  gap: 14px;
+  /* No right padding — without it, the 5th card's start position
+     (cardN.right + gap) lands past the track's outer-right boundary
+     and overflow-x: auto clips it completely. With any right padding,
+     that padding zone is still inside the visible track and the 5th
+     card peeks into it by ~6px. Left padding stays for visual gutter. */
+  padding: 4px 0 4px 20px;
+  overflow-x: auto;
+  scroll-padding-inline: 20px;
+  scrollbar-width: none;
+}
+.opm-row-track::-webkit-scrollbar { display: none; }
+
+.opm-row-card {
+  flex: 0 0 78%;
+  max-width: 280px;
+  min-width: 220px;
+  aspect-ratio: 1 / 1;
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  text-decoration: none;
+  color: #fff;
+  background: #d6d3ce;
+  box-shadow: 0 1px 2px rgba(30, 30, 30, 0.06);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.opm-row-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(30, 30, 30, 0.12);
+}
+.opm-row-card-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.opm-row-card-img.opm-row-card-img-fallback {
+  object-fit: contain;
+  padding: 28%;
+  background: linear-gradient(135deg, #f3eedf 0%, #e7dec7 100%);
+}
+.opm-row-card-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.65) 0%, rgba(0, 0, 0, 0) 55%);
+}
+.opm-row-card-title {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 14px;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.15;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  letter-spacing: -0.01em;
+}
+.opm-row-card-sub {
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.opm-row-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--c-border);
+  background: #fff;
+  color: var(--c-text);
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 4px 12px rgba(30, 30, 30, 0.12);
+  z-index: 2;
+}
+.opm-row-arrow:hover { background: var(--c-bg); }
+.opm-row-arrow-left { left: 6px; }
+.opm-row-arrow-right { right: 6px; }
+
+@media (min-width: 768px) {
+  /* Exactly 4 cards visible per view (no partial peek). flex-basis %
+     resolves against the flex container's content box (already
+     excluding the track's 20px padding), so the formula only needs
+     to subtract the 3 inter-card gaps. flex-shrink: 0 prevents a 5th
+     card from squeezing the others narrower. */
+  .opm-row-card {
+    flex-basis: calc((100% - 14px * 3) / 4);
+    flex-shrink: 0;
+    max-width: none;
+  }
+  .opm-row-arrow { display: flex; }
+}
+
+.opm-home-footer {
+  border-top: 1px solid var(--c-border);
+  padding: 48px 20px 32px;
+  margin-top: 48px;
+}
+.opm-home-footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.opm-home-footer-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px 24px;
+}
+@media (min-width: 700px) {
+  .opm-home-footer-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1024px) {
+  .opm-home-footer-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+.opm-footer-col h4 {
+  margin: 0 0 14px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--c-text);
+  letter-spacing: 0.01em;
+  border-bottom: 1px solid var(--c-border);
+  padding-bottom: 10px;
+}
+.opm-footer-col .opm-footer-subhead {
+  margin-top: 22px;
+}
+.opm-footer-col ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.opm-footer-col li { margin-bottom: 8px; }
+.opm-footer-col li a {
+  color: var(--c-muted);
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  transition: color 0.15s ease;
+}
+.opm-footer-col li a:hover { color: var(--c-accent-strong); }
+
+.opm-home-footer-meta {
+  margin-top: 36px;
+  padding-top: 24px;
+  border-top: 1px solid var(--c-border);
+}
+.opm-home-footer-brand {
+  font-weight: 800;
+  font-size: 16px;
+  margin-bottom: 6px;
+  color: var(--c-text);
+}
+.opm-home-footer p {
+  margin: 0;
+  color: var(--c-muted);
+  font-size: 14px;
+}
+
+/* Hero — bigger headline, trust badge, photo collage on desktop */
+.opm-hero-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 28px;
+  align-items: center;
+}
+.opm-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px 6px 8px;
+  background: #fff;
+  border: 1px solid var(--c-border);
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--c-text);
+  margin-bottom: 18px;
+  box-shadow: 0 1px 2px rgba(30, 30, 30, 0.04);
+}
+.opm-hero-badge-icon {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(var(--c-accent-rgb), 0.10);
+  align-items: center;
+  justify-content: center;
+}
+.opm-hero-badge strong { font-weight: 800; }
+.opm-hero-badge span { color: var(--c-muted); }
+
+.opm-hero-collage {
+  display: none;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 12px;
+  height: 460px;
+}
+.opm-hero-collage-tile {
+  overflow: hidden;
+  border-radius: 18px;
+  background: #e7dec7;
+  box-shadow: 0 8px 24px rgba(30, 30, 30, 0.08);
+}
+.opm-hero-collage-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.opm-hero-collage-tile img.opm-hero-collage-fallback {
+  object-fit: contain;
+  padding: 22%;
+  background: linear-gradient(135deg, #f3eedf 0%, #e7dec7 100%);
+}
+.opm-hero-collage-tile-0 { grid-column: 1 / 2; grid-row: 1 / 3; }
+.opm-hero-collage-tile-1 { grid-column: 2 / 3; grid-row: 1 / 2; }
+.opm-hero-collage-tile-2 { grid-column: 2 / 3; grid-row: 2 / 3; }
+
+@media (min-width: 900px) {
+  .opm-hero-grid {
+    grid-template-columns: 1.1fr 1fr;
+    gap: 56px;
+  }
+  .opm-hero-collage { display: grid; }
+  .opm-hero { padding-top: 48px; padding-bottom: 56px; }
+}
+
+/* Featured Places (curated) */
+.opm-featured {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 12px 0 24px;
+}
+.opm-featured-head { padding: 0 20px; }
+.opm-featured-head {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto 22px;
+}
+.opm-featured-eyebrow {
+  display: inline-block;
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: rgba(var(--c-accent-rgb), 0.10);
+  color: var(--c-accent-strong);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  margin-bottom: 12px;
+}
+.opm-featured-head h2 {
+  margin: 0;
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--c-text);
+}
+.opm-featured-sub {
+  margin: 8px 0 18px;
+  color: var(--c-muted);
+  font-size: 15px;
+}
+.opm-featured-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+.opm-featured-tab {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--c-border);
+  background: #fff;
+  color: var(--c-text);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.opm-featured-tab:hover { background: var(--c-bg); }
+.opm-featured-tab.is-active {
+  background: var(--c-accent);
+  border-color: var(--c-accent);
+  color: #fff;
+}
+.opm-featured-track-wrap { position: relative; }
+.opm-featured-track {
+  display: flex;
+  gap: 16px;
+  padding: 4px 0 4px 20px;
+  overflow-x: auto;
+  scroll-padding-inline: 20px;
+  scrollbar-width: none;
+}
+.opm-featured-track::-webkit-scrollbar { display: none; }
+
+.opm-featured-card {
+  flex: 0 0 78%;
+  max-width: 300px;
+  min-width: 240px;
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--c-border);
+  text-decoration: none;
+  color: var(--c-text);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 1px 3px rgba(30, 30, 30, 0.05);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.opm-featured-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(30, 30, 30, 0.12);
+}
+.opm-featured-card-imgwrap {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background: #e7dec7;
+  overflow: hidden;
+}
+.opm-featured-card-img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+.opm-featured-card-img.opm-featured-card-img-fallback {
+  object-fit: contain;
+  padding: 22%;
+  background: linear-gradient(135deg, #f3eedf 0%, #e7dec7 100%);
+}
+.opm-featured-card-pill {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.95);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--c-text);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.opm-featured-card-body {
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+.opm-featured-card-body h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--c-text);
+}
+.opm-featured-card-addr {
+  margin: 0;
+  font-size: 12px;
+  color: var(--c-muted);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.opm-featured-card-foot {
+  margin-top: auto;
+  padding-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--c-border);
+}
+.opm-featured-card-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--c-text);
+}
+.opm-star { color: #f5b400; font-size: 16px; line-height: 1; }
+.opm-featured-card-revcount {
+  color: var(--c-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.opm-featured-card-price {
+  color: var(--c-accent-strong);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+@media (min-width: 900px) {
+  /* Same 4-up math as .opm-row-card — flex-basis % is relative to the
+     flex container's content box (track padding already excluded), so
+     only inter-card gaps come out. flex-shrink: 0 stops a peeking 5th
+     card from squeezing the visible four. */
+  .opm-featured-card {
+    flex-basis: calc((100% - 16px * 3) / 4);
+    flex-shrink: 0;
+    max-width: none;
+  }
+}
+
+/* Newsletter banner — splits city row from style row */
+.opm-newsletter {
+  /* Match row tracks: 20px left gutter, flush to the right edge. With
+     symmetric 20px both sides the banner came up short relative to the
+     row cards (which extend to the page-content edge after the peek
+     fix). Asymmetric here keeps the right edges aligned.
+     Dark warm gradient (deep maroon) replaces the earlier teal so the
+     band reads as part of the red brand family. */
+  margin: 40px 0 40px 20px;
+  background: linear-gradient(135deg, #2a1410 0%, #1c0c09 100%);
+  color: #fff;
+  border-radius: 22px;
+  padding: 36px 28px;
+  position: relative;
+  overflow: hidden;
+}
+.opm-newsletter::before {
+  content: "";
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(var(--c-accent-rgb), 0.30) 0%, transparent 70%);
+  pointer-events: none;
+}
+.opm-newsletter-inner {
+  position: relative;
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 22px;
+}
+.opm-newsletter-copy h2 {
+  margin: 0 0 8px;
+  font-size: clamp(1.5rem, 3.5vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.opm-newsletter-copy p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.opm-newsletter-form {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 4px 4px 4px 18px;
+  width: 100%;
+  max-width: 460px;
+}
+.opm-newsletter-form input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font: inherit;
+  font-size: 15px;
+  height: 44px;
+  min-width: 0;
+}
+.opm-newsletter-form input::placeholder { color: rgba(255, 255, 255, 0.55); }
+.opm-newsletter-form button {
+  border: none;
+  border-radius: 999px;
+  background: var(--c-accent);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  padding: 0 22px;
+  height: 40px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.opm-newsletter-form button:hover { background: var(--c-accent-strong); }
+.opm-newsletter-form button:disabled { opacity: 0.6; cursor: default; }
+.opm-newsletter-msg {
+  margin: 8px 0 0;
+  min-height: 1.2em;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.78);
+}
+.opm-newsletter-msg.ok { color: #6bd9a0; }
+.opm-newsletter-msg.err { color: #ffb8a8; }
+
+@media (min-width: 768px) {
+  .opm-newsletter { padding: 56px 40px; }
+}
+
+/* Map CTA banner — between city row and curated featured section.
+   Centered stack (text on top, CTA below), taller padding so it feels
+   like its own moment between the two product rows. Light cream-on-red
+   so it visually contrasts the dark newsletter band later in the page. */
+.opm-mapcta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 24px;
+  margin: 40px 0 40px 20px;
+  padding: 64px 32px;
+  border-radius: 22px;
+  /* Topographic-contour pattern over the cream base. Light variant of
+     the dark topo reference: muted brown lines + dashed lat/lng grid,
+     no pins (this is the "explore the terrain" feel, not a city map).
+     All inline SVG — no external tile fetch. */
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='600' viewBox='0 0 600 600'><g stroke='%238a7c6c' fill='none'><g stroke-opacity='0.18' stroke-dasharray='6 8' stroke-width='1'><path d='M0 200 H600'/><path d='M0 400 H600'/><path d='M200 0 V600'/><path d='M400 0 V600'/></g><g stroke-opacity='0.28' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M100 150 C 130 100, 200 90, 230 130 C 260 170, 230 220, 180 230 C 130 240, 80 200, 100 150 Z'/><path d='M120 155 C 145 120, 195 115, 218 145 C 240 175, 220 210, 180 218 C 140 226, 100 195, 120 155 Z' stroke-opacity='0.22'/><path d='M140 162 C 160 140, 190 138, 205 158 C 220 178, 205 200, 180 205 C 155 210, 130 188, 140 162 Z' stroke-opacity='0.16'/><path d='M380 380 C 410 340, 480 340, 510 380 C 540 420, 510 470, 460 480 C 410 490, 360 440, 380 380 Z'/><path d='M400 388 C 425 358, 475 358, 498 388 C 521 418, 498 458, 460 466 C 422 474, 388 432, 400 388 Z' stroke-opacity='0.22'/><path d='M420 398 C 440 378, 470 378, 485 398 C 500 418, 485 442, 460 446 C 435 450, 415 428, 420 398 Z' stroke-opacity='0.16'/></g><g stroke-opacity='0.22' stroke-width='1.3' stroke-linecap='round'><path d='M0 50 C 100 30, 200 80, 300 70 S 500 20, 600 60' fill='none'/><path d='M0 70 C 100 50, 200 100, 300 90 S 500 40, 600 80' stroke-opacity='0.14'/><path d='M0 540 C 100 510, 200 560, 300 530 S 500 580, 600 545' fill='none'/><path d='M0 560 C 100 530, 200 580, 300 550 S 500 600, 600 565' stroke-opacity='0.14'/><path d='M0 300 C 80 280, 150 320, 220 290 S 380 330, 460 295 S 580 320, 600 300' stroke-opacity='0.20'/><path d='M0 330 C 80 310, 150 350, 220 320 S 380 360, 460 325 S 580 350, 600 330' stroke-opacity='0.12'/></g></g></svg>"),
+    radial-gradient(circle at 90% 10%, rgba(var(--c-accent-rgb), 0.06) 0%, transparent 60%),
+    linear-gradient(135deg, #fdfaf3 0%, #f3ead9 100%);
+  background-repeat: repeat, no-repeat, no-repeat;
+  background-size: 600px 600px, auto, auto;
+  border: 1px solid var(--c-border);
+  text-decoration: none;
+  color: var(--c-text);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.opm-mapcta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(30, 30, 30, 0.10);
+  border-color: rgba(var(--c-accent-rgb), 0.45);
+}
+.opm-mapcta-text {
+  max-width: 640px;
+  position: relative;
+  z-index: 1;
+}
+.opm-mapcta-eyebrow {
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--c-accent-strong);
+  margin-bottom: 12px;
+}
+.opm-mapcta h2 {
+  margin: 0 0 10px;
+  font-size: clamp(1.5rem, 3vw, 2.4rem);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+.opm-mapcta p {
+  margin: 0;
+  color: var(--c-muted);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.opm-mapcta-action {
+  position: relative;
+  z-index: 1;
+}
+.opm-mapcta-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 28px;
+  background: var(--c-accent);
+  color: #fff;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 16px;
+  white-space: nowrap;
+  box-shadow: 0 6px 14px rgba(var(--c-accent-rgb), 0.25);
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.opm-mapcta:hover .opm-mapcta-button {
+  background: var(--c-accent-strong);
+}
+.opm-mapcta-decor {
+  position: absolute;
+  top: -40px;
+  right: -30px;
+  width: 220px;
+  height: 220px;
+  color: rgba(var(--c-accent-rgb), 0.08);
+  pointer-events: none;
+  z-index: 0;
+}
+.opm-mapcta-decor svg {
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 700px) {
+  .opm-mapcta {
+    padding: 48px 22px;
+  }
+}
+
+/* Blog row */
+.opm-blog { margin-top: 8px; }
+.opm-blog-soon {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(30, 30, 30, 0.08);
+  color: var(--c-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.opm-blog-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  /* Match row tracks + newsletter: 20px left gutter, flush right. */
+  padding: 4px 0 4px 20px;
+}
+.opm-blog-card {
+  background: #fff;
+  border: 1px solid var(--c-border);
+  border-radius: 16px;
+  overflow: hidden;
+  text-decoration: none;
+  color: var(--c-text);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.opm-blog-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(30, 30, 30, 0.10);
+}
+.opm-blog-card-imgwrap {
+  aspect-ratio: 16 / 10;
+  background: linear-gradient(135deg, #f3eedf 0%, #e7dec7 100%);
+  overflow: hidden;
+}
+.opm-blog-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 14%;
+  display: block;
+}
+.opm-blog-card-body {
+  padding: 16px 18px 20px;
+}
+.opm-blog-card-body h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--c-text);
+}
+.opm-blog-card-meta {
+  margin: 0 0 10px;
+  color: var(--c-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.opm-blog-card-excerpt {
+  margin: 0;
+  color: var(--c-text);
+  font-size: 14px;
+  line-height: 1.5;
+  opacity: 0.82;
+}
+@media (min-width: 768px) {
+  .opm-blog-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+  }
+}
