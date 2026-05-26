@@ -3404,6 +3404,10 @@ a.place-review:hover {
 .opm-reviews-more { margin-top: 16px; width: 100%; }
 @media (min-width: 480px) { .opm-reviews-more { width: auto; } }
 
+/* ─── Review modal — "tasting note" feel ─────────────────────────────
+   Cream paper card, red ink accents, ochre stars, italic prompts.
+   Modal sits on a blurred backdrop (not a solid darken) so the place
+   page stays visually present behind the form. */
 .review-modal {
     position: fixed;
     inset: 0;
@@ -3416,67 +3420,163 @@ a.place-review:hover {
 .review-modal__backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(0,0,0,.55);
-    animation: opm-fade .18s ease-out;
+    background: rgba(20, 16, 12, .25);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    animation: opm-fade .2s ease-out;
 }
 .review-modal__sheet {
     position: relative;
-    background: var(--card-bg, #fff);
+    background: #faf6ee;
+    /* Subtle paper-grain texture so the cream surface isn't flat. */
+    background-image:
+        radial-gradient(circle at 18% 22%, rgba(201, 72, 58, 0.04) 0, transparent 38%),
+        radial-gradient(circle at 84% 8%, rgba(233, 187, 60, 0.06) 0, transparent 40%);
     width: 100%;
     max-width: 540px;
     max-height: 92vh;
-    border-radius: 18px 18px 0 0;
-    padding: 22px 18px 18px;
-    box-shadow: 0 -10px 40px rgba(0,0,0,.25);
+    border-radius: 20px 20px 0 0;
+    padding: 24px 22px 22px;
+    box-shadow: 0 -20px 50px rgba(20, 16, 12, .28);
     display: flex;
     flex-direction: column;
     overflow-y: auto;
-    animation: opm-slide-up .25s cubic-bezier(.2,.7,.3,1);
+    animation: opm-slide-up .28s cubic-bezier(.2,.7,.3,1);
     -webkit-overflow-scrolling: touch;
 }
-@media (min-width: 768px) {
+@media (min-width: 600px) {
     .review-modal { align-items: center; }
     .review-modal__sheet {
-        border-radius: 16px;
-        max-height: 80vh;
-        padding: 26px 24px 22px;
-        animation: opm-fade .2s ease-out;
+        border-radius: 20px;
+        max-height: 86vh;
+        padding: 28px 30px 24px;
+        animation: opm-fade .22s ease-out;
     }
 }
-.review-modal__head {
-    position: relative;
-    margin-bottom: 14px;
-    padding-right: 36px;
-}
-.review-modal__title { margin: 0; font-size: 1.18rem; line-height: 1.3; }
+
+/* Top-right close button — floats above the header, doesn't push it. */
 .review-modal__close {
     position: absolute;
-    top: -4px;
-    right: -4px;
-    background: transparent;
-    border: 0;
-    width: 40px;
-    height: 40px;
+    top: 12px;
+    right: 12px;
+    background: rgba(255, 255, 255, .7);
+    border: 1px solid rgba(201, 72, 58, .15);
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: var(--text, #111);
+    color: #4a3a2a;
     cursor: pointer;
+    z-index: 2;
+    transition: background 0.15s ease, transform 0.1s ease;
 }
-.review-modal__close:hover { background: rgba(0,0,0,.06); }
-.review-modal__form { display: flex; flex-direction: column; gap: 14px; }
-.review-modal__rows { border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.review-modal__close:hover { background: #fff; transform: rotate(90deg); }
+
+.review-modal__head {
+    margin-bottom: 22px;
+    padding-right: 44px;
+    text-align: left;
+}
+.review-modal__eyebrow {
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--c-accent, #c9483a);
+    margin-bottom: 8px;
+}
+.review-modal__title {
+    margin: 0;
+    font-family: 'Outfit', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.15;
+    color: #1f1a14;
+    letter-spacing: -0.01em;
+}
+.review-modal__sub {
+    margin-top: 6px;
+    font-style: italic;
+    font-size: 15px;
+    color: #6b5a48;
+}
+
+.review-modal__form { display: flex; flex-direction: column; gap: 20px; }
+.review-modal__legend {
+    display: block;
+    font-family: 'Outfit', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #8a7660;
+    margin-bottom: 10px;
+    padding: 0;
+}
+.review-modal__rows {
+    border: 0;
+    padding: 16px 14px 8px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 12px;
+    border: 1px dashed rgba(201, 72, 58, 0.22);
+}
 .review-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 6px 0;
+    padding: 8px 0;
     min-height: 48px;
 }
-.review-row__label { font-weight: 600; font-size: 1.02rem; }
-.review-row__emoji { font-weight: 400; }
+.review-row + .review-row {
+    border-top: 1px solid rgba(201, 72, 58, 0.08);
+}
+.review-row__label {
+    font-weight: 600;
+    font-size: 15.5px;
+    color: #2a221a;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.review-row__emoji {
+    font-weight: 400;
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Side-by-side row: price + date of visit. Stacks on mobile. */
+.review-modal__row2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+@media (max-width: 480px) {
+    .review-modal__row2 { grid-template-columns: 1fr; }
+}
+.review-modal__date-wrap { display: flex; flex-direction: column; }
+.review-modal__date {
+    border: 1px solid rgba(201, 72, 58, 0.2);
+    background: #fff;
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-family: inherit;
+    font-size: 15px;
+    color: #2a221a;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.review-modal__date:focus {
+    border-color: var(--c-accent, #c9483a);
+    box-shadow: 0 0 0 3px rgba(201, 72, 58, 0.15);
+}
 
 .star-input { display: inline-flex; gap: 4px; }
 .star-input__btn {
@@ -3508,28 +3608,70 @@ a.place-review:hover {
 }
 .star-input__visual .star { width: 32px; height: 32px; }
 
-.review-modal__comment-wrap { display: flex; flex-direction: column; gap: 4px; }
-.review-modal__comment-label { font-size: 0.95rem; color: var(--text-muted, #6b7280); }
+.review-modal__comment-wrap { display: flex; flex-direction: column; }
 .review-modal__comment {
     width: 100%;
-    border: 1px solid rgba(0,0,0,.18);
+    border: 1px solid rgba(201, 72, 58, 0.2);
+    background: #fff;
     border-radius: 10px;
-    padding: 10px 12px;
-    font-family: inherit;
-    font-size: 1rem;
+    padding: 12px 14px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #2a221a;
     resize: vertical;
-    min-height: 80px;
+    min-height: 90px;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-.review-modal__counter { align-self: flex-end; font-size: 0.8rem; color: var(--text-muted, #9ca3af); }
+.review-modal__comment:focus {
+    border-color: var(--c-accent, #c9483a);
+    box-shadow: 0 0 0 3px rgba(201, 72, 58, 0.15);
+}
+.review-modal__comment::placeholder { color: #a89786; font-style: italic; }
+.review-modal__counter {
+    align-self: flex-end;
+    margin-top: 6px;
+    font-size: 12px;
+    color: #a89786;
+    font-variant-numeric: tabular-nums;
+}
 .review-modal__error {
-    background: #fef2f2;
-    color: #991b1b;
-    border-radius: 8px;
-    padding: 8px 10px;
-    font-size: 0.92rem;
+    background: rgba(201, 72, 58, 0.08);
+    color: #8a2e22;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 14px;
 }
-.review-modal__submit { width: 100%; padding: 12px 16px; font-size: 1rem; }
-.review-modal__submit:disabled { opacity: .55; cursor: not-allowed; }
+.review-modal__submit {
+    width: 100%;
+    padding: 14px 18px;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: 0.02em;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    background: var(--c-accent, #c9483a);
+    color: #fff;
+    cursor: pointer;
+    transition: filter 0.15s ease, transform 0.05s ease;
+    box-shadow: 0 4px 12px rgba(201, 72, 58, 0.22);
+}
+.review-modal__submit:hover:not(:disabled) { filter: brightness(0.95); }
+.review-modal__submit:active:not(:disabled) { transform: translateY(1px); }
+.review-modal__submit:disabled {
+    background: #d8d4ca;
+    color: #fff;
+    box-shadow: none;
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+.review-modal__submit .material-symbols-rounded { font-size: 20px; }
 
 .opm-toast {
     position: fixed;
@@ -4146,30 +4288,30 @@ a.place-review:hover {
 }
 .price-input__chip {
   flex: 1 1 0;
-  min-width: 64px;
-  padding: 10px 14px;
-  border-radius: 999px;
-  border: 1px solid var(--c-border);
-  background: var(--c-input-bg);
+  min-width: 56px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(201, 72, 58, 0.2);
+  background: #fff;
   font: inherit;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
-  color: var(--c-text);
+  color: #2a221a;
   cursor: pointer;
-  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease, transform 0.05s ease;
 }
-.price-input__chip:hover {
-  border-color: var(--c-focus-border);
-}
+.price-input__chip:hover { border-color: var(--c-accent, #c9483a); }
 .price-input__chip.is-active {
-  background: var(--c-accent);
-  border-color: var(--c-accent-strong);
+  background: var(--c-accent, #c9483a);
+  border-color: var(--c-accent, #c9483a);
   color: #fff;
+  box-shadow: 0 2px 8px rgba(201, 72, 58, 0.22);
 }
 .price-input__chip:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px var(--c-focus-shadow);
+  box-shadow: 0 0 0 3px rgba(201, 72, 58, 0.18);
 }
+.price-input__chip:active { transform: translateY(1px); }
 
 /* ── Welcome banner on /place/:id?welcome=1 (post-chatbot intake) ────── */
 .place-welcome {

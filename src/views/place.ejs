@@ -579,47 +579,70 @@
   <div class="review-modal" data-review-modal data-place-id="${place.id}" data-place-name="${escapeAttr(place.name)}" data-has-existing="${place.viewerReview ? "1" : "0"}" hidden>
     <div class="review-modal__backdrop" data-review-close></div>
     <div class="review-modal__sheet" role="dialog" aria-modal="true" aria-labelledby="review-modal-title">
+      <button type="button" class="review-modal__close" data-review-close aria-label="Close">
+        <span class="material-symbols-rounded" aria-hidden="true">close</span>
+      </button>
       <header class="review-modal__head">
-        <button type="button" class="review-modal__close" data-review-close aria-label="Close">
-          <span class="material-symbols-rounded" aria-hidden="true">close</span>
-        </button>
-        <h2 class="review-modal__title" id="review-modal-title">How was ${escapeHtml(place.name)}?</h2>
+        <div class="review-modal__eyebrow">Tasting note</div>
+        <h2 class="review-modal__title" id="review-modal-title">${escapeHtml(place.name)}</h2>
+        <div class="review-modal__sub">How was your visit?</div>
       </header>
       <form class="review-modal__form" data-review-form>
         <fieldset class="review-modal__rows">
+          <legend class="review-modal__legend">Rate the basics</legend>
           <div class="review-row" data-review-cat="pizza">
-            <span class="review-row__label">Pizza <span class="review-row__emoji" aria-hidden="true">🍕</span></span>
+            <span class="review-row__label"><span class="review-row__emoji" aria-hidden="true">🍕</span> Pizza</span>
             <div class="star-input" data-star-input data-name="pizza"></div>
           </div>
           <div class="review-row" data-review-cat="local">
-            <span class="review-row__label">Setting <span class="review-row__emoji" aria-hidden="true">🏠</span></span>
+            <span class="review-row__label"><span class="review-row__emoji" aria-hidden="true">🏠</span> Setting</span>
             <div class="star-input" data-star-input data-name="local"></div>
           </div>
           <div class="review-row" data-review-cat="servicio">
-            <span class="review-row__label">Service <span class="review-row__emoji" aria-hidden="true">🤵</span></span>
+            <span class="review-row__label"><span class="review-row__emoji" aria-hidden="true">🤵</span> Service</span>
             <div class="star-input" data-star-input data-name="servicio"></div>
           </div>
           <div class="review-row" data-review-cat="precio">
-            <span class="review-row__label">Value <span class="review-row__emoji" aria-hidden="true">💶</span></span>
+            <span class="review-row__label"><span class="review-row__emoji" aria-hidden="true">💶</span> Value</span>
             <div class="star-input" data-star-input data-name="precio"></div>
           </div>
         </fieldset>
-        <fieldset class="review-modal__price" data-review-price>
-          <legend class="review-row__label">Price range</legend>
-          <div class="price-input" role="radiogroup" aria-label="Price range">
-            <button type="button" class="price-input__chip" data-price-chip="1" aria-pressed="false">€<span class="visually-hidden"> — cheap</span></button>
-            <button type="button" class="price-input__chip" data-price-chip="2" aria-pressed="false">€€<span class="visually-hidden"> — mid</span></button>
-            <button type="button" class="price-input__chip" data-price-chip="3" aria-pressed="false">€€€<span class="visually-hidden"> — splurge</span></button>
-          </div>
-          <input type="hidden" name="priceLevel" data-price-input value="${place.priceLevel || ''}" />
-        </fieldset>
+
+        <div class="review-modal__row2">
+          <fieldset class="review-modal__price" data-review-price>
+            <legend class="review-modal__legend">How pricey?</legend>
+            <div class="price-input" role="radiogroup" aria-label="Price range">
+              <button type="button" class="price-input__chip" data-price-chip="1" aria-pressed="false">€<span class="visually-hidden"> — cheap</span></button>
+              <button type="button" class="price-input__chip" data-price-chip="2" aria-pressed="false">€€<span class="visually-hidden"> — mid</span></button>
+              <button type="button" class="price-input__chip" data-price-chip="3" aria-pressed="false">€€€<span class="visually-hidden"> — splurge</span></button>
+            </div>
+            <input type="hidden" name="priceLevel" data-price-input value="${place.priceLevel || ''}" />
+          </fieldset>
+
+          <label class="review-modal__date-wrap">
+            <span class="review-modal__legend">When did you visit?</span>
+            <input
+              type="month"
+              class="review-modal__date"
+              data-review-visitedat
+              max="${new Date().toISOString().slice(0,7)}"
+              value="${new Date().toISOString().slice(0,7)}"
+              aria-label="Month and year of your visit"
+            />
+          </label>
+        </div>
+
         <label class="review-modal__comment-wrap">
-          <span class="review-modal__comment-label">Tell us about your visit</span>
-          <textarea class="review-modal__comment" data-review-comment required minlength="4" maxlength="500" rows="3" placeholder="What stood out? What would you tell a friend?">${place.viewerReview && place.viewerReview.comment ? escapeHtml(place.viewerReview.comment) : ""}</textarea>
+          <span class="review-modal__legend">In a sentence — what stood out?</span>
+          <textarea class="review-modal__comment" data-review-comment required minlength="4" maxlength="500" rows="3" placeholder="What you'd tell a friend over coffee…">${place.viewerReview && place.viewerReview.comment ? escapeHtml(place.viewerReview.comment) : ""}</textarea>
           <span class="review-modal__counter" data-review-counter>0 / 500</span>
         </label>
+
         <div class="review-modal__error" data-review-error hidden></div>
-        <button type="submit" class="btn primary review-modal__submit" data-review-submit disabled>Submit</button>
+        <button type="submit" class="btn primary review-modal__submit" data-review-submit disabled>
+          <span class="material-symbols-rounded" aria-hidden="true">edit_note</span>
+          Sign &amp; submit
+        </button>
       </form>
     </div>
   </div>

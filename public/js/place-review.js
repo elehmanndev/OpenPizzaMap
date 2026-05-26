@@ -183,13 +183,18 @@
             const comment = commentEl ? commentEl.value.trim() : "";
             const priceLevelRaw = priceInput ? priceInput.value : "";
             const priceLevel = priceLevelRaw ? Number(priceLevelRaw) : undefined;
+            const visitedAtEl = modal.querySelector("[data-review-visitedat]");
+            const visitedAt = visitedAtEl && /^\d{4}-\d{2}$/.test(visitedAtEl.value)
+                ? visitedAtEl.value
+                : null;
             submitBtn.disabled = true;
-            const prevLabel = submitBtn.textContent;
+            const prevLabel = submitBtn.innerHTML;
             submitBtn.textContent = "Sending…";
             errorEl.hidden = true; errorEl.textContent = "";
             try {
                 const body = { ...values, comment };
                 if (priceLevel) body.priceLevel = priceLevel;
+                if (visitedAt) body.visitedAt = visitedAt;
                 const resp = await fetch(`/api/places/${placeId}/review`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -218,7 +223,7 @@
                 errorEl.textContent = err.message || "Couldn't send your review.";
                 errorEl.hidden = false;
                 submitBtn.disabled = false;
-                submitBtn.textContent = prevLabel;
+                submitBtn.innerHTML = prevLabel;
             }
         });
     }

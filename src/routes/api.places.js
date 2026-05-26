@@ -317,6 +317,10 @@ const reviewBodySchema = z.object({
     // place's € rating fresh as it changes over time — last submitter
     // wins. Optional so older clients keep working.
     priceLevel: z.coerce.number().int().min(1).max(3).optional(),
+    // Month-precision visit date — "2026-05" from <input type="month">,
+    // stored as the first day of that month on Review.visitedAt AND
+    // Visit.visitedAt. Optional so older clients still work.
+    visitedAt: z.string().regex(/^\d{4}-\d{2}$/).optional(),
 });
 
 function publicReviewShape(row) {
@@ -371,12 +375,20 @@ router.post("/:id/review", requireApiAuth, async (req, res) => {
         return res.status(404).json({ ok: false, error: "Not found" });
     }
 
+    // visitedAt — "YYYY-MM" → first-of-month Date. Stamped on both Review
+    // and Visit so the profile page can sort either by the actual visit
+    // date rather than the createdAt write time.
+    const visitedAt = parsed.data.visitedAt
+        ? new Date(parsed.data.visitedAt + "-01T12:00:00.000Z")
+        : null;
+
     const data = {
         pizza: parsed.data.pizza,
         local: parsed.data.local,
         servicio: parsed.data.servicio,
         precio: parsed.data.precio,
         comment: parsed.data.comment.trim(),
+        ...(visitedAt ? { visitedAt } : {}),
     };
 
     const review = await prisma.$transaction(async (tx) => {
@@ -388,8 +400,8 @@ router.post("/:id/review", requireApiAuth, async (req, res) => {
         // Visit is implied by review — create if missing, never duplicate.
         await tx.visit.upsert({
             where: { userId_placeId: { userId, placeId } },
-            create: { userId, placeId },
-            update: {},
+            create: { userId, placeId, ...(visitedAt ? { visitedAt } : {}) },
+            update: visitedAt ? { visitedAt } : {},
         });
         // Optional place-level priceLevel update (Eric, 2026-05-18) —
         // we don't bother with stale-write conflicts; last submitter
