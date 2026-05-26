@@ -33,7 +33,6 @@ const path = require("path");
 const {
     runResolveBatch,
     runPhotosBatch,
-    runClearFallbackDescriptions,
     runPublishReadyBatch,
 } = require("./enrichment/batch");
 
@@ -44,10 +43,6 @@ const {
 // already-warm Prisma client in the live worker, which doesn't panic.
 const { run: runOsm } = require("../../scripts/enrichment/enrich-osm");
 const { run: runTripadvisor } = require("../../scripts/enrichment/enrich-tripadvisor");
-const { run: runDescriptions } = require("../../scripts/enrichment/generate-descriptions");
-const { run: runPlaywrightFallback } = require("../../scripts/enrichment/resolve-via-gmaps");
-const { run: runReviews } = require("../../scripts/scrapers/scrape-reviews");
-const { run: runSocials } = require("../../scripts/backfills/backfill-socials-from-website");
 const { run: runOpmRating } = require("../../scripts/backfills/backfill-opm-rating");
 const { run: runDownloadImages } = require("../../scripts/backfills/download-images");
 const { run: runScrapeGallery } = require("../../scripts/enrichment/scrape-gallery");
@@ -87,31 +82,22 @@ const MODE_PRESETS = {
     burn: {
         resolve: 40,
         photos: 40,
-        reviews: 40,
-        descriptions: 40,
         osm: 20,
         tripadvisor: 150,
-        socials: 300,
         opmRating: true,
-        playwrightFallback: 20,
         localizeImages: 200,
         // Bumped 10 → 30 on 2026-05-25 to accelerate Track 2 rescrape after
         // the persistent/uploads symlink fix landed. Current 10/tick took
         // ~137s; 30/tick projects ~7min, leaves headroom under the 10-min
-        // tick interval. ~2000 places remaining at 30/tick × 144 ticks/day
-        // = ~12-15h to clear. Revert to 10 once caught up.
+        // tick interval.
         galleryScrape: 30,
     },
     min: {
         resolve: 20,
         photos: 20,
-        reviews: 20,
-        descriptions: 20,
         osm: 20,
         tripadvisor: 130,
-        socials: 300,
         opmRating: true,
-        playwrightFallback: 10,
         localizeImages: 100,
         galleryScrape: 10,
     },
@@ -224,20 +210,6 @@ const PHASES = [
         },
     },
     {
-        name: "reviews",
-        async run(opts) {
-            return runReviews({ apply: true, limit: opts.reviews });
-        },
-    },
-    {
-        name: "descriptions",
-        async run(opts) {
-            // reconnectMidLoop: false so the script doesn't disconnect the
-            // shared worker Prisma client every 30 rows.
-            return runDescriptions({ apply: true, limit: opts.descriptions, reconnectMidLoop: false });
-        },
-    },
-    {
         name: "osm",
         async run(opts) {
             return runOsm({ apply: true, limit: opts.osm });
@@ -251,22 +223,11 @@ const PHASES = [
         },
     },
     {
-        name: "socials",
-        daily: true,
-        async run(opts) {
-            return runSocials({ apply: true, limit: opts.socials });
-        },
-    },
-    {
         name: "opmRating",
         daily: true,
         async run() {
             return runOpmRating({ apply: true });
         },
-    },
-    {
-        name: "clearFallbackDescriptions",
-        async run() { return runClearFallbackDescriptions(); },
     },
     // Publishes hidden chatbot-created rows once enrichment has filled
     // in enough fields. Cheap pure-SQL phase — no external API calls —
@@ -274,26 +235,6 @@ const PHASES = [
     {
         name: "publishReady",
         async run() { return runPublishReadyBatch({ limit: 100 }); },
-    },
-    // Playwright long-tail fallback. Drives a real Chromium browser to
-    // scrape phone/website/hours/rating from the Google Maps place
-    // panel for rows the Places API can't resolve. Per the 2026-05-09
-    // enricher-backlog notes this was the phase that unstuck the most
-    // long-tail rows during the previous recovery.
-    //
-    // Runs LAST on purpose: if Chromium / system-lib deps aren't
-    // available on Hostinger shared (likely), this phase fails but
-    // every other phase has already completed. Status JSON tells us
-    // exactly what to move to Unraid if needed.
-    {
-        name: "playwrightFallback",
-        async run(opts) {
-            return runPlaywrightFallback({
-                needMeta: true,
-                apply: true,
-                limit: opts.playwrightFallback,
-            });
-        },
     },
     // Track 2 — Google Maps photo scrape. Picks up to N places lacking
     // a recent gallery and runs Playwright to harvest up to 10 photo
