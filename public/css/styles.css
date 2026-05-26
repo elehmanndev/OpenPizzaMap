@@ -3193,7 +3193,7 @@ a.place-review:hover {
 .src-badge--google { background: #4285F4; color: #fff; }
 .src-badge--ta     { background: #00aa6c; color: #fff; }
 
-/* Footer row under each review's comment — anchors the source badge. */
+/* Footer row under each review's comment — "via <logo>" attribution. */
 .opm-review__source {
     margin-top: 10px;
     padding-top: 10px;
@@ -3201,7 +3201,19 @@ a.place-review:hover {
     display: flex;
     justify-content: flex-end;
 }
-.opm-review__source .src-badge { margin-left: 0; }
+.opm-review__via {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--c-text-muted, #888);
+    font-size: 12px;
+}
+.opm-review__via-text { font-style: italic; }
+.opm-review__via .src-logo {
+    display: inline-block;
+    vertical-align: middle;
+    /* let the inline SVG colors come through */
+}
 
 /* Community review — testimonial-card layout. Each review is a
    self-contained card. Card sizing differs by viewport — see the

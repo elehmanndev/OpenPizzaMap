@@ -429,11 +429,37 @@
         : avg >= 1.5 ? "Poor"
         : "Terrible";
 
+      // "via <logo>" attribution at the bottom of each review card.
+      // Inline SVGs so there's no CDN dependency and the chevron renders
+      // the moment the page does. Sized at 14px for the footer row.
+      const SOURCE_LOGOS = {
+        opm: `<svg class="src-logo" viewBox="0 0 24 24" width="60" height="14" aria-hidden="true">
+            <text x="0" y="13" font-family="'Outfit', sans-serif" font-size="12" font-weight="700" fill="#c9483a">OpenPizzaMap</text>
+          </svg>`,
+        // Google "G" — the official 4-color mark.
+        google: `<svg class="src-logo" viewBox="0 0 48 48" width="14" height="14" aria-hidden="true">
+            <path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/>
+            <path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/>
+            <path fill="#FBBC05" d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24c0 3.55.85 6.91 2.34 9.88l7.35-5.7z"/>
+            <path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/>
+          </svg>`,
+        // TripAdvisor "owl" — the two-eye mark in TA brand green.
+        tripadvisor: `<svg class="src-logo" viewBox="0 0 50 30" width="22" height="14" aria-hidden="true">
+            <circle cx="14" cy="15" r="11" fill="#00aa6c"/>
+            <circle cx="36" cy="15" r="11" fill="#00aa6c"/>
+            <circle cx="14" cy="15" r="6" fill="#fff"/>
+            <circle cx="36" cy="15" r="6" fill="#fff"/>
+            <circle cx="14" cy="15" r="3" fill="#000"/>
+            <circle cx="36" cy="15" r="3" fill="#000"/>
+          </svg>`,
+      };
       function sourceBadge(source) {
-        if (source === "opm")        return `<span class="src-badge src-badge--opm" title="OpenPizzaMap community review">OPM</span>`;
-        if (source === "google")     return `<span class="src-badge src-badge--google" title="From Google Maps">G</span>`;
-        if (source === "tripadvisor") return `<span class="src-badge src-badge--ta" title="From TripAdvisor">TA</span>`;
-        return "";
+        const logo = SOURCE_LOGOS[source];
+        if (!logo) return "";
+        const label = source === "opm" ? "OpenPizzaMap"
+          : source === "google" ? "Google"
+          : "TripAdvisor";
+        return `<span class="opm-review__via" title="via ${label}"><span class="opm-review__via-text">via</span>${logo}</span>`;
       }
 
       // Month + year, e.g. "May 2026". External sources may not have an ISO
