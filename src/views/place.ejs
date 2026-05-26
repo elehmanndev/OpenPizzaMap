@@ -436,15 +436,27 @@
         return "";
       }
 
+      // Month + year, e.g. "May 2026". External sources may not have an ISO
+      // date — fall back to the source's relative time string if so.
+      function monthYear(d) {
+        if (!d) return "";
+        const date = new Date(d);
+        if (isNaN(date.getTime())) return "";
+        return date.toLocaleString("en-US", { month: "long", year: "numeric" });
+      }
+
       function reviewCard(r) {
         const initial = (r.author || "?").trim().charAt(0).toUpperCase();
         const avatarHtml = r.authorAvatar
           ? `<span class="opm-review__avatar opm-review__avatar--img"><img src="${escapeAttr(r.authorAvatar)}" alt="" referrerpolicy="no-referrer" onerror="this.parentNode.outerHTML='<span class=&quot;opm-review__avatar&quot; aria-hidden=&quot;true&quot;>${escapeHtml(initial)}</span>'" /></span>`
           : `<span class="opm-review__avatar" aria-hidden="true">${escapeHtml(initial)}</span>`;
+        const dateLabel = r.createdAt
+          ? monthYear(r.createdAt)
+          : (r.relativeTime || "");
         const timeHtml = r.createdAt
-          ? `<time class="opm-review__time" datetime="${escapeAttr(new Date(r.createdAt).toISOString())}" data-rel-time>${escapeHtml(relTime(r.createdAt))}</time>`
-          : r.relativeTime
-          ? `<span class="opm-review__time">${escapeHtml(r.relativeTime)}</span>`
+          ? `<time class="opm-review__time" datetime="${escapeAttr(new Date(r.createdAt).toISOString())}">${escapeHtml(dateLabel)}</time>`
+          : dateLabel
+          ? `<span class="opm-review__time">${escapeHtml(dateLabel)}</span>`
           : "";
         const badge = r.rating != null
           ? `<div class="opm-review__badge" aria-label="${r.rating.toFixed(1)} out of 5"><strong>${r.rating.toFixed(1)}</strong></div>`
@@ -455,16 +467,14 @@
               <div class="opm-review__who">
                 ${avatarHtml}
                 <div class="opm-review__id">
-                  <span class="opm-review__user">
-                    ${escapeHtml(r.author)}
-                    ${sourceBadge(r.source)}
-                  </span>
+                  <span class="opm-review__user">${escapeHtml(r.author)}</span>
                   ${timeHtml}
                 </div>
               </div>
               ${badge}
             </div>
             ${r.text ? `<blockquote class="opm-review__comment">${escapeHtml(r.text)}</blockquote>` : ""}
+            <div class="opm-review__source">${sourceBadge(r.source)}</div>
           </li>
         `;
       }

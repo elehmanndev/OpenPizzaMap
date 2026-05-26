@@ -3193,6 +3193,16 @@ a.place-review:hover {
 .src-badge--google { background: #4285F4; color: #fff; }
 .src-badge--ta     { background: #00aa6c; color: #fff; }
 
+/* Footer row under each review's comment — anchors the source badge. */
+.opm-review__source {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--c-line, #e8e6e0);
+    display: flex;
+    justify-content: flex-end;
+}
+.opm-review__source .src-badge { margin-left: 0; }
+
 /* Community review — testimonial-card layout. Each review is a
    self-contained card. Card sizing differs by viewport — see the
    list rules above. */
