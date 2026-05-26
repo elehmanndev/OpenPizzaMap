@@ -77,18 +77,53 @@ async function loadSitemap() {
     return byKey;
 }
 
+// Normalize obscure latin letters that NFD doesn't decompose to ASCII.
+// WordPress sluggers strip these to their nearest ASCII equivalent
+// (`Tipozerø` → `tipozero`, `Æbleskiver` → `aebleskiver`, etc.).
+function normalizeExtraLatin(s) {
+    return String(s || '')
+        .replace(/[øØ]/g, 'o')
+        .replace(/[æÆ]/g, 'ae')
+        .replace(/[œŒ]/g, 'oe')
+        .replace(/[ß]/g, 'ss')
+        .replace(/[đĐ]/g, 'd')
+        .replace(/[łŁ]/g, 'l');
+}
+
+// Candidate slug variants for a given place name. Tried in order. WordPress'
+// default sanitizer strips apostrophes/quotes outright (not to a dash) — so
+// `L'Antica` becomes `lantica`, not `l-antica`. Our editorial names often
+// add a parenthesized qualifier like "(Verona)" or "(Soho)" that isn't in
+// their slug — strip it.
+function slugCandidates(name) {
+    const base = normalizeExtraLatin(name);
+    const noParens = base.replace(/\s*\([^)]*\)\s*/g, ' ').trim();
+    // Drop apostrophes (straight + curly) entirely BEFORE the non-alnum
+    // collapse, so `L'Antica` collapses to `lantica` not `l-antica`.
+    const dropQuotes = (s) => s.replace(/[''’`´]/g, '');
+    const variants = new Set([
+        slugify(base),
+        slugify(noParens),
+        slugify(dropQuotes(base)),
+        slugify(dropQuotes(noParens)),
+    ]);
+    return [...variants].filter(Boolean);
+}
+
 function resolveDetailUrl(place, sitemap) {
-    const key = slugify(place.name);
-    const hits = sitemap.get(key);
-    if (!hits || hits.length === 0) return null;
-    if (hits.length === 1) return hits[0].url;
-    // multiple slug collisions — tiebreak by city
+    const variants = slugCandidates(place.name);
     const ourCity = canonCity(place.city);
-    const exact = hits.find((h) => h.city === ourCity);
-    if (exact) return exact.url;
-    // last resort: substring overlap
-    const loose = hits.find((h) => ourCity.includes(h.city) || h.city.includes(ourCity));
-    return loose ? loose.url : null;
+    for (const key of variants) {
+        const hits = sitemap.get(key);
+        if (!hits || hits.length === 0) continue;
+        if (hits.length === 1) return hits[0].url;
+        // multiple slug collisions — tiebreak by city
+        const exact = hits.find((h) => h.city === ourCity);
+        if (exact) return exact.url;
+        const loose = hits.find((h) => ourCity.includes(h.city) || h.city.includes(ourCity));
+        if (loose) return loose.url;
+    }
+    return null;
 }
 
 // Pull all assets.thegreat.pizza IMG_*.{jpeg,jpg,png,webp} refs from a detail
