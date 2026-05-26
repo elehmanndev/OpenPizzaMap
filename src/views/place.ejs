@@ -395,15 +395,29 @@
         text: r.text || "",
         relativeTime: r.relativeTime || null,
       }));
-      // Combine for the distribution chart + summary number. Excludes
+      // Combine displayed cards for the distribution chart. Excludes
       // ratingless entries (some external sources omit star value).
       const allRated = [...opmAll, ...googleAll, ...taAll].filter((r) => r.rating != null);
       const totalShown = opmAll.length + googleAll.length + taAll.length;
       if (totalShown === 0) return "";
 
-      const avg = allRated.length
+      // Big number = the place's authoritative composite score (the
+      // same one shown in the header). Falls back to a sample average
+      // only when opmRating is null (e.g. brand-new spot). Avoids the
+      // earlier confusion where the Reviews block showed a different
+      // number than the header because it was just averaging the 5
+      // cached samples instead of the bayesian-blended composite.
+      const sampleAvg = allRated.length
         ? allRated.reduce((s, r) => s + r.rating, 0) / allRated.length
         : null;
+      const avg = place.opmRating != null ? Number(place.opmRating) : sampleAvg;
+
+      // Total reviews surfaced across every external source we know
+      // about (not just what we display). Mirrors the place-level
+      // googleReviewCount + tripadvisorReviewCount + community count.
+      const totalReviewCount = (place.googleReviewCount || 0)
+        + (place.tripadvisorReviewCount || 0)
+        + (place.reviewsTotal || 0);
 
       // Trustpilot-style 5-bucket distribution
       const buckets = [
@@ -517,7 +531,7 @@
               <strong class="place-reviews__num">${avg != null ? avg.toFixed(1) : "—"}</strong>
               <span class="place-reviews__label place-reviews__label--${avgLabel.toLowerCase()}">${avgLabel}</span>
               ${renderStars(avg, "stars--md")}
-              <span class="place-reviews__total">(${allRated.length} ${allRated.length === 1 ? "review" : "reviews"})</span>
+              <span class="place-reviews__total">Based on ${totalReviewCount.toLocaleString()} review${totalReviewCount === 1 ? "" : "s"} across Google, TripAdvisor and OpenPizzaMap</span>
             </div>
             <ul class="place-reviews__distribution" aria-label="Rating distribution">
               ${buckets.map((b) => {
