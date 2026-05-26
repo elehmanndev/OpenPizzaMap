@@ -36,6 +36,12 @@
 //   ADMIN_API_KEY          — x-api-key header value for the Hostinger
 //                            /api/admin/* namespace. Required when
 //                            HOSTINGER_URL is set.
+//   RUNNER_PHOTOS_BURN_LIMIT — places per tick for the googlePhotosBurn
+//                              phase. Default 0 (phase disabled). Set
+//                              to e.g. 30 to drain the candidate pool
+//                              at ~$1.20/tick (~$0.04/place for 5 photos
+//                              via Place Details + Place Photo API).
+//                              Disable by leaving unset/0.
 
 const path = require('path');
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -169,22 +175,32 @@ async function tick(n) {
         console.warn(`[runner]   localize ping: FAIL (${ping.error || ping.status})`);
     }
 
-    // Track 2 — push galleryScrape jobs from this tick to Hostinger
-    // for byte download. The result above contains the phase outcome;
-    // we extract `jobs` from the galleryScrape phase row, if any.
+    // Push photo-source jobs from this tick to Hostinger for byte
+    // download. Both galleryScrape (Playwright) and googlePhotosBurn
+    // (Places API) emit the same shape — placeId, slug, photos[] —
+    // and the gallery-download endpoint downloads + writes to disk.
+    // Combine them into one POST so Hostinger handles them as a single
+    // transaction. Per-source counts logged separately.
     try {
-        const galleryPhase = (result?.phases || []).find(p => p.name === 'galleryScrape');
-        const jobs = galleryPhase?.jobs || [];
-        const push = await pushGalleryJobs(jobs);
-        if (push.skipped) {
-            console.log(`[runner]   gallery push: SKIP (${push.reason})`);
-        } else if (push.ok) {
-            console.log(`[runner]   gallery push: ${push.status} ${push.body}`);
+        const phases = result?.phases || [];
+        const galleryJobs = phases.find(p => p.name === 'galleryScrape')?.jobs || [];
+        const burnJobs = phases.find(p => p.name === 'googlePhotosBurn')?.jobs || [];
+        const allJobs = [...galleryJobs, ...burnJobs];
+        if (allJobs.length === 0) {
+            console.log(`[runner]   photo push: SKIP (no jobs this tick)`);
         } else {
-            console.warn(`[runner]   gallery push: FAIL (${push.error || push.status})`);
+            const push = await pushGalleryJobs(allJobs);
+            const tag = `gallery=${galleryJobs.length} burn=${burnJobs.length}`;
+            if (push.skipped) {
+                console.log(`[runner]   photo push: SKIP (${push.reason})  [${tag}]`);
+            } else if (push.ok) {
+                console.log(`[runner]   photo push: ${push.status} ${push.body}  [${tag}]`);
+            } else {
+                console.warn(`[runner]   photo push: FAIL (${push.error || push.status})  [${tag}]`);
+            }
         }
     } catch (err) {
-        console.warn(`[runner]   gallery push: crash ${err.message}`);
+        console.warn(`[runner]   photo push: crash ${err.message}`);
     }
 }
 

@@ -44,6 +44,7 @@ const {
 const { run: runOsm } = require("../../scripts/enrichment/enrich-osm");
 const { run: runTripadvisor } = require("../../scripts/enrichment/enrich-tripadvisor");
 const { run: runOpmRating } = require("../../scripts/backfills/backfill-opm-rating");
+const { run: runBurnGooglePhotos } = require("../../scripts/enrichment/burn-google-photos");
 const { run: runDownloadImages } = require("../../scripts/backfills/download-images");
 const { run: runScrapeGallery } = require("../../scripts/enrichment/scrape-gallery");
 
@@ -91,6 +92,11 @@ const MODE_PRESETS = {
         // ~137s; 30/tick projects ~7min, leaves headroom under the 10-min
         // tick interval.
         galleryScrape: 30,
+        // Google Place Photos API burn — 0 by default (must be enabled
+        // via RUNNER_PHOTOS_BURN_LIMIT env var to actually spend money).
+        // Set to e.g. 30 in the opm-runner env to drain candidates at
+        // ~$1.20/tick.
+        googlePhotosBurn: parseInt(process.env.RUNNER_PHOTOS_BURN_LIMIT, 10) || 0,
     },
     min: {
         resolve: 20,
@@ -100,6 +106,7 @@ const MODE_PRESETS = {
         opmRating: true,
         localizeImages: 100,
         galleryScrape: 10,
+        googlePhotosBurn: parseInt(process.env.RUNNER_PHOTOS_BURN_LIMIT, 10) || 0,
     },
 };
 
@@ -257,6 +264,31 @@ const PHASES = [
             return runScrapeGallery({
                 limit: opts.galleryScrape,
                 disconnect: false,
+            });
+        },
+    },
+    // Google Places API photo burn. Mirrors galleryScrape's contract: builds
+    // a jobs[] of (placeId, slug, photos[{sourceUrl, sourceRef}]) on Unraid
+    // using GOOGLE_MAPS_API_KEY, then the runner POSTs jobs to Hostinger's
+    // /api/admin/gallery-download which downloads the lh3 bytes and writes
+    // them to persistent/uploads. Cost: ~$0.04 per place for 5 photos.
+    //
+    // Hostinger-skipped same as galleryScrape — runner Unraid is the
+    // authoritative caller. Default limit chosen so per-tick cost stays
+    // bounded; runner re-runs every tick until candidates drain.
+    {
+        name: "googlePhotosBurn",
+        async run(opts) {
+            if (process.env.OPM_HOST === "hostinger") {
+                return { ok: true, skipped: true, reason: "OPM_HOST = hostinger" };
+            }
+            if (!opts.googlePhotosBurn) {
+                return { ok: true, skipped: true, reason: "googlePhotosBurn not enabled this mode" };
+            }
+            return runBurnGooglePhotos({
+                limit: opts.googlePhotosBurn,
+                apply: true,
+                gapsOnly: true,
             });
         },
     },

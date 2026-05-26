@@ -18,7 +18,6 @@ const {
 const { getCoverage, unstickVersionBumpedRows } = require("../services/audit-coverage");
 const { run: runDownloadGallery } = require("../../scripts/backfills/download-gallery");
 const { run: runMigrateLegacyHeroes } = require("../../scripts/backfills/migrate-legacy-heroes");
-const { run: runBurnGooglePhotos } = require("../../scripts/admin/burn-google-photos");
 
 const router = express.Router();
 
@@ -882,32 +881,6 @@ router.post("/gallery-download", async (req, res) => {
     }
 });
 
-// One-shot Google Place Photos burn — runs IN PROCESS on Hostinger so
-// the bytes land in <persistent>/uploads/places/<id>/<n>.<ext>. Process
-// `limit` candidates per call; caller (cron-job.org or manual) drives
-// the loop until `remainingCandidates` hits 0.
-//
-// Body / query:
-//   limit (number, default 50)  — how many places to process this call
-//   apply (bool,  default false) — false = dry-run cost estimate
-//   gapsOnly (bool, default true) — only places with <5 google photos
-//   ids (string)                — comma-separated id list for targeted runs
-router.post("/burn-google-photos", async (req, res) => {
-    try {
-        const q = { ...(req.query || {}), ...(req.body || {}) };
-        const limit = Number.isFinite(Number(q.limit)) ? Number(q.limit) : 50;
-        const apply = q.apply === true || q.apply === "true" || q.apply === "1";
-        const gapsOnly = q.gapsOnly !== false && q.gapsOnly !== "false" && q.gapsOnly !== "0";
-        const ids = typeof q.ids === "string"
-            ? q.ids.split(",").map((s) => parseInt(s, 10)).filter(Boolean)
-            : null;
-        const result = await runBurnGooglePhotos({ limit, apply, gapsOnly, ids });
-        res.json(result);
-    } catch (err) {
-        console.error("[burn-google-photos] crashed:", err);
-        res.status(500).json({ ok: false, error: err.message });
-    }
-});
 
 // Track 2 — one-shot legacy-hero migration. Moves the ~1,820 existing
 // /uploads/places/{id}.{ext} hero files into the new per-place subdir
