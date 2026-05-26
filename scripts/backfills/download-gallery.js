@@ -130,7 +130,7 @@ async function processJob(job) {
     }).catch(() => ({ _max: { position: null } }));
     let position = (maxExisting?._max?.position || 0) + 1;
 
-    for (const photo of job.photos.slice(0, 10)) {
+    for (const photo of job.photos.slice(0, 25)) {
         // Skip if this exact photo (by sourceRef) is already in the gallery
         // OR was explicitly hidden by an admin (preserve hide-forever intent).
         const existing = await prisma.placeImage.findUnique({
@@ -151,7 +151,7 @@ async function processJob(job) {
                     placeId: job.placeId,
                     position,
                     localPath,
-                    source: "google",
+                    source: job.source || "google",
                     sourceRef: photo.sourceRef,
                     sourceUrl: photo.sourceUrl,
                     bytes: r.bytes,
