@@ -169,17 +169,10 @@
   }
 
   // External aggregator reviews — secondary section, below opmRating.
+  // TripAdvisor intentionally skipped on the UI surface (their text-review
+  // endpoint is paywalled). TA rating still feeds the opmRating blend
+  // internally — see scripts/backfills/backfill-opm-rating.js.
   const reviews = [];
-  if (place.tripadvisorRating != null) {
-    reviews.push({
-      platform: "TripAdvisor",
-      rating: Number(place.tripadvisorRating),
-      max: 5,
-      count: place.tripadvisorReviewCount,
-      url: place.tripadvisorUrl,
-      ranking: place.tripadvisorRanking,
-    });
-  }
   if (place.googleRating != null) {
     reviews.push({
       platform: "Google",
@@ -387,18 +380,11 @@
         text: r.text || "",
         relativeTime: r.relativeTime || null,
       }));
-      const taAll = (place.tripadvisorReviews || []).map((r) => ({
-        source: "tripadvisor",
-        author: r.author || "Anonymous",
-        authorAvatar: r.profilePhoto || null,
-        rating: r.rating != null ? Number(r.rating) : null,
-        text: r.text || "",
-        relativeTime: r.relativeTime || null,
-      }));
-      // Combine displayed cards for the distribution chart. Excludes
-      // ratingless entries (some external sources omit star value).
-      const allRated = [...opmAll, ...googleAll, ...taAll].filter((r) => r.rating != null);
-      const totalShown = opmAll.length + googleAll.length + taAll.length;
+      // TripAdvisor reviews intentionally NOT surfaced — their /reviews
+      // endpoint is on a paid tier we're not buying. TA's aggregate
+      // rating still feeds the bayesian opmRating composite internally.
+      const allRated = [...opmAll, ...googleAll].filter((r) => r.rating != null);
+      const totalShown = opmAll.length + googleAll.length;
       if (totalShown === 0) return "";
 
       // Big number = the place's authoritative composite score (the
@@ -414,9 +400,8 @@
 
       // Total reviews surfaced across every external source we know
       // about (not just what we display). Mirrors the place-level
-      // googleReviewCount + tripadvisorReviewCount + community count.
+      // googleReviewCount + community count. TA intentionally excluded.
       const totalReviewCount = (place.googleReviewCount || 0)
-        + (place.tripadvisorReviewCount || 0)
         + (place.reviewsTotal || 0);
 
       // Trustpilot-style 5-bucket distribution
@@ -531,7 +516,7 @@
               <strong class="place-reviews__num">${avg != null ? avg.toFixed(1) : "—"}</strong>
               <span class="place-reviews__label place-reviews__label--${avgLabel.toLowerCase()}">${avgLabel}</span>
               ${renderStars(avg, "stars--md")}
-              <span class="place-reviews__total">Based on ${totalReviewCount.toLocaleString()} review${totalReviewCount === 1 ? "" : "s"} across Google, TripAdvisor and OpenPizzaMap</span>
+              <span class="place-reviews__total">Based on ${totalReviewCount.toLocaleString()} review${totalReviewCount === 1 ? "" : "s"} across Google and OpenPizzaMap</span>
             </div>
             <ul class="place-reviews__distribution" aria-label="Rating distribution">
               ${buckets.map((b) => {
@@ -551,7 +536,6 @@
           <ul class="place-reviews__list" data-reviews-list data-place-id="${place.id}" data-loaded-count="${place.reviewsFirstPage.length}" data-total="${place.reviewsTotal}" data-page-size="${place.reviewPageSize}">
             ${opmAll.map(reviewCard).join("")}
             ${googleAll.map(reviewCard).join("")}
-            ${taAll.map(reviewCard).join("")}
           </ul>
           ${place.reviewsTotal > place.reviewsFirstPage.length ? `
             <button type="button" class="btn opm-reviews-more" data-load-more-reviews>Show more community reviews</button>
