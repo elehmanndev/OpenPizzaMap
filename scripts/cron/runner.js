@@ -139,6 +139,13 @@ function fmtPhase(p) {
         p.selfHealed != null && `selfHealed=${p.selfHealed}`,
         p.dupes ?            `dupes=${p.dupes}` : null,
         p.errors ?           `errors=${p.errors}` : null,
+        // googlePhotosBurn stats
+        p.processed != null && `processed=${p.processed}`,
+        p.details != null   && `details=${p.details}`,
+        p.photos != null    && `photos=${p.photos}`,
+        p.inserted != null  && `inserted=${p.inserted}`,
+        p.estCostUsd != null && `cost=$${p.estCostUsd}`,
+        p.remainingCandidates != null && `remaining=${p.remainingCandidates}`,
     ].filter(Boolean).join(' ');
     return `${p.name}: OK (${p.durationMs}ms) ${stats}`;
 }
@@ -197,6 +204,7 @@ async function tick(n) {
                 console.log(`[runner]   photo push: ${push.status} ${push.body}  [${tag}]`);
             } else {
                 console.warn(`[runner]   photo push: FAIL (${push.error || push.status})  [${tag}]`);
+                if (push.body) console.warn(`[runner]   photo push body: ${push.body}`);
             }
         }
     } catch (err) {

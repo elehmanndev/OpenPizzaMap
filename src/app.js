@@ -309,7 +309,11 @@ if (maintenanceMode) {
     };
 
     app.use(express.urlencoded({ extended: true }));
-    app.use(express.json());
+    // 2 MB JSON limit — well above the 100 kb default. The gallery-download
+    // endpoint receives combined galleryScrape + googlePhotosBurn jobs from
+    // opm-runner, which can exceed 100 kb when batch size × 5 photos ×
+    // ~600-byte lh3 URLs add up.
+    app.use(express.json({ limit: "2mb" }));
     app.use(cookieParser());
 
     // Session secret. Hard-fail at boot if production has no SESSION_SECRET set
