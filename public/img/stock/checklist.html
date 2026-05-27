@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stock photo checklist — OpenPizzaMap homepage</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --c-accent: #c0392b;
+      --c-accent-strong: #a93226;
+      --c-accent-soft: rgba(192, 57, 43, 0.08);
+      --c-bg: #faf7f2;
+      --c-surface: #ffffff;
+      --c-text: #1e1e1e;
+      --c-muted: rgba(30, 30, 30, 0.62);
+      --c-border: #e5e2dc;
+      --c-done: #2bb673;
+      --c-done-soft: rgba(43, 182, 115, 0.10);
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--c-bg);
+      color: var(--c-text);
+      margin: 0;
+      padding: 32px 20px 80px;
+      line-height: 1.5;
+    }
+    .wrap {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+    .brand {
+      font-weight: 800;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--c-accent-strong);
+    }
+    h1 {
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      margin: 4px 0 8px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+    .lede {
+      color: var(--c-muted);
+      max-width: 620px;
+      margin: 0;
+    }
+    .progress {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: 14px;
+      padding: 16px 20px;
+      min-width: 220px;
+      text-align: center;
+    }
+    .progress-count {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+    .progress-count strong { color: var(--c-accent); }
+    .progress-bar {
+      height: 8px;
+      background: var(--c-border);
+      border-radius: 999px;
+      margin: 12px 0 6px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--c-accent), var(--c-accent-strong));
+      width: 0;
+      transition: width 0.3s ease;
+    }
+    .progress-label {
+      font-size: 12px;
+      color: var(--c-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .specs {
+      background: var(--c-accent-soft);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin: 0 0 24px;
+      font-size: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 24px;
+    }
+    .specs strong {
+      color: var(--c-accent-strong);
+      font-weight: 700;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .controls button {
+      font: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 14px;
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: 999px;
+      color: var(--c-text);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    .controls button:hover { background: var(--c-bg); }
+    .controls button.is-active {
+      background: var(--c-accent);
+      border-color: var(--c-accent);
+      color: #fff;
+    }
+    .controls .reset {
+      margin-left: auto;
+      color: var(--c-muted);
+    }
+    .controls .reset:hover { color: var(--c-accent); }
+
+    section {
+      margin-bottom: 32px;
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    section header.section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--c-border);
+      margin: 0;
+    }
+    section h2 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+    .section-count {
+      font-size: 13px;
+      color: var(--c-muted);
+      font-weight: 600;
+    }
+    .section-count .done-count {
+      color: var(--c-accent-strong);
+      font-weight: 700;
+    }
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    li {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 14px;
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--c-border);
+      transition: background 0.15s ease;
+    }
+    li:last-child { border-bottom: none; }
+    li:hover { background: var(--c-bg); }
+    li.is-done {
+      background: var(--c-done-soft);
+    }
+    li.is-done .filename,
+    li.is-done .subject {
+      text-decoration: line-through;
+      color: var(--c-muted);
+    }
+
+    label.check {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    input[type="checkbox"] {
+      width: 22px;
+      height: 22px;
+      accent-color: var(--c-done);
+      cursor: pointer;
+    }
+    .item-body {
+      min-width: 0;
+    }
+    .filename {
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+      font-size: 13px;
+      font-weight: 700;
+      background: var(--c-accent-soft);
+      color: var(--c-accent-strong);
+      padding: 2px 7px;
+      border-radius: 5px;
+      display: inline-block;
+      margin-right: 8px;
+    }
+    .subject {
+      color: var(--c-text);
+      font-size: 14px;
+    }
+    .city, .style-name {
+      font-weight: 700;
+      margin-right: 4px;
+    }
+
+    body.filter-unchecked li.is-done { display: none; }
+
+    footer {
+      margin-top: 32px;
+      text-align: center;
+      color: var(--c-muted);
+      font-size: 13px;
+    }
+
+    @media print {
+      body { padding: 0; background: #fff; }
+      .controls, .progress, footer { display: none; }
+      section { break-inside: avoid; border: none; }
+      li:hover { background: transparent; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <div class="brand">OpenPizzaMap</div>
+        <h1>Homepage stock photo checklist</h1>
+        <p class="lede">64 images to source from Adobe Stock for the public homepage. Tick each off as you license + download — progress is saved in your browser.</p>
+      </div>
+      <div class="progress">
+        <div class="progress-count"><strong id="doneCount">0</strong> / <span id="totalCount">64</span></div>
+        <div class="progress-bar"><div class="progress-bar-fill" id="progressBar"></div></div>
+        <div class="progress-label">licensed</div>
+      </div>
+    </header>
+
+    <div class="specs">
+      <span><strong>Format:</strong> JPEG, sRGB</span>
+      <span><strong>Size:</strong> 1200×1200 minimum (square)</span>
+      <span><strong>Crop:</strong> 1:1 (cards render as squares)</span>
+      <span><strong>Aim:</strong> ~150–250 KB after optimization</span>
+    </div>
+
+    <div class="controls">
+      <button data-filter="all" class="is-active">Show all</button>
+      <button data-filter="unchecked">Show only to-do</button>
+      <button class="reset" id="resetBtn">Reset progress</button>
+    </div>
+
+    <section>
+      <header class="section-head">
+        <h2>🍕 Hero pizza pool</h2>
+        <div class="section-count"><span class="done-count" data-section-done="hero">0</span> / 30</div>
+      </header>
+      <ul id="list-hero"></ul>
+    </section>
+
+    <section>
+      <header class="section-head">
+        <h2>🌆 Cities</h2>
+        <div class="section-count"><span class="done-count" data-section-done="cities">0</span> / 20</div>
+      </header>
+      <ul id="list-cities"></ul>
+    </section>
+
+    <section>
+      <header class="section-head">
+        <h2>🍕 Pizza styles</h2>
+        <div class="section-count"><span class="done-count" data-section-done="styles">0</span> / 14</div>
+      </header>
+      <ul id="list-styles"></ul>
+    </section>
+
+    <footer>
+      Drop files into <code>public/img/stock/hero/</code>, <code>public/img/stock/cities/</code>, <code>public/img/stock/styles/</code>.
+      Filenames are case-sensitive.
+    </footer>
+  </div>
+
+  <script>
+    const DATA = {
+      hero: [
+        ["pizza-1.jpg", "Wood-fired Margherita, top-down"],
+        ["pizza-2.jpg", "Pizza coming out of oven, dramatic"],
+        ["pizza-3.jpg", "Slice being lifted, cheese pull"],
+        ["pizza-4.jpg", "Whole pie on rustic wood board"],
+        ["pizza-5.jpg", "Hands tossing dough"],
+        ["pizza-6.jpg", "Pizzaiolo at oven"],
+        ["pizza-7.jpg", "Pizza al taglio counter"],
+        ["pizza-8.jpg", "Burrata + prosciutto pizza close-up"],
+        ["pizza-9.jpg", "Truffle / specialty pizza"],
+        ["pizza-10.jpg", "Bird's-eye flat lay with drinks"],
+        ["pizza-11.jpg", "Charred crust detail macro"],
+        ["pizza-12.jpg", "Group sharing pizza, candid"],
+        ["pizza-13.jpg", "Detroit-style square slice"],
+        ["pizza-14.jpg", "NY slice on paper plate"],
+        ["pizza-15.jpg", "Outdoor pizzeria terrace night"],
+        ["pizza-16.jpg", "Pizza paddle / peel in oven"],
+        ["pizza-17.jpg", "Sourdough / artisan crust"],
+        ["pizza-18.jpg", "Pizza with fresh basil"],
+        ["pizza-19.jpg", "Calzone or folded pizza"],
+        ["pizza-20.jpg", "Stone-baked pizza with smoke"],
+        ["pizza-21.jpg", "Marinara minimal red pie"],
+        ["pizza-22.jpg", "Pizza on marble counter"],
+        ["pizza-23.jpg", "Dough rising / flour on board"],
+        ["pizza-24.jpg", "Pizza box open on table"],
+        ["pizza-25.jpg", "Romana thin-crust crispy edge"],
+        ["pizza-26.jpg", "Pizza with friends, restaurant feel"],
+        ["pizza-27.jpg", "Pinsa with topping variety"],
+        ["pizza-28.jpg", "Pizza fritta street food"],
+        ["pizza-29.jpg", "Sicilian sfincione thick crust"],
+        ["pizza-30.jpg", "Mortadella pizza modern plating"]
+      ],
+      cities: [
+        ["naples.jpg", "Naples", "Naples old town, Vesuvius backdrop, or street-pizza scene"],
+        ["rome.jpg", "Rome", "Trastevere alley with restaurant lights or Colosseum at dusk"],
+        ["milan.jpg", "Milan", "Duomo or Navigli canal at golden hour"],
+        ["turin.jpg", "Turin", "Mole Antonelliana or Po river riverside"],
+        ["florence.jpg", "Florence", "Duomo rooftops or Ponte Vecchio"],
+        ["bologna.jpg", "Bologna", "Two Towers or Quadrilatero market"],
+        ["verona.jpg", "Verona", "Piazza delle Erbe or Arena"],
+        ["palermo.jpg", "Palermo", "Vucciria market or Quattro Canti"],
+        ["catania.jpg", "Catania", "Piazza del Duomo with Etna in background"],
+        ["genoa.jpg", "Genoa", "Old port + lighthouse"],
+        ["barcelona.jpg", "Barcelona", "Gothic Quarter alley or Sagrada Familia at sunset"],
+        ["madrid.jpg", "Madrid", "Gran Vía at night or Plaza Mayor"],
+        ["paris.jpg", "Paris", "Montmartre side street or Seine bridge"],
+        ["london.jpg", "London", "Borough Market or Soho street scene"],
+        ["new-york-city.jpg", "New York City", "Brooklyn Bridge or pizza-street scene"],
+        ["brooklyn.jpg", "Brooklyn", "DUMBO / Manhattan Bridge view or brownstones"],
+        ["chicago.jpg", "Chicago", "Skyline from the lake or River Walk"],
+        ["los-angeles.jpg", "Los Angeles", "Venice/Abbot Kinney street or Hollywood Hills"],
+        ["lisbon.jpg", "Lisbon", "Yellow tram or Alfama rooftops"],
+        ["berlin.jpg", "Berlin", "Brandenburg Gate or Friedrichshain street"]
+      ],
+      styles: [
+        ["neapolitan.jpg", "Neapolitan", "Soft puffy crust, leopard-spot char, San Marzano red, fresh mozzarella"],
+        ["italian-style.jpg", "Italian (generic)", "Rustic Italian Margherita on wood, basil"],
+        ["romana.jpg", "Roman-Style", "Thin crispy crust, rectangular cut, light topping"],
+        ["al-taglio.jpg", "Pizza al Taglio", "Rectangular tray, multiple slices, Roman bakery counter"],
+        ["pinsa.jpg", "Pinsa", "Oval elongated shape, airy crust, modern plating"],
+        ["pizza-fritta.jpg", "Pizza Fritta", "Folded fried pizza, Naples street food"],
+        ["ny.jpg", "NY-Style", "Large foldable triangle slice, NYC pizzeria background"],
+        ["new-haven.jpg", "New Haven Apizza", "Charred oblong pizza, white clam or tomato"],
+        ["detroit.jpg", "Detroit-Style", "Rectangular pan pizza with crispy cheese edge ('frico')"],
+        ["chicago.jpg", "Chicago Deep-Dish", "Thick deep-dish slice with red sauce on top"],
+        ["sicilian.jpg", "Sicilian", "Thick square sfincione with breadcrumbs/anchovy"],
+        ["apulian.jpg", "Apulian", "Focaccia barese / Puglia-style"],
+        ["padellino.jpg", "Pizza al Padellino", "Small round pan pizza, Turin specialty"],
+        ["focaccia-recco.jpg", "Focaccia di Recco", "Two-layer thin focaccia with melted stracchino"]
+      ]
+    };
+
+    const STORAGE_KEY = "opm-stock-checklist-v1";
+    const state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+
+    function makeItem(section, file, label, subject) {
+      const id = `${section}/${file}`;
+      const li = document.createElement("li");
+      li.dataset.id = id;
+      if (state[id]) li.classList.add("is-done");
+      const labelText = label ? `<span class="${section === 'cities' ? 'city' : 'style-name'}">${label}.</span>` : "";
+      li.innerHTML = `
+        <label class="check">
+          <input type="checkbox" ${state[id] ? "checked" : ""} />
+        </label>
+        <div class="item-body">
+          <span class="filename">${file}</span>
+          <span class="subject">${labelText}${subject}</span>
+        </div>
+      `;
+      const cb = li.querySelector("input");
+      cb.addEventListener("change", () => {
+        if (cb.checked) {
+          state[id] = true;
+          li.classList.add("is-done");
+        } else {
+          delete state[id];
+          li.classList.remove("is-done");
+        }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        recount();
+      });
+      return li;
+    }
+
+    function render() {
+      const heroList = document.getElementById("list-hero");
+      const citiesList = document.getElementById("list-cities");
+      const stylesList = document.getElementById("list-styles");
+      DATA.hero.forEach(([f, s]) => heroList.appendChild(makeItem("hero", f, null, s)));
+      DATA.cities.forEach(([f, l, s]) => citiesList.appendChild(makeItem("cities", f, l, s)));
+      DATA.styles.forEach(([f, l, s]) => stylesList.appendChild(makeItem("styles", f, l, s)));
+      recount();
+    }
+
+    function recount() {
+      const totals = { hero: 30, cities: 20, styles: 14 };
+      const done = { hero: 0, cities: 0, styles: 0 };
+      Object.keys(state).forEach((key) => {
+        if (!state[key]) return;
+        const section = key.split("/")[0];
+        if (done[section] !== undefined) done[section] += 1;
+      });
+      Object.keys(done).forEach((section) => {
+        const el = document.querySelector(`[data-section-done="${section}"]`);
+        if (el) el.textContent = done[section];
+      });
+      const total = totals.hero + totals.cities + totals.styles;
+      const totalDone = done.hero + done.cities + done.styles;
+      document.getElementById("doneCount").textContent = totalDone;
+      document.getElementById("progressBar").style.width = (totalDone / total * 100) + "%";
+    }
+
+    document.querySelectorAll(".controls button[data-filter]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".controls button[data-filter]").forEach((b) => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+        const filter = btn.dataset.filter;
+        if (filter === "unchecked") {
+          document.body.classList.add("filter-unchecked");
+        } else {
+          document.body.classList.remove("filter-unchecked");
+        }
+      });
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      if (!confirm("Clear all checked items?")) return;
+      localStorage.removeItem(STORAGE_KEY);
+      Object.keys(state).forEach((k) => delete state[k]);
+      document.querySelectorAll("input[type=checkbox]").forEach((cb) => { cb.checked = false; });
+      document.querySelectorAll("li.is-done").forEach((li) => li.classList.remove("is-done"));
+      recount();
+    });
+
+    render();
+  </script>
+</body>
+</html>

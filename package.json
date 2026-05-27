@@ -21,7 +21,8 @@
     "admin:password": "node scripts/admin/set-admin-password.js",
     "sitemap:build": "node scripts/deploy/build-sitemap.js",
     "landing:recompute": "node scripts/backfills/recompute-landing.js",
-    "thumbs:build": "node scripts/deploy/build-thumbs.js"
+    "thumbs:build": "node scripts/deploy/build-thumbs.js",
+    "optimize:stock": "node scripts/deploy/optimize-stock-photos.js"
   },
   "dependencies": {
     "@prisma/client": "^5.18.0",
