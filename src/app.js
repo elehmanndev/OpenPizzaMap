@@ -263,7 +263,7 @@ if (maintenanceMode) {
     const apiAdmin = require("./routes/api.admin");
     const { errorHandler } = require("./middleware/error");
     const { requireApiKey } = require("./middleware/apiKey");
-    const { prisma, ensureConnected } = require("./db");
+    const { prisma } = require("./db");
     const passport = require("passport");
     const { configureGoogleAuth } = require("./services/googleAuth");
 
@@ -349,21 +349,6 @@ if (maintenanceMode) {
     );
     configureGoogleAuth();
     app.use(passport.initialize());
-
-    // Serialize Prisma engine startup. The library engine has a tokio race
-    // when two concurrent first requests trigger initialization at the same
-    // time ("library already starting" → "PANIC: timer has gone away" on
-    // Hostinger/Passenger). Awaiting the shared $connect() promise here
-    // means only one start ever runs per worker; subsequent requests await
-    // the already-resolved promise (no-op).
-    app.use(async (req, res, next) => {
-        try {
-            await ensureConnected();
-            next();
-        } catch (e) {
-            next(e);
-        }
-    });
 
     app.use("/", pages);
     app.use("/", pagesAdmin);
