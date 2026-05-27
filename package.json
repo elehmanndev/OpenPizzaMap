@@ -25,7 +25,7 @@
     "optimize:stock": "node scripts/deploy/optimize-stock-photos.js"
   },
   "dependencies": {
-    "@prisma/client": "^5.18.0",
+    "@prisma/client": "^6.13.0",
     "@quixo3/prisma-session-store": "^3.1.13",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.6",
@@ -46,7 +46,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "prisma": "^5.18.0",
+    "prisma": "^6.13.0",
     "sharp": "^0.34.5"
   }
 }
