@@ -147,6 +147,20 @@ async function run({ limit = 10, disconnect = true } = {}) {
         const driftPct = p.googleReviewCount
             ? Math.round((result.total - p.googleReviewCount) / p.googleReviewCount * 100)
             : null;
+
+        // Reject when drift is wildly off — the DB count can lag the live
+        // total by months but >15% off usually means the parser picked
+        // up per-review "N stars" aria-labels in addition to the summary
+        // rows. Don't stamp scrapedAt so the place re-queues; we'd rather
+        // be eventually correct than persist garbage.
+        if (driftPct != null && Math.abs(driftPct) > 15) {
+            console.warn(`[ratingsDist] #${p.id} "${p.name}" — drift ${driftPct}% > 15% (sum=${result.total} vs DB=${p.googleReviewCount}), skipping write (${elapsed}s)`);
+            stats.failed++;
+            stats.mismatch++;
+            await sleep(2500);
+            continue;
+        }
+
         console.log(`[ratingsDist] #${p.id} "${p.name}" — dist=[${result.dist.join(",")}] sum=${result.total} drift=${driftPct}% (${elapsed}s)`);
 
         await prisma.place.update({

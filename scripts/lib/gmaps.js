@@ -1038,8 +1038,17 @@ async function scrapeRatingsDistribution(page, { googlePlaceId } = {}) {
         // order; the 5 highest-rated ones (sorted by star value) form the
         // distribution. Locale is forced to en via &hl=en so the regex
         // doesn't have to know every language's word for "reviews".
-        const result = await page.evaluate(() => {
-            const rows = [];
+        //
+        // We deliberately do NOT cross-check against an on-page total:
+        // the first attempt did textContent regex over all heading-ish
+        // elements, but Google's Maps DOM concatenates sibling spans
+        // ("5"+"4"+"3"+"2"+"1"+"4.4"+"411 reviews" → "543214.4411 reviews")
+        // and that produced spurious 10-digit "totals" that failed
+        // validation on every real result. The caller (runner) cross-
+        // checks against Place.googleReviewCount from the DB instead,
+        // which is the authoritative number we already trust.
+        const rows = await page.evaluate(() => {
+            const out = [];
             const labelRe = /(\d)\s*star[s]?,?\s*([\d.,]+)\s*(?:review|rating)/i;
             for (const el of document.querySelectorAll("[aria-label]")) {
                 const lbl = el.getAttribute("aria-label") || "";
@@ -1048,30 +1057,20 @@ async function scrapeRatingsDistribution(page, { googlePlaceId } = {}) {
                     const stars = Number(m[1]);
                     const count = Number(m[2].replace(/[.,\s]/g, ""));
                     if (stars >= 1 && stars <= 5 && Number.isFinite(count)) {
-                        rows.push({ stars, count, lbl });
+                        out.push({ stars, count });
                     }
                 }
             }
-            // Pull the total "N reviews" text on the same panel for cross-check.
-            let totalShown = null;
-            for (const el of document.querySelectorAll("h1, h2, h3, button, span, div")) {
-                const t = (el.textContent || "").trim();
-                const tm = t.match(/^([\d.,]+)\s*reviews?$/i);
-                if (tm) {
-                    const n = Number(tm[1].replace(/[.,\s]/g, ""));
-                    if (Number.isFinite(n) && n >= 5) { totalShown = n; break; }
-                }
-            }
-            return { rows, totalShown };
+            return out;
         });
 
-        if (!result || !result.rows.length) return { error: "no-distribution-rows" };
+        if (!rows || !rows.length) return { error: "no-distribution-rows" };
 
         // Each star value should appear exactly once. Dedup by stars and
         // take the FIRST hit (the summary panel renders before any later
         // per-review aria-labels like "5 stars" on individual reviews).
         const byStars = new Map();
-        for (const r of result.rows) {
+        for (const r of rows) {
             if (!byStars.has(r.stars)) byStars.set(r.stars, r.count);
         }
         if (byStars.size < 5) return { error: `partial-distribution(${byStars.size}/5)` };
@@ -1079,14 +1078,7 @@ async function scrapeRatingsDistribution(page, { googlePlaceId } = {}) {
         const dist = [5, 4, 3, 2, 1].map((s) => byStars.get(s));
         const sum = dist.reduce((a, b) => a + b, 0);
 
-        // Cross-check: parsed sum should match the on-page total to within
-        // 5%. A wider drift suggests we picked up the wrong aria-labels
-        // (e.g. per-review "5 stars" appended after the summary loaded).
-        if (result.totalShown && Math.abs(sum - result.totalShown) / result.totalShown > 0.05) {
-            return { error: `sum-mismatch(parsed=${sum} shown=${result.totalShown})` };
-        }
-
-        return { dist, total: sum, totalShown: result.totalShown };
+        return { dist, total: sum };
     } catch (err) {
         return { error: err.message || String(err) };
     }
