@@ -45,7 +45,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
             console.log(`  ❌ ${result.error}  (${elapsed}s)`);
         } else {
             const drift = p.googleReviewCount ? ((result.total - p.googleReviewCount) / p.googleReviewCount * 100).toFixed(1) : "n/a";
-            console.log(`  ✓ dist=[${result.dist.join(", ")}] sum=${result.total} (DB=${p.googleReviewCount}, drift=${drift}%) onPage=${result.totalShown}  (${elapsed}s)`);
+            console.log(`  ✓ dist=[${result.dist.join(", ")}] sum=${result.total} (DB=${p.googleReviewCount}, drift=${drift}%)  (${elapsed}s)`);
         }
         await sleep(3000); // throttle
     }
