@@ -966,4 +966,130 @@ async function scrapePhotos(page, {
     }
 }
 
-module.exports = { createGmapsPage, lookup, scrapeReviews, scrapePhotos, loadCache, saveCache, CACHE_PATH };
+// Scrape the per-star ratings distribution from the Google Maps DOM.
+// The Places API doesn't expose this even on paid tiers, but the public
+// Maps page shows it (the "Review summary" panel: 5 stacked bars with
+// per-star counts).
+//
+// Returns: { dist: [c5,c4,c3,c2,c1], total } on success
+//          { error: <string> } on failure (CAPTCHA, no panel, etc.)
+//
+// Strategy:
+//   1. Navigate to /maps/place/?q=place_id:<id>&hl=en
+//   2. Dismiss consent if present
+//   3. Click the Reviews tab (same logic as scrapeReviews)
+//   4. Wait for the distribution panel — each row has an aria-label of
+//      the form "N stars, M reviews" (English locale forced via &hl=en)
+//   5. Parse 5 aria-labels into integer counts; validate sum is within
+//      5% of the rated-review-count text on the panel (catches partial
+//      loads + DOM shifts).
+async function scrapeRatingsDistribution(page, { googlePlaceId } = {}) {
+    if (!googlePlaceId) return { error: "no googlePlaceId" };
+    try {
+        await page.goto(
+            `https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(googlePlaceId)}&hl=en`,
+            { waitUntil: "domcontentloaded", timeout: 30000 }
+        );
+
+        // Consent dismissal — same selector set as scrapeReviews.
+        for (const sel of [
+            'button[aria-label*="Accept"]',
+            'button[aria-label*="Acepto"]',
+            'button[aria-label*="Akzeptieren"]',
+            'form[action*="consent"] button',
+        ]) {
+            const btn = await page.$(sel).catch(() => null);
+            if (btn) { await btn.click().catch(() => {}); await sleep(500); break; }
+        }
+
+        // CAPTCHA check — Google's /sorry/index page is the tell.
+        const url = page.url();
+        if (/\/sorry\/index/.test(url)) return { error: "captcha", captcha: true };
+
+        // Wait for the place panel to populate.
+        await page.waitForSelector('h1, button[data-item-id="address"]', { timeout: 15000 }).catch(() => null);
+
+        // Click the Reviews tab.
+        const tabClicked = await page.evaluate(() => {
+            for (const el of document.querySelectorAll('[role="tab"]')) {
+                if (/reviews?/i.test(el.textContent || "") || /reviews?/i.test(el.getAttribute("aria-label") || "")) {
+                    el.click();
+                    return true;
+                }
+            }
+            for (const btn of document.querySelectorAll("button")) {
+                const t = (btn.textContent || "").trim();
+                if (/^reviews?$/i.test(t) || /^\d[\d,.]+\s*reviews?$/i.test(t)) {
+                    btn.click();
+                    return true;
+                }
+            }
+            return false;
+        }).catch(() => false);
+
+        if (!tabClicked) return { error: "reviews-tab-not-found" };
+
+        // Distribution panel needs a moment after the tab opens.
+        await page.waitForSelector('[role="feed"]', { timeout: 10000 }).catch(() => null);
+        await sleep(1200);
+
+        // Extract counts. Google labels each row with an aria-label like
+        // "5 stars, 1,247 reviews". We collect every match in document
+        // order; the 5 highest-rated ones (sorted by star value) form the
+        // distribution. Locale is forced to en via &hl=en so the regex
+        // doesn't have to know every language's word for "reviews".
+        const result = await page.evaluate(() => {
+            const rows = [];
+            const labelRe = /(\d)\s*star[s]?,?\s*([\d.,]+)\s*(?:review|rating)/i;
+            for (const el of document.querySelectorAll("[aria-label]")) {
+                const lbl = el.getAttribute("aria-label") || "";
+                const m = lbl.match(labelRe);
+                if (m) {
+                    const stars = Number(m[1]);
+                    const count = Number(m[2].replace(/[.,\s]/g, ""));
+                    if (stars >= 1 && stars <= 5 && Number.isFinite(count)) {
+                        rows.push({ stars, count, lbl });
+                    }
+                }
+            }
+            // Pull the total "N reviews" text on the same panel for cross-check.
+            let totalShown = null;
+            for (const el of document.querySelectorAll("h1, h2, h3, button, span, div")) {
+                const t = (el.textContent || "").trim();
+                const tm = t.match(/^([\d.,]+)\s*reviews?$/i);
+                if (tm) {
+                    const n = Number(tm[1].replace(/[.,\s]/g, ""));
+                    if (Number.isFinite(n) && n >= 5) { totalShown = n; break; }
+                }
+            }
+            return { rows, totalShown };
+        });
+
+        if (!result || !result.rows.length) return { error: "no-distribution-rows" };
+
+        // Each star value should appear exactly once. Dedup by stars and
+        // take the FIRST hit (the summary panel renders before any later
+        // per-review aria-labels like "5 stars" on individual reviews).
+        const byStars = new Map();
+        for (const r of result.rows) {
+            if (!byStars.has(r.stars)) byStars.set(r.stars, r.count);
+        }
+        if (byStars.size < 5) return { error: `partial-distribution(${byStars.size}/5)` };
+
+        const dist = [5, 4, 3, 2, 1].map((s) => byStars.get(s));
+        const sum = dist.reduce((a, b) => a + b, 0);
+
+        // Cross-check: parsed sum should match the on-page total to within
+        // 5%. A wider drift suggests we picked up the wrong aria-labels
+        // (e.g. per-review "5 stars" appended after the summary loaded).
+        if (result.totalShown && Math.abs(sum - result.totalShown) / result.totalShown > 0.05) {
+            return { error: `sum-mismatch(parsed=${sum} shown=${result.totalShown})` };
+        }
+
+        return { dist, total: sum, totalShown: result.totalShown };
+    } catch (err) {
+        return { error: err.message || String(err) };
+    }
+}
+
+module.exports = { createGmapsPage, lookup, scrapeReviews, scrapePhotos, scrapeRatingsDistribution, loadCache, saveCache, CACHE_PATH };
