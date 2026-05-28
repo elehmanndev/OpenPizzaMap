@@ -78,6 +78,11 @@ router.get("/place/:id/:slug?", async (req, res) => {
                 include: { style: true },
                 orderBy: { style: { sortOrder: "asc" } },
             },
+            images: {
+                where: { isHidden: false },
+                orderBy: { position: "asc" },
+                select: { id: true, localPath: true, width: true, height: true },
+            },
         },
     });
     if (!place) return res.status(404).send("Not found");
@@ -101,7 +106,7 @@ router.get("/place/:id/:slug?", async (req, res) => {
     // Server-side render the first page of reviews so the section paints
     // immediately. Client paginates from /api/places/:id/reviews after.
     const REVIEW_PAGE_SIZE = 10;
-    const [visitCount, reviewsTotal, reviewsFirstPage, reviewAverages] = await Promise.all([
+    const [visitCount, reviewsTotal, reviewsFirstPage, reviewAverages, allOpmReviews] = await Promise.all([
         prisma.visit.count({ where: { placeId: id } }),
         prisma.review.count({ where: { placeId: id, isVisible: true } }),
         prisma.review.findMany({
@@ -118,7 +123,26 @@ router.get("/place/:id/:slug?", async (req, res) => {
             where: { placeId: id, isVisible: true },
             _avg: { pizza: true, local: true, servicio: true, precio: true },
         }),
+        // All 4 category scores for every visible OPM review. We bucket
+        // them into the 5-star distribution at render time and combine
+        // with the scraped Google distribution. Light query (just 4 floats
+        // per row, typically <100 rows even on the busiest places).
+        prisma.review.findMany({
+            where: { placeId: id, isVisible: true },
+            select: { pizza: true, local: true, servicio: true, precio: true },
+        }),
     ]);
+    // OPM 5-bucket distribution — round avg-of-4-categories to nearest
+    // integer star. [c5, c4, c3, c2, c1].
+    place.opmRatingsDistribution = (() => {
+        const buckets = [0, 0, 0, 0, 0]; // index 0 = 5★, index 4 = 1★
+        for (const r of allOpmReviews) {
+            const avg = (Number(r.pizza) + Number(r.local) + Number(r.servicio) + Number(r.precio)) / 4;
+            const stars = Math.max(1, Math.min(5, Math.round(avg)));
+            buckets[5 - stars]++;
+        }
+        return buckets;
+    })();
     let viewerVisited = false;
     let viewerFavorited = false;
     let viewerReview = null;

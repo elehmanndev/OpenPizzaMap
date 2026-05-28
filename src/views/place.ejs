@@ -201,14 +201,22 @@
   });
 %>
 <%- include("layout", { title: place.name, user, leaflet: false, bodyClass: "place-page", body: String.raw`
-  ${place.heroImageUrl ? `
-    <div class="place-hero">
-      <img src="${escapeAttr(largeVariant(place.heroImageUrl))}" data-fallback="${escapeAttr(place.heroImageUrl)}" alt="${escapeAttr(place.name)}" loading="eager" onerror="if(this.dataset.errored){const h=this.closest('.place-hero');if(h)h.remove();else this.remove()}else{this.dataset.errored='1';this.src=this.dataset.fallback}" />
-      <button type="button" class="place-fav place-fav--floating${place.viewerFavorited ? " is-active" : ""}" data-place-fav data-place-id="${place.id}" aria-pressed="${place.viewerFavorited ? "true" : "false"}" aria-label="${place.viewerFavorited ? "Remove from favourites" : "Add to favourites"}">
-        <span class="material-symbols-rounded" aria-hidden="true">favorite</span>
-      </button>
-    </div>
-  ` : ""}
+  ${(() => {
+    // Hero = first PlaceImage if any (Track 2 backfill), else legacy
+    // heroImageUrl, else nothing. The mosaic gallery section below
+    // (the .place-gallery card) renders photos 2..N.
+    const gallery = Array.isArray(place.images) ? place.images : [];
+    const heroUrl = gallery.length ? gallery[0].localPath : place.heroImageUrl;
+    if (!heroUrl) return "";
+    return `
+      <div class="place-hero">
+        <img src="${escapeAttr(largeVariant(heroUrl))}" data-fallback="${escapeAttr(heroUrl)}" alt="${escapeAttr(place.name)}" loading="eager" onerror="if(this.dataset.errored){const h=this.closest('.place-hero');if(h)h.remove();else this.remove()}else{this.dataset.errored='1';this.src=this.dataset.fallback}" />
+        <button type="button" class="place-fav place-fav--floating${place.viewerFavorited ? " is-active" : ""}" data-place-fav data-place-id="${place.id}" aria-pressed="${place.viewerFavorited ? "true" : "false"}" aria-label="${place.viewerFavorited ? "Remove from favourites" : "Add to favourites"}">
+          <span class="material-symbols-rounded" aria-hidden="true">favorite</span>
+        </button>
+      </div>
+    `;
+  })()}
 
   <article class="place-shell">
     ${place.isJustCreatedForViewer ? `
@@ -279,6 +287,90 @@
             }
           });
         });
+
+        // Photo lightbox. Click any mosaic tile → modal opens at that
+        // index. Slides are pre-rendered with data-src; we swap that
+        // into src lazily as they become reachable (cur ± 1) to avoid
+        // downloading the whole gallery on open.
+        //
+        // Deferred to DOMContentLoaded because this <script> block is
+        // positioned ABOVE the .place-gallery section in the document
+        // order — so tile + lightbox nodes don't exist yet when this
+        // file parses inline.
+        const initLightbox = () => {
+        const lightbox = document.querySelector("[data-place-lightbox]");
+        if (lightbox) {
+          const stage   = lightbox.querySelector("[data-lb-stage]");
+          const slides  = Array.from(lightbox.querySelectorAll(".place-lightbox__slide"));
+          const dots    = Array.from(lightbox.querySelectorAll(".place-lightbox__dot"));
+          const counter = lightbox.querySelector("[data-lb-index]");
+          const tiles   = document.querySelectorAll("[data-gallery-open]");
+          let cur = 0;
+          let lastFocused = null;
+
+          const ensureLoaded = (i) => {
+            for (const j of [i, i - 1, i + 1]) {
+              const s = slides[j];
+              if (!s) continue;
+              const img = s.querySelector("img");
+              if (img && !img.src && img.dataset.src) {
+                img.src = img.dataset.src;
+                img.onerror = function () {
+                  if (this.dataset.errored) { this.closest(".place-lightbox__slide").remove(); }
+                  else { this.dataset.errored = "1"; this.src = this.dataset.fallback; }
+                };
+              }
+            }
+          };
+          const setIndex = (i) => {
+            cur = Math.max(0, Math.min(slides.length - 1, i));
+            slides.forEach((s, si) => s.classList.toggle("is-active", si === cur));
+            dots.forEach((d, di) => d.classList.toggle("is-active", di === cur));
+            if (counter) counter.textContent = String(cur + 1);
+            ensureLoaded(cur);
+          };
+          const open = (i) => {
+            lastFocused = document.activeElement;
+            lightbox.hidden = false;
+            lightbox.setAttribute("aria-hidden", "false");
+            document.body.classList.add("is-lightbox-open");
+            setIndex(i);
+            // Focus moves to close button so screen readers + ESC handlers land somewhere sensible.
+            const closeBtn = lightbox.querySelector("[data-lb-close]");
+            closeBtn && closeBtn.focus();
+          };
+          const close = () => {
+            lightbox.hidden = true;
+            lightbox.setAttribute("aria-hidden", "true");
+            document.body.classList.remove("is-lightbox-open");
+            if (lastFocused && lastFocused.focus) lastFocused.focus();
+          };
+
+          tiles.forEach((t) => t.addEventListener("click", (ev) => {
+            ev.preventDefault();
+            open(Number(t.dataset.galleryOpen) || 0);
+          }));
+          lightbox.querySelector("[data-lb-close]").addEventListener("click", close);
+          lightbox.querySelector("[data-lb-prev]").addEventListener("click", () => setIndex(cur - 1));
+          lightbox.querySelector("[data-lb-next]").addEventListener("click", () => setIndex(cur + 1));
+          dots.forEach((d) => d.addEventListener("click", () => setIndex(Number(d.dataset.lbGoto))));
+          // Click outside the image (on the dim backdrop) closes too.
+          lightbox.addEventListener("click", (ev) => {
+            if (ev.target === lightbox || ev.target === stage) close();
+          });
+          document.addEventListener("keydown", (ev) => {
+            if (lightbox.hidden) return;
+            if (ev.key === "Escape")     { ev.preventDefault(); close(); }
+            if (ev.key === "ArrowLeft")  { ev.preventDefault(); setIndex(cur - 1); }
+            if (ev.key === "ArrowRight") { ev.preventDefault(); setIndex(cur + 1); }
+          });
+        }
+        };
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", initLightbox);
+        } else {
+          initLightbox();
+        }
       })();
     </script>
 
@@ -306,6 +398,57 @@
         </ul>
       </section>
     ` : ""}
+
+    ${(() => {
+      // Mosaic photo gallery. Shows up to 5 tiles in a 1-large + 2x2
+      // grid (matches typical restaurant-site galleries). Tile 1 is
+      // intentionally the same image as the hero banner — repetition
+      // is what makes the mosaic visually anchored and grid-clean.
+      // Clicking any tile opens the lightbox carousel (chevrons + dots)
+      // seeded at that photo's index in the full gallery.
+      const gallery = Array.isArray(place.images) ? place.images : [];
+      if (gallery.length < 2) return "";
+      const tiles = gallery.slice(0, 5);             // up to 5 tiles
+      const extra = Math.max(0, gallery.length - 5); // overflow count for last tile
+      const renderTile = (img, i, isOverflow) => `
+        <button type="button" class="place-gallery__tile${isOverflow ? " place-gallery__tile--more" : ""}" data-gallery-open="${i}" aria-label="Open photo ${i + 1} of ${gallery.length}">
+          <img src="${escapeAttr(largeVariant(img.localPath))}" data-fallback="${escapeAttr(img.localPath)}" alt="${escapeAttr(place.name)} — photo ${i + 1}" loading="lazy" onerror="if(this.dataset.errored){this.closest('.place-gallery__tile').remove()}else{this.dataset.errored='1';this.src=this.dataset.fallback}" />
+          ${isOverflow ? `<span class="place-gallery__more">+${extra}</span>` : ""}
+        </button>
+      `;
+      const tilesHtml = tiles.map((img, i) => renderTile(img, i, i === tiles.length - 1 && extra > 0)).join("");
+      // Pre-render the lightbox shell so the JS only has to toggle visibility
+      // and update src — keeps the open-tap snappy. Slides hold all gallery
+      // entries (including the hero); chevrons + dots drive currentIndex.
+      const lightboxSlides = gallery.map((img, i) => `
+        <div class="place-lightbox__slide" data-lb-slide="${i}">
+          <img data-src="${escapeAttr(largeVariant(img.localPath))}" data-fallback="${escapeAttr(img.localPath)}" alt="${escapeAttr(place.name)} — photo ${i + 1}" />
+        </div>
+      `).join("");
+      const lightboxDots = gallery.map((_, i) => `<button type="button" class="place-lightbox__dot" data-lb-goto="${i}" aria-label="Go to photo ${i + 1}"></button>`).join("");
+      return `
+        <section class="card place-gallery">
+          <h2 class="place-section-title">Photos</h2>
+          <div class="place-gallery__grid" data-gallery-tiles>${tilesHtml}</div>
+        </section>
+        <div class="place-lightbox" data-place-lightbox hidden aria-hidden="true" role="dialog" aria-modal="true" aria-label="Photo gallery">
+          <button type="button" class="place-lightbox__close" data-lb-close aria-label="Close">
+            <span class="material-symbols-rounded" aria-hidden="true">close</span>
+          </button>
+          <button type="button" class="place-lightbox__arrow place-lightbox__arrow--prev" data-lb-prev aria-label="Previous photo">
+            <span class="material-symbols-rounded" aria-hidden="true">chevron_left</span>
+          </button>
+          <button type="button" class="place-lightbox__arrow place-lightbox__arrow--next" data-lb-next aria-label="Next photo">
+            <span class="material-symbols-rounded" aria-hidden="true">chevron_right</span>
+          </button>
+          <div class="place-lightbox__stage" data-lb-stage>${lightboxSlides}</div>
+          <div class="place-lightbox__dots" role="tablist" aria-label="Photo navigation">${lightboxDots}</div>
+          <div class="place-lightbox__counter" aria-live="polite">
+            <span data-lb-index>1</span> / ${gallery.length}
+          </div>
+        </div>
+      `;
+    })()}
 
     <section class="card place-description">
       ${place.descriptionHtml || `
@@ -338,25 +481,6 @@
       </section>
     ` : "";
     })()}
-
-    ${reviews.length ? `
-      <section class="card place-reviews">
-        <h2 class="place-section-title">Other ratings</h2>
-        <div class="place-reviews__grid">
-          ${reviews.map((r) => `
-            ${r.url ? `<a class="place-review" href="${escapeAttr(r.url)}" target="_blank" rel="noopener">` : `<div class="place-review">`}
-              <div class="place-review__platform">${escapeHtml(r.platform)}</div>
-              <div class="place-review__score">
-                <span class="material-symbols-rounded" aria-hidden="true">star</span>
-                <strong>${escapeHtml(r.rating.toFixed(1))}</strong>
-              </div>
-              <div class="place-review__count">${r.count != null ? `${r.count.toLocaleString()} reviews` : ""}</div>
-              ${r.ranking ? `<div class="place-review__ranking">${escapeHtml(r.ranking)}</div>` : ""}
-            ${r.url ? `</a>` : `</div>`}
-          `).join("")}
-        </div>
-      </section>
-    ` : ""}
 
     ${(() => {
       // Unified reviews block: OPM + Google + TripAdvisor, mixed.
@@ -404,21 +528,23 @@
       const totalReviewCount = (place.googleReviewCount || 0)
         + (place.reviewsTotal || 0);
 
-      // Trustpilot-style 5-bucket distribution
-      const buckets = [
-        { key: "excellent", label: "Excellent", min: 4.5,  hex: "#1ea672" },
-        { key: "good",      label: "Good",      min: 3.5,  hex: "#73cf11" },
-        { key: "average",   label: "Average",   min: 2.5,  hex: "#ffce00" },
-        { key: "poor",      label: "Poor",      min: 1.5,  hex: "#ff8622" },
-        { key: "terrible",  label: "Terrible",  min: 0,    hex: "#ff3722" },
-      ];
-      function bucketFor(rating) {
-        for (const b of buckets) if (rating >= b.min) return b.key;
-        return "terrible";
-      }
-      const counts = Object.fromEntries(buckets.map((b) => [b.key, 0]));
-      for (const r of allRated) counts[bucketFor(r.rating)]++;
-      const maxCount = Math.max(1, ...Object.values(counts));
+      // Per-star distribution: combine the Google-Maps-scraped
+      // [c5,c4,c3,c2,c1] with the OPM-computed distribution from
+      // pages.js. Bar graph only renders if we have a Google scrape
+      // OR enough OPM reviews to be meaningful (≥3). Without Google
+      // data we'd be showing only the tiny OPM slice, which would
+      // misrepresent the actual rating spread.
+      const opmDist = Array.isArray(place.opmRatingsDistribution) ? place.opmRatingsDistribution : [0,0,0,0,0];
+      const googDist = Array.isArray(place.googleRatingsDistribution) ? place.googleRatingsDistribution : null;
+      const totalOpm = opmDist.reduce((a,b) => a+b, 0);
+      const totalGoog = googDist ? googDist.reduce((a,b) => a+b, 0) : 0;
+      const combinedDist = googDist
+        ? [0,1,2,3,4].map((i) => (opmDist[i] || 0) + (googDist[i] || 0))
+        : opmDist;
+      const showDistribution = !!googDist || totalOpm >= 3;
+      const maxBucket = Math.max(1, ...combinedDist);
+      // Bar colors — green-to-red gradient, Trustpilot style.
+      const bucketColors = ["#1ea672", "#73cf11", "#ffce00", "#ff8622", "#ff3722"];
 
       const avgLabel = avg == null
         ? "—"
@@ -461,13 +587,29 @@
         return `<span class="opm-review__via" title="via ${label}"><span class="opm-review__via-text">via</span>${logo}</span>`;
       }
 
-      // Month + year, e.g. "May 2026". External sources may not have an ISO
-      // date — fall back to the source's relative time string if so.
-      function monthYear(d) {
+      // Relative time, "X years/months/days ago" — matches the format
+      // Google sends in their review.relativeTime. We have an ISO
+      // createdAt for OPM reviews and use the same helper there, so
+      // both sources read consistently.
+      function relativeAgo(d) {
         if (!d) return "";
         const date = new Date(d);
         if (isNaN(date.getTime())) return "";
-        return date.toLocaleString("en-US", { month: "long", year: "numeric" });
+        const diffMs = Date.now() - date.getTime();
+        const sec = Math.round(diffMs / 1000);
+        if (sec < 60) return "just now";
+        const min = Math.round(sec / 60);
+        if (min < 60) return `${min} minute${min === 1 ? "" : "s"} ago`;
+        const hr = Math.round(min / 60);
+        if (hr < 24) return `${hr} hour${hr === 1 ? "" : "s"} ago`;
+        const day = Math.round(hr / 24);
+        if (day < 7) return `${day} day${day === 1 ? "" : "s"} ago`;
+        const wk = Math.round(day / 7);
+        if (wk < 5) return `${wk} week${wk === 1 ? "" : "s"} ago`;
+        const mo = Math.round(day / 30);
+        if (mo < 12) return `${mo} month${mo === 1 ? "" : "s"} ago`;
+        const yr = Math.round(mo / 12);
+        return `${yr} year${yr === 1 ? "" : "s"} ago`;
       }
 
       function reviewCard(r) {
@@ -476,7 +618,7 @@
           ? `<span class="opm-review__avatar opm-review__avatar--img"><img src="${escapeAttr(r.authorAvatar)}" alt="" referrerpolicy="no-referrer" onerror="this.parentNode.outerHTML='<span class=&quot;opm-review__avatar&quot; aria-hidden=&quot;true&quot;>${escapeHtml(initial)}</span>'" /></span>`
           : `<span class="opm-review__avatar" aria-hidden="true">${escapeHtml(initial)}</span>`;
         const dateLabel = r.createdAt
-          ? monthYear(r.createdAt)
+          ? relativeAgo(r.createdAt)
           : (r.relativeTime || "");
         const timeHtml = r.createdAt
           ? `<time class="opm-review__time" datetime="${escapeAttr(new Date(r.createdAt).toISOString())}">${escapeHtml(dateLabel)}</time>`
@@ -506,10 +648,7 @@
 
       return `
         <section class="card place-reviews">
-          <div class="place-reviews__header">
-            <h2 class="place-section-title">Reviews</h2>
-            <span class="place-reviews__count">${totalShown}</span>
-          </div>
+          <h2 class="place-section-title">Reviews</h2>
 
           <div class="place-reviews__summary">
             <div class="place-reviews__big">
@@ -518,19 +657,21 @@
               ${renderStars(avg, "stars--md")}
               <span class="place-reviews__total">Based on ${totalReviewCount.toLocaleString()} review${totalReviewCount === 1 ? "" : "s"} across Google and OpenPizzaMap</span>
             </div>
-            <ul class="place-reviews__distribution" aria-label="Rating distribution">
-              ${buckets.map((b) => {
-                const n = counts[b.key];
-                const pct = Math.round((n / maxCount) * 100);
-                return `
-                  <li class="place-reviews__dist-row">
-                    <span class="place-reviews__dist-label">${b.label}</span>
-                    <span class="place-reviews__dist-bar"><span class="place-reviews__dist-fill" style="width:${pct}%;background:${b.hex};"></span></span>
-                    <span class="place-reviews__dist-count">${n}</span>
-                  </li>
-                `;
-              }).join("")}
-            </ul>
+            ${showDistribution ? `
+              <ul class="place-reviews__distribution" aria-label="Rating distribution">
+                ${[5,4,3,2,1].map((stars, i) => {
+                  const n = combinedDist[i];
+                  const pct = Math.round((n / maxBucket) * 100);
+                  return `
+                    <li class="place-reviews__dist-row">
+                      <span class="place-reviews__dist-label">${stars}</span>
+                      <span class="place-reviews__dist-bar"><span class="place-reviews__dist-fill" style="width:${pct}%;background:${bucketColors[i]};"></span></span>
+                      <span class="place-reviews__dist-count">${n.toLocaleString()}</span>
+                    </li>
+                  `;
+                }).join("")}
+              </ul>
+            ` : ""}
           </div>
 
           <ul class="place-reviews__list" data-reviews-list data-place-id="${place.id}" data-loaded-count="${place.reviewsFirstPage.length}" data-total="${place.reviewsTotal}" data-page-size="${place.reviewPageSize}">
@@ -544,6 +685,25 @@
       `;
     })()}
 
+    ${reviews.length ? `
+      <section class="card place-reviews">
+        <h2 class="place-section-title">Other ratings</h2>
+        <div class="place-reviews__grid">
+          ${reviews.map((r) => `
+            ${r.url ? `<a class="place-review" href="${escapeAttr(r.url)}" target="_blank" rel="noopener">` : `<div class="place-review">`}
+              <div class="place-review__platform">${escapeHtml(r.platform)}</div>
+              <div class="place-review__score">
+                <span class="material-symbols-rounded" aria-hidden="true">star</span>
+                <strong>${escapeHtml(r.rating.toFixed(1))}</strong>
+              </div>
+              <div class="place-review__count">${r.count != null ? `${r.count.toLocaleString()} reviews` : ""}</div>
+              ${r.ranking ? `<div class="place-review__ranking">${escapeHtml(r.ranking)}</div>` : ""}
+            ${r.url ? `</a>` : `</div>`}
+          `).join("")}
+        </div>
+      </section>
+    ` : ""}
+
     ${place.faqs && place.faqs.length ? `
       <section class="place-faqs">
         <h2 class="place-section-title">FAQ</h2>
@@ -556,6 +716,11 @@
       </section>
     ` : ""}
 
+    <!--
+      Owner-claim block hidden 2026-05-28 — pre-launch, no traffic, no
+      claim funnel to land. Restore when we have a real claim+verify
+      flow and inbound interest worth catching. Tracked in
+      Obsidian/Projects/3_Openpizzamap/STATUS.md → Planned → "Owner-claim block".
     <aside class="place-claim">
       <div class="place-claim__icon">
         <span class="material-symbols-rounded" aria-hidden="true">verified</span>
@@ -566,6 +731,7 @@
       </div>
       <a class="btn primary" href="/place/${place.id}/suggest-edit">Claim this place</a>
     </aside>
+    -->
 
     <footer class="place-footer">
       <a class="btn" href="/map">← Back to map</a>
@@ -581,7 +747,6 @@
         <span class="material-symbols-rounded" aria-hidden="true">close</span>
       </button>
       <header class="review-modal__head">
-        <div class="review-modal__eyebrow">Tasting note</div>
         <h2 class="review-modal__title" id="review-modal-title">${escapeHtml(place.name)}</h2>
         <div class="review-modal__sub">How was your visit?</div>
       </header>
@@ -682,7 +847,7 @@
 
         <label class="review-modal__comment-wrap">
           <span class="review-modal__legend">In a sentence — what stood out?</span>
-          <textarea class="review-modal__comment" data-review-comment required minlength="4" maxlength="500" rows="3" placeholder="What you'd tell a friend over coffee…">${place.viewerReview && place.viewerReview.comment ? escapeHtml(place.viewerReview.comment) : ""}</textarea>
+          <textarea class="review-modal__comment" data-review-comment required minlength="4" maxlength="500" rows="3" placeholder="What you'd tell a friend over a slice…">${place.viewerReview && place.viewerReview.comment ? escapeHtml(place.viewerReview.comment) : ""}</textarea>
           <span class="review-modal__counter" data-review-counter>0 / 500</span>
         </label>
 
