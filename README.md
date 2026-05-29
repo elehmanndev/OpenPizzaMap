@@ -12,7 +12,7 @@ Community-submitted pizza places with moderation, map + search.
 ## Local setup
 1. Install Node.js LTS
 2. Create a MariaDB database (local or remote)
-3. Create `.env.local` for localhost (and `.env` for production) with `DATABASE_URL` and `SESSION_SECRET`
+3. Create `.env.local` for localhost (and `.env` for production) with `DATABASE_URL` and `SESSION_SECRET`. For sign-in, also set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `BASE_URL` (or `GOOGLE_CALLBACK_URL`) — without them the app runs but Google sign-in is disabled.
 
 Install deps:
 ```bash
@@ -46,12 +46,11 @@ npm run dev
 
 Open: http://localhost:3000
 
-## Admin (local seed)
-Seed creates:
-- Email: `admin@openpizzamap.local`
-- Password: `admin123!ChangeMe`
-
-Change these for any real deployment.
+## Admin access
+Auth is Google-only — no admin user is seeded (`prisma/seed.js` is a no-op).
+To grant yourself admin:
+1. Sign in once with Google to create your `User` row.
+2. Promote it: `UPDATE User SET role = 'admin' WHERE email = '<you>@gmail.com';`
 
 ## Hostinger deployment notes
 Use Hostinger “Node.js Web App”
@@ -59,6 +58,7 @@ Use Hostinger “Node.js Web App”
 Set env vars in Hostinger panel:
 - `DATABASE_URL`
 - `SESSION_SECRET`
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `BASE_URL`
 - `PORT` (Hostinger may provide it)
 
 Start command: `npm start`

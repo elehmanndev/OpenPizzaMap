@@ -5,7 +5,7 @@
   "type": "commonjs",
   "scripts": {
     "dev": "node src/app.js",
-    "test": "node --test",
+    "test": "node --test \"test/**/*.test.js\"",
     "start": "/opt/alt/alt-nodejs20/root/bin/node scripts/deploy/migrate.js && /opt/alt/alt-nodejs20/root/bin/node src/app.js",
     "start:local": "node scripts/deploy/migrate.js && node src/app.js",
     "build": "npm run prisma:generate && npm run build:asset-version",
