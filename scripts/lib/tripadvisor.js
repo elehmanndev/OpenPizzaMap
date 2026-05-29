@@ -63,4 +63,172 @@ async function taLookup(name, city, country) {
     return { search: best, details: det, similarity: Math.round(bestSim * 100) / 100 };
 }
 
-module.exports = { taFetch, taLookup, NAME_MATCH_MIN };
+// ─── Playwright-based scrape (free, no quota) ─────────────────────────────
+//
+// Added 2026-05-28 as part of the move to opm-runner-does-all-scraping.
+// Replaces the paid /location/{id}/details + /reviews API calls with a
+// Playwright nav of the public TA restaurant page. WebFetch probe
+// confirmed the page renders without bot-protection and exposes:
+//   - venue name, rating, review count, address, phone
+//   - first 5+ review cards (author, date, rating, text)
+//   - photo URLs (dynamic-media-cdn, stable, no signing)
+// Per-star distribution requires the JS-mounted rating filter widget
+// to render — so we use Playwright (not plain fetch) and wait for it.
+
+const sleepTa = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Build the canonical restaurant page URL from a known locationId.
+// TA's URL pattern includes a region code (g<digits>) we don't always
+// have — but TA's UserReviewEdit-d<id> URL redirects to the canonical
+// page with all the right segments filled in. We follow the redirect.
+function taRestaurantUrl(locationId) {
+    return `https://www.tripadvisor.com/UserReviewEdit-d${locationId}`;
+}
+
+// Search TA for `name + city`, return the locationId of the first
+// restaurant-category hit whose name token-overlaps our query.
+// Returns null if no confident match — caller writes -1 sentinel
+// so we don't re-search every tick.
+async function findTaLocationId(page, { name, city }) {
+    const q = encodeURIComponent(`${name} ${city || ""}`.trim());
+    await page.goto(`https://www.tripadvisor.com/Search?q=${q}&searchSessionId=&searchNearby=false`, {
+        waitUntil: "domcontentloaded", timeout: 30000,
+    });
+    // Wait for results to populate. TA renders them server-side so
+    // domcontentloaded usually carries the links already.
+    await sleepTa(1500);
+
+    return await page.evaluate((wantName) => {
+        const wantTokens = wantName.toLowerCase().split(/\s+/).filter(t => t.length >= 3);
+        // Restaurant pages have URLs like
+        //   /Restaurant_Review-g123-d456-Reviews-Foo-Bar.html
+        // and live anchors with that href. Pick the first one whose
+        // visible text shares ≥1 token (length >=3) with the query name.
+        const anchors = document.querySelectorAll('a[href*="/Restaurant_Review-"]');
+        for (const a of anchors) {
+            const text = (a.textContent || "").toLowerCase();
+            const matched = wantTokens.some(t => text.includes(t));
+            if (!matched) continue;
+            const m = a.href.match(/-d(\d+)-/);
+            if (m) return Number(m[1]);
+        }
+        return null;
+    }, name);
+}
+
+// Scrape rating, count, reviews, distribution from the canonical
+// restaurant page. Returns {} on success (caller decides which fields
+// to write), or { error } on a hard failure.
+async function scrapeTripadvisor(page, { locationId }) {
+    if (!locationId) return { error: "no locationId" };
+
+    try {
+        await page.goto(taRestaurantUrl(locationId), {
+            waitUntil: "domcontentloaded", timeout: 30000,
+        });
+        // Wait for the title/rating block to settle. TA's review-page
+        // structure is fairly stable but slow JS hydration is real.
+        await sleepTa(2000);
+
+        const finalUrl = page.url();
+        if (!/Restaurant_Review/i.test(finalUrl)) {
+            return { error: `did-not-redirect-to-review (${finalUrl.slice(0, 80)})` };
+        }
+
+        const scraped = await page.evaluate(() => {
+            const out = {};
+
+            // Rating — h1's sibling has the "4.0 of 5 bubbles" text in
+            // aria-label. Multiple selectors as fallbacks for layout drift.
+            const ratingEl = document.querySelector('[data-automation*="bubbleRating"], svg[aria-label*="bubbles"], [aria-label*="of 5 bubbles"]');
+            if (ratingEl) {
+                const al = ratingEl.getAttribute("aria-label") || "";
+                const m = al.match(/(\d[.,]\d)\s*of\s*5\s*bubbles/i) || al.match(/(\d[.,]\d)/);
+                if (m) out.rating = Number(m[1].replace(",", "."));
+            }
+
+            // Review count — typically next to the rating, in text like
+            // "5,450 reviews" or a tab labelled "Reviews (5,450)".
+            const bodyText = document.body.innerText;
+            const countMatch = bodyText.match(/([\d,.\s]+)\s*reviews?\b/i);
+            if (countMatch) {
+                const n = Number(countMatch[1].replace(/[.,\s]/g, ""));
+                if (Number.isFinite(n) && n > 0) out.reviewCount = n;
+            }
+
+            // Ranking — "#3 of 567 Restaurants in Rome"
+            const rankMatch = bodyText.match(/#(\d+)\s*of\s*[\d,.\s]+\s*[A-Za-z ]+/i);
+            if (rankMatch) out.ranking = rankMatch[0].trim();
+
+            // Distribution — the rating filter sidebar renders 5 rows.
+            // Each row has the star label + a count. The exact selectors
+            // shift between TA's experiments so we use a tolerant strategy:
+            // look for elements whose aria-label or nearby text matches
+            // "<star count> rating(s)" or similar.
+            const distMap = new Map();
+            const labelRe = /(\d)\s*star[s]?\s*[:,]?\s*([\d,.\s]+)/i;
+            for (const el of document.querySelectorAll("[role='button'], [aria-label]")) {
+                const lbl = el.getAttribute("aria-label") || el.textContent || "";
+                const m = lbl.match(labelRe);
+                if (m) {
+                    const stars = Number(m[1]);
+                    const count = Number(m[2].replace(/[.,\s]/g, ""));
+                    if (stars >= 1 && stars <= 5 && Number.isFinite(count) && !distMap.has(stars)) {
+                        distMap.set(stars, count);
+                    }
+                }
+            }
+            if (distMap.size === 5) {
+                out.distribution = [5,4,3,2,1].map(s => distMap.get(s));
+            }
+
+            // Review cards — TA renders them inline. Each card has a
+            // data-automation attribute we can lean on.
+            const reviews = [];
+            const cards = document.querySelectorAll('[data-automation="reviewCard"], [data-test-target="HR_CC_CARD"]');
+            for (const card of cards) {
+                const authorEl = card.querySelector('[data-automation*="author"], [class*="author"]');
+                const textEl = card.querySelector('[data-test-target="review-body"], q, [class*="reviewText"]');
+                const ratingEl = card.querySelector('[aria-label*="of 5 bubbles"], svg[aria-label*="bubbles"]');
+                const dateEl = card.querySelector('[data-test-target="review-date"], [class*="reviewDate"]');
+                const review = {
+                    author: authorEl ? (authorEl.textContent || "").trim() : "Anonymous",
+                    text: textEl ? (textEl.textContent || "").trim() : "",
+                    rating: null,
+                    relativeTime: dateEl ? (dateEl.textContent || "").trim() : null,
+                };
+                if (ratingEl) {
+                    const al = ratingEl.getAttribute("aria-label") || "";
+                    const m = al.match(/(\d[.,]\d)/);
+                    if (m) review.rating = Number(m[1].replace(",", "."));
+                }
+                if (review.text.length >= 30) reviews.push(review);
+                if (reviews.length >= 5) break;
+            }
+            out.reviews = reviews;
+
+            // Photo URLs — TA's media-cdn URLs are stable. Take up to 10.
+            const photoUrls = new Set();
+            for (const img of document.querySelectorAll('img[src*="dynamic-media-cdn.tripadvisor"]')) {
+                const u = img.src;
+                if (u && !/photo-l|placeholder|icon/i.test(u)) photoUrls.add(u);
+                if (photoUrls.size >= 10) break;
+            }
+            out.photoUrls = [...photoUrls];
+
+            // Canonical URL — for the attribution link on /place pages.
+            out.url = window.location.href;
+
+            return out;
+        });
+
+        return scraped;
+    } catch (err) {
+        return { error: err.message };
+    }
+}
+
+module.exports = {
+    taFetch, taLookup, NAME_MATCH_MIN,            // legacy API path
+    findTaLocationId, scrapeTripadvisor,           // new Playwright path
+};

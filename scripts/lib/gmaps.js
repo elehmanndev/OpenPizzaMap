@@ -1084,4 +1084,70 @@ async function scrapeRatingsDistribution(page, { googlePlaceId } = {}) {
     }
 }
 
-module.exports = { createGmapsPage, lookup, scrapeReviews, scrapePhotos, scrapeRatingsDistribution, loadCache, saveCache, CACHE_PATH };
+// findPlaceByName — Playwright resolver added 2026-05-28 to replace the
+// paid Google Places searchText API. Used by scrape-resolve.js to fill
+// googlePlaceId for places that don't have one yet.
+//
+// Returns: { placeId, heading, lat, lng } on confident match, null otherwise.
+//
+// Sanity checks before declaring a match:
+//   - placeId extracted from the URL (not just any ChIJ string in the HTML)
+//   - heading token-overlaps with input name (avoid wrong-venue near-misses)
+//   - if input lat/lng known, distance < 5km (avoid right-name-wrong-city)
+async function findPlaceByName(page, { name, city, country, lat, lng } = {}) {
+    if (!name) return null;
+    try {
+        const q = encodeURIComponent([name, city, country].filter(Boolean).join(" "));
+        await page.goto(`https://www.google.com/maps/search/${q}?hl=en`, {
+            waitUntil: "domcontentloaded", timeout: 30000,
+        });
+        // Consent
+        for (const sel of [
+            'button[aria-label*="Accept"]', 'button[aria-label*="Acepto"]',
+            'button[aria-label*="Akzeptieren"]', 'form[action*="consent"] button',
+        ]) {
+            const btn = await page.$(sel).catch(() => null);
+            if (btn) { await btn.click().catch(() => {}); await sleep(500); break; }
+        }
+
+        // Captcha?
+        if (/\/sorry\/index/.test(page.url())) return { error: "captcha" };
+
+        // Wait for either the direct place panel (h1 heading) or the search
+        // results list (a.hfpxzc). Either is fine — if results list, click first.
+        await Promise.race([
+            page.waitForSelector("h1", { timeout: 8000 }).catch(() => null),
+            page.waitForSelector("a.hfpxzc", { timeout: 8000 }).catch(() => null),
+        ]);
+        if (await page.$("h1").catch(() => null)) {
+            // landed directly on a place panel
+        } else {
+            const first = await page.$("a.hfpxzc").catch(() => null);
+            if (!first) return null;
+            await first.click().catch(() => {});
+            await page.waitForSelector("h1", { timeout: 8000 }).catch(() => null);
+        }
+
+        const placeId = await extractPlaceIdFromPage(page);
+        if (!placeId) return null;
+
+        const heading = await page.$eval("h1", (el) => (el.textContent || "").trim()).catch(() => null);
+        if (heading && !headingMatchesName(heading, name)) {
+            return { matched: false, reason: "name-mismatch", heading, placeId };
+        }
+
+        const coords = coordsFromUrl(page.url());
+        if (lat != null && lng != null && coords && coords.lat && coords.lng) {
+            const distM = haversineM(Number(lat), Number(lng), coords.lat, coords.lng);
+            if (distM > 5000) {
+                return { matched: false, reason: "coord-mismatch", distM, placeId, heading };
+            }
+        }
+
+        return { matched: true, placeId, heading, lat: coords?.lat, lng: coords?.lng };
+    } catch (err) {
+        return { error: err.message };
+    }
+}
+
+module.exports = { createGmapsPage, lookup, scrapeReviews, scrapePhotos, scrapeRatingsDistribution, findPlaceByName, loadCache, saveCache, CACHE_PATH };

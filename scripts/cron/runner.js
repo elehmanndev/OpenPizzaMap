@@ -208,12 +208,21 @@ async function tick(n) {
         console.warn(`[runner]   localize ping: FAIL (${ping.error || ping.status})`);
     }
 
-    // Push photo-source jobs from this tick to Hostinger for byte
-    // download. Both galleryScrape (Playwright) and googlePhotosBurn
-    // (Places API) emit the same shape — placeId, slug, photos[] —
-    // and the gallery-download endpoint downloads + writes to disk.
-    // Combine them into one POST so Hostinger handles them as a single
-    // transaction. Per-source counts logged separately.
+    // Push photo-source jobs from this tick. Two paths:
+    //
+    //   v1 (legacy) — POST URLs to Hostinger /api/admin/gallery-download.
+    //     Hostinger fetches bytes, runs sharp, writes files. Heavy on
+    //     Hostinger CPU; was the source of the 120-process spike.
+    //
+    //   v2 (OPM_PIPELINE_V2=true) — opm-runner downloads bytes, runs
+    //     sharp locally, POSTs the 3 finished files per photo to
+    //     Hostinger /api/admin/upload-place-photo. Hostinger does
+    //     multipart-receive + atomic write + 1 DB insert per call.
+    //     Sharp never runs on Hostinger.
+    //
+    // The legacy path stays callable for 2 weeks as a rollback safety
+    // net. Toggle by setting OPM_PIPELINE_V2=true in the opm-runner env.
+    const useV2 = String(process.env.OPM_PIPELINE_V2 || "").toLowerCase() === "true";
     try {
         const phases = result?.phases || [];
         const galleryJobs = phases.find(p => p.name === 'galleryScrape')?.jobs || [];
@@ -221,6 +230,29 @@ async function tick(n) {
         const allJobs = [...galleryJobs, ...burnJobs];
         if (allJobs.length === 0) {
             console.log(`[runner]   photo push: SKIP (no jobs this tick)`);
+        } else if (useV2) {
+            // v2 path — load lazily so opm-runner without the pipeline
+            // env vars set doesn't crash on require().
+            const { processPlace, stampGalleryScraped, maxPosition } = require('../enrichment/process-and-upload-photos');
+            const { prisma } = require('../lib/bootstrap');
+            const tag = `gallery=${galleryJobs.length} burn=${burnJobs.length}`;
+            let uploaded = 0, failed = 0;
+            for (const job of allJobs) {
+                const startPosition = (await maxPosition(prisma, job.placeId)) + 1;
+                const r = await processPlace({
+                    placeId: job.placeId,
+                    slug: job.slug,
+                    source: 'google',
+                    photos: job.photos,
+                    startPosition,
+                });
+                uploaded += r.uploaded || 0;
+                failed += r.failed || 0;
+                if (r.uploaded > 0) {
+                    await stampGalleryScraped(job.placeId);
+                }
+            }
+            console.log(`[runner]   photo push v2: places=${allJobs.length} uploaded=${uploaded} failed=${failed}  [${tag}]`);
         } else {
             const push = await pushGalleryJobs(allJobs);
             const tag = `gallery=${galleryJobs.length} burn=${burnJobs.length}`;
