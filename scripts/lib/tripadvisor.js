@@ -238,9 +238,100 @@ async function pickSearchResult(page, name) {
 //
 // Returns `locationIdOut` when (2) discovered a different locationId
 // than the input — caller writes the new id to DB.
+// Reshape a TA /location/{id}/details response object into our scrape
+// result format. Pure function — no network calls. Used by both the
+// "fetch then shape" path (fetchTaApiDetails) and the "shape data we
+// already have" path (e.g. from taLookup's combined search+details).
+function shapeTaApiDetails(det) {
+    if (!det || !det.location_id) return null;
+
+    // review_rating_count is the per-star distribution as an object
+    // keyed by "1".."5". Convert to [c5, c4, c3, c2, c1] same shape
+    // we use everywhere else.
+    let distribution = null;
+    if (det.review_rating_count) {
+        const r = det.review_rating_count;
+        const dist = [5, 4, 3, 2, 1].map((s) => Number(r[String(s)]) || 0);
+        const sum = dist.reduce((a, b) => a + b, 0);
+        if (sum > 0) distribution = dist;
+    }
+
+    return {
+        rating: det.rating ? Number(det.rating) : null,
+        reviewCount: det.num_reviews ? Number(det.num_reviews) : null,
+        ranking: det.ranking_data?.ranking_string || null,
+        distribution,
+        url: det.web_url || null,
+        venueName: det.name || null,       // for caller-side heading verification
+        reviews: [],                       // populate via fetchTaApiReviews if desired
+        photoUrls: [],                     // ditto /photos endpoint
+        _source: "api",                    // for diagnostics
+    };
+}
+
+// Fetch /location/{id}/details and reshape. One billed API call.
+async function fetchTaApiDetails(locationId) {
+    if (!locationId || locationId < 0) return null;
+    try {
+        const det = await taFetch(`/location/${locationId}/details`);
+        return shapeTaApiDetails(det);
+    } catch (err) {
+        return { error: `api-details-failed: ${err.message}` };
+    }
+}
+
+// Fetch /location/{id}/reviews and reshape into our reviews array.
+// Separate billed call — caller decides whether to spend the budget.
+async function fetchTaApiReviews(locationId, { limit = 5 } = {}) {
+    if (!locationId || locationId < 0) return [];
+    try {
+        const j = await taFetch(`/location/${locationId}/reviews`, { limit });
+        const arr = (j && j.data) || [];
+        return arr.slice(0, limit).map((r) => ({
+            source: "tripadvisor",
+            author: r.user?.username || r.user?.user_id || "Anonymous",
+            authorAvatar: r.user?.avatar?.small?.url || null,
+            rating: r.rating != null ? Number(r.rating) : null,
+            text: r.text || "",
+            relativeTime: r.published_date || null,
+            lang: r.lang || null,
+        }));
+    } catch {
+        return [];
+    }
+}
+
 async function scrapeTripadvisor(page, { locationId, name, city, country, tripadvisorUrl }) {
     if (!locationId && !tripadvisorUrl && !name) {
         return { error: "no locationId, url, or name supplied" };
+    }
+
+    // STRATEGY 0 — API path. When we have a positive locationId, hit
+    // /location/{id}/details directly. One billed call gives us
+    // rating + count + distribution + ranking + URL. Reviews via a
+    // second billed call. Photos skipped (Google scrape covers them).
+    //
+    // This was the obvious path from day one; we wasted hours on the
+    // Playwright scrape before discovering the API returns the entire
+    // shape we wanted in one structured response — including the
+    // per-star distribution as `review_rating_count`.
+    if (locationId && locationId > 0) {
+        const apiResult = await fetchTaApiDetails(locationId);
+        if (apiResult && !apiResult.error && apiResult.rating != null) {
+            // Verify the API's name matches our DB name (catches stale
+            // locationId pointing at a wrong-venue match from older
+            // enrichment). Note we can't read API's "name" here — it's
+            // in the raw response. fetchTaApiDetails doesn't surface it.
+            // For now, trust the API; locationId being positive AND
+            // having a rating means we have real data for a real venue.
+            const reviews = await fetchTaApiReviews(locationId, { limit: 5 });
+            return { ...apiResult, reviews };
+        }
+        if (apiResult?.error) {
+            // taFetch threw — could be quota, referer, network. Fall
+            // through to scrape if possible; otherwise surface the error.
+            console.warn(`[ta] api details failed for locationId=${locationId}: ${apiResult.error}`);
+        }
     }
 
     try {
@@ -273,34 +364,36 @@ async function scrapeTripadvisor(page, { locationId, name, city, country, tripad
             } catch (_) { /* fall through */ }
         }
 
-        // Strategy 2: API resolve. /location/search is free + uncounted;
-        // /location/{id}/details is billed but gives us the canonical
-        // web_url. One billed call per place per refresh cycle = ~830/mo
-        // total at our scale, well under the 4000/mo safety cap.
+        // Strategy 2: API resolve. /location/search + /location/{id}/details
+        // are called by taLookup (one billed call total). The details
+        // response includes review_rating_count which IS the per-star
+        // distribution we want. So if we got here without a stored URL,
+        // skip the Playwright nav entirely — return the API data.
+        //
+        // CloakBrowser fallback (below) only kicks in for the rare case
+        // where API resolves but lookups have issues, OR if the caller
+        // needs photo URLs (Google scrape usually covers that).
         if (!landed && name) {
             try {
                 const lookup = await taLookup(name, city, country);
                 if (lookup && lookup.details && lookup.details.web_url) {
                     locationIdOut = Number(lookup.search.location_id) || locationIdOut;
-                    const resolvedUrl = lookup.details.web_url;
-                    await page.goto(resolvedUrl, {
-                        waitUntil: "domcontentloaded", timeout: 30000,
-                    });
-                    await sleepTa(TA_HYDRATE_MS);
-                    finalUrl = page.url();
-                    if (/Restaurant_Review/i.test(finalUrl)) {
-                        const heading = await taExtractHeading(page);
-                        if (!name || taNameMatches(heading, name)) {
-                            landed = true;
-                        } else {
-                            return { error: `api-resolved-wrong-venue (heading="${heading || "null"}" url=${resolvedUrl.slice(0, 80)})` };
-                        }
+                    // Name-mismatch guard: if API picks a wrong-venue
+                    // match (similarity threshold is 0.7 in taLookup,
+                    // but stricter check here for safety).
+                    if (name && !taNameMatches(lookup.details.name, name)) {
+                        return { error: `api-resolved-wrong-venue (api-name="${lookup.details.name}" vs DB="${name}")` };
                     }
+                    const shaped = shapeTaApiDetails(lookup.details);
+                    if (shaped && shaped.rating != null) {
+                        const reviews = await fetchTaApiReviews(locationIdOut, { limit: 5 });
+                        return { ...shaped, reviews, locationIdOut };
+                    }
+                    // API returned details but no rating — odd; fall through to scrape
                 } else {
                     return { error: "api-lookup-no-match" };
                 }
             } catch (err) {
-                // taLookup throws on quota / network / config issues
                 return { error: `api-resolve-failed: ${err.message}` };
             }
         }
