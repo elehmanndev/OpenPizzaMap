@@ -121,8 +121,15 @@ async function run({ limit = 5, disconnect = true } = {}) {
                 locationId = found;
             }
 
-            // Step 2 — scrape canonical page.
-            const scrape = await scrapeTripadvisor(page, { locationId });
+            // Step 2 — scrape canonical page. Pass name+city so the
+            // fallback search path can locate the venue if the direct
+            // UserReviewEdit redirect doesn't land us on Restaurant_Review
+            // (TA's login wall blocks some redirects).
+            const scrape = await scrapeTripadvisor(page, {
+                locationId,
+                name: p.name,
+                city: p.city,
+            });
             if (scrape.error) {
                 console.warn(`[taScrape] #${p.id} scrape error: ${scrape.error}`);
                 stats.failed++;

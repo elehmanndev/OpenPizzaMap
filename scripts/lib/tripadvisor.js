@@ -119,20 +119,61 @@ async function findTaLocationId(page, { name, city }) {
 // Scrape rating, count, reviews, distribution from the canonical
 // restaurant page. Returns {} on success (caller decides which fields
 // to write), or { error } on a hard failure.
-async function scrapeTripadvisor(page, { locationId }) {
+//
+// Navigation strategy with fallback:
+//   1. Try /UserReviewEdit-d<locationId> — supposed to redirect to
+//      the canonical Restaurant_Review URL. Works for ~half of
+//      restaurants; the other half lands on a login wall (TA requires
+//      auth for review editing) and never redirects.
+//   2. If (1) fails, do a TA search using the venue name + city.
+//      Look for a result whose href contains "-d<locationId>-" to
+//      confirm it's the right venue, then navigate to that.
+async function scrapeTripadvisor(page, { locationId, name, city }) {
     if (!locationId) return { error: "no locationId" };
 
     try {
+        // Strategy 1: direct redirect
         await page.goto(taRestaurantUrl(locationId), {
             waitUntil: "domcontentloaded", timeout: 30000,
         });
-        // Wait for the title/rating block to settle. TA's review-page
-        // structure is fairly stable but slow JS hydration is real.
-        await sleepTa(2000);
+        await sleepTa(1500);
+        let finalUrl = page.url();
 
-        const finalUrl = page.url();
         if (!/Restaurant_Review/i.test(finalUrl)) {
-            return { error: `did-not-redirect-to-review (${finalUrl.slice(0, 80)})` };
+            // Strategy 2: search for the venue and pick the matching card
+            if (!name) {
+                return { error: `direct nav failed; no name for search fallback (${finalUrl.slice(0, 80)})` };
+            }
+            const q = encodeURIComponent(`${name} ${city || ""}`.trim());
+            await page.goto(`https://www.tripadvisor.com/Search?q=${q}`, {
+                waitUntil: "domcontentloaded", timeout: 30000,
+            });
+            await sleepTa(1500);
+
+            const targetHref = await page.evaluate((wantId) => {
+                const needle = `-d${wantId}-`;
+                for (const a of document.querySelectorAll('a[href*="/Restaurant_Review-"]')) {
+                    if (a.href.includes(needle)) return a.href;
+                }
+                // Fallback: first restaurant result, regardless of locationId match.
+                // Caller writes the locationId we navigated TO, so a fresh match
+                // self-heals if our stored id was stale.
+                const any = document.querySelector('a[href*="/Restaurant_Review-"]');
+                return any ? any.href : null;
+            }, locationId);
+
+            if (!targetHref) {
+                return { error: "search-no-restaurant-result" };
+            }
+
+            await page.goto(targetHref, { waitUntil: "domcontentloaded", timeout: 30000 });
+            await sleepTa(2000);
+            finalUrl = page.url();
+            if (!/Restaurant_Review/i.test(finalUrl)) {
+                return { error: `search-fallback-no-review (${finalUrl.slice(0, 80)})` };
+            }
+        } else {
+            await sleepTa(500); // already on review page, small extra settle
         }
 
         const scraped = await page.evaluate(() => {
