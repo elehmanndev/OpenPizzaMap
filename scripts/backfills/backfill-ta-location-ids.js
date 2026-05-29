@@ -26,13 +26,12 @@
 
 const { prisma } = require("../lib/bootstrap");
 const { taFetch, NAME_MATCH_MIN } = require("../lib/tripadvisor");
-const { createGmapsPage } = require("../lib/gmaps");
 const { normalizeName, jaroWinkler } = require("../lib/utils");
 
 const HOSTINGER_URL = process.env.HOSTINGER_URL;
 const ADMIN_API_KEY = process.env.ADMIN_API_KEY;
 const TA_SPACING_MS = 1100;        // 1 req/sec to TA API — well under 10k/day cap
-const GOOGLE_SPACING_MS = 3000;    // be polite to Google
+const DDG_SPACING_MS = 1500;       // be polite to DuckDuckGo
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function arg(name, def) {
@@ -89,31 +88,34 @@ async function tryTaApiSearch(name, city) {
     }
 }
 
-// Tier 2 — Google search for "site:tripadvisor.com <name> <city>".
-// First result that's a Restaurant_Review URL → extract d<id>.
-async function tryGoogleSearch(page, { name, city, country }) {
+// Tier 2 — DuckDuckGo HTML search for "site:tripadvisor.com <name> <city>".
+// DDG's /html endpoint serves static HTML (no JS mounting) AND is far
+// more bot-tolerant than Google — no CAPTCHA after a handful of queries
+// from a residential IP. Plain fetch is enough; no Playwright needed.
+//
+// Result format: DDG wraps each external link in a redirect like
+//   <a class="result__a" href="//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.tripadvisor.com%2F...">
+// We don't need to unwrap the redirect — the encoded uddg param contains
+// the full TA URL, and "-d<digits>-" inside that is the locationId.
+async function tryDdgSearch({ name, city }) {
     const q = encodeURIComponent(`site:tripadvisor.com ${name} ${city || ""}`);
     try {
-        await page.goto(`https://www.google.com/search?q=${q}&hl=en`, {
-            waitUntil: "domcontentloaded", timeout: 30000,
+        const r = await fetch(`https://duckduckgo.com/html/?q=${q}`, {
+            headers: {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+                "Accept": "text/html,application/xhtml+xml",
+                "Accept-Language": "en-US,en;q=0.9",
+            },
         });
-        await sleep(1500);
-        const url = page.url();
-        if (/\/sorry\/index/.test(url)) {
-            return { locationId: null, captcha: true };
-        }
-        const found = await page.evaluate(() => {
-            // Google wraps each result anchor in various div nests but the
-            // canonical hrefs are stable in the anchor's href attribute.
-            // Pick the first href that matches TA's Restaurant_Review d-id
-            // shape.
-            for (const a of document.querySelectorAll('a[href*="tripadvisor"][href*="-d"]')) {
-                const m = a.href.match(/-d(\d+)-/);
-                if (m) return { locationId: Number(m[1]), url: a.href };
-            }
-            return null;
-        });
-        return found || { locationId: null };
+        if (!r.ok) return { locationId: null, error: `HTTP ${r.status}` };
+        const html = await r.text();
+
+        // Look for the first tripadvisor.com Restaurant_Review URL with a d<id>.
+        // Regex matches both raw URLs and DDG-redirect-wrapped URL-encoded URLs.
+        const decoded = html.replace(/%2F/gi, "/").replace(/%3A/gi, ":").replace(/%3D/gi, "=").replace(/%26/gi, "&");
+        const m = decoded.match(/tripadvisor\.com\/Restaurant_Review-[^"\s]*-d(\d+)-/i);
+        if (m) return { locationId: Number(m[1]) };
+        return { locationId: null };
     } catch (err) {
         return { locationId: null, error: err.message };
     }
@@ -126,69 +128,63 @@ async function tryGoogleSearch(page, { name, city, country }) {
     }
     const limit = arg("--limit", 10000);
     const dryRun = arg("--dry-run", false);
+    const apiOnly = arg("--api-only", false);
 
     const queue = await pickQueue(limit);
-    console.log(`[ta-backfill] ${queue.length} places to resolve${dryRun ? " (dry-run)" : ""}`);
+    console.log(`[ta-backfill] ${queue.length} places to resolve${dryRun ? " (dry-run)" : ""}${apiOnly ? " (api-only, skipping DDG fallback)" : ""}`);
     if (dryRun) { await prisma.$disconnect(); return; }
 
-    const { browser, page } = await createGmapsPage();
-    const stats = { resolvedApi: 0, resolvedGoogle: 0, sentinel: 0, captcha: 0, errors: 0 };
+    // DDG fallback uses plain fetch — no Playwright/Chromium required.
+    const stats = { resolvedApi: 0, resolvedDdg: 0, sentinel: 0, ddgError: 0, errors: 0 };
     const t0 = Date.now();
 
-    try {
-        for (let i = 0; i < queue.length; i++) {
-            const p = queue[i];
-            const tag = `#${p.id} "${p.name.slice(0, 40)}"`;
+    for (let i = 0; i < queue.length; i++) {
+        const p = queue[i];
+        const tag = `#${p.id} "${p.name.slice(0, 40)}"`;
 
-            // Tier 1: TA API search
-            let locId = await tryTaApiSearch(p.name, p.city);
-            if (locId) {
-                await postTaUpdate({ placeId: p.id, tripadvisorLocationId: locId });
-                stats.resolvedApi++;
-                console.log(`  ${tag} → ${locId} (api)`);
-                await sleep(TA_SPACING_MS);
+        // Tier 1: TA API search
+        let locId = await tryTaApiSearch(p.name, p.city);
+        if (locId) {
+            await postTaUpdate({ placeId: p.id, tripadvisorLocationId: locId });
+            stats.resolvedApi++;
+            console.log(`  ${tag} → ${locId} (api)`);
+            await sleep(TA_SPACING_MS);
+            continue;
+        }
+
+        // Tier 2: DuckDuckGo fallback (unless --api-only)
+        if (!apiOnly) {
+            const d = await tryDdgSearch(p);
+            if (d.error) stats.ddgError++;
+            if (d.locationId) {
+                await postTaUpdate({ placeId: p.id, tripadvisorLocationId: d.locationId });
+                stats.resolvedDdg++;
+                console.log(`  ${tag} → ${d.locationId} (ddg)`);
+                await sleep(DDG_SPACING_MS);
                 continue;
-            }
-
-            // Tier 2: Google fallback
-            const g = await tryGoogleSearch(page, p);
-            if (g.captcha) {
-                console.warn(`  ${tag} → Google CAPTCHA — pausing 5 min`);
-                stats.captcha++;
-                await sleep(300_000);
-                continue;
-            }
-            if (g.locationId) {
-                await postTaUpdate({ placeId: p.id, tripadvisorLocationId: g.locationId });
-                stats.resolvedGoogle++;
-                console.log(`  ${tag} → ${g.locationId} (google)`);
-                await sleep(GOOGLE_SPACING_MS);
-                continue;
-            }
-
-            // Sentinel
-            await postTaUpdate({ placeId: p.id, tripadvisorLocationId: -1 });
-            stats.sentinel++;
-            console.log(`  ${tag} → -1 (no match)`);
-            await sleep(GOOGLE_SPACING_MS);
-
-            // Progress every 50
-            if ((i + 1) % 50 === 0) {
-                const elapsedMin = Math.round((Date.now() - t0) / 60_000);
-                console.log(`[ta-backfill] ${i + 1}/${queue.length} done in ${elapsedMin}m — api=${stats.resolvedApi} google=${stats.resolvedGoogle} sentinel=${stats.sentinel}`);
             }
         }
-    } finally {
-        await browser.close().catch(() => {});
+
+        // Sentinel
+        await postTaUpdate({ placeId: p.id, tripadvisorLocationId: -1 });
+        stats.sentinel++;
+        console.log(`  ${tag} → -1 (no match)`);
+        await sleep(apiOnly ? TA_SPACING_MS : DDG_SPACING_MS);
+
+        // Progress every 50
+        if ((i + 1) % 50 === 0) {
+            const elapsedMin = Math.round((Date.now() - t0) / 60_000);
+            console.log(`[ta-backfill] ${i + 1}/${queue.length} done in ${elapsedMin}m — api=${stats.resolvedApi} ddg=${stats.resolvedDdg} sentinel=${stats.sentinel}`);
+        }
     }
 
     const elapsedMin = Math.round((Date.now() - t0) / 60_000);
     console.log(`\n[ta-backfill] DONE in ${elapsedMin}m`);
     console.log(`  resolved via TA API:     ${stats.resolvedApi}`);
-    console.log(`  resolved via Google:     ${stats.resolvedGoogle}`);
+    console.log(`  resolved via DuckDuckGo: ${stats.resolvedDdg}`);
     console.log(`  -1 sentinel (no match):  ${stats.sentinel}`);
-    console.log(`  CAPTCHAs encountered:    ${stats.captcha}`);
-    console.log(`  errors:                  ${stats.errors}`);
+    console.log(`  DDG errors:              ${stats.ddgError}`);
+    console.log(`  other errors:            ${stats.errors}`);
 
     await prisma.$disconnect();
 })().catch((e) => { console.error(e); process.exit(1); });
