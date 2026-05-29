@@ -522,12 +522,6 @@
         : null;
       const avg = place.opmRating != null ? Number(place.opmRating) : sampleAvg;
 
-      // Total reviews surfaced across every external source we know
-      // about (not just what we display). Mirrors the place-level
-      // googleReviewCount + community count. TA intentionally excluded.
-      const totalReviewCount = (place.googleReviewCount || 0)
-        + (place.reviewsTotal || 0);
-
       // Per-star distribution: combine the Google-Maps-scraped
       // [c5,c4,c3,c2,c1] with the OPM-computed distribution from
       // pages.js. Bar graph only renders if we have a Google scrape
@@ -538,6 +532,15 @@
       const googDist = Array.isArray(place.googleRatingsDistribution) ? place.googleRatingsDistribution : null;
       const totalOpm = opmDist.reduce((a,b) => a+b, 0);
       const totalGoog = googDist ? googDist.reduce((a,b) => a+b, 0) : 0;
+
+      // Total reviews displayed below the bar graph. When we have a
+      // scraped Google distribution, the total MUST be the sum of the
+      // displayed bars (otherwise the line says "Based on N reviews"
+      // and the bars sum to N+drift, which looks wrong). Fall back to
+      // place.googleReviewCount for places where the distribution
+      // scrape hasn't run yet.
+      const totalReviewCount = (googDist ? totalGoog : (place.googleReviewCount || 0))
+        + (place.reviewsTotal || 0);
       const combinedDist = googDist
         ? [0,1,2,3,4].map((i) => (opmDist[i] || 0) + (googDist[i] || 0))
         : opmDist;
