@@ -91,6 +91,17 @@ if ! node -e "require.resolve('sharp')" 2>/dev/null; then
     NODE_ENV=development npm install sharp --no-save --include=dev --no-audit --no-fund 2>&1 | tail -3
 fi
 
+# CloakBrowser self-heal. Added 2026-05-28 when the TA scrape revealed
+# TA fingerprints stock Playwright and returns blank pages
+# (bodyLen=0, no h1, no og:title, title="tripadvisor.com"). CloakBrowser
+# patches the navigator.webdriver + other detection vectors; the same
+# memory note that documents this for Gambero Rosso (Cloudflare-gated
+# AJAX) applies here. ~535MB binary, MIT, install with --no-save.
+if ! node -e "require.resolve('cloakbrowser')" 2>/dev/null; then
+    log "cloakbrowser not loadable — force-installing for TA scrape"
+    NODE_ENV=development npm install cloakbrowser --no-save --include=dev --no-audit --no-fund 2>&1 | tail -3
+fi
+
 # ─── Regen Prisma client (fast, idempotent) ────────────────────────────────
 log "prisma generate…"
 npx prisma generate 2>&1 | tail -3

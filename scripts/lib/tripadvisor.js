@@ -77,6 +77,50 @@ async function taLookup(name, city, country) {
 
 const sleepTa = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// CloakBrowser page factory for TA. The default Playwright launch
+// (createGmapsPage in lib/gmaps.js) works fine on Google's residential-
+// IP path, but TA fingerprints Playwright (navigator.webdriver=true +
+// other automation indicators) and serves a fully-blank page when
+// detected — observed 2026-05-28 with bodyLen=0, title="tripadvisor.com",
+// no h1/og:title/rating widget despite networkidle + 3s wait.
+//
+// CloakBrowser patches the fingerprint so TA serves real content.
+// Drop-in Playwright API; we apply the same single-process / no-zygote
+// args + image blocking the gmaps factory uses, plus allowImages=true
+// because TA's lazy-load checks for image fetches and bails rendering
+// when they fail repeatedly.
+async function createTaPage() {
+    let chromium;
+    try {
+        // CloakBrowser exports a chromium that behaves identically to
+        // playwright's chromium. Same launch / newContext / newPage API.
+        ({ chromium } = require("cloakbrowser"));
+    } catch (err) {
+        throw new Error("cloakbrowser not installed — opm-runner needs `npm install --no-save cloakbrowser`. " + err.message);
+    }
+
+    const browser = await chromium.launch({
+        headless: true,
+        args: ["--single-process", "--no-zygote", "--disable-gpu", "--no-sandbox"],
+    });
+    const context = await browser.newContext({
+        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+        locale: "en-US",
+        viewport: { width: 1366, height: 768 },     // common laptop resolution, less suspicious than default 1280x720
+        extraHTTPHeaders: { "Accept-Language": "en-US,en;q=0.9" },
+    });
+    const page = await context.newPage();
+    // Don't block images — TA's renderer keys off image fetches for
+    // some content loads. Block only media + fonts (bandwidth-only,
+    // don't gate rendering).
+    await page.route("**/*", (route) => {
+        const t = route.request().resourceType();
+        if (t === "media" || t === "font") return route.abort();
+        return route.continue();
+    });
+    return { browser, context, page };
+}
+
 // Build the canonical restaurant page URL from a known locationId.
 // TA's URL pattern includes a region code (g<digits>) we don't always
 // have — but TA's UserReviewEdit-d<id> URL redirects to the canonical
@@ -365,6 +409,7 @@ async function scrapeTripadvisor(page, { locationId, name, city, country, tripad
 }
 
 module.exports = {
-    taFetch, taLookup, NAME_MATCH_MIN,            // legacy API path
-    findTaLocationId, scrapeTripadvisor,           // new Playwright path
+    taFetch, taLookup, NAME_MATCH_MIN,             // legacy API path
+    findTaLocationId, scrapeTripadvisor,           // new scrape path
+    createTaPage,                                  // CloakBrowser factory for TA
 };

@@ -15,8 +15,7 @@
 // over ~5min for a 5-place batch.
 
 const { prisma } = require("../lib/bootstrap");
-const { createGmapsPage } = require("../lib/gmaps");
-const { findTaLocationId, scrapeTripadvisor } = require("../lib/tripadvisor");
+const { findTaLocationId, scrapeTripadvisor, createTaPage } = require("../lib/tripadvisor");
 const { processPlace, maxPosition } = require("./process-and-upload-photos");
 
 const HOSTINGER_URL = process.env.HOSTINGER_URL;
@@ -88,7 +87,10 @@ async function run({ limit = 5, disconnect = true } = {}) {
     }
 
     console.log(`[taScrape] queue ${queue.length} places`);
-    const { browser, page } = await createGmapsPage();
+    // TA bot-fingerprints stock Playwright and serves blank pages.
+    // CloakBrowser patches the detection layer. ~535MB binary; the
+    // entrypoint self-heals it on docker restart.
+    const { browser, page } = await createTaPage();
     const stats = { scraped: 0, found: 0, miss: 0, photosUploaded: 0, failed: 0 };
 
     for (const p of queue) {

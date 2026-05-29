@@ -9,8 +9,7 @@
 //   docker exec -it opm-runner node scripts/probes/probe-scrape-tripadvisor.js --placeId 163
 
 const { prisma } = require("../lib/bootstrap");
-const { createGmapsPage } = require("../lib/gmaps");
-const { findTaLocationId, scrapeTripadvisor } = require("../lib/tripadvisor");
+const { findTaLocationId, scrapeTripadvisor, createTaPage } = require("../lib/tripadvisor");
 const { processPlace, maxPosition } = require("../enrichment/process-and-upload-photos");
 
 const HOSTINGER_URL = process.env.HOSTINGER_URL;
@@ -50,7 +49,7 @@ async function postTaUpdate(payload) {
 
     console.log(`[probe] place #${place.id} "${place.name}" / city="${place.city}" / locationId=${place.tripadvisorLocationId ?? "null"}`);
 
-    const { browser, page } = await createGmapsPage();
+    const { browser, page } = await createTaPage();
     try {
         // Step 1 — locate if needed
         let locationId = place.tripadvisorLocationId;
