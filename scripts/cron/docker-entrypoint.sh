@@ -50,6 +50,8 @@ if [ "$NEW_HASH" != "$OLD_HASH" ]; then
     NEED_INSTALL="package-lock.json changed"
 elif [ ! -d node_modules/playwright ]; then
     NEED_INSTALL="playwright missing from node_modules"
+elif [ ! -d node_modules/sharp ]; then
+    NEED_INSTALL="sharp missing from node_modules"
 fi
 if [ -n "$NEED_INSTALL" ]; then
     log "$NEED_INSTALL — running npm ci…"
@@ -76,6 +78,17 @@ if ! node -e "require.resolve('playwright')" 2>/dev/null; then
     # See notes/sessions/2026-05-23 — probe found the runner had been
     # FAILing on playwrightFallback for at least a week because of this.
     SKIP_PLAYWRIGHT_INSTALL=1 NODE_ENV=development npm install playwright@1.59.1 --no-save --include=dev --ignore-scripts --no-audit --no-fund 2>&1 | tail -3
+fi
+
+# Same self-heal pattern for sharp. Added 2026-05-28 when the v2 photo
+# pipeline (process-and-upload-photos.js) shipped — opm-runner now
+# runs libvips locally for resize ops, where before sharp was only on
+# Hostinger. The image built pre-v2 has no sharp in node_modules, and
+# `--ignore-scripts` during npm ci would skip sharp's prebuilt-binary
+# download anyway. So force-install with scripts enabled if missing.
+if ! node -e "require.resolve('sharp')" 2>/dev/null; then
+    log "sharp not loadable — force-installing (scripts enabled for prebuilt binary)"
+    NODE_ENV=development npm install sharp --no-save --include=dev --no-audit --no-fund 2>&1 | tail -3
 fi
 
 # ─── Regen Prisma client (fast, idempotent) ────────────────────────────────
