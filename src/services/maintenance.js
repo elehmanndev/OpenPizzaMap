@@ -81,32 +81,39 @@ fs.mkdirSync(CACHE_DIR, { recursive: true });
 //     20/tick × 8 ticks = 160/day → trivially polite
 const MODE_PRESETS = {
     burn: {
-        resolve: 40,
-        photos: 40,
+        // resolve & photos hit the paid Google Places API. Forced to 0
+        // until the Playwright-based opm-runner pipeline replaces them.
+        // Credits expire 2026-05-30; keeping these >0 risks a billed call
+        // on the next tick after the expiry window.
+        resolve: 0,
+        photos: 0,
         osm: 20,
-        tripadvisor: 150,
+        // tripadvisor stays alive for one more refresh cycle but the API
+        // path is on its way out — opm-runner's Playwright scrape will
+        // take over (free-tier, no quota). Capped tight in the meantime.
+        tripadvisor: 50,
         opmRating: true,
-        localizeImages: 200,
-        // Bumped 10 → 30 on 2026-05-25 to accelerate Track 2 rescrape after
-        // the persistent/uploads symlink fix landed. Current 10/tick took
-        // ~137s; 30/tick projects ~7min, leaves headroom under the 10-min
-        // tick interval.
-        galleryScrape: 30,
-        // Google Place Photos API burn — 0 by default (must be enabled
-        // via RUNNER_PHOTOS_BURN_LIMIT env var to actually spend money).
-        // Set to e.g. 30 in the opm-runner env to drain candidates at
-        // ~$1.20/tick.
-        googlePhotosBurn: parseInt(process.env.RUNNER_PHOTOS_BURN_LIMIT, 10) || 0,
+        // localizeImages was the spike driver: 100-200 sharp passes in one
+        // HTTP request locked a worker for 5+ min, Passenger spawned more
+        // workers to handle traffic, processes hit the 120 cap. Drop to
+        // 50 (burn) / 25 (min) until the new opm-runner upload pipeline
+        // is shipped (step 8 in the 2026-05-28 plan), then set to 0.
+        localizeImages: 50,
+        // opm-runner does the actual scrape; this limit just affects how
+        // many places one tick attempts. Smaller batches = each tick
+        // finishes faster, leaving more headroom for traffic.
+        galleryScrape: 10,
+        googlePhotosBurn: 0,
     },
     min: {
-        resolve: 20,
-        photos: 20,
+        resolve: 0,
+        photos: 0,
         osm: 20,
-        tripadvisor: 130,
+        tripadvisor: 30,
         opmRating: true,
-        localizeImages: 100,
-        galleryScrape: 10,
-        googlePhotosBurn: parseInt(process.env.RUNNER_PHOTOS_BURN_LIMIT, 10) || 0,
+        localizeImages: 25,
+        galleryScrape: 5,
+        googlePhotosBurn: 0,
     },
 };
 
@@ -178,21 +185,34 @@ function getMaintenanceStatus() {
 const PHASES = [
     {
         name: "resolve",
-        async run(opts) { return runResolveBatch({ limit: opts.resolve }); },
+        async run(opts) {
+            // Hard-skip when not explicitly on the paid Google provider.
+            // Without this guard, post-credit-expiry (2026-05-30) ticks
+            // would each fire a billed call that fails with a billing
+            // error — flooding logs and possibly racking up trivial
+            // billing on the failed-call surcharge. opm-runner's
+            // Playwright resolver (scrape-resolve.js) replaces this.
+            if ((process.env.ENRICHMENT_PROVIDER || "").toLowerCase() !== "google_api") {
+                return { ok: true, skipped: true, reason: "paid resolve phase disabled (no google_api provider)" };
+            }
+            if (!opts.resolve || opts.resolve <= 0) {
+                return { ok: true, skipped: true, reason: "limit=0" };
+            }
+            return runResolveBatch({ limit: opts.resolve });
+        },
     },
     {
         name: "photos",
         async run(opts) {
             // Track 1 hero-photo backfill via Places Photo API. Superseded by
-            // Track 2's galleryScrape phase, which uses Playwright and gets
-            // full-resolution lh3 URLs without API quota. When
-            // ENRICHMENT_PROVIDER=playwright, the providers.js path doesn't
-            // expose getPhoto() so runPhotosBatch fails noisily every tick —
-            // skip cleanly instead. The fallback path is still kept for the
-            // rare case someone manually flips back to google_api for a
-            // diagnostic run.
-            if ((process.env.ENRICHMENT_PROVIDER || "").toLowerCase() === "playwright") {
-                return { ok: true, skipped: true, reason: "ENRICHMENT_PROVIDER=playwright (use galleryScrape instead)" };
+            // Track 2's galleryScrape phase (Playwright on opm-runner, free).
+            // Hard-skip unless explicitly on the paid provider — same
+            // post-credit-expiry safety guard as the `resolve` phase.
+            if ((process.env.ENRICHMENT_PROVIDER || "").toLowerCase() !== "google_api") {
+                return { ok: true, skipped: true, reason: "paid photos phase disabled (use galleryScrape on opm-runner)" };
+            }
+            if (!opts.photos || opts.photos <= 0) {
+                return { ok: true, skipped: true, reason: "limit=0" };
             }
             return runPhotosBatch({ limit: opts.photos });
         },
