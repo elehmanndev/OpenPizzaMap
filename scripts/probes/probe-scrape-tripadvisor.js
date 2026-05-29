@@ -41,7 +41,10 @@ async function postTaUpdate(payload) {
 
     const place = await prisma.place.findUnique({
         where: { id: placeId },
-        select: { id: true, name: true, slug: true, city: true, tripadvisorLocationId: true },
+        select: {
+            id: true, name: true, slug: true, city: true,
+            tripadvisorLocationId: true, tripadvisorUrl: true,
+        },
     });
     if (!place) { console.error("place not found"); process.exit(1); }
 
@@ -65,10 +68,11 @@ async function postTaUpdate(payload) {
         }
 
         // Step 2 — scrape
-        console.log(`[probe] scraping locationId=${locationId} ...`);
+        console.log(`[probe] scraping locationId=${locationId} (storedUrl=${place.tripadvisorUrl ? "yes" : "no"}) ...`);
         const t0 = Date.now();
         const scrape = await scrapeTripadvisor(page, {
             locationId, name: place.name, city: place.city,
+            tripadvisorUrl: place.tripadvisorUrl,
         });
         const elapsedScrape = Math.round((Date.now() - t0) / 1000);
 
@@ -77,6 +81,7 @@ async function postTaUpdate(payload) {
             process.exit(1);
         }
 
+        const finalLocationId = scrape.locationIdOut || locationId;
         console.log(`[probe] scrape OK (${elapsedScrape}s):`);
         console.log(`  rating=${scrape.rating} count=${scrape.reviewCount}`);
         console.log(`  distribution=${scrape.distribution ? JSON.stringify(scrape.distribution) : "n/a"}`);
@@ -84,11 +89,14 @@ async function postTaUpdate(payload) {
         console.log(`  reviews=${(scrape.reviews || []).length}`);
         console.log(`  photoUrls=${(scrape.photoUrls || []).length}`);
         console.log(`  url=${scrape.url}`);
+        if (scrape.locationIdOut && scrape.locationIdOut !== locationId) {
+            console.log(`  ⚠ locationId self-healed: ${locationId} → ${scrape.locationIdOut} (stored URL was wrong venue)`);
+        }
 
         // Step 3 — update-place-ta
         const upd = await postTaUpdate({
             placeId: place.id,
-            tripadvisorLocationId: locationId,
+            tripadvisorLocationId: finalLocationId,
             tripadvisorUrl: scrape.url,
             tripadvisorRating: scrape.rating,
             tripadvisorReviewCount: scrape.reviewCount,
@@ -101,7 +109,7 @@ async function postTaUpdate(payload) {
         // Step 4 — photos
         const photos = (scrape.photoUrls || []).slice(0, 5).map((url, i) => ({
             sourceUrl: url,
-            sourceRef: `ta:${locationId}:${i}`,
+            sourceRef: `ta:${finalLocationId}:${i}`,
         }));
         if (photos.length) {
             console.log(`[probe] uploading ${photos.length} TA photos ...`);

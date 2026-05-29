@@ -57,6 +57,7 @@ async function pickQueue(limit) {
         select: {
             id: true, name: true, slug: true, city: true,
             tripadvisorLocationId: true,
+            tripadvisorUrl: true,
         },
         orderBy: { id: "asc" },
         take: limit,
@@ -121,14 +122,15 @@ async function run({ limit = 5, disconnect = true } = {}) {
                 locationId = found;
             }
 
-            // Step 2 — scrape canonical page. Pass name+city so the
-            // fallback search path can locate the venue if the direct
-            // UserReviewEdit redirect doesn't land us on Restaurant_Review
-            // (TA's login wall blocks some redirects).
+            // Step 2 — scrape canonical page. Strategy chain inside
+            // scrapeTripadvisor: stored URL → UserReviewEdit redirect →
+            // search by name+city, with heading-token verification at
+            // each step to dodge wrong-venue historical matches.
             const scrape = await scrapeTripadvisor(page, {
                 locationId,
                 name: p.name,
                 city: p.city,
+                tripadvisorUrl: p.tripadvisorUrl,
             });
             if (scrape.error) {
                 console.warn(`[taScrape] #${p.id} scrape error: ${scrape.error}`);
@@ -137,10 +139,14 @@ async function run({ limit = 5, disconnect = true } = {}) {
                 continue;
             }
 
-            // Step 3 — push structured data to Hostinger.
+            // Step 3 — push structured data to Hostinger. If the
+            // scrape self-healed a wrong stored locationId via the
+            // search fallback, scrape.locationIdOut carries the new
+            // canonical id — write THAT to the DB.
+            const finalLocationId = scrape.locationIdOut || locationId;
             const payload = {
                 placeId: p.id,
-                tripadvisorLocationId: locationId,
+                tripadvisorLocationId: finalLocationId,
                 tripadvisorUrl: scrape.url,
                 tripadvisorRating: scrape.rating,
                 tripadvisorReviewCount: scrape.reviewCount,
@@ -159,7 +165,7 @@ async function run({ limit = 5, disconnect = true } = {}) {
             // Step 4 — photos. Limit to 5, start positions after existing.
             const photos = (scrape.photoUrls || []).slice(0, 5).map((url, i) => ({
                 sourceUrl: url,
-                sourceRef: `ta:${locationId}:${i}`,    // synthetic ref for dedup
+                sourceRef: `ta:${finalLocationId}:${i}`,    // synthetic ref for dedup
             }));
             if (photos.length) {
                 const startPosition = (await maxPosition(prisma, p.id)) + 1;

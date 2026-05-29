@@ -116,65 +116,133 @@ async function findTaLocationId(page, { name, city }) {
     }, name);
 }
 
+// Token-overlap match between a TA page heading and our DB name.
+// Used to detect wrong-venue historical matches from the old API
+// enricher (e.g. our row "Da Lioniello (Milano)" pointing at a TA
+// URL for "Da Giacomo Milano" — different restaurants).
+function taNameMatches(heading, name) {
+    if (!heading || !name) return false;
+    const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+    const ht = new Set(norm(heading).split(" ").filter((t) => t.length >= 3));
+    const nt = norm(name).split(" ").filter((t) => t.length >= 3);
+    if (!nt.length) return false;
+    for (const t of nt) if (ht.has(t)) return true;
+    return false;
+}
+
+// Pick the first restaurant card from a TA search page that
+// matches our query name. The token-overlap requirement avoids
+// returning whatever happens to be first when our venue isn't on TA.
+async function pickSearchResult(page, name) {
+    return page.evaluate((wantName) => {
+        const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9 ]+/g, " ").trim();
+        const wantTokens = norm(wantName).split(/\s+/).filter((t) => t.length >= 3);
+        for (const a of document.querySelectorAll('a[href*="/Restaurant_Review-"]')) {
+            const linkText = norm(a.textContent || "");
+            const matched = wantTokens.some((t) => linkText.includes(t));
+            if (matched) return a.href;
+        }
+        // No token match — return null, caller writes -1 sentinel.
+        return null;
+    }, name);
+}
+
 // Scrape rating, count, reviews, distribution from the canonical
 // restaurant page. Returns {} on success (caller decides which fields
 // to write), or { error } on a hard failure.
 //
-// Navigation strategy with fallback:
-//   1. Try /UserReviewEdit-d<locationId> — supposed to redirect to
-//      the canonical Restaurant_Review URL. Works for ~half of
-//      restaurants; the other half lands on a login wall (TA requires
-//      auth for review editing) and never redirects.
-//   2. If (1) fails, do a TA search using the venue name + city.
-//      Look for a result whose href contains "-d<locationId>-" to
-//      confirm it's the right venue, then navigate to that.
-async function scrapeTripadvisor(page, { locationId, name, city }) {
-    if (!locationId) return { error: "no locationId" };
+// Navigation strategy with fallback chain:
+//   1. PREFERRED: if caller supplied tripadvisorUrl (from a prior
+//      API enrichment), navigate directly. After landing, verify the
+//      heading matches our DB name via token overlap. If yes → use.
+//      If no → the stored URL is a historical wrong-venue match
+//      (old API ranked-by-similarity sometimes mis-matched), fall to (2).
+//   2. /UserReviewEdit-d<locationId> direct redirect. Works for ~half
+//      of restaurants; others land on a login wall.
+//   3. Search by name+city, click the first result whose card text
+//      token-overlaps our name. Self-heals wrong stored matches by
+//      re-discovering the right locationId.
+//
+// Returns `locationIdOut` in the result when (3) discovered a different
+// locationId than the input, so the caller can update the DB.
+async function scrapeTripadvisor(page, { locationId, name, city, tripadvisorUrl }) {
+    if (!locationId && !tripadvisorUrl && !name) {
+        return { error: "no locationId, url, or name supplied" };
+    }
 
     try {
-        // Strategy 1: direct redirect
-        await page.goto(taRestaurantUrl(locationId), {
-            waitUntil: "domcontentloaded", timeout: 30000,
-        });
-        await sleepTa(1500);
-        let finalUrl = page.url();
+        let landed = false;
+        let finalUrl = null;
+        let locationIdOut = locationId;
 
-        if (!/Restaurant_Review/i.test(finalUrl)) {
-            // Strategy 2: search for the venue and pick the matching card
-            if (!name) {
-                return { error: `direct nav failed; no name for search fallback (${finalUrl.slice(0, 80)})` };
-            }
+        // Strategy 1: stored URL
+        if (tripadvisorUrl) {
+            try {
+                await page.goto(tripadvisorUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
+                await sleepTa(1500);
+                finalUrl = page.url();
+                if (/Restaurant_Review/i.test(finalUrl)) {
+                    // Verify the heading actually matches our name
+                    const heading = await page.evaluate(() => {
+                        const h = document.querySelector("h1");
+                        return h ? (h.textContent || "").trim() : null;
+                    }).catch(() => null);
+                    if (taNameMatches(heading, name)) {
+                        landed = true;
+                    } else {
+                        // Wrong venue stored — log and fall through to search
+                        console.warn(`[ta] stored URL is wrong venue (heading="${heading}" vs DB="${name}")`);
+                    }
+                }
+            } catch (_) { /* fall through */ }
+        }
+
+        // Strategy 2: UserReviewEdit redirect
+        if (!landed && locationId) {
+            try {
+                await page.goto(taRestaurantUrl(locationId), {
+                    waitUntil: "domcontentloaded", timeout: 30000,
+                });
+                await sleepTa(1500);
+                finalUrl = page.url();
+                if (/Restaurant_Review/i.test(finalUrl)) {
+                    const heading = await page.evaluate(() => {
+                        const h = document.querySelector("h1");
+                        return h ? (h.textContent || "").trim() : null;
+                    }).catch(() => null);
+                    if (!name || taNameMatches(heading, name)) {
+                        landed = true;
+                    }
+                }
+            } catch (_) { /* fall through */ }
+        }
+
+        // Strategy 3: search
+        if (!landed && name) {
             const q = encodeURIComponent(`${name} ${city || ""}`.trim());
             await page.goto(`https://www.tripadvisor.com/Search?q=${q}`, {
                 waitUntil: "domcontentloaded", timeout: 30000,
             });
-            await sleepTa(1500);
+            await sleepTa(2500);                   // search is JS-heavy
+            const href = await pickSearchResult(page, name);
+            if (!href) return { error: "search-no-confident-match" };
 
-            const targetHref = await page.evaluate((wantId) => {
-                const needle = `-d${wantId}-`;
-                for (const a of document.querySelectorAll('a[href*="/Restaurant_Review-"]')) {
-                    if (a.href.includes(needle)) return a.href;
-                }
-                // Fallback: first restaurant result, regardless of locationId match.
-                // Caller writes the locationId we navigated TO, so a fresh match
-                // self-heals if our stored id was stale.
-                const any = document.querySelector('a[href*="/Restaurant_Review-"]');
-                return any ? any.href : null;
-            }, locationId);
-
-            if (!targetHref) {
-                return { error: "search-no-restaurant-result" };
-            }
-
-            await page.goto(targetHref, { waitUntil: "domcontentloaded", timeout: 30000 });
+            await page.goto(href, { waitUntil: "domcontentloaded", timeout: 30000 });
             await sleepTa(2000);
             finalUrl = page.url();
             if (!/Restaurant_Review/i.test(finalUrl)) {
                 return { error: `search-fallback-no-review (${finalUrl.slice(0, 80)})` };
             }
-        } else {
-            await sleepTa(500); // already on review page, small extra settle
+            // Extract the locationId from the URL so the caller can update DB
+            const m = finalUrl.match(/-d(\d+)-/);
+            if (m) locationIdOut = Number(m[1]);
+            landed = true;
         }
+
+        if (!landed) {
+            return { error: `all-nav-strategies-failed (last url: ${finalUrl})` };
+        }
+        await sleepTa(500); // extra settle for hydration of rating widget
 
         const scraped = await page.evaluate(() => {
             const out = {};
@@ -263,6 +331,8 @@ async function scrapeTripadvisor(page, { locationId, name, city }) {
             return out;
         });
 
+        // Propagate locationIdOut so caller can self-heal a stale stored id.
+        if (locationIdOut !== locationId) scraped.locationIdOut = locationIdOut;
         return scraped;
     } catch (err) {
         return { error: err.message };
