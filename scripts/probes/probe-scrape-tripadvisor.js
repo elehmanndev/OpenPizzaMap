@@ -42,7 +42,7 @@ async function postTaUpdate(payload) {
     const place = await prisma.place.findUnique({
         where: { id: placeId },
         select: {
-            id: true, name: true, slug: true, city: true,
+            id: true, name: true, slug: true, city: true, country: true,
             tripadvisorLocationId: true, tripadvisorUrl: true,
         },
     });
@@ -71,7 +71,7 @@ async function postTaUpdate(payload) {
         console.log(`[probe] scraping locationId=${locationId} (storedUrl=${place.tripadvisorUrl ? "yes" : "no"}) ...`);
         const t0 = Date.now();
         const scrape = await scrapeTripadvisor(page, {
-            locationId, name: place.name, city: place.city,
+            locationId, name: place.name, city: place.city, country: place.country,
             tripadvisorUrl: place.tripadvisorUrl,
         });
         const elapsedScrape = Math.round((Date.now() - t0) / 1000);

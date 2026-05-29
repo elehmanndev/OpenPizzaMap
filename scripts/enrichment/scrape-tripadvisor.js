@@ -55,7 +55,7 @@ async function pickQueue(limit) {
             ],
         },
         select: {
-            id: true, name: true, slug: true, city: true,
+            id: true, name: true, slug: true, city: true, country: true,
             tripadvisorLocationId: true,
             tripadvisorUrl: true,
         },
@@ -130,6 +130,7 @@ async function run({ limit = 5, disconnect = true } = {}) {
                 locationId,
                 name: p.name,
                 city: p.city,
+                country: p.country,
                 tripadvisorUrl: p.tripadvisorUrl,
             });
             if (scrape.error) {

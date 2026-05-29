@@ -151,21 +151,20 @@ async function pickSearchResult(page, name) {
 // restaurant page. Returns {} on success (caller decides which fields
 // to write), or { error } on a hard failure.
 //
-// Navigation strategy with fallback chain:
-//   1. PREFERRED: if caller supplied tripadvisorUrl (from a prior
-//      API enrichment), navigate directly. After landing, verify the
-//      heading matches our DB name via token overlap. If yes → use.
-//      If no → the stored URL is a historical wrong-venue match
-//      (old API ranked-by-similarity sometimes mis-matched), fall to (2).
-//   2. /UserReviewEdit-d<locationId> direct redirect. Works for ~half
-//      of restaurants; others land on a login wall.
-//   3. Search by name+city, click the first result whose card text
-//      token-overlaps our name. Self-heals wrong stored matches by
-//      re-discovering the right locationId.
+// Navigation strategy (post-2026-05-28 rev):
+//   1. PREFERRED: if caller supplied tripadvisorUrl, navigate directly.
+//      Verify h1 heading token-overlaps our DB name. If yes → use.
+//   2. If (1) fails (no URL or wrong-venue heading), call the free TA
+//      /location/search API + billed /location/{id}/details API to
+//      RESOLVE the canonical web_url. ~28 billed calls/day at our
+//      scale, well under the 4000/mo budget. The Playwright search
+//      path was abandoned because TA's search results are fully
+//      JS-mounted and unreliable to scrape.
+//   3. Navigate to that resolved web_url. Heading-verify again.
 //
-// Returns `locationIdOut` in the result when (3) discovered a different
-// locationId than the input, so the caller can update the DB.
-async function scrapeTripadvisor(page, { locationId, name, city, tripadvisorUrl }) {
+// Returns `locationIdOut` when (2) discovered a different locationId
+// than the input — caller writes the new id to DB.
+async function scrapeTripadvisor(page, { locationId, name, city, country, tripadvisorUrl }) {
     if (!locationId && !tripadvisorUrl && !name) {
         return { error: "no locationId, url, or name supplied" };
     }
@@ -197,46 +196,39 @@ async function scrapeTripadvisor(page, { locationId, name, city, tripadvisorUrl 
             } catch (_) { /* fall through */ }
         }
 
-        // Strategy 2: UserReviewEdit redirect
-        if (!landed && locationId) {
-            try {
-                await page.goto(taRestaurantUrl(locationId), {
-                    waitUntil: "domcontentloaded", timeout: 30000,
-                });
-                await sleepTa(1500);
-                finalUrl = page.url();
-                if (/Restaurant_Review/i.test(finalUrl)) {
-                    const heading = await page.evaluate(() => {
-                        const h = document.querySelector("h1");
-                        return h ? (h.textContent || "").trim() : null;
-                    }).catch(() => null);
-                    if (!name || taNameMatches(heading, name)) {
-                        landed = true;
-                    }
-                }
-            } catch (_) { /* fall through */ }
-        }
-
-        // Strategy 3: search
+        // Strategy 2: API resolve. /location/search is free + uncounted;
+        // /location/{id}/details is billed but gives us the canonical
+        // web_url. One billed call per place per refresh cycle = ~830/mo
+        // total at our scale, well under the 4000/mo safety cap.
         if (!landed && name) {
-            const q = encodeURIComponent(`${name} ${city || ""}`.trim());
-            await page.goto(`https://www.tripadvisor.com/Search?q=${q}`, {
-                waitUntil: "domcontentloaded", timeout: 30000,
-            });
-            await sleepTa(2500);                   // search is JS-heavy
-            const href = await pickSearchResult(page, name);
-            if (!href) return { error: "search-no-confident-match" };
-
-            await page.goto(href, { waitUntil: "domcontentloaded", timeout: 30000 });
-            await sleepTa(2000);
-            finalUrl = page.url();
-            if (!/Restaurant_Review/i.test(finalUrl)) {
-                return { error: `search-fallback-no-review (${finalUrl.slice(0, 80)})` };
+            try {
+                const lookup = await taLookup(name, city, country);
+                if (lookup && lookup.details && lookup.details.web_url) {
+                    locationIdOut = Number(lookup.search.location_id) || locationIdOut;
+                    const resolvedUrl = lookup.details.web_url;
+                    await page.goto(resolvedUrl, {
+                        waitUntil: "domcontentloaded", timeout: 30000,
+                    });
+                    await sleepTa(1500);
+                    finalUrl = page.url();
+                    if (/Restaurant_Review/i.test(finalUrl)) {
+                        const heading = await page.evaluate(() => {
+                            const h = document.querySelector("h1");
+                            return h ? (h.textContent || "").trim() : null;
+                        }).catch(() => null);
+                        if (!name || taNameMatches(heading, name)) {
+                            landed = true;
+                        } else {
+                            return { error: `api-resolved-wrong-venue (heading="${heading || "null"}" url=${resolvedUrl.slice(0, 80)})` };
+                        }
+                    }
+                } else {
+                    return { error: "api-lookup-no-match" };
+                }
+            } catch (err) {
+                // taLookup throws on quota / network / config issues
+                return { error: `api-resolve-failed: ${err.message}` };
             }
-            // Extract the locationId from the URL so the caller can update DB
-            const m = finalUrl.match(/-d(\d+)-/);
-            if (m) locationIdOut = Number(m[1]);
-            landed = true;
         }
 
         if (!landed) {
