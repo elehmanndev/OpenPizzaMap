@@ -116,6 +116,42 @@ async function findTaLocationId(page, { name, city }) {
     }, name);
 }
 
+// Pull the venue's display name from a TA page. The selector list
+// is tolerant because TA experiments with their DOM — querySelector("h1")
+// alone returned null on the Da_Giacomo page (no h1 element at all,
+// or h1 not hydrated by the 1500ms post-load wait).
+//
+// Fallback chain:
+//   1. <h1>
+//   2. <meta property="og:title">
+//   3. document.title (always present), parsed to drop the standard
+//      TA suffix "- Restaurant Reviews & Photos, <city>, <country>"
+async function taExtractHeading(page) {
+    return page.evaluate(() => {
+        const norm = (s) => (s || "").replace(/\s+/g, " ").trim();
+
+        const h1 = document.querySelector("h1");
+        if (h1 && h1.textContent && h1.textContent.trim().length > 1) return norm(h1.textContent);
+
+        const og = document.querySelector('meta[property="og:title"]');
+        if (og) {
+            const v = og.getAttribute("content");
+            if (v && v.length > 1) return norm(v);
+        }
+
+        // document.title fallback: TA's pattern is
+        //   "Venue Name - Restaurant Reviews & Photos - tripadvisor"
+        // Drop everything from " - " onward.
+        const t = norm(document.title || "");
+        if (t) {
+            const cut = t.split(/\s+-\s+/)[0];
+            if (cut.length > 1) return cut;
+        }
+
+        return null;
+    }).catch(() => null);
+}
+
 // Token-overlap match between a TA page heading and our DB name.
 // Used to detect wrong-venue historical matches from the old API
 // enricher (e.g. our row "Da Lioniello (Milano)" pointing at a TA
@@ -182,10 +218,7 @@ async function scrapeTripadvisor(page, { locationId, name, city, country, tripad
                 finalUrl = page.url();
                 if (/Restaurant_Review/i.test(finalUrl)) {
                     // Verify the heading actually matches our name
-                    const heading = await page.evaluate(() => {
-                        const h = document.querySelector("h1");
-                        return h ? (h.textContent || "").trim() : null;
-                    }).catch(() => null);
+                    const heading = await taExtractHeading(page);
                     if (taNameMatches(heading, name)) {
                         landed = true;
                     } else {
