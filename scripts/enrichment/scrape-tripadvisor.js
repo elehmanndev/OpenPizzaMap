@@ -15,7 +15,7 @@
 // over ~5min for a 5-place batch.
 
 const { prisma } = require("../lib/bootstrap");
-const { findTaLocationId, scrapeTripadvisor, createTaPage } = require("../lib/tripadvisor");
+const { scrapeTripadvisor, createTaPage } = require("../lib/tripadvisor");
 const { processPlace, maxPosition } = require("./process-and-upload-photos");
 
 const HOSTINGER_URL = process.env.HOSTINGER_URL;
@@ -95,39 +95,21 @@ async function run({ limit = 5, disconnect = true } = {}) {
 
     for (const p of queue) {
         try {
-            // Step 1 — locate if needed.
-            let locationId = p.tripadvisorLocationId;
-            if (locationId == null) {
-                console.log(`[taScrape] #${p.id} "${p.name}" — searching TA...`);
-                const found = await findTaLocationId(page, { name: p.name, city: p.city });
-                if (found) {
-                    locationId = found;
-                    console.log(`[taScrape]   matched locationId=${found}`);
-                } else {
-                    console.log(`[taScrape]   no match — writing -1 sentinel`);
-                    await postTaUpdate({ placeId: p.id, tripadvisorLocationId: -1 });
-                    stats.miss++;
-                    await sleep(PLACE_SPACING_MS);
-                    continue;
-                }
-            } else if (locationId === -1) {
-                // Sentinel re-try
-                console.log(`[taScrape] #${p.id} "${p.name}" — sentinel retry...`);
-                const found = await findTaLocationId(page, { name: p.name, city: p.city });
-                if (!found) {
-                    // Stamp again so we don't re-search until next SEARCH_RETRY_DAYS
-                    await postTaUpdate({ placeId: p.id, tripadvisorLocationId: -1 });
-                    stats.miss++;
-                    await sleep(PLACE_SPACING_MS);
-                    continue;
-                }
-                locationId = found;
-            }
-
-            // Step 2 — scrape canonical page. Strategy chain inside
-            // scrapeTripadvisor: stored URL → UserReviewEdit redirect →
-            // search by name+city, with heading-token verification at
-            // each step to dodge wrong-venue historical matches.
+            // Pass whatever locationId we have (null, -1, or positive)
+            // straight through. scrapeTripadvisor's internal strategy
+            // chain handles all three cases:
+            //   - positive: try stored URL → fall back to API resolve
+            //     on heading mismatch
+            //   - null: API resolve via taLookup (free /location/search +
+            //     billed /location/{id}/details)
+            //   - -1 sentinel: same as null — re-try via API. The runner
+            //     gets a fresh locationId in scrape.locationIdOut if the
+            //     API now finds a match (self-heal — previously sentinel
+            //     places were blocked from re-discovery because the
+            //     runner used findTaLocationId() which goes through
+            //     Playwright /Search, whose JS-mounted results don't
+            //     render consistently).
+            const locationId = p.tripadvisorLocationId;
             const scrape = await scrapeTripadvisor(page, {
                 locationId,
                 name: p.name,
@@ -135,6 +117,16 @@ async function run({ limit = 5, disconnect = true } = {}) {
                 country: p.country,
                 tripadvisorUrl: p.tripadvisorUrl,
             });
+
+            // "API also can't find this venue" → write -1 sentinel so
+            // we skip retries until SEARCH_RETRY_DAYS expires.
+            if (scrape.error === "api-lookup-no-match") {
+                console.log(`[taScrape] #${p.id} "${p.name}" — no TA match (API search empty) → -1 sentinel`);
+                await postTaUpdate({ placeId: p.id, tripadvisorLocationId: -1 });
+                stats.miss++;
+                await sleep(PLACE_SPACING_MS);
+                continue;
+            }
             if (scrape.error) {
                 console.warn(`[taScrape] #${p.id} scrape error: ${scrape.error}`);
                 stats.failed++;
