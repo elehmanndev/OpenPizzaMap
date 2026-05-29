@@ -9,7 +9,7 @@
 //   docker exec -it opm-runner node scripts/probes/probe-scrape-tripadvisor.js --placeId 163
 
 const { prisma } = require("../lib/bootstrap");
-const { findTaLocationId, scrapeTripadvisor, createTaPage } = require("../lib/tripadvisor");
+const { scrapeTripadvisor, createTaPage } = require("../lib/tripadvisor");
 const { processPlace, maxPosition } = require("../enrichment/process-and-upload-photos");
 
 const HOSTINGER_URL = process.env.HOSTINGER_URL;
@@ -51,23 +51,13 @@ async function postTaUpdate(payload) {
 
     const { browser, page } = await createTaPage();
     try {
-        // Step 1 — locate if needed
-        let locationId = place.tripadvisorLocationId;
-        if (locationId == null || locationId === -1) {
-            console.log("[probe] no locationId → searching TA...");
-            const found = await findTaLocationId(page, { name: place.name, city: place.city });
-            if (!found) {
-                console.log("[probe] no TA match found");
-                await postTaUpdate({ placeId: place.id, tripadvisorLocationId: -1 });
-                console.log("[probe] wrote -1 sentinel");
-                process.exit(0);
-            }
-            locationId = found;
-            console.log(`[probe] matched locationId=${found}`);
-        }
-
-        // Step 2 — scrape
-        console.log(`[probe] scraping locationId=${locationId} (storedUrl=${place.tripadvisorUrl ? "yes" : "no"}) ...`);
+        // Same simplified flow as the runner: pass locationId straight
+        // through (null, -1, or positive) and let scrapeTripadvisor's
+        // strategy chain handle the rest. The "findTaLocationId first"
+        // step was removed because it used Playwright /Search? which
+        // doesn't reliably render results.
+        const locationId = place.tripadvisorLocationId;
+        console.log(`[probe] scraping locationId=${locationId ?? "null"} (storedUrl=${place.tripadvisorUrl ? "yes" : "no"}) ...`);
         const t0 = Date.now();
         const scrape = await scrapeTripadvisor(page, {
             locationId, name: place.name, city: place.city, country: place.country,
@@ -75,6 +65,11 @@ async function postTaUpdate(payload) {
         });
         const elapsedScrape = Math.round((Date.now() - t0) / 1000);
 
+        if (scrape.error === "api-lookup-no-match") {
+            console.log(`[probe] no TA match (API search empty) → -1 sentinel`);
+            await postTaUpdate({ placeId: place.id, tripadvisorLocationId: -1 });
+            process.exit(0);
+        }
         if (scrape.error) {
             console.log(`[probe] scrape error: ${scrape.error}  (${elapsedScrape}s)`);
             process.exit(1);
