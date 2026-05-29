@@ -267,6 +267,57 @@ async function tick(n) {
     } catch (err) {
         console.warn(`[runner]   photo push: crash ${err.message}`);
     }
+
+    // v2-only scrape phases. Each pulls a tiny per-tick batch from
+    // its own queue + writes back to Hostinger via the existing
+    // /api/admin/* endpoints. Gated on the same OPM_PIPELINE_V2 flag
+    // so flipping that env var off rolls back to "Hostinger does the
+    // photo work; nothing else extra."
+    //
+    // Tick budget: at 30-min cadence with 3-place limits per scrape
+    // type, the runner touches ~6 places per hour per phase — plenty
+    // of throughput against a 90-day TA refresh + 30-day ratings-dist
+    // refresh, gentle on both opm-runner CPU and Hostinger HTTP load.
+    if (useV2) {
+        // Google ratings distribution scrape.
+        try {
+            const { run: runRatingsDist } = require('../enrichment/scrape-google-ratings-dist');
+            const r = await runRatingsDist({ limit: 3, disconnect: false });
+            if (r.skipped) {
+                console.log(`[runner]   ratingsDist: SKIP (${r.reason})`);
+            } else {
+                console.log(`[runner]   ratingsDist: scraped=${r.stats?.scraped || 0} failed=${r.stats?.failed || 0}`);
+            }
+        } catch (err) {
+            console.warn(`[runner]   ratingsDist: crash ${err.message}`);
+        }
+
+        // TripAdvisor scrape (uses CloakBrowser, separate browser instance).
+        try {
+            const { run: runTaScrape } = require('../enrichment/scrape-tripadvisor');
+            const r = await runTaScrape({ limit: 3, disconnect: false });
+            if (r.scraped === 0 && r.failed === 0) {
+                console.log(`[runner]   taScrape: queue empty`);
+            } else {
+                console.log(`[runner]   taScrape: scraped=${r.scraped || 0} found=${r.found || 0} miss=${r.miss || 0} photos+${r.photosUploaded || 0} failed=${r.failed || 0}`);
+            }
+        } catch (err) {
+            console.warn(`[runner]   taScrape: crash ${err.message}`);
+        }
+
+        // Playwright place resolver (for new submissions without googlePlaceId).
+        try {
+            const { run: runResolve } = require('../enrichment/scrape-resolve');
+            const r = await runResolve({ limit: 3, disconnect: false });
+            if (r.resolved === 0 && r.missed === 0) {
+                console.log(`[runner]   resolve(v2): queue empty`);
+            } else {
+                console.log(`[runner]   resolve(v2): resolved=${r.resolved || 0} missed=${r.missed || 0} mismatch=${r.mismatch || 0} captcha=${r.captcha || 0}`);
+            }
+        } catch (err) {
+            console.warn(`[runner]   resolve(v2): crash ${err.message}`);
+        }
+    }
 }
 
 async function loop() {
