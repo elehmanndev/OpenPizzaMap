@@ -353,26 +353,71 @@ async function scrapeTripadvisor(page, { locationId, name, city, country, tripad
             const rankMatch = bodyText.match(/#(\d[\d,.\s]*)\s*of\s*[\d,.\s]+\s*[A-Za-z ]+/i);
             if (rankMatch) out.ranking = rankMatch[0].trim();
 
-            // Distribution — the rating filter sidebar renders 5 rows.
-            // Each row has the star label + a count. The exact selectors
-            // shift between TA's experiments so we use a tolerant strategy:
-            // look for elements whose aria-label or nearby text matches
-            // "<star count> rating(s)" or similar.
-            const distMap = new Map();
-            const labelRe = /(\d)\s*star[s]?\s*[:,]?\s*([\d,.\s]+)/i;
-            for (const el of document.querySelectorAll("[role='button'], [aria-label]")) {
-                const lbl = el.getAttribute("aria-label") || el.textContent || "";
-                const m = lbl.match(labelRe);
-                if (m) {
-                    const stars = Number(m[1]);
-                    const count = Number(m[2].replace(/[.,\s]/g, ""));
-                    if (stars >= 1 && stars <= 5 && Number.isFinite(count) && !distMap.has(stars)) {
-                        distMap.set(stars, count);
+            // Distribution — TA renders 5 rows in a panel (Excellent /
+            // Very Good / Average / Poor / Terrible, localized per
+            // locale). Inspected via the 2026-05-28 Chrome session on
+            // the Spanish Pizzarium Bonci page:
+            //   - Panel container class .AugPH (hashed by TA's CSS-in-JS)
+            //   - 5 child rows, class .jxnKb
+            //   - Each row's textContent is the label+count concatenated:
+            //     "Excelente2606", "Bueno1309", "Medio639", "Malo468",
+            //     "Pésimo428". Order is always best→worst (5★→1★).
+            //
+            // Class names will drift between TA experiments. Stable
+            // signal is the pattern: 5 sibling DOM nodes, each starting
+            // with a localized 5★ bucket label followed by a count.
+            //
+            // Algorithm:
+            //   1. Walk all DOM elements, find one whose textContent
+            //      starts with a known localized label for 5★ and has
+            //      a number after it (e.g. "Excelente2606").
+            //   2. That's our anchor row. Walk to its parent.
+            //   3. Read all 5 children of the parent — each should have
+            //      a trailing number. Pull the counts in order.
+            //   4. Cross-check: sum within 5% of out.reviewCount.
+            const FIVE_STAR_LABELS = [
+                "Excellent", "Excelente", "Eccellente", "Ausgezeichnet",
+                "Excelente",                       // PT
+                "Très bon", "Très bien",           // FR (note: 4★ in FR is "Très bon")
+            ];
+            // Find the anchor row. Tight match: textContent must be
+            // exactly "<label><digits>" — no trailing letters. That
+            // distinguishes the single row ("Excelente2606") from
+            // wrapper elements whose textContent contains all 5 rows
+            // concatenated ("Excelente2606Bueno1309Medio639..."), both
+            // of which start with the label.
+            let panel = null;
+            outer:
+            for (const el of document.querySelectorAll("div, li")) {
+                const t = (el.textContent || "").replace(/\s+/g, "").trim();
+                if (t.length > 40) continue;
+                for (const label of FIVE_STAR_LABELS) {
+                    const cmp = label.replace(/\s+/g, "");
+                    if (!t.startsWith(cmp)) continue;
+                    const tail = t.slice(cmp.length);
+                    // tail must be ONLY digits (with optional thousands
+                    // separators). No more letters → this is one row.
+                    if (/^[\d.,]+$/.test(tail)) {
+                        panel = el.parentElement;
+                        break outer;
                     }
                 }
             }
-            if (distMap.size === 5) {
-                out.distribution = [5,4,3,2,1].map(s => distMap.get(s));
+            if (panel) {
+                const rows = [...panel.children];
+                if (rows.length === 5) {
+                    const counts = rows.map((row) => {
+                        const t = (row.textContent || "").replace(/\s+/g, "");
+                        const m = t.match(/([\d.,]+)$/);
+                        return m ? Number(m[1].replace(/[.,]/g, "")) : null;
+                    });
+                    if (counts.every((c) => Number.isFinite(c) && c >= 0)) {
+                        const sum = counts.reduce((a, b) => a + b, 0);
+                        const driftOk = out.reviewCount == null
+                            || (Math.abs(sum - out.reviewCount) / out.reviewCount) < 0.05;
+                        if (driftOk) out.distribution = counts;
+                    }
+                }
             }
 
             // Review cards — TA renders them inline. Each card has a
