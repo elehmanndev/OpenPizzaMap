@@ -2451,6 +2451,15 @@ img.map-suggest-thumb { display: block; }
   .place-gallery__grid:has(> :nth-child(5)) .place-gallery__tile:nth-child(1) {
     grid-row: 1 / span 2;
   }
+  /* Reset the mobile-only "5th tile spans full width" rule. Without
+     this, the 5th tile keeps grid-column: 1/-1 + 16:6 aspect-ratio
+     from the base styles, which on desktop's 3-col grid pushes it
+     into row 3 spanning all columns — that's the wide kitchen-scene
+     banner bug. */
+  .place-gallery__grid:has(> :nth-child(5):last-child) > .place-gallery__tile:nth-child(5) {
+    grid-column: auto;
+    aspect-ratio: auto;
+  }
 }
 
 /* Photo lightbox — fullscreen modal opened by clicking a gallery tile. */
