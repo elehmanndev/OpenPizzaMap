@@ -120,6 +120,11 @@ model Place {
   googleRatingsScrapedAt     DateTime?
   tripadvisorReviewsJson   String?  @db.Text
   tripadvisorReviewsFetchedAt DateTime?
+  // Per-star ratings distribution scraped from the public TripAdvisor
+  // restaurant page. Same JSON shape as googleRatingsDistribution:
+  // [c5, c4, c3, c2, c1]. Filled by scrape-tripadvisor.js on opm-runner.
+  tripadvisorRatingsDistribution  Json?
+  tripadvisorRatingsScrapedAt     DateTime?
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   styles        PlaceStyle[]

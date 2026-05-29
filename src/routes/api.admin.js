@@ -1,4 +1,7 @@
 const express = require("express");
+const fs = require("fs");
+const path = require("path");
+const multer = require("multer");
 const { z } = require("zod");
 const { prisma } = require("../db");
 const { requireAdmin } = require("../middleware/auth");
@@ -20,6 +23,19 @@ const { run: runDownloadGallery } = require("../../scripts/backfills/download-ga
 const { run: runMigrateLegacyHeroes } = require("../../scripts/backfills/migrate-legacy-heroes");
 
 const router = express.Router();
+
+// Multer config for /upload-place-photo. Memory storage because the
+// files go through validate → atomic write → DB insert and need to
+// live in RAM only for that window. 5MB per file cap (the largest
+// real photos we've seen from Google/TA scrapes are ~500KB).
+const photoUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024, files: 3, fields: 10 },
+    fileFilter: (req, file, cb) => {
+        const ok = /^(image\/(jpeg|png|webp|avif|gif))$/i.test(file.mimetype);
+        cb(ok ? null : new Error(`unsupported mimetype: ${file.mimetype}`), ok);
+    },
+});
 
 router.get("/submissions", requireAdmin, async (req, res) => {
     const status = req.query.status || "pending";
@@ -922,6 +938,234 @@ router.post("/migrate-legacy-heroes", async (req, res) => {
     } catch (err) {
         console.error("[migrate-legacy-heroes] apply crashed:", err);
         res.status(500).json({ ok: false, error: err.message, name: err.name, stack: err.stack?.split("\n").slice(0, 6) });
+    }
+});
+
+// ─── /upload-place-photo ──────────────────────────────────────────────────
+// Hostinger-side receiver for opm-runner's photo pipeline. opm-runner
+// downloads from Google/TA, runs sharp to produce -large + -thumb
+// variants, then POSTs all 3 files + metadata here. We write them to
+// persistent/uploads/places/<id>/ atomically (temp + rename) and INSERT
+// a PlaceImage row. No sharp here — that's the whole point.
+//
+// Disk path layout (matches the URL middleware in src/app.js#L204):
+//   <UPLOADS_DIR>/places/<id>/<position>.<ext>
+//   <UPLOADS_DIR>/places/<id>/<position>-large.jpg
+//   <UPLOADS_DIR>/places/<id>/<position>-thumb.jpg
+//
+// PlaceImage.localPath stores the URL-shaped path with the slug:
+//   /uploads/places/<id>/<slug>/<position>.<ext>
+// The URL middleware strips the slug at read time.
+//
+// Idempotency: relies on @@unique([placeId, sourceRef]) — a re-upload
+// of the same Google photo ID returns 409 with the existing row.
+// opm-runner treats 409 as success.
+
+const UPLOADS_DIR = process.env.UPLOADS_DIR
+    || path.join(__dirname, "..", "..", "..", "persistent", "uploads");
+
+router.post("/upload-place-photo",
+    photoUpload.fields([
+        { name: "original", maxCount: 1 },
+        { name: "large", maxCount: 1 },
+        { name: "thumb", maxCount: 1 },
+    ]),
+    async (req, res) => {
+    const tempFiles = []; // for cleanup on error
+    try {
+        // ── Validate fields
+        const placeId = Number(req.body.placeId);
+        const position = Number(req.body.position);
+        const width = Number(req.body.width);
+        const height = Number(req.body.height);
+        const source = String(req.body.source || "").toLowerCase();
+        const sourceRef = req.body.sourceRef ? String(req.body.sourceRef) : null;
+        const sourceUrl = req.body.sourceUrl ? String(req.body.sourceUrl) : null;
+
+        if (!Number.isInteger(placeId) || placeId <= 0) return res.status(400).json({ ok: false, error: "placeId required (positive integer)" });
+        if (!Number.isInteger(position) || position < 1 || position > 50) return res.status(400).json({ ok: false, error: "position must be 1..50" });
+        if (!Number.isFinite(width) || width <= 0) return res.status(400).json({ ok: false, error: "width required" });
+        if (!Number.isFinite(height) || height <= 0) return res.status(400).json({ ok: false, error: "height required" });
+        if (!/^(google|tripadvisor|trustpilot|submitted|website)$/i.test(source)) return res.status(400).json({ ok: false, error: "source must be one of: google, tripadvisor, trustpilot, submitted, website" });
+
+        const original = req.files?.original?.[0];
+        const large = req.files?.large?.[0];
+        const thumb = req.files?.thumb?.[0];
+        if (!original || !large || !thumb) return res.status(400).json({ ok: false, error: "original, large, thumb files all required" });
+
+        // ── Look up place (verify exists + get slug for the URL-shaped localPath)
+        const place = await prisma.place.findUnique({
+            where: { id: placeId },
+            select: { id: true, slug: true, isVisible: true },
+        });
+        if (!place) return res.status(404).json({ ok: false, error: "place not found" });
+        if (!place.isVisible) return res.status(404).json({ ok: false, error: "place not visible" });
+
+        // ── Existence check via sourceRef. Same-photo-already-uploaded is
+        //     treated as a clean idempotent retry: 409 with the existing row.
+        if (sourceRef) {
+            const existing = await prisma.placeImage.findUnique({
+                where: { placeId_sourceRef: { placeId, sourceRef } },
+                select: { id: true, position: true, localPath: true },
+            });
+            if (existing) {
+                return res.status(409).json({
+                    ok: true, idempotent: true,
+                    placeImageId: existing.id,
+                    position: existing.position,
+                    localPath: existing.localPath,
+                });
+            }
+        }
+
+        // ── Build disk paths
+        const origExt = (original.mimetype === "image/jpeg") ? "jpg"
+            : (original.mimetype === "image/png") ? "png"
+            : (original.mimetype === "image/webp") ? "webp"
+            : (original.mimetype === "image/avif") ? "avif"
+            : (original.mimetype === "image/gif") ? "gif"
+            : "jpg";
+        const placeDir = path.join(UPLOADS_DIR, "places", String(placeId));
+        fs.mkdirSync(placeDir, { recursive: true });
+
+        const origPath = path.join(placeDir, `${position}.${origExt}`);
+        const largePath = path.join(placeDir, `${position}-large.jpg`);
+        const thumbPath = path.join(placeDir, `${position}-thumb.jpg`);
+
+        // ── Atomic writes: write to .tmp first, rename only after all 3
+        //     buffers are on disk. If anything fails mid-write, partial
+        //     files never become visible to the URL handler.
+        const writes = [
+            { tmp: origPath + ".tmp", final: origPath, buf: original.buffer },
+            { tmp: largePath + ".tmp", final: largePath, buf: large.buffer },
+            { tmp: thumbPath + ".tmp", final: thumbPath, buf: thumb.buffer },
+        ];
+        for (const w of writes) {
+            fs.writeFileSync(w.tmp, w.buf);
+            tempFiles.push(w.tmp);
+        }
+        for (const w of writes) {
+            fs.renameSync(w.tmp, w.final);
+        }
+        // All renames succeeded → clear the temp tracker so the catch block
+        // doesn't try to remove already-renamed files.
+        tempFiles.length = 0;
+
+        // ── PlaceImage row. localPath uses the URL-shaped path so the
+        //     UI can serve it via /uploads/places/<id>/<slug>/<n>.<ext>.
+        const localPath = `/uploads/places/${placeId}/${place.slug}/${position}.${origExt}`;
+        const created = await prisma.placeImage.create({
+            data: {
+                placeId,
+                position,
+                localPath,
+                source,
+                sourceRef,
+                sourceUrl,
+                width: Math.round(width),
+                height: Math.round(height),
+                bytes: original.size,
+            },
+            select: { id: true, position: true, localPath: true },
+        });
+
+        res.status(201).json({
+            ok: true,
+            placeImageId: created.id,
+            position: created.position,
+            localPath: created.localPath,
+        });
+    } catch (err) {
+        // Clean up any temp files we wrote before the error.
+        for (const t of tempFiles) {
+            try { fs.unlinkSync(t); } catch (_) { /* best effort */ }
+        }
+        // Multer + Prisma errors mostly already have helpful messages.
+        if (err.code === "P2002") {
+            // Unique constraint hit despite our pre-check — race with another
+            // upload of the same sourceRef. Re-look-up and return 409.
+            const existing = await prisma.placeImage.findUnique({
+                where: { placeId_sourceRef: { placeId: Number(req.body.placeId), sourceRef: req.body.sourceRef } },
+                select: { id: true, position: true, localPath: true },
+            }).catch(() => null);
+            return res.status(409).json({ ok: true, idempotent: true, ...existing });
+        }
+        if (err instanceof multer.MulterError) {
+            const status = err.code === "LIMIT_FILE_SIZE" ? 413 : 400;
+            return res.status(status).json({ ok: false, error: err.code, message: err.message });
+        }
+        console.error("[upload-place-photo] crash:", err);
+        res.status(500).json({ ok: false, error: err.message });
+    }
+});
+
+// ─── /update-place-ta ─────────────────────────────────────────────────────
+// Hostinger-side receiver for opm-runner's TripAdvisor scrape. opm-runner
+// hits the public TA page via Playwright, parses rating + count +
+// reviews + distribution, then POSTs the structured payload here. No
+// scraping, no Playwright on Hostinger — just a DB write.
+
+router.post("/update-place-ta", express.json({ limit: "256kb" }), async (req, res) => {
+    try {
+        const placeId = Number(req.body.placeId);
+        if (!Number.isInteger(placeId) || placeId <= 0) return res.status(400).json({ ok: false, error: "placeId required" });
+
+        const place = await prisma.place.findUnique({ where: { id: placeId }, select: { id: true } });
+        if (!place) return res.status(404).json({ ok: false, error: "place not found" });
+
+        const data = {};
+        // tripadvisorLocationId is Int? — opm-runner sends either:
+        //   - a positive int (matched on TA)
+        //   - -1 sentinel (we checked, no match — stop retrying for 6 months)
+        //   - omitted (don't touch the column)
+        if (req.body.tripadvisorLocationId !== undefined && req.body.tripadvisorLocationId !== null) {
+            const id = Number(req.body.tripadvisorLocationId);
+            if (Number.isFinite(id)) data.tripadvisorLocationId = id;
+        }
+        if (req.body.tripadvisorUrl !== undefined) data.tripadvisorUrl = String(req.body.tripadvisorUrl || "");
+        if (req.body.tripadvisorRating !== undefined) data.tripadvisorRating = Number(req.body.tripadvisorRating);
+        if (req.body.tripadvisorReviewCount !== undefined) data.tripadvisorReviewCount = Math.round(Number(req.body.tripadvisorReviewCount));
+        if (req.body.tripadvisorRanking !== undefined) data.tripadvisorRanking = String(req.body.tripadvisorRanking || "");
+
+        // Reviews JSON shape: [{ author, rating, text, relativeTime, lang? }, ...]
+        if (Array.isArray(req.body.reviews)) {
+            data.tripadvisorReviewsJson = JSON.stringify(req.body.reviews.slice(0, 10));
+            data.tripadvisorReviewsFetchedAt = new Date();
+        }
+
+        // Distribution: [c5, c4, c3, c2, c1] integers
+        if (Array.isArray(req.body.distribution) && req.body.distribution.length === 5) {
+            const dist = req.body.distribution.map((n) => Math.max(0, Math.round(Number(n)) || 0));
+            data.tripadvisorRatingsDistribution = dist;
+            data.tripadvisorRatingsScrapedAt = new Date();
+        }
+
+        await prisma.place.update({ where: { id: placeId }, data });
+        res.json({ ok: true, placeId, fieldsUpdated: Object.keys(data) });
+    } catch (err) {
+        console.error("[update-place-ta] crash:", err);
+        res.status(500).json({ ok: false, error: err.message });
+    }
+});
+
+// ─── /place/:id/gallery-scraped ───────────────────────────────────────────
+// Stamps galleryLastScrapedAt = now() so the queue picker doesn't
+// re-pick this place for another year. Called by opm-runner after all
+// photos for a place have been uploaded successfully.
+
+router.post("/place/:id/gallery-scraped", express.json({ limit: "8kb" }), async (req, res) => {
+    try {
+        const id = Number(req.params.id);
+        if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ ok: false, error: "id required" });
+        await prisma.place.update({
+            where: { id },
+            data: { galleryLastScrapedAt: new Date() },
+        });
+        res.json({ ok: true });
+    } catch (err) {
+        if (err.code === "P2025") return res.status(404).json({ ok: false, error: "place not found" });
+        console.error("[gallery-scraped] crash:", err);
+        res.status(500).json({ ok: false, error: err.message });
     }
 });
 

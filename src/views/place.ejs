@@ -182,6 +182,20 @@
       url: place.googleUrl,
     });
   }
+  // TripAdvisor re-added 2026-05-28 — Playwright scraper on opm-runner
+  // populates rating/count from the public page (free, no API).
+  // Sentinel: tripadvisorLocationId === -1 means "checked, no match"
+  // — don't surface as a separate platform card in that case.
+  if (place.tripadvisorRating != null && place.tripadvisorLocationId !== -1) {
+    reviews.push({
+      platform: "TripAdvisor",
+      rating: Number(place.tripadvisorRating),
+      max: 5,
+      count: place.tripadvisorReviewCount,
+      url: place.tripadvisorUrl,
+      ranking: place.tripadvisorRanking,
+    });
+  }
   if (place.yelpRating != null) {
     reviews.push({
       platform: "Yelp",
@@ -504,11 +518,20 @@
         text: r.text || "",
         relativeTime: r.relativeTime || null,
       }));
-      // TripAdvisor reviews intentionally NOT surfaced — their /reviews
-      // endpoint is on a paid tier we're not buying. TA's aggregate
-      // rating still feeds the bayesian opmRating composite internally.
-      const allRated = [...opmAll, ...googleAll].filter((r) => r.rating != null);
-      const totalShown = opmAll.length + googleAll.length;
+      // TripAdvisor reviews re-added 2026-05-28. Playwright scraper on
+      // opm-runner pulls 5 samples from the public page (TA's review
+      // text isn't behind a paywall via the website — only via the
+      // Content API). Same shape as Google reviews.
+      const tripadvisorAll = (place.tripadvisorReviews || []).map((r) => ({
+        source: "tripadvisor",
+        author: r.author || "Anonymous",
+        authorAvatar: r.profilePhoto || null,
+        rating: r.rating != null ? Number(r.rating) : null,
+        text: r.text || "",
+        relativeTime: r.relativeTime || null,
+      }));
+      const allRated = [...opmAll, ...googleAll, ...tripadvisorAll].filter((r) => r.rating != null);
+      const totalShown = opmAll.length + googleAll.length + tripadvisorAll.length;
       if (totalShown === 0) return "";
 
       // Big number = the place's authoritative composite score (the
@@ -522,29 +545,31 @@
         : null;
       const avg = place.opmRating != null ? Number(place.opmRating) : sampleAvg;
 
-      // Per-star distribution: combine the Google-Maps-scraped
-      // [c5,c4,c3,c2,c1] with the OPM-computed distribution from
-      // pages.js. Bar graph only renders if we have a Google scrape
-      // OR enough OPM reviews to be meaningful (≥3). Without Google
-      // data we'd be showing only the tiny OPM slice, which would
-      // misrepresent the actual rating spread.
+      // Per-star distribution: combine the scraped Google + scraped TA
+      // distributions with the OPM-computed distribution from pages.js.
+      // Each source contributes [c5,c4,c3,c2,c1] which we add element-wise.
+      // Bar graph renders if we have ANY scraped distribution (Google
+      // OR TripAdvisor) OR enough OPM reviews to be meaningful (≥3).
       const opmDist = Array.isArray(place.opmRatingsDistribution) ? place.opmRatingsDistribution : [0,0,0,0,0];
       const googDist = Array.isArray(place.googleRatingsDistribution) ? place.googleRatingsDistribution : null;
+      const taDist = Array.isArray(place.tripadvisorRatingsDistribution) ? place.tripadvisorRatingsDistribution : null;
       const totalOpm = opmDist.reduce((a,b) => a+b, 0);
       const totalGoog = googDist ? googDist.reduce((a,b) => a+b, 0) : 0;
+      const totalTa = taDist ? taDist.reduce((a,b) => a+b, 0) : 0;
 
-      // Total reviews displayed below the bar graph. When we have a
-      // scraped Google distribution, the total MUST be the sum of the
-      // displayed bars (otherwise the line says "Based on N reviews"
-      // and the bars sum to N+drift, which looks wrong). Fall back to
-      // place.googleReviewCount for places where the distribution
-      // scrape hasn't run yet.
-      const totalReviewCount = (googDist ? totalGoog : (place.googleReviewCount || 0))
+      // Total reviews displayed below the bar graph. When we have any
+      // scraped distribution, the total MUST equal the sum of the bars
+      // (otherwise "Based on N reviews" disagrees with the visible bars).
+      // For sources where we don't have a distribution but DO have a
+      // count, fall back to that count.
+      const totalReviewCount =
+        (googDist ? totalGoog : (place.googleReviewCount || 0))
+        + (taDist ? totalTa : (place.tripadvisorReviewCount || 0))
         + (place.reviewsTotal || 0);
-      const combinedDist = googDist
-        ? [0,1,2,3,4].map((i) => (opmDist[i] || 0) + (googDist[i] || 0))
-        : opmDist;
-      const showDistribution = !!googDist || totalOpm >= 3;
+      const combinedDist = [0,1,2,3,4].map((i) =>
+        (opmDist[i] || 0) + ((googDist && googDist[i]) || 0) + ((taDist && taDist[i]) || 0)
+      );
+      const showDistribution = !!googDist || !!taDist || totalOpm >= 3;
       const maxBucket = Math.max(1, ...combinedDist);
       // Bar colors — green-to-red gradient, Trustpilot style.
       const bucketColors = ["#1ea672", "#73cf11", "#ffce00", "#ff8622", "#ff3722"];
