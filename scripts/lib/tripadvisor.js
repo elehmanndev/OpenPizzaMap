@@ -248,11 +248,17 @@ async function scrapeTripadvisor(page, { locationId, name, city, country, tripad
         let finalUrl = null;
         let locationIdOut = locationId;
 
+        // TA's JS hydration is SLOW. The 2026-05-28 diagnostic with 10s
+        // wait got full rendered content (bodyLen=22107 with rating,
+        // count, ranking visible); with 3.5s wait the same URL was a
+        // blank stub. We wait 8s after each nav as the floor.
+        const TA_HYDRATE_MS = 8000;
+
         // Strategy 1: stored URL
         if (tripadvisorUrl) {
             try {
                 await page.goto(tripadvisorUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
-                await sleepTa(1500);
+                await sleepTa(TA_HYDRATE_MS);
                 finalUrl = page.url();
                 if (/Restaurant_Review/i.test(finalUrl)) {
                     // Verify the heading actually matches our name
@@ -280,13 +286,10 @@ async function scrapeTripadvisor(page, { locationId, name, city, country, tripad
                     await page.goto(resolvedUrl, {
                         waitUntil: "domcontentloaded", timeout: 30000,
                     });
-                    await sleepTa(1500);
+                    await sleepTa(TA_HYDRATE_MS);
                     finalUrl = page.url();
                     if (/Restaurant_Review/i.test(finalUrl)) {
-                        const heading = await page.evaluate(() => {
-                            const h = document.querySelector("h1");
-                            return h ? (h.textContent || "").trim() : null;
-                        }).catch(() => null);
+                        const heading = await taExtractHeading(page);
                         if (!name || taNameMatches(heading, name)) {
                             landed = true;
                         } else {
@@ -305,31 +308,49 @@ async function scrapeTripadvisor(page, { locationId, name, city, country, tripad
         if (!landed) {
             return { error: `all-nav-strategies-failed (last url: ${finalUrl})` };
         }
-        await sleepTa(500); // extra settle for hydration of rating widget
 
         const scraped = await page.evaluate(() => {
             const out = {};
 
-            // Rating — h1's sibling has the "4.0 of 5 bubbles" text in
-            // aria-label. Multiple selectors as fallbacks for layout drift.
-            const ratingEl = document.querySelector('[data-automation*="bubbleRating"], svg[aria-label*="bubbles"], [aria-label*="of 5 bubbles"]');
-            if (ratingEl) {
-                const al = ratingEl.getAttribute("aria-label") || "";
-                const m = al.match(/(\d[.,]\d)\s*of\s*5\s*bubbles/i) || al.match(/(\d[.,]\d)/);
-                if (m) out.rating = Number(m[1].replace(",", "."));
-            }
-
-            // Review count — typically next to the rating, in text like
-            // "5,450 reviews" or a tab labelled "Reviews (5,450)".
+            // Strategy: text-first extraction. The diagnostic showed
+            // body text contains the pattern:
+            //   "Cucina Conviviale\nClaimed\nSave\nReview\n4.7\n(1,781 reviews)\n#279 of 2,501 Restaurants..."
+            // The rating widget aria-labels we used before either don't
+            // exist in TA's modern DOM or get hydrated unpredictably.
+            // Plain-text regex on body.innerText is the reliable path.
             const bodyText = document.body.innerText;
-            const countMatch = bodyText.match(/([\d,.\s]+)\s*reviews?\b/i);
-            if (countMatch) {
-                const n = Number(countMatch[1].replace(/[.,\s]/g, ""));
+
+            // Rating + count combo: "4.7\n(1,781 reviews)" pattern.
+            // Look for a single-digit-dot-digit followed by a parenthesized
+            // count of reviews on the next line (or same area).
+            const ratingCountMatch = bodyText.match(/(?:^|\n)\s*([1-5][.,]\d)\s*\n?\s*\(([\d,.\s]+)\s*review/i);
+            if (ratingCountMatch) {
+                out.rating = Number(ratingCountMatch[1].replace(",", "."));
+                const n = Number(ratingCountMatch[2].replace(/[.,\s]/g, ""));
                 if (Number.isFinite(n) && n > 0) out.reviewCount = n;
             }
 
+            // Rating fallback: aria-label-based, in case text path missed.
+            if (out.rating == null) {
+                const ratingEl = document.querySelector('[aria-label*="of 5 bubbles" i], [aria-label*="bubbles" i], svg[aria-label*="bubbles" i]');
+                if (ratingEl) {
+                    const al = ratingEl.getAttribute("aria-label") || "";
+                    const m = al.match(/([1-5][.,]\d)/);
+                    if (m) out.rating = Number(m[1].replace(",", "."));
+                }
+            }
+
+            // Count fallback: standalone "N reviews" anywhere in body
+            if (out.reviewCount == null) {
+                const cm = bodyText.match(/\(?([\d,.\s]+)\s*reviews?\)?/i);
+                if (cm) {
+                    const n = Number(cm[1].replace(/[.,\s]/g, ""));
+                    if (Number.isFinite(n) && n >= 5) out.reviewCount = n;
+                }
+            }
+
             // Ranking — "#3 of 567 Restaurants in Rome"
-            const rankMatch = bodyText.match(/#(\d+)\s*of\s*[\d,.\s]+\s*[A-Za-z ]+/i);
+            const rankMatch = bodyText.match(/#(\d[\d,.\s]*)\s*of\s*[\d,.\s]+\s*[A-Za-z ]+/i);
             if (rankMatch) out.ranking = rankMatch[0].trim();
 
             // Distribution — the rating filter sidebar renders 5 rows.
