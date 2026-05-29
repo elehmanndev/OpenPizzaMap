@@ -77,48 +77,42 @@ async function taLookup(name, city, country) {
 
 const sleepTa = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// CloakBrowser page factory for TA. The default Playwright launch
-// (createGmapsPage in lib/gmaps.js) works fine on Google's residential-
-// IP path, but TA fingerprints Playwright (navigator.webdriver=true +
-// other automation indicators) and serves a fully-blank page when
-// detected — observed 2026-05-28 with bodyLen=0, title="tripadvisor.com",
-// no h1/og:title/rating widget despite networkidle + 3s wait.
+// CloakBrowser page factory for TA. Stock Playwright (createGmapsPage)
+// works on Google's residential-IP path, but TA fingerprints Playwright
+// (navigator.webdriver=true + other automation indicators) and serves
+// a fully-blank page — observed 2026-05-28 with bodyLen=0, title=
+// "tripadvisor.com", no h1/og:title/rating despite networkidle+3s.
 //
-// CloakBrowser patches the fingerprint so TA serves real content.
-// Drop-in Playwright API; we apply the same single-process / no-zygote
-// args + image blocking the gmaps factory uses, plus allowImages=true
-// because TA's lazy-load checks for image fetches and bails rendering
-// when they fail repeatedly.
+// CloakBrowser patches the detection layer. NOTE — its API differs
+// from playwright:
+//   - ESM-only, so we use await import() (require throws
+//     ERR_PACKAGE_PATH_NOT_EXPORTED on root require)
+//   - exports `.launch()` directly at the top level
+//   - browser.newPage() takes the viewport/options directly; no
+//     separate context.newContext() step
+// Pattern lifted from scripts/admin/probe-gambero-rosso.js which has
+// been using cloakbrowser successfully against Cloudflare-gated GR
+// pages since 2026-05-21.
 async function createTaPage() {
-    let chromium;
+    let cb;
     try {
-        // CloakBrowser exports a chromium that behaves identically to
-        // playwright's chromium. Same launch / newContext / newPage API.
-        ({ chromium } = require("cloakbrowser"));
+        cb = await import("cloakbrowser");
     } catch (err) {
         throw new Error("cloakbrowser not installed — opm-runner needs `npm install --no-save cloakbrowser`. " + err.message);
     }
 
-    const browser = await chromium.launch({
-        headless: true,
-        args: ["--single-process", "--no-zygote", "--disable-gpu", "--no-sandbox"],
+    const browser = await cb.launch({ headless: true });
+    const page = await browser.newPage({
+        viewport: { width: 1366, height: 768 },
     });
-    const context = await browser.newContext({
-        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
-        locale: "en-US",
-        viewport: { width: 1366, height: 768 },     // common laptop resolution, less suspicious than default 1280x720
-        extraHTTPHeaders: { "Accept-Language": "en-US,en;q=0.9" },
-    });
-    const page = await context.newPage();
-    // Don't block images — TA's renderer keys off image fetches for
-    // some content loads. Block only media + fonts (bandwidth-only,
-    // don't gate rendering).
+    // Block media + fonts only (bandwidth-only, don't gate rendering).
+    // Images NOT blocked — TA's renderer keys off image fetches.
     await page.route("**/*", (route) => {
         const t = route.request().resourceType();
         if (t === "media" || t === "font") return route.abort();
         return route.continue();
     });
-    return { browser, context, page };
+    return { browser, page };   // no separate context in cloakbrowser API
 }
 
 // Build the canonical restaurant page URL from a known locationId.

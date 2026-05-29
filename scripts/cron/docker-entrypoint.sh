@@ -97,7 +97,12 @@ fi
 # patches the navigator.webdriver + other detection vectors; the same
 # memory note that documents this for Gambero Rosso (Cloudflare-gated
 # AJAX) applies here. ~535MB binary, MIT, install with --no-save.
-if ! node -e "require.resolve('cloakbrowser')" 2>/dev/null; then
+# CloakBrowser check uses dynamic import because the package is
+# ESM-only and `require.resolve('cloakbrowser')` succeeds even when
+# the actual module fails to load due to the missing CJS exports
+# (ERR_PACKAGE_PATH_NOT_EXPORTED). Probe by actually awaiting an
+# import.
+if ! node --input-type=module -e "await import('cloakbrowser').then(()=>0)" 2>/dev/null; then
     log "cloakbrowser not loadable — force-installing for TA scrape"
     NODE_ENV=development npm install cloakbrowser --no-save --include=dev --no-audit --no-fund 2>&1 | tail -3
 fi
