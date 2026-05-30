@@ -68,7 +68,12 @@ const ADMIN_API_KEY = process.env.ADMIN_API_KEY;
             console.warn(`  #${placeId} "${name}" → HTTP ${r.status} :: ${body.slice(0, 300)}`);
             failed++;
         }
-        await new Promise((res) => setTimeout(res, 80));
+        // Conservative throttle — Hostinger's Max-Processes cap is 120
+        // and other traffic (opm-runner ticks, user traffic) competes
+        // for slots. 1 POST/sec keeps us well below the spike threshold
+        // observed 2026-05-30 19:50-20:09 when 80ms spacing pegged the
+        // cap and produced HTTP 500s on every call.
+        await new Promise((res) => setTimeout(res, 1000));
     }
 
     console.log(`\n# DONE`);

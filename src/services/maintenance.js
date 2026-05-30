@@ -88,17 +88,14 @@ const MODE_PRESETS = {
         resolve: 0,
         photos: 0,
         osm: 20,
-        // tripadvisor stays alive for one more refresh cycle but the API
-        // path is on its way out — opm-runner's Playwright scrape will
-        // take over (free-tier, no quota). Capped tight in the meantime.
-        tripadvisor: 50,
+        // tripadvisor + localizeImages RETIRED 2026-05-30 — opm-runner
+        // v2 pipeline owns both phases entirely. Keeping them >0 risks
+        // duplicate work + Hostinger process-cap spikes (observed today
+        // at 19:50-20:09 when applier load + in-process phases combined
+        // to peg the 120 cap).
+        tripadvisor: 0,
         opmRating: true,
-        // localizeImages was the spike driver: 100-200 sharp passes in one
-        // HTTP request locked a worker for 5+ min, Passenger spawned more
-        // workers to handle traffic, processes hit the 120 cap. Drop to
-        // 50 (burn) / 25 (min) until the new opm-runner upload pipeline
-        // is shipped (step 8 in the 2026-05-28 plan), then set to 0.
-        localizeImages: 50,
+        localizeImages: 0,
         // opm-runner does the actual scrape; this limit just affects how
         // many places one tick attempts. Smaller batches = each tick
         // finishes faster, leaving more headroom for traffic.
@@ -109,9 +106,10 @@ const MODE_PRESETS = {
         resolve: 0,
         photos: 0,
         osm: 20,
-        tripadvisor: 30,
+        // tripadvisor + localizeImages RETIRED 2026-05-30 — see burn config above.
+        tripadvisor: 0,
         opmRating: true,
-        localizeImages: 25,
+        localizeImages: 0,
         galleryScrape: 5,
         googlePhotosBurn: 0,
     },
