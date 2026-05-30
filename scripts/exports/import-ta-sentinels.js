@@ -16,7 +16,16 @@ const fs = require("fs");
 const HOSTINGER_URL = process.env.HOSTINGER_URL;
 const ADMIN_API_KEY = process.env.ADMIN_API_KEY;
 
-function parseCsvLine(line) {
+function detectDelimiter(headerLine) {
+    // Excel in EU locales (es/it/de/fr) saves CSV with semicolons. Detect
+    // by counting candidates in the header line — whichever appears more
+    // often wins. Defaults to comma if neither shows up.
+    const commas = (headerLine.match(/,/g) || []).length;
+    const semis = (headerLine.match(/;/g) || []).length;
+    return semis > commas ? ";" : ",";
+}
+
+function parseCsvLine(line, delim = ",") {
     const out = [];
     let cur = "";
     let inQ = false;
@@ -28,12 +37,12 @@ function parseCsvLine(line) {
             else cur += c;
         } else {
             if (c === '"') inQ = true;
-            else if (c === ",") { out.push(cur); cur = ""; }
+            else if (c === delim) { out.push(cur); cur = ""; }
             else cur += c;
         }
     }
     out.push(cur);
-    return out;
+    return out.map(s => s.trim());
 }
 
 function extractLocationId(taUrl) {
@@ -66,10 +75,19 @@ async function postTaUpdate(placeId, locationId) {
         raw = fs.readFileSync(0, "utf8"); // stdin
     }
 
+    // Strip UTF-8 BOM that Excel adds when saving CSV
+    if (raw.charCodeAt(0) === 0xFEFF) raw = raw.slice(1);
+
     const lines = raw.split(/\r?\n/).filter(Boolean);
     if (!lines.length) { console.error("empty input"); process.exit(1); }
 
-    const header = parseCsvLine(lines.shift());
+    const headerLine = lines.shift();
+    const delim = detectDelimiter(headerLine);
+    console.error(`# detected delimiter: ${delim === ";" ? "semicolon" : "comma"}`);
+
+    const header = parseCsvLine(headerLine, delim);
+    console.error(`# headers found: ${JSON.stringify(header)}`);
+
     const idIdx = header.indexOf("id");
     const nameIdx = header.indexOf("name");
     const taUrlIdx = header.indexOf("ta_url");
@@ -81,7 +99,7 @@ async function postTaUpdate(placeId, locationId) {
     const stats = { total: 0, applied: 0, skippedEmpty: 0, skippedBadUrl: 0, failed: 0 };
 
     for (const line of lines) {
-        const cols = parseCsvLine(line);
+        const cols = parseCsvLine(line, delim);
         const placeId = Number(cols[idIdx]);
         const name = cols[nameIdx] || "";
         const taUrl = (cols[taUrlIdx] || "").trim();
