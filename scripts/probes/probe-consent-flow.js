@@ -73,5 +73,35 @@ const { chromium } = require("playwright");
     const bodySample = await page.evaluate(() => (document.body.innerText || "").slice(0, 200));
     console.log("  ", JSON.stringify(bodySample));
 
+    console.log("\nSTEP 6 — ChIJ extraction (mirrors extractPlaceIdFromPage)");
+    console.log("  url:", page.url());
+    const url = page.url();
+    let urlMatch = null;
+    for (const re of [
+        /!1s(ChIJ[\w\-_]+)/,
+        /!16s.*?(ChIJ[\w\-_]+)/,
+        /place_id[:=](ChIJ[\w\-_]+)/,
+        /\/data=.*?(ChIJ[\w\-_]+)/,
+    ]) {
+        const m = re.exec(url);
+        if (m) { urlMatch = m[1]; break; }
+    }
+    console.log("  ChIJ in URL:    ", urlMatch || "NONE");
+    const html = await page.content();
+    const htmlMatch = /(ChIJ[\w\-_]{20,})/.exec(html);
+    console.log("  ChIJ in HTML:   ", htmlMatch ? htmlMatch[1] : "NONE");
+    console.log("  HTML length:    ", html.length);
+    const chijCount = (html.match(/ChIJ[\w\-_]{20,}/g) || []).length;
+    console.log("  ChIJ total hits:", chijCount);
+
+    console.log("\nSTEP 7 — wait 3s for SPA to settle, then re-check");
+    await new Promise(r => setTimeout(r, 3000));
+    console.log("  url after wait:", page.url());
+    const html2 = await page.content();
+    const htmlMatch2 = /(ChIJ[\w\-_]{20,})/.exec(html2);
+    console.log("  ChIJ in HTML:   ", htmlMatch2 ? htmlMatch2[1] : "NONE");
+    const chijCount2 = (html2.match(/ChIJ[\w\-_]{20,}/g) || []).length;
+    console.log("  ChIJ total hits:", chijCount2);
+
     await browser.close();
 })().catch((e) => { console.error("ERR:", e); process.exit(1); });
