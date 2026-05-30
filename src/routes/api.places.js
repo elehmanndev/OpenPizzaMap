@@ -255,19 +255,34 @@ router.get("/search", async (req, res) => {
     // matches above mid-string matches before slicing.
     const slack = limit * 3;
 
-    const [cities, spots] = await Promise.all([
+    // City matches come from BOTH the City table (which gives us
+    // slug + countryCode for a clean landing-page link) AND a groupBy
+    // on Place.city (the denormalized string column, which catches
+    // cities whose City row is marked isVisible=false but still has
+    // visible places — e.g. Reus, Tarragona, Sabadell). The groupBy
+    // is the source of truth for "how many visible pizzerias are
+    // actually there"; the City row, if it exists, is the link.
+    const [cityTableRows, placeCityGroups, spots] = await Promise.all([
         prisma.city.findMany({
-            where: {
-                isVisible: true,
-                name: { contains: raw },
-            },
+            where: { name: { contains: raw } },
             select: {
                 name: true,
                 slug: true,
                 countryCode: true,
-                _count: { select: { places: { where: { isVisible: true } } } },
+                isVisible: true,
             },
-            take: slack,
+            take: slack * 2,
+        }),
+        prisma.place.groupBy({
+            by: ["city"],
+            where: {
+                status: "active",
+                isVisible: true,
+                city: { contains: raw },
+            },
+            _count: { _all: true },
+            orderBy: { _count: { city: "desc" } },
+            take: slack * 2,
         }),
         prisma.place.findMany({
             where: {
@@ -287,19 +302,34 @@ router.get("/search", async (req, res) => {
         }),
     ]);
 
-    // Rank: prefix-match first, then alpha. Keep only rows with at least
-    // one visible place for the cities side so we don't surface empties.
+    // Build a lookup from city-name → first matching City row (prefer
+    // visible ones, but fall back to invisible so we still get a slug).
+    const cityByName = new Map();
+    for (const c of cityTableRows) {
+        const key = (c.name || "").toLowerCase();
+        const existing = cityByName.get(key);
+        if (!existing || (!existing.isVisible && c.isVisible)) {
+            cityByName.set(key, c);
+        }
+    }
+
+    // One suggestion per city name (from groupBy = real visible counts).
+    // If we know the City row, link to the landing page; otherwise fall
+    // back to a /map?query=<city> so clicks always go somewhere useful.
     const lc = raw.toLowerCase();
     const startsWith = (s) => (s || "").toLowerCase().startsWith(lc);
-    const cityRows = cities
-        .filter((c) => c._count.places > 0)
-        .map((c) => ({
-            city: c.name,
-            slug: c.slug,
-            country: c.countryCode,
-            count: c._count.places,
-            _prefix: startsWith(c.name) ? 0 : 1,
-        }))
+    const cityRows = placeCityGroups
+        .filter((g) => g.city && g._count._all > 0)
+        .map((g) => {
+            const row = cityByName.get(g.city.toLowerCase());
+            return {
+                city: g.city,
+                slug: row?.slug || null,
+                country: row?.countryCode || null,
+                count: g._count._all,
+                _prefix: startsWith(g.city) ? 0 : 1,
+            };
+        })
         .sort((a, b) => a._prefix - b._prefix || b.count - a.count)
         .slice(0, limit)
         .map(({ _prefix, ...row }) => row);

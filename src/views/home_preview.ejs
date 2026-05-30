@@ -500,7 +500,11 @@
         empty.hidden = true;
         if (cities.length) {
           citiesUl.innerHTML = cities.map(function (c) {
-            var href = '/country/' + encodeURIComponent((c.country || '').toLowerCase()) + '/city/' + encodeURIComponent(c.slug || '');
+            // Prefer the landing page; fall back to filtered /map for
+            // cities that don't have a published City row yet.
+            var href = (c.slug && c.country)
+              ? '/country/' + encodeURIComponent(c.country.toLowerCase()) + '/city/' + encodeURIComponent(c.slug)
+              : '/map?query=' + encodeURIComponent(c.city);
             return '<li><a class="opm-hero-suggest-item" href="' + href + '">'
               + '<span class="opm-hero-suggest-thumb" aria-hidden="true">'
               + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>'
