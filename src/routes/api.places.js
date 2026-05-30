@@ -232,6 +232,95 @@ router.get("/markers", async (req, res) => {
     res.json({ ok: true, places: enriched });
 });
 
+// GET /api/places/search?q=...&limit=8 — lightweight autocomplete used by
+// the homepage hero search. Two buckets: matching cities (with place
+// counts so we can rank dense cities first) and matching spots. Returns
+// only the fields the suggest dropdown needs — small enough to cache at
+// the edge and hammer on every keystroke.
+//
+// Why a dedicated endpoint instead of reusing /markers: /markers is ~1MB
+// and is the wrong shape for prefix search. This one is server-side
+// filtered, capped per side, and case-insensitive.
+router.get("/search", async (req, res) => {
+    applyCacheHeaders(req, res);
+
+    const raw = String(req.query.q || "").trim();
+    const limit = Math.max(1, Math.min(20, Number(req.query.limit) || 8));
+
+    if (raw.length < 2) {
+        return res.json({ ok: true, cities: [], spots: [] });
+    }
+
+    // Pull a slightly wider net than `limit` so we can re-rank prefix
+    // matches above mid-string matches before slicing.
+    const slack = limit * 3;
+
+    const [cities, spots] = await Promise.all([
+        prisma.city.findMany({
+            where: {
+                isVisible: true,
+                name: { contains: raw },
+            },
+            select: {
+                name: true,
+                slug: true,
+                countryCode: true,
+                _count: { select: { places: { where: { isVisible: true } } } },
+            },
+            take: slack,
+        }),
+        prisma.place.findMany({
+            where: {
+                status: "active",
+                isVisible: true,
+                name: { contains: raw },
+            },
+            select: {
+                id: true,
+                name: true,
+                slug: true,
+                city: true,
+                country: true,
+                heroImageUrl: true,
+            },
+            take: slack,
+        }),
+    ]);
+
+    // Rank: prefix-match first, then alpha. Keep only rows with at least
+    // one visible place for the cities side so we don't surface empties.
+    const lc = raw.toLowerCase();
+    const startsWith = (s) => (s || "").toLowerCase().startsWith(lc);
+    const cityRows = cities
+        .filter((c) => c._count.places > 0)
+        .map((c) => ({
+            city: c.name,
+            slug: c.slug,
+            country: c.countryCode,
+            count: c._count.places,
+            _prefix: startsWith(c.name) ? 0 : 1,
+        }))
+        .sort((a, b) => a._prefix - b._prefix || b.count - a.count)
+        .slice(0, limit)
+        .map(({ _prefix, ...row }) => row);
+
+    const spotRows = spots
+        .map((p) => ({
+            id: p.id,
+            name: p.name,
+            slug: p.slug,
+            city: p.city,
+            country: p.country,
+            heroImageUrl: p.heroImageUrl,
+            _prefix: startsWith(p.name) ? 0 : 1,
+        }))
+        .sort((a, b) => a._prefix - b._prefix || a.name.localeCompare(b.name))
+        .slice(0, limit)
+        .map(({ _prefix, ...row }) => row);
+
+    res.json({ ok: true, cities: cityRows, spots: spotRows });
+});
+
 // GET /api/places/favorites — places the current user has hearted (for /favourites page)
 router.get("/favorites", requireApiAuth, async (req, res) => {
     const userId = req.session.user.id;

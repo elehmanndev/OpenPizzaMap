@@ -4818,6 +4818,108 @@ body.opm-home {
   cursor: pointer;
 }
 .opm-hero-search button:hover { background: var(--c-accent-strong); }
+
+/* Hero search autocomplete — same shape as .map-search-suggest, scoped
+   here so the homepage isn't dragging the full map.js along. */
+.opm-hero-search-wrap {
+  position: relative;
+}
+.opm-hero-suggest {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid var(--c-border);
+  border-radius: 16px;
+  box-shadow: 0 14px 40px rgba(30, 30, 30, 0.14);
+  padding: 6px;
+  z-index: 30;
+  max-height: 420px;
+  overflow-y: auto;
+}
+.opm-hero-suggest-section + .opm-hero-suggest-section {
+  border-top: 1px solid var(--c-border);
+  margin-top: 4px;
+  padding-top: 4px;
+}
+.opm-hero-suggest-title {
+  margin: 6px 12px 4px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--c-muted);
+}
+.opm-hero-suggest-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.opm-hero-suggest-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--c-text);
+  font-size: 14px;
+}
+.opm-hero-suggest-item:hover { background: var(--c-bg); }
+.opm-hero-suggest-thumb {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--c-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--c-accent);
+  font-size: 18px;
+  overflow: hidden;
+}
+img.opm-hero-suggest-thumb,
+.opm-hero-suggest-thumb--img {
+  object-fit: cover;
+}
+.opm-hero-suggest-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.opm-hero-suggest-name {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.opm-hero-suggest-meta {
+  font-size: 12px;
+  color: var(--c-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.opm-hero-suggest-count {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-muted);
+  background: var(--c-bg);
+  padding: 2px 8px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.opm-hero-suggest-empty {
+  padding: 14px 12px;
+  color: var(--c-muted);
+  font-size: 14px;
+  text-align: center;
+}
+
 .opm-hero-maplink {
   display: inline-block;
   margin-top: 14px;

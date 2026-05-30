@@ -125,13 +125,26 @@
           Explore community-curated pizzerias worldwide and discover
           amazing pizza through reviews from real pizza lovers.
         </p>
-        <form action="/map" method="get" class="opm-hero-search">
-          <span class="opm-hero-search-icon" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-          </span>
-          <input type="text" name="query" placeholder="Search a city or pizzeria" autocomplete="off" />
-          <button type="submit">Search</button>
-        </form>
+        <div class="opm-hero-search-wrap">
+          <form action="/map" method="get" class="opm-hero-search" id="heroSearchForm" autocomplete="off">
+            <span class="opm-hero-search-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            </span>
+            <input type="text" name="query" id="heroSearchInput" placeholder="Search a city or pizzeria" autocomplete="off" aria-label="Search a city or pizzeria" />
+            <button type="submit">Search</button>
+          </form>
+          <div class="opm-hero-suggest" id="heroSuggest" hidden>
+            <section class="opm-hero-suggest-section" data-section="cities" hidden>
+              <h4 class="opm-hero-suggest-title">Cities</h4>
+              <ul class="opm-hero-suggest-list" data-list="cities"></ul>
+            </section>
+            <section class="opm-hero-suggest-section" data-section="spots" hidden>
+              <h4 class="opm-hero-suggest-title">Pizzerias</h4>
+              <ul class="opm-hero-suggest-list" data-list="spots"></ul>
+            </section>
+            <div class="opm-hero-suggest-empty" hidden>No matches.</div>
+          </div>
+        </div>
         <a href="/map" class="opm-hero-maplink">Or open the full map &rarr;</a>
       </div>
       <div class="opm-hero-collage" aria-hidden="true">
@@ -442,6 +455,105 @@
         } finally {
           btn.disabled = false;
         }
+      });
+    })();
+
+    // Hero search — autocomplete via /api/places/search.
+    // Cities click → /country/XX/city/slug (landing page).
+    // Spots click  → /place/:id/:slug (profile).
+    // Enter without picking → /map?query=X (current behavior, form action).
+    (function () {
+      var form = document.getElementById('heroSearchForm');
+      var input = document.getElementById('heroSearchInput');
+      var box = document.getElementById('heroSuggest');
+      if (!form || !input || !box) return;
+      var citiesSec = box.querySelector('[data-section="cities"]');
+      var spotsSec = box.querySelector('[data-section="spots"]');
+      var citiesUl = box.querySelector('[data-list="cities"]');
+      var spotsUl = box.querySelector('[data-list="spots"]');
+      var empty = box.querySelector('.opm-hero-suggest-empty');
+
+      var escHTML = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]; }); };
+      var debounce = function (fn, ms) { var t; return function () { var a = arguments; clearTimeout(t); t = setTimeout(function () { fn.apply(null, a); }, ms); }; };
+
+      var lastReqId = 0;
+      var fetchSuggest = function (q) {
+        var id = ++lastReqId;
+        fetch('/api/places/search?q=' + encodeURIComponent(q) + '&limit=6', { credentials: 'same-origin' })
+          .then(function (r) { return r.ok ? r.json() : { ok: false }; })
+          .then(function (data) {
+            if (id !== lastReqId) return; // stale response
+            if (!data || !data.ok) return render([], []);
+            render(data.cities || [], data.spots || []);
+          })
+          .catch(function () { if (id === lastReqId) render([], []); });
+      };
+
+      var render = function (cities, spots) {
+        if (!cities.length && !spots.length) {
+          citiesSec.hidden = true;
+          spotsSec.hidden = true;
+          empty.hidden = false;
+          box.hidden = false;
+          return;
+        }
+        empty.hidden = true;
+        if (cities.length) {
+          citiesUl.innerHTML = cities.map(function (c) {
+            var href = '/country/' + encodeURIComponent((c.country || '').toLowerCase()) + '/city/' + encodeURIComponent(c.slug || '');
+            return '<li><a class="opm-hero-suggest-item" href="' + href + '">'
+              + '<span class="opm-hero-suggest-thumb" aria-hidden="true">'
+              + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>'
+              + '</span>'
+              + '<span class="opm-hero-suggest-text">'
+              + '<span class="opm-hero-suggest-name">' + escHTML(c.city) + '</span>'
+              + '<span class="opm-hero-suggest-meta">' + escHTML(c.country || '') + '</span>'
+              + '</span>'
+              + '<span class="opm-hero-suggest-count">' + escHTML(String(c.count)) + '</span>'
+              + '</a></li>';
+          }).join('');
+          citiesSec.hidden = false;
+        } else {
+          citiesSec.hidden = true;
+        }
+        if (spots.length) {
+          spotsUl.innerHTML = spots.map(function (p) {
+            var href = '/place/' + encodeURIComponent(p.id) + (p.slug ? '/' + encodeURIComponent(p.slug) : '');
+            var meta = [p.city, p.country].filter(Boolean).join(', ');
+            var thumb = p.heroImageUrl
+              ? '<img class="opm-hero-suggest-thumb opm-hero-suggest-thumb--img" src="' + escHTML(p.heroImageUrl) + '" alt="" loading="lazy" onerror="this.outerHTML=\'<span class=&quot;opm-hero-suggest-thumb opm-hero-suggest-thumb--fb&quot;>🍕</span>\'" />'
+              : '<span class="opm-hero-suggest-thumb opm-hero-suggest-thumb--fb" aria-hidden="true">🍕</span>';
+            return '<li><a class="opm-hero-suggest-item" href="' + href + '">'
+              + thumb
+              + '<span class="opm-hero-suggest-text">'
+              + '<span class="opm-hero-suggest-name">' + escHTML(p.name) + '</span>'
+              + '<span class="opm-hero-suggest-meta">' + escHTML(meta) + '</span>'
+              + '</span>'
+              + '</a></li>';
+          }).join('');
+          spotsSec.hidden = false;
+        } else {
+          spotsSec.hidden = true;
+        }
+        box.hidden = false;
+      };
+
+      var hide = function () { box.hidden = true; };
+      var onInput = debounce(function () {
+        var q = input.value.trim();
+        if (q.length < 2) { hide(); return; }
+        fetchSuggest(q);
+      }, 140);
+
+      input.addEventListener('input', onInput);
+      input.addEventListener('focus', function () { if (input.value.trim().length >= 2) onInput(); });
+      // Hide on outside click. Use mousedown so a click on a suggestion
+      // (which fires focus → blur → click) still navigates before hide.
+      document.addEventListener('mousedown', function (ev) {
+        if (!box.contains(ev.target) && ev.target !== input) hide();
+      });
+      input.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Escape') { hide(); input.blur(); }
       });
     })();
   </script>
