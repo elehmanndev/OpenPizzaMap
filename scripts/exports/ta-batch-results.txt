@@ -1,0 +1,204 @@
+# TA batch lookup results — started 2026-05-30
+# Format: <placeId>,<locationId>,<placeName>
+# Misses: # MISS: <placeId> "<placeName>" — <reason>
+
+# MISS: 1870 "Vezzo Plaza Norte 2" — TA listing for Vezzo Madrid is different location
+# MISS: 819 "Verde" — no Restaurant_Review match Incheon
+# MISS: 887 "PIZZAIOLO" — no Puebla Mexico match
+259,2555422,Alba
+# MISS: 849 "Si Nonna's Phoenix MOM Wakad" — no Wakad TA listing
+2279,2477685,Bedussi
+562,12929970,Forno 500
+458,10628822,Pizzeria Oggi MinQuan
+1413,2151170,Enosteria Lipen
+2618,2299194,Pulcinella
+900,20854308,Meno Male
+# MISS: 850 "Si Nonna's NIBM" — no Pune NIBM TA listing
+# MISS: 844 "Si Nonna's Fun republic" — TA only has generic Mumbai listing, location uncertain
+1818,1091722,La Notizia 53
+# MISS: 847 "Si Nonna's Inorbit Vashi" — TA only has generic Mumbai listing
+1674,10446726,Carlo Sammarco Pizzeria 2.0
+608,13564651,Mattarello
+855,32732106,Si Nonna's – DLF AVENUE SAKET
+1391,10519727,BOB Alchimia a Spicchi
+66,4153190,Settimo Cielo
+476,6903329,Peppina
+712,23649596,Miedziany Piec- Pizza Napoletana
+2511,2006113,Berberè
+410,6155760,Leggera Pizza Napoletana
+1995,2248167,Don Franchino
+92,12342959,Bricktop Pizza
+2044,8665153,Karma
+1781,23041865,Le Otto
+843,26132643,Si Nonna's Kamala Mills
+519,2411279,La Terrazza
+404,10274661,480° Gradi
+# MISS: 1590 "L'Antica Pizzeria da Michele" Singapore — no SG listing on TA
+2769,2211786,Araldo Arte del Gusto
+1729,23945238,Bobby
+1570,2289681,Etna
+# MISS: 848 "Si Nonna's Kurla Maket City" — TA only has generic Mumbai listing
+337,1640954,Gusto & Gusto
+646,12030151,Pizzeria 1926
+483,7312669,Verace Pizzeria
+2208,13325820,I Quintili
+557,4010979,Il Castello di Frabo
+1462,7989653,Lievito 72
+1820,1082582,Pizzeria Primavera
+# MISS: 851 "Si Nonna's Piplod IBC" — no Surat listing on TA
+1789,21042661,Punta
+916,3327081,La locanda Comptoir Italien
+674,23428405,Papà Fredo
+2199,3786308,Da Lello
+1389,2046078,La Cascina dei Sapori
+1456,2468791,Pizzeria Mamma Rosa
+2731,1128431,Vesuvio
+# MISS: 860 "Si Nonna's Aundh" — TA only has generic Mumbai listing
+1386,3924681,Ristorante Cavallino
+71,1553940,i Tigli
+2695,5987183,Fratelli Mascolo dal 1995
+2356,12537341,Berberè
+735,13414467,Otto e Mezzo Pizza Verace
+194,914281,Louie & Ernie's Pizza
+742,6155760,Leggera Pizzeria Napoletana Jardins
+950,22974646,Pizza Culture Napoletana
+2412,15594612,Basilico
+764,28035589,Basta Gourmet Bar
+2717,9853245,357 Pizza & Food
+1668,13516787,Battil'oro
+# MISS: 956 "Trustage Market By Eurest Dining" — not a public restaurant, no TA listing
+594,12849828,Re Carlo
+1665,10264371,Officine del Cibo
+2752,10361351,La Corte del Pettolino
+57,12252133,Briks
+2663,1966029,Locanda Cervino
+1757,9809647,Al Legna
+260,2210927,Cafasso
+# MISS: 802 "Piccolo Pizzaiolo" Warszawa — no TA listing for Piccolo specifically
+551,8362087,Bananas
+1706,27095508,Sette
+1218,8805258,Theo's
+2451,7256508,Il Corso
+2100,6518518,La Romana
+899,13576716,Mozzatura
+1597,10480949,Bottega Dani
+1811,23924934,PEPPO's
+591,15008398,Basil & Barley
+1470,2639236,Il Vecchio Gazebo
+2420,6849566,Marzitelli
+1212,3850072,Il Tronco
+2154,28145910,Tì&Mì
+1390,24106720,Clementina
+433,7993444,Pasta Madre
+791,28666047,LA GIOIA
+1077,25156690,Michigan & Trumbull
+1906,34076891,Dolce Positano
+465,3662873,A Pummarulella
+1392,2725656,Apogeo
+1726,27881183,Vicoli di Napoli
+# MISS: 863 "Si Nonna's Niyati Kharadi" — no TA listing for Pune Kharadi branch
+685,751525,La Trattoria de Tarifa
+1521,2072582,Piano B
+1226,19137488,Pizzeria Enzo
+2677,6940331,DaZero Pizza e Territorio
+1907,23874096,Pizzería Al natural y ecológica
+# MISS: 857 "Si Nonna's Solitaire Balewadi" — no Pune Balewadi TA listing
+1784,18218754,Mecànic Pizza
+# MISS: 2478 "18.97 del Grand Hotel Alassio" — no standalone restaurant TA listing
+368,4892160,Castellano - Le Pizze di Luca
+1206,2214966,Lo Spela – Naturalmente Pizza
+1916,23348368,KRONOS CHINCHÓN
+1073,17667335,Shield's Pizza
+1204,27671800,Fortunate Son
+# MISS: 1210 "Terra Mia" Bari — TA listings are in Terlizzi/other cities, no Bari match
+2371,1812930,Orsucci dal 1922
+2092,10489769,Grains
+2153,20981490,Era Ora Ortigia
+1722,10596578,Dough & Brew
+754,13372976,Unica Pizzeria
+2287,28146085,Bani's
+2653,2286827,Pizza 120
+1905,3474333,Pizzeria Siciliana Kuró
+2231,15529839,30 11 Donatelli
+2251,7282801,Verace
+87,14193417,Tipozerø
+2303,13810205,Degusto
+65,10454897,Pizza Punto e a Capo
+1457,3546606,Bas & Co
+561,11852973,Sciantusi
+373,1925938,Piatto Pizzeria + Enoteca (Saint John's Downtown)
+2697,24153630,Dal Fornaro del Castello
+2175,7149474,Capriccio
+2657,4003831,Santa Caterina
+1936,20226623,Pizzeria La Dolce Vita
+598,10742933,Pizzeria Trattoria Civico 29
+2227,33060299,Mascari Pizza d'Autore
+# MISS: 1435 "CUORE Luca Brancati" — TA listing not found for Marano Vicentino
+1868,4139402,A casa do Gato
+386,4760222,Pizzeria CA PO LI
+1802,9715211,Pizzeria Verace
+296,743683,Bella Napoli
+342,2172597,Osteria Drago Verde
+425,6652816,Il Lazzarone
+# MISS: 2734 "Ristorante Acquamarina" Scicli — no Scicli TA listing, others in different cities
+938,27918210,Pupatella Springfield
+2548,7060907,Polichetti Esperienze di Pizza
+# MISS: 862 "Si Nonna's R City Mall" Mumbai — TA only has generic Mumbai listing
+2121,3775434,La Pizzeria Maxim
+# MISS: 2565 "DoppioZero" Cisternino — no Cisternino TA listing
+2450,11962387,Lidò
+505,12332267,Antica Pizzeria Napoletana
+1054,20155215,Nancy's Pizzeria
+1268,2067699,Pizzeria Bella Napoli
+# MISS: 2098 "Pizzeria Catello" Vigardolo — no Vigardolo TA listing
+1671,6720648,Luigi Cippitelli Pizzeria
+1455,6720648,Pizzeria Luigi Cippitelli
+895,10482547,No 900 Maguire
+542,10454548,Angelina's
+709,13565707,Nola- Neapolitanische Pizza+Weinbar
+2680,28654492,La Vita è Bella
+1714,27036938,Da Pietro
+2512,33966443,Luca! – Pizza e Fritti
+987,29019126,Pizzeria del Popolo
+696,19267941,O' Sole 'E Napule
+343,1699670,Amici
+2370,2177404,Enosteria Mangia
+816,33059932,Donna Sofia
+1779,33261434,Gina Balmesina Pizza Bar
+2197,2664159,Giorgio & Chiara
+1898,27216382,La Pizana
+# MISS: 90 "La Rustika" Lecce — no Lecce TA listing
+1238,1689107,La Piccola Tavola
+2171,13976411,AcquaSale
+# MISS: 1363 "La Pizza – Romualdo Rizzuti" Florence — Le Follie closed, no standalone TA page
+2510,10506501,Hibiscus
+2602,3484533,La Rusticana
+# MISS: 1431 "Glamour Antonello Scatorchia" — no direct TA d-page found via search
+1432,8558138,Vadolì
+2570,25407348,A Varcuzza
+904,20234964,Noto
+# MISS: 949 "No 900 Verdun" — no Verdun-specific TA listing
+2475,15676388,Balik
+# MISS: 1296 "Pizzeria Ohsaki" Toda — no Toda TA listing (Kawaguchi branch only)
+753,26609699,Casa Baco
+1788,26550443,Pizzeria Rifugio
+2211,28049575,Cice Pizzeria Contemporanea
+930,24197872,Lievitamente
+152,31326584,Sua Maestà La Pizzeria & La Filetteria
+334,1104575,L'Europeo di Mattozzi
+161,28207344,Pizzeria Errico Porzio (Milano)
+273,1534983,Papè Satan
+2070,27253512,1000 Pizza and Diner
+898,19830470,Vallino Pizzeria Napoletana
+552,3785715,La Ruota
+567,8124236,O' Re Rà Pizza
+2183,4092799,Oasi
+1853,27761017,Farina 23
+2132,12322440,Capperi…che Pizza!
+292,400875,Il Pizzaiolo
+549,2184191,Antica Cantina Forentum
+2742,3249445,Pompei
+792,32811622,LIEVITATO la pizza di Vuolo
+2404,27707215,Carlo Fiamma
+590,10025863,Crust (Pizzeria e Pasta)
+1502,26561810,ZANO
