@@ -1,0 +1,205 @@
+# TA batch lookup results — Agent B (positions 201-400)
+# Started 2026-05-30
+# Format: <placeId>,<locationId>,<placeName>
+# Misses: # MISS: <placeId> "<placeName>" — <reason>
+
+379,7251449,Tribeca
+833,32964120,Oro di Napoli
+141,28318650,Da Carmè
+2445,32900296,Fermento
+1434,25413311,Sileo
+2569,27408959,Il Bacaro della Pizza
+1806,32745574,MIO MIO
+1777,31651337,Don Vesevius
+# MISS: 491 "Pizzeria Da Maki" — not on TA (Tabelog only)
+666,9975740,La Saint Honoré
+825,23768814,GIO PIZZERIA NAPOLETANA
+# MISS: 1246 "La Pala" — not on TA (Tabelog only)
+652,17748595,Napoli Corner
+2438,12448329,L’ Arte del pane
+310,3952054,Al Borgo
+1751,25268099,Pizza Popolare
+# MISS: 364 "Pizzeria l'Ape" — not on TA (Tabelog only)
+# MISS: 741 "Vecchio Napoletana" — not on TA (Brazil)
+# MISS: 839 "Il Ritrovo - Iwade" — not on TA (Iwade)
+490,9660861,Il Ritrovo
+2766,24869548,Twenties
+85,27747836,Sintesi
+2462,27962577,tRe in Pomposa
+1396,19261482,Pizzeria Le Parùle
+1109,34099550,Francesco Martucci
+# MISS: 2632 "Pantera – Pizza Rustica" — not on TA (Milan)
+2489,6350684,È bona furia
+# MISS: 1591 "Majka" — not on TA
+2795,28059440,Björn Pizzería
+377,8055326,Pizzeria e Osteria PADRINO
+525,10299654,Cal's Own
+# MISS: 1121 "Lombardo’s Pizzeria" — not on TA
+# MISS: 1115 "Fratesi’s Pizza" — not on TA
+# MISS: 1912 "El Rubio Pizzeria" — not on TA
+620,14735870,Felix
+# MISS: 944 "Sfizieria Sorrento" — not on TA (only Pizzeria Sorrento)
+2266,2634795,Bellavista
+1034,25181465,Professor Pizza
+2046,27928339,Daniele Baglieri – L’evoluzione della pizza
+2442,10844596,Da Egidio 1970 – Pizza Rustica
+823,33274113,Pizza Beppe 4
+# MISS: 1308 "Pizzeria Davvero" — not on TA (Tabelog only)
+2131,27965964,Il Maratoneta
+1801,12657521,Pizzeria Ciro (Ciro Trattoria Gourmet)
+2265,21380480,Fuoco
+2638,24154618,Luppolo e Grano
+2719,27868316,Pizza e Core
+# MISS: 1304 "Pizzeria Ohsaki Musashiurawa" — not on TA (Tabelog only)
+2218,28128657,Lisola Restaurant
+# MISS: 1126 "Vincenzo’s Pizza" — not on TA (Portland OR)
+# MISS: 2532 "Pizzeria Fantasy" — TA listing is Breda di Piave not San Donà
+# MISS: 750 "OCTO Pasta Pizza" — no individual TA listing (inside Food Hall Browary)
+# MISS: 888 "Albert NO.485" — not on TA (Varberg)
+329,7661458,Trattoria Pizzeria Appetito
+2130,27699977,Moderna
+2041,23747158,Cotto & Mangiato da zii Fausto
+# MISS: 2540 "Pizzeria e Friggitoria del Popolo" — name ambiguous on TA, multiple del Popolos
+# MISS: 1176 "Alpha & Omega Farm" — not on TA (Princeton MN pizza farm)
+# MISS: 2515 "Oltre Pizza Contemporanea" — not on TA (new pizzeria, opened 2025)
+2398,33266596,Pizzetta
+2318,27507283,Ultra
+2013,27344742,Flames
+# MISS: 1307 "Pizzeria Zina Chicco" — not on TA (Tabelog only)
+# MISS: 716 "Nodo" — not on TA (Saikai/Tabelog only)
+829,27795720,Amalfitana Pizza & Spritz
+# MISS: 1935 "Oplontina PizzaBar" — not on TA (Reus)
+2686,27873830,Quattro Braccia
+# MISS: 1863 "DaVinci 19" — TA listing is Tapería Da Vinci, different concept name
+2401,4302095,Pizzeria Centrale
+874,33401439,Tom1i Pizza
+89,32695792,Loop Pizza Croccante
+# MISS: 2351 "La Piazzetta" — Samassi listing has 0 reviews and no TA URL found
+720,25101060,La Ginestra
+1108,33133094,Bar Bucce
+223,4291042,Tano's Pizzeria
+# MISS: 1306 "Pizzeria e Trattoria Elianto" — not on TA (Tabelog only)
+1430,19849497,Claudio Alvicolo
+# MISS: 577 "Napoli" — not on TA (Hamamatsu/Tabelog only)
+# MISS: 580 "Pizzeria 21" — not on TA (Shunan/Yamaguchi)
+83,26327868,Frankino’s
+# MISS: 2375 "Pizzeria Russotto" — not found on TA Rome
+# MISS: 1305 "Pizzeria Il Ceppo" — not on TA (Ishii Tokushima/Tabelog only)
+# MISS: 882 "Pizzeria Le Fétou" — not on TA (Aubagne)
+# MISS: 737 "Neapolitan pizza truck" — not on TA (Woodstock food truck)
+971,24135215,Paradiso
+2386,33056891,12 Pollici
+485,23724184,SpaccaNapoli
+45,32708717,Cipriano Pizzeria
+423,32811875,Pizzeria Onda
+77,32882121,Frizzi Pizza
+# MISS: 1033 "Pizza Matta" — not on TA (Chicago, Yelp/Infatuation only)
+86,34003972,Brando Pizza Bistrot
+2733,27750224,Capaldo Forno Contemporaneo
+2122,19689798,Pizzeria Lievito Concalma (Lievito la Pizzetteria)
+# MISS: 891 "400 Laipsniu" — TA listings only for Kaunas branches, not Vilnius
+2763,27940372,Sgranocchia Pizzeria
+619,1400143,Amici
+2620,25192937,Trancio – pizza in teglia
+2332,27716598,Mirko Cicco – Il Golosone
+# MISS: 1439 "Lombardi Pizzeria" — TA listing is Lombardi Pasticcieri, different concept
+1885,27203151,Pizzería Mayor Villacañas
+# MISS: 2152 "Forno Del Mastro" — no individual TA restaurant page
+# MISS: 1892 "Berrinche" — not on TA (Utrera)
+2587,21174549,#Prefermento
+1990,32868685,Cicci Pizzeria
+# MISS: 2423 "Le Due Matote" — Bossolasco TA is the B&B/Relais, not the restaurant
+# MISS: 2755 "Inverso Progetto Pizza" — not on TA (Rome)
+2538,27491028,Gesti Restaurant
+# MISS: 2313 "Elio" — not on TA (Terni)
+293,7039489,Pizzeria Del Corso
+# MISS: 699 "Tarumbò" — Cardito branch not on TA (other branches listed)
+# MISS: 1871 "PIZZERIA YAMONA" — not on TA (Castejon)
+# MISS: 1917 "La Teglia" — not on TA (Mairena del Aljarafe)
+2289,32838196,Pizzeria Élite Pasqualino Rossi
+752,26609699,Casa Baco- Mané
+1594,9735329,AL FORNO
+2315,25384215,San Biagio – Pizza & Bolle
+# MISS: 1216 "Fresco (Mercato Metropolitano)" — no individual TA listing (inside food market)
+1236,1049417,Pizzeria Capri (Restaurante Capri)
+1923,27886357,Gula
+2666,26495642,La Villa – Pizza in Teglia
+# MISS: 1924 "Toxo Pizzería" — not on TA (Las Torres de Cotillas)
+2257,27995543,Agrumi – Pizza Sushi Drink
+2791,25182710,AmaRAnto
+# MISS: 1316 "O Sarracino" — not on TA (Saku/Tabelog only)
+# MISS: 361 "Da Roberto a Bagnoli" — not found on TA Naples
+2334,27823226,Teglia – La Pizza al Taglio
+529,9669603,Pizzeria Lucci
+2793,32969846,Camilla Pizza
+# MISS: 2430 "Le Parùle" — duplicate of placeId 1396 (same Ercolano restaurant, TA d19261482)
+2180,27537810,Kore
+# MISS: 1137 "Prettyboy Pizza" — not on TA (Portland OR)
+# MISS: 2032 "Ti prendo a pizze" — not on TA (Termoli)
+2105,27958456,Cannaruto – Pizza & Fritti Artigianali
+# MISS: 1124 "Cutie Pie Pizzeria" — not on TA (Portland OR)
+# MISS: 2117 "Pizzeria Agricola Panella" — not on TA (TheFork only)
+769,26225697,Bottega
+2290,26503525,Lievin / Ian Spampatti
+# MISS: 841 "Pizzeria Lo Zucchero" — not on TA (Kitajima/Tabelog only)
+# MISS: 2177 "Hippo" — not on TA (Isernia)
+# MISS: 842 "Pocofino" — not on TA (San Juan Manila)
+# MISS: 1311 "Pizzeria Attività" — not on TA (Toyonaka)
+424,7060236,Doppio
+# MISS: 2037 "Al Muretto" — not on TA (Potenza)
+2380,33324902,Casa Tramontano
+503,26341614,Assai- Pizza & Amore
+# MISS: 1926 "Garden Gastrobar" — not on TA (Pola de Laviana)
+# MISS: 445 "Nonna Giovanna" — not on TA (San Donà di Piave)
+1249,28145910,T & M Pizzeria
+# MISS: 743 "JaJa Napoli" — not on TA (Ängelholm)
+# MISS: 1030 "WG Pizzas" — not on TA (Chicago)
+# MISS: 2361 "il Pizzificio" — not on TA (Campobasso)
+968,27723108,Via Caravaggio 147
+1239,8328539,La Masseria
+# MISS: 1790 "Rústica Napoletana" — not on TA (Cazalla de la Sierra)
+# MISS: 1925 "Trozzo Guijuelo" — not on TA
+# MISS: 1244 "Pizzeria Italia" — not on TA (Lauterach)
+# MISS: 2010 "S&M Spiedo & Margherita" — not on TA (Rome)
+# MISS: 1577 "MUBE" — not on TA (Kyoto)
+# MISS: 2549 "Pizzeria Da Simone" — not on TA (Colleferro)
+# MISS: 2228 "Inferno Pizza Bar" — Rome TA listing Pizza Inferno is different concept
+# MISS: 456 "Stella Italian Bistro" — not on TA (Chiayi)
+# MISS: 283 "La Locanda di Nanni" — not on TA (Quarto)
+# MISS: 1922 "Trozzo Alba de Tormes" — not on TA
+# MISS: 1575 "Korean Restaurant Byeoleeya" — not a pizzeria (Korean, Michelin)
+2498,10289857,Olio & Basilico
+# MISS: 1071 "Village Pizza" — not on TA (Detroit)
+# MISS: 2437 "Mangiapizzette" — not on TA (Rome)
+261,1034510,Marino
+265,8645935,Vittoria
+412,6833868,Pizzeria Dal Segno II (Dalsegno Due)
+508,9767487,Arte Bianca
+634,1925938,Piatto Pizzeria + Enoteca
+669,20182105,Blu Maria
+695,17338483,Ciudad De Pie
+697,1954836,Ci.Ro.
+705,15581206,Beintema's Bakery and Pizzeria
+707,23678653,Gia Mia Pizza Bar
+708,11719016,Da Riccardo
+710,26370253,Michele Arcangelo Pizzeria
+# MISS: 711 "Della Brianza" — not on TA (Campinas)
+713,8527577,Pizza 22 cm
+714,23716856,Sapori di Napoli
+# MISS: 715 "Buganville" — not on TA (Tokyo)
+# MISS: 723 "Pizzeria Con Cuore" — not on TA (Marugame)
+744,20812706,What the Crust
+# MISS: 745 "LOLO Pizzabar" — not on TA (Breda)
+# MISS: 748 "Salsiccia pizzeria napoletana Marki" — Marki branch not on TA (Warsaw branch d19455071 is separate)
+765,14803431,Basta Gourmet Bar
+# MISS: 771 "No.900 Beaches" — not on TA (Toronto Beaches)
+772,27120621,Mamma Mia que Pizza
+773,25496599,Pupatella Capitol Hill
+# MISS: 775 "Bianco Ristorante" — not on TA (Doha)
+779,32917941,Pizza Beppe 4
+# MISS: 787 "Nola" — not on TA (Tabuk)
+790,28276846,M'arrecreo Pizzeria Gaia
+# MISS: 796 "NEAPOLKA" — not on TA (Warsaw)
+# MISS: 797 "Karizzma Pizza Napoletana" — not on TA (The Woodlands)
+# MISS: 800 "Focolare" — not on TA (Włocławek)
+807,17514146,Pizza Otto

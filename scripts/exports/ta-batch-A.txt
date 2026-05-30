@@ -1,0 +1,156 @@
+# TA batch lookup results — Agent A — started 2026-05-30
+# Format: <placeId>,<locationId>,<placeName>
+# Misses: # MISS: <placeId> "<placeName>" — <reason>
+
+2275,27872605,Pole Pole
+2158,28390180,Soulfood
+2685,17815713,That's Amore
+84,5853668,Quattro Quarti - Pizzeria Con Cucina
+# MISS: 1203 "Pizza Alla Pala at Eataly Dallas" — sub-counter inside Eataly, no own TA d-page
+2269,3582390,Pizza & Pasta
+1151,33074829,Trevor's - Arcadia
+1128,439854,Original Dream Pizza
+396,4554499,Pizzeria Pulcinella
+1388,21175418,Le Grotticelle
+2174,27926837,Santissima Pizza
+2711,13955698,Poppy's
+1444,15210626,Pizzeria Panetteria Bosco
+202,457147,Sal and Carmine Pizza
+1981,27869506,Pizzeria Ristorante Al Terrazzo - Dal 1953
+2585,2363222,Ristorante Pizzeria Rock 1978
+892,3634231,Bel Cibo Pizza Napoletana
+1059,428413,Nino's Pizza
+2247,4788131,Bar pizzeria birreria excelsior
+1695,801603,Buon Appetito
+294,2375120,O' Pezzereniello
+# MISS: 1911 "Mondo Napoli" Alcantarilla — no TA listing despite presence on Google/Restaurant Guru
+2235,2080574,Da Giovanni
+1067,6198216,Five Star Bar
+1865,31721032,Annaré Pizzeria
+1893,28109415,Sapore Di Napoli
+2392,12572322,Era Pizza
+1599,10819554,Pizzarè
+2339,2230503,PizzaArt
+2415,13391825,Gabin Gusto Esclamativo!
+1295,7629749,Pizzeria GG
+1910,28072217,Titos Pizza
+1562,33100513,Sho Pizza Bar
+2237,2446400,Ristorante Val Pomaro
+2428,21140275,Pizzeria Aqua & Farina Sperlonga
+679,17426356,Di Meglio Pizzeria
+1222,13150793,Farina Pizzeria
+1135,27915183,The Turning Peel
+1263,4541431,Verde Ischia
+2369,21235110,Forbici Pizza
+1589,27515956,Soprana Rooftop Cucina
+1866,33674960,La Tarantella Napoletana Mirasol
+2554,6965617,In Granum
+656,32974297,Fratelli Coppola - Cantù Asnago
+# MISS: 2740 "La Madia – Casa Saicaf" Bari — TA listing exists for sibling "Saicaf Il Caffe" but not the La Madia pizzeria specifically
+755,20034381,Basilico
+586,8826533,Pizzeria Pulcinella
+2586,2444616,Bella Napoli
+818,3490883,Ristorante Pizzeria La Lanterna
+1279,1187310,Don Gennaro
+2192,5506850,Pizzeria Levante
+2609,17332133,Spicchi d'Arte
+2440,7235843,Mamma Mia
+# MISS: 1170 "Mario's" Saint Paul — restaurant opened 2022 but no TA listing yet
+1188,25155850,Baldinucci Pizza Romana
+2156,24174719,Meditè Siracusa
+2215,4474496,Maso Limarò
+2432,23747676,73% Settantatrepercento Pizzeria
+990,2694529,Pizzaria Gorgonzola
+2746,14126582,La Lavagna Pizzeria
+2521,17380711,Cuore & Sapore
+# MISS: 2123 "Pizzeria Marina" Fiumicino — TA has Pizzeria Clementina at this address but name doesn't match; possibly renamed/separate venue
+2028,4909505,Agape Restaurant & Pizza
+1478,27201507,La Pizza e Bella Antwerpen
+2399,5012210,Pizzeria San Martin - Da Federico
+# MISS: 2536 "Il Pascià" Apollosa — TA listing exists in Benevento city not Apollosa hamlet; mismatch risk
+2566,27824915,Slice Of Capanno
+1701,27812809,Bottega Ceccarelli Pizzeria Bar Weine
+# MISS: 1721 "DoppioZero" Finsbury Park London — TA has only ambiguous "ZEROZERO" listing; not confirmed same venue
+1062,11674978,Union Squared
+2683,9607297,La Cucina
+501,5853848,Pizzeria Jolly
+63,28125063,Marco Papa Pizzeria Genova
+564,13959520,Pane E Pizza By North Street Bakery
+153,28673546,Pizzeria Fina Fina - Colli Albani
+# MISS: 1494 "Gasparic" Girona — TA listing is in Can Blanc village, different from Girona city address; not same venue
+2216,21232612,Contè Pizzeria
+1300,12631160,Piano
+# MISS: 331 "Il Sole Rosso" Osaka Chuo — TA does not list this AVPN-certified pizzeria; only "Il Sole" different venue
+# MISS: 1066 "Five Squared Pizza" Chicago — no TripAdvisor listing for the Halsted location
+62,27105035,Il Datterino
+454,6665510,Circa 900 Pizzeria Napoletana
+836,19823848,Pizzeria No. 900
+658,2214799,Prie Neigre
+589,14763071,Pizzeria Dihyang
+2542,13108756,La bottega
+2039,19342742,Pizzeria Basilicò
+1131,26891910,Pizza Kat
+2483,28140837,Pizza Bakery Salvatore La Martina
+# MISS: 803 "Piccolo Pizzaiolo 2.0" Warszawa Gagarina — no direct TA listing for this branch
+# MISS: 1036 "Kim's Uncle Pizza" Westmont IL — no TA listing
+# MISS: 684 "Vesuvio Pizzeria" Valencia Venezuela — no TA listing for Venezuela location
+# MISS: 2239 "LieVita" Monsampolo del Tronto — no TA listing for this town
+2729,7249318,Ristorante L'Arcipelago
+1881,32906604,Pinseria Il Forno
+2614,3773622,Cibò
+2626,17143059,Pizzeria La Villa
+# MISS: 1809 "NAPOLIST" Istanbul Maslak — no TA listing despite being on Yelp/Timeout
+2017,18962597,No Format Pizzeria
+2073,14771856,Kalavri - Anima & Pizza
+939,25407544,Pupatella
+2219,17376794,Cuore Pizzeria
+738,19410869,Pulcinella 01
+2258,26817228,OMG!
+2324,23800085,Brò Cucina Nouveau
+1918,26632406,Pizzeria Crettino
+# MISS: 955 "Adagio" Vresse-sur-Semois — no own TA page; only appears in "near" listings
+1453,2523607,Patrick Ricci - Terra, Grani, Esplorazioni
+2598,24137445,Fermento - Pizza E Bolle
+1233,1157753,La Rosetta
+1291,6869315,Pizzeria Don Enzo
+351,5887478,Sugattiii
+1689,23838578,Pigreco Pizzeria
+1429,23838578,Pigreco Pizzeria
+330,1759605,Pitta 00 Ikspiari
+309,2025842,Pergola
+# MISS: 826 "No 900 Longueuil" — Longueuil-specific TA listing not found; only Saint-Lambert nearby is on TA
+2296,23357547,Campana Pizza In Teglia
+681,23751585,Matteo Trattoria & Pizzeria
+408,5552670,Pizzeria Bella Napoli
+2093,12971277,Al Paradise
+43,27874004,Elementi - Cocktail & Pizza - Mugello
+1117,26970619,Vice City Pizza
+207,3599242,Detroit Style Pizza Co.
+1200,27439767,Thunderbird Pies
+352,1015679,PizzeriaTonino
+890,11880767,Brew Pub Espumeru & Curuxera
+1459,21406539,Foorn
+579,3790185,Italian Dining Maria
+162,26915870,Santa Margherita
+1302,20192368,Campania Pizza Gourmet
+1711,25226020,Pizzeria 450 Gradi
+# MISS: 457 "Panello" Seoul — no TA listing despite AVPN certification
+804,28912846,Frit'zza
+# MISS: 822 "Prova - La vera pizza napoletana" Caracas — no TA listing
+2557,30571574,Acqva E Farina
+399,8780545,Vera Hannam
+2712,27975564,L'ammaccata - Antica Pizza Cilentana
+420,13581968,Da ALI Pizzeria
+1878,27190450,Dentorno La Pizza Nuestra
+1850,28048125,Can Edo
+# MISS: 2720 "Casaconsorti" Rome Boccea — no TA listing for this venue
+630,12158138,Soleado
+1840,33406942,Umore Pizza
+2106,33028912,Le Cinquine - Pizza e Tradizione Cecchini
+893,12534491,Trecento Restaurant
+347,4972447,Pizzeria e Trattoria Cervo
+363,5074360,Dalsegno
+540,15053176,Ristorante dell'Agriturismo Paino
+2312,4779089,Pizzeria Castellano
+# MISS: 1858 "Ristorante Gladiatore" Majadahonda — no TA listing for Majadahonda location
+610,3354907,Trattoria pizzeria Donna Carmela

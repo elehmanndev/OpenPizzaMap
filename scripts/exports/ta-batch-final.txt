@@ -1,0 +1,533 @@
+43,27874004,Elementi - Cocktail & Pizza - Mugello
+45,32708717,Cipriano Pizzeria
+57,12252133,Briks
+62,27105035,Il Datterino
+63,28125063,Marco Papa Pizzeria Genova
+65,10454897,Pizza Punto e a Capo
+66,4153190,Settimo Cielo
+71,1553940,i Tigli
+77,32882121,Frizzi Pizza
+83,26327868,Frankino’s
+84,5853668,Quattro Quarti - Pizzeria Con Cucina
+85,27747836,Sintesi
+86,34003972,Brando Pizza Bistrot
+87,14193417,Tipozerø
+89,32695792,Loop Pizza Croccante
+92,12342959,Bricktop Pizza
+141,28318650,Da Carmè
+152,31326584,Sua Maestà La Pizzeria & La Filetteria
+153,28673546,Pizzeria Fina Fina - Colli Albani
+161,28207344,Pizzeria Errico Porzio (Milano)
+162,26915870,Santa Margherita
+194,914281,Louie & Ernie's Pizza
+202,457147,Sal and Carmine Pizza
+207,3599242,Detroit Style Pizza Co.
+223,4291042,Tano's Pizzeria
+259,2555422,Alba
+260,2210927,Cafasso
+261,1034510,Marino
+265,8645935,Vittoria
+273,1534983,Papè Satan
+280,4740975,Diaz
+292,400875,Il Pizzaiolo
+293,7039489,Pizzeria Del Corso
+294,2375120,O' Pezzereniello
+296,743683,Bella Napoli
+309,2025842,Pergola
+310,3952054,Al Borgo
+329,7661458,Trattoria Pizzeria Appetito
+330,1759605,Pitta 00 Ikspiari
+334,1104575,L'Europeo di Mattozzi
+337,1640954,Gusto & Gusto
+342,2172597,Osteria Drago Verde
+343,1699670,Amici
+351,5887478,Sugattiii
+352,1015679,PizzeriaTonino
+368,4892160,Castellano - Le Pizze di Luca
+373,1925938,Piatto Pizzeria + Enoteca (Saint John's Downtown)
+377,8055326,Pizzeria e Osteria PADRINO
+379,7251449,Tribeca
+386,4760222,Pizzeria CA PO LI
+396,4554499,Pizzeria Pulcinella
+399,8780545,Vera Hannam
+404,10274661,480° Gradi
+408,5552670,Pizzeria Bella Napoli
+410,6155760,Leggera Pizza Napoletana
+412,6833868,Pizzeria Dal Segno II (Dalsegno Due)
+420,13581968,Da ALI Pizzeria
+423,32811875,Pizzeria Onda
+424,7060236,Doppio
+425,6652816,Il Lazzarone
+433,7993444,Pasta Madre
+454,6665510,Circa 900 Pizzeria Napoletana
+458,10628822,Pizzeria Oggi MinQuan
+465,3662873,A Pummarulella
+476,6903329,Peppina
+483,7312669,Verace Pizzeria
+485,23724184,SpaccaNapoli
+490,9660861,Il Ritrovo
+501,5853848,Pizzeria Jolly
+503,26341614,Assai- Pizza & Amore
+505,12332267,Antica Pizzeria Napoletana
+508,9767487,Arte Bianca
+519,2411279,La Terrazza
+525,10299654,Cal's Own
+529,9669603,Pizzeria Lucci
+542,10454548,Angelina's
+549,2184191,Antica Cantina Forentum
+551,8362087,Bananas
+552,3785715,La Ruota
+557,4010979,Il Castello di Frabo
+561,11852973,Sciantusi
+562,12929970,Forno 500
+564,13959520,Pane E Pizza By North Street Bakery
+567,8124236,O' Re Rà Pizza
+579,3790185,Italian Dining Maria
+586,8826533,Pizzeria Pulcinella
+589,14763071,Pizzeria Dihyang
+590,10025863,Crust (Pizzeria e Pasta)
+591,15008398,Basil & Barley
+594,12849828,Re Carlo
+598,10742933,Pizzeria Trattoria Civico 29
+608,13564651,Mattarello
+619,1400143,Amici
+620,14735870,Felix
+634,1925938,Piatto Pizzeria + Enoteca
+646,12030151,Pizzeria 1926
+652,17748595,Napoli Corner
+656,32974297,Fratelli Coppola - Cantù Asnago
+658,2214799,Prie Neigre
+666,9975740,La Saint Honoré
+669,20182105,Blu Maria
+674,23428405,Papà Fredo
+679,17426356,Di Meglio Pizzeria
+681,23751585,Matteo Trattoria & Pizzeria
+685,751525,La Trattoria de Tarifa
+695,17338483,Ciudad De Pie
+696,19267941,O' Sole 'E Napule
+697,1954836,Ci.Ro.
+705,15581206,Beintema's Bakery and Pizzeria
+707,23678653,Gia Mia Pizza Bar
+708,11719016,Da Riccardo
+709,13565707,Nola- Neapolitanische Pizza+Weinbar
+710,26370253,Michele Arcangelo Pizzeria
+712,23649596,Miedziany Piec- Pizza Napoletana
+713,8527577,Pizza 22 cm
+714,23716856,Sapori di Napoli
+720,25101060,La Ginestra
+735,13414467,Otto e Mezzo Pizza Verace
+738,19410869,Pulcinella 01
+742,6155760,Leggera Pizzeria Napoletana Jardins
+744,20812706,What the Crust
+752,26609699,Casa Baco- Mané
+753,26609699,Casa Baco
+754,13372976,Unica Pizzeria
+755,20034381,Basilico
+764,28035589,Basta Gourmet Bar
+765,14803431,Basta Gourmet Bar
+769,26225697,Bottega
+772,27120621,Mamma Mia que Pizza
+773,25496599,Pupatella Capitol Hill
+779,32917941,Pizza Beppe 4
+790,28276846,M'arrecreo Pizzeria Gaia
+791,28666047,LA GIOIA
+792,32811622,LIEVITATO la pizza di Vuolo
+804,28912846,Frit'zza
+807,17514146,Pizza Otto
+811,17216388,That's Amore
+816,33059932,Donna Sofia
+818,3490883,Ristorante Pizzeria La Lanterna
+823,33274113,Pizza Beppe 4
+825,23768814,GIO PIZZERIA NAPOLETANA
+828,1151979,Pepe's
+829,27795720,Amalfitana Pizza & Spritz
+833,32964120,Oro di Napoli
+836,19823848,Pizzeria No. 900
+843,26132643,Si Nonna's Kamala Mills
+855,32732106,Si Nonna's – DLF AVENUE SAKET
+858,33045550,Si Nonna's VST Marksquare
+874,33401439,Tom1i Pizza
+877,34066219,Santucci
+880,32709951,IL Pizzaiolo
+890,11880767,Brew Pub Espumeru & Curuxera
+892,3634231,Bel Cibo Pizza Napoletana
+895,10482547,No 900 Maguire
+898,19830470,Vallino Pizzeria Napoletana
+899,13576716,Mozzatura
+900,20854308,Meno Male
+904,20234964,Noto
+916,3327081,La locanda Comptoir Italien
+920,25334551,Farina
+926,21171671,No 900 Limoilou
+929,4456662,La Esquina
+930,24197872,Lievitamente
+938,27918210,Pupatella Springfield
+939,25407544,Pupatella
+940,27707868,Scorchini's Pizza
+950,22974646,Pizza Culture Napoletana
+968,27723108,Via Caravaggio 147
+971,24135215,Paradiso
+986,23723909,Pizza Beppe 4
+987,29019126,Pizzeria del Popolo
+990,2694529,Pizzaria Gorgonzola
+994,27944576,Michele pizza e amore
+996,25327152,No 900 - Lyon
+997,17721575,Frasca
+998,26859663,Bestia
+1000,28662360,Pizzeria del Plebiscito
+1006,543703,Vito & Nick's
+1009,28021027,Novel Pizza Cafe
+1011,32831259,Pizz'Amici
+1012,33057270,Zarella Pizzeria & Taverna
+1013,27805560,Milly's Pizza In The Pan
+1014,429108,Piece Brewery & Pizzeria
+1016,17423106,Bungalow by Middle Brow
+1017,33411828,Dimmi Dimmi Corner Italian
+1034,25181465,Professor Pizza
+1054,20155215,Nancy's Pizzeria
+1059,428413,Nino's Pizza
+1062,11674978,Union Squared
+1067,6198216,Five Star Bar
+1073,17667335,Shield's Pizza
+1077,25156690,Michigan & Trumbull
+1086,23063190,Pizza Wagon
+1087,27941405,Little Dynamite
+1098,27893323,Danny Boy's Famous Original Pizza
+1100,33363886,LaSorted's Chinatown
+1102,25156583,Bub & Grandma's Pizza
+1108,33133094,Bar Bucce
+1109,34099550,Francesco Martucci
+1117,26970619,Vice City Pizza
+1128,439854,Original Dream Pizza
+1131,26891910,Pizza Kat
+1135,27915183,The Turning Peel
+1151,33074829,Trevor's - Arcadia
+1155,2095050,Pomo Pizzeria Napoletana
+1166,26947630,Slice Brothers
+1183,27892708,Feral Pizza
+1188,25155850,Baldinucci Pizza Romana
+1190,34091523,Small's Pizza
+1192,26830623,Palm Pizza
+1193,4788614,The ABGB
+1200,27439767,Thunderbird Pies
+1204,27671800,Fortunate Son
+1206,2214966,Lo Spela – Naturalmente Pizza
+1208,19597503,Saccharum Pizzeria
+1212,3850072,Il Tronco
+1218,8805258,Theo's
+1222,13150793,Farina Pizzeria
+1226,19137488,Pizzeria Enzo
+1233,1157753,La Rosetta
+1236,1049417,Pizzeria Capri (Restaurante Capri)
+1238,1689107,La Piccola Tavola
+1239,8328539,La Masseria
+1249,28145910,T & M Pizzeria
+1252,1681497,Cesari
+1256,1008358,Pizzeria Napulè
+1258,4884044,Magazzino
+1259,2696129,La Pietra Azzurra
+1263,4541431,Verde Ischia
+1268,2067699,Pizzeria Bella Napoli
+1272,2464615,Pizzeria Oggi Napoletana
+1274,7471820,Pizzeria Pilaw
+1277,8489205,Pizzeria Volare
+1279,1187310,Don Gennaro
+1282,6437979,Pizzeria Polipo
+1289,3628427,Pizzeria Antichi Sapori
+1291,6869315,Pizzeria Don Enzo
+1295,7629749,Pizzeria GG
+1298,6873096,Il Sole Ten-3
+1300,12631160,Piano
+1302,20192368,Campania Pizza Gourmet
+1318,26983699,The Little Stove
+1320,12323648,Da Moreno Pizzeria
+1321,2188463,Santa Maria
+1322,19268789,Napoli on the Road
+1323,3916918,L'Antica Pizzeria
+1333,27881183,Vicoli di Napoli Pizzeria
+1336,23379654,081 Pizzeria Peckham
+1337,3293879,Wandercrust Pizza at The Pelton Arms
+1346,15091012,Pizzeria Da Lioniello
+1354,25409414,San Martino – Pizza & Bolle
+1370,14970505,Francesco & Salvatore Salvo
+1371,33735526,La Notizia 94
+1386,3924681,Ristorante Cavallino
+1388,21175418,Le Grotticelle
+1389,2046078,La Cascina dei Sapori
+1390,24106720,Clementina
+1391,10519727,BOB Alchimia a Spicchi
+1392,2725656,Apogeo
+1394,27504881,Raf Bonetta
+1395,10446726,Carlo Sammarco Pizzeria
+1396,19261482,Pizzeria Le Parùle
+1400,13322613,Pupillo Pura Pizza
+1401,2446070,'O Fiore Mio
+1402,6508838,Giangi
+1403,12430622,Meunier
+1404,19597503,Saccharum
+1405,15009822,I Borboni
+1407,6179832,Il Segreto di Pulcinella
+1409,4507391,Pizzeria Gigi Pipa
+1411,27179522,Grigoris
+1412,2039604,La Contrada
+1413,2151170,Enosteria Lipen
+1414,9807318,Frumento
+1415,21068158,I Fontana
+1417,2150108,Pizzeria Chicco
+1418,3168599,Pizzeria Elite Rossi
+1422,2638630,La Sorgente
+1423,23555598,Pizza Canneto Beach 2
+1425,8028122,Fuori Tempo
+1429,23838578,Pigreco Pizzeria
+1430,19849497,Claudio Alvicolo
+1432,8558138,Vadolì
+1434,25413311,Sileo
+1436,7612376,Luppolo & Farina
+1441,2033829,Renato Bosco Pizzeria
+1444,15210626,Pizzeria Panetteria Bosco
+1452,6717363,Gusto Divino
+1453,2523607,Patrick Ricci - Terra, Grani, Esplorazioni
+1454,8620943,Mater
+1455,6720648,Pizzeria Luigi Cippitelli
+1456,2468791,Pizzeria Mamma Rosa
+1457,3546606,Bas & Co
+1458,940424,La Pergola
+1459,21406539,Foorn
+1462,7989653,Lievito 72
+1465,27839226,BalobinoMama
+1466,19516161,Pizzeria Fiore di Latte
+1470,2639236,Il Vecchio Gazebo
+1473,21011294,Pizza Zulu
+1478,27201507,La Pizza e Bella Antwerpen
+1502,26561810,ZANO
+1507,14981188,San Gennaro
+1514,10090622,Pizzeria Oro di Napoli
+1516,23924934,PEPPO's Pizzeria Contemporanea
+1521,2072582,Piano B
+1548,32838116,See No Evil Pizza
+1553,12930420,Sapori
+1562,33100513,Sho Pizza Bar
+1563,3341943,Hog & Hominy
+1567,21204051,Grá
+1570,2289681,Etna
+1571,4884044,PIZZERIA TRATTORIA MAGAZZINO
+1574,23004450,Heritage
+1579,28082596,Monteverdi Ristorante
+1580,32704834,Five Olives
+1589,27515956,Soprana Rooftop Cucina
+1594,9735329,AL FORNO
+1597,10480949,Bottega Dani
+1599,10819554,Pizzarè
+1600,3490828,Da Ezio
+1646,430928,Pat's Pizzeria & Ristorante
+1665,10264371,Officine del Cibo
+1668,13516787,Battil'oro
+1671,6720648,Luigi Cippitelli Pizzeria
+1674,10446726,Carlo Sammarco Pizzeria 2.0
+1689,23838578,Pigreco Pizzeria
+1694,17562188,Pop's Pizza
+1695,801603,Buon Appetito
+1701,27812809,Bottega Ceccarelli Pizzeria Bar Weine
+1706,27095508,Sette
+1711,25226020,Pizzeria 450 Gradi
+1714,27036938,Da Pietro
+1722,10596578,Dough & Brew
+1726,27881183,Vicoli di Napoli
+1729,23945238,Bobby
+1730,28034388,Da Valentina
+1735,28478893,La Casa di Mario
+1738,12208448,Papà Famiglia
+1739,26670774,Prima
+1745,32973680,Ma Che Vuoi
+1746,17629058,Napul'è
+1751,25268099,Pizza Popolare
+1757,9809647,Al Legna
+1764,3666617,Antonio Mezzero
+1768,13371793,PizzaMania
+1771,11903608,Da Alfonso
+1777,31651337,Don Vesevius
+1779,33261434,Gina Balmesina Pizza Bar
+1781,23041865,Le Otto
+1784,18218754,Mecànic Pizza
+1788,26550443,Pizzeria Rifugio
+1789,21042661,Punta
+1801,12657521,Pizzeria Ciro (Ciro Trattoria Gourmet)
+1802,9715211,Pizzeria Verace
+1806,32745574,MIO MIO
+1807,28036265,Pizza Project
+1811,23924934,PEPPO's
+1818,1091722,La Notizia 53
+1820,1082582,Pizzeria Primavera
+1824,28041658,Elvezia 31
+1825,23408473,Maccarò
+1829,25085879,V Modern Italian
+1833,1994670,Ristorante Italiano il Popolo
+1847,32698364,Mamma Pizza
+1850,28048125,Can Edo
+1853,27761017,Farina 23
+1856,33247365,Il Piccolo Biondo
+1857,1001856,Restaurante y Pizzeria Salvatore
+1859,24166029,El Rincón Siciliano
+1860,24155413,Vezzo Parque Corredor
+1865,31721032,Annaré Pizzeria
+1866,33674960,La Tarantella Napoletana Mirasol
+1868,4139402,A casa do Gato
+1878,27190450,Dentorno La Pizza Nuestra
+1881,32906604,Pinseria Il Forno
+1885,27203151,Pizzería Mayor Villacañas
+1893,28109415,Sapore Di Napoli
+1898,27216382,La Pizana
+1900,24155413,Avanti
+1903,3410297,Alboccalino Fomento
+1905,3474333,Pizzeria Siciliana Kuró
+1906,34076891,Dolce Positano
+1907,23874096,Pizzería Al natural y ecológica
+1908,10169310,LUIGI
+1910,28072217,Titos Pizza
+1916,23348368,KRONOS CHINCHÓN
+1918,26632406,Pizzeria Crettino
+1921,28101224,da Roberto
+1923,27886357,Gula
+1936,20226623,Pizzeria La Dolce Vita
+1981,27869506,Pizzeria Ristorante Al Terrazzo - Dal 1953
+1990,32868685,Cicci Pizzeria
+1995,2248167,Don Franchino
+2013,27344742,Flames
+2017,18962597,No Format Pizzeria
+2028,4909505,Agape Restaurant & Pizza
+2039,19342742,Pizzeria Basilicò
+2041,23747158,Cotto & Mangiato da zii Fausto
+2044,8665153,Karma
+2046,27928339,Daniele Baglieri – L’evoluzione della pizza
+2070,27253512,1000 Pizza and Diner
+2073,14771856,Kalavri - Anima & Pizza
+2092,10489769,Grains
+2093,12971277,Al Paradise
+2100,6518518,La Romana
+2105,27958456,Cannaruto – Pizza & Fritti Artigianali
+2112,27375072,ME
+2121,3775434,La Pizzeria Maxim
+2122,19689798,Pizzeria Lievito Concalma (Lievito la Pizzetteria)
+2130,27699977,Moderna
+2131,27965964,Il Maratoneta
+2132,12322440,Capperi…che Pizza!
+2153,20981490,Era Ora Ortigia
+2154,28145910,Tì&Mì
+2156,24174719,Meditè Siracusa
+2158,28390180,Soulfood
+2171,13976411,AcquaSale
+2174,27926837,Santissima Pizza
+2175,7149474,Capriccio
+2180,27537810,Kore
+2183,4092799,Oasi
+2192,5506850,Pizzeria Levante
+2197,2664159,Giorgio & Chiara
+2199,3786308,Da Lello
+2208,13325820,I Quintili
+2211,28049575,Cice Pizzeria Contemporanea
+2215,4474496,Maso Limarò
+2216,21232612,Contè Pizzeria
+2218,28128657,Lisola Restaurant
+2219,17376794,Cuore Pizzeria
+2227,33060299,Mascari Pizza d'Autore
+2231,15529839,30 11 Donatelli
+2235,2080574,Da Giovanni
+2237,2446400,Ristorante Val Pomaro
+2247,4788131,Bar pizzeria birreria excelsior
+2251,7282801,Verace
+2257,27995543,Agrumi – Pizza Sushi Drink
+2258,26817228,OMG!
+2265,21380480,Fuoco
+2266,2634795,Bellavista
+2269,3582390,Pizza & Pasta
+2275,27872605,Pole Pole
+2279,2477685,Bedussi
+2287,28146085,Bani's
+2289,32838196,Pizzeria Élite Pasqualino Rossi
+2290,26503525,Lievin / Ian Spampatti
+2296,23357547,Campana Pizza In Teglia
+2303,13810205,Degusto
+2315,25384215,San Biagio – Pizza & Bolle
+2318,27507283,Ultra
+2324,23800085,Brò Cucina Nouveau
+2332,27716598,Mirko Cicco – Il Golosone
+2334,27823226,Teglia – La Pizza al Taglio
+2339,2230503,PizzaArt
+2347,23631700,Dodo
+2356,12537341,Berberè
+2369,21235110,Forbici Pizza
+2370,2177404,Enosteria Mangia
+2371,1812930,Orsucci dal 1922
+2380,33324902,Casa Tramontano
+2386,33056891,12 Pollici
+2392,12572322,Era Pizza
+2398,33266596,Pizzetta
+2399,5012210,Pizzeria San Martin - Da Federico
+2401,4302095,Pizzeria Centrale
+2404,27707215,Carlo Fiamma
+2412,15594612,Basilico
+2415,13391825,Gabin Gusto Esclamativo!
+2420,6849566,Marzitelli
+2428,21140275,Pizzeria Aqua & Farina Sperlonga
+2432,23747676,73% Settantatrepercento Pizzeria
+2438,12448329,L’ Arte del pane
+2440,7235843,Mamma Mia
+2442,10844596,Da Egidio 1970 – Pizza Rustica
+2445,32900296,Fermento
+2450,11962387,Lidò
+2451,7256508,Il Corso
+2462,27962577,tRe in Pomposa
+2475,15676388,Balik
+2483,28140837,Pizza Bakery Salvatore La Martina
+2489,6350684,È bona furia
+2498,10289857,Olio & Basilico
+2510,10506501,Hibiscus
+2511,2006113,Berberè
+2512,33966443,Luca! – Pizza e Fritti
+2521,17380711,Cuore & Sapore
+2538,27491028,Gesti Restaurant
+2542,13108756,La bottega
+2548,7060907,Polichetti Esperienze di Pizza
+2554,6965617,In Granum
+2557,30571574,Acqva E Farina
+2566,27824915,Slice Of Capanno
+2569,27408959,Il Bacaro della Pizza
+2570,25407348,A Varcuzza
+2585,2363222,Ristorante Pizzeria Rock 1978
+2586,2444616,Bella Napoli
+2587,21174549,#Prefermento
+2598,24137445,Fermento - Pizza E Bolle
+2602,3484533,La Rusticana
+2609,17332133,Spicchi d'Arte
+2614,3773622,Cibò
+2618,2299194,Pulcinella
+2620,25192937,Trancio – pizza in teglia
+2626,17143059,Pizzeria La Villa
+2638,24154618,Luppolo e Grano
+2653,2286827,Pizza 120
+2657,4003831,Santa Caterina
+2663,1966029,Locanda Cervino
+2666,26495642,La Villa – Pizza in Teglia
+2677,6940331,DaZero Pizza e Territorio
+2680,28654492,La Vita è Bella
+2683,9607297,La Cucina
+2685,17815713,That's Amore
+2686,27873830,Quattro Braccia
+2695,5987183,Fratelli Mascolo dal 1995
+2697,24153630,Dal Fornaro del Castello
+2711,13955698,Poppy's
+2712,27975564,L'ammaccata - Antica Pizza Cilentana
+2717,9853245,357 Pizza & Food
+2719,27868316,Pizza e Core
+2729,7249318,Ristorante L'Arcipelago
+2731,1128431,Vesuvio
+2733,27750224,Capaldo Forno Contemporaneo
+2742,3249445,Pompei
+2746,14126582,La Lavagna Pizzeria
+2752,10361351,La Corte del Pettolino
+2763,27940372,Sgranocchia Pizzeria
+2766,24869548,Twenties
+2769,2211786,Araldo Arte del Gusto
+2791,25182710,AmaRAnto
+2793,32969846,Camilla Pizza
+2795,28059440,Björn Pizzería

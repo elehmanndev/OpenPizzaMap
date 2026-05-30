@@ -1,0 +1,191 @@
+# TA batch lookup results — Agent C (slice 401..end)
+# Format: <placeId>,<locationId>,<placeName>
+# Misses: # MISS: <placeId> "<placeName>" — <reason>
+
+811,17216388,That's Amore
+# MISS: 812 "That's Amore street pizza" — no separate TA listing in Sydney for street pizza variant
+828,1151979,Pepe's
+# MISS: 879 "Gaetano" — no TA match in Talca, Chile
+880,32709951,IL Pizzaiolo
+# MISS: 853 "Si Nonna's – IWC VIP ROAD Surat" — no dedicated TA listing for Surat branch
+# MISS: 856 "Si Nonna's Citadel Indore" — no Indore TA listing
+858,33045550,Si Nonna's VST Marksquare
+# MISS: 861 "Si Nonna's Utopia Bengaluru" — only St Marks Road has TA listing
+# MISS: 864 "Si Nonna's Shivalik Ahmedabad" — no Ahmedabad TA listing
+# MISS: 865 "Si Nonna's The Walk Thane" — no dedicated TA listing
+# MISS: 866 "Si Nonna's Swagat Mall Gandhinagar" — no Gandhinagar TA listing
+# MISS: 868 "Si Nonna's Sumadhura Bengaluru" — no dedicated TA listing (Whitefield branch)
+# MISS: 869 "Si Nonna's HSR Bengaluru" — no dedicated TA listing
+# MISS: 870 "Si Nonna's New Bel Road Bengaluru" — no dedicated TA listing
+# MISS: 871 "Si Nonna's URBAN CUBES Gurugram" — no dedicated TA listing
+# MISS: 872 "Si Nonna's KAMMANHALLI Bengaluru" — no dedicated TA listing
+# MISS: 873 "Si Nonna's Bhartiya City Bengaluru" — no dedicated TA listing
+# MISS: 881 "NAP Neapolitan Authentic Pizza Frankfurt" — only Madrid/Barcelona NAP on TA
+920,25334551,Farina
+926,21171671,No 900 Limoilou
+# MISS: 927 "Kiewit Crossing Cafè" — no TA listing in Lone Tree CO
+929,4456662,La Esquina
+940,27707868,Scorchini's Pizza
+# MISS: 945 "No 900 Terrebonne" — no dedicated Terrebonne TA listing
+# MISS: 973 "Da Noi Zurich" — TA Da Noi is in Chur, not Zurich
+986,23723909,Pizza Beppe 4
+994,27944576,Michele pizza e amore
+# MISS: 995 "Big Little Table Mountain View" — only "Big Table" exists, no reviews; uncertain match
+996,25327152,No 900 - Lyon
+997,17721575,Frasca
+998,26859663,Bestia
+# MISS: 999 "Vulcanica Santa Cruz de la Sierra" — no TA listing
+1000,28662360,Pizzeria del Plebiscito
+# MISS: 1001 "La Fiamma Zamość" — no TA listing yet (very new)
+# MISS: 1002 "NEAPOLSKA Częstochowa" — no TA listing (new pizzeria, only Facebook/IT)
+# MISS: 1003 "Arvorecer Camanducaia" — no TA listing
+# MISS: 1005 "Napalone Bilcza" — no TA listing
+1006,543703,Vito & Nick's
+1009,28021027,Novel Pizza Cafe
+1011,32831259,Pizz'Amici
+1012,33057270,Zarella Pizzeria & Taverna
+1013,27805560,Milly's Pizza In The Pan
+1014,429108,Piece Brewery & Pizzeria
+1016,17423106,Bungalow by Middle Brow
+1017,33411828,Dimmi Dimmi Corner Italian
+# MISS: 1021 "The Beer Temple" — TA categorized as shopping not restaurant; pizza is incidental
+# MISS: 1023 "Crust Fund Pizza Chicago" — no TA listing
+# MISS: 1068 "Red's the People's Pie Blue Island" — pop-up vendor, no dedicated TA listing
+# MISS: 1085 "Cosetta Santa Monica" — no TA listing
+1086,23063190,Pizza Wagon
+1087,27941405,Little Dynamite
+# MISS: 1088 "Redwood Pie Hermosa Beach" — no TA listing yet
+# MISS: 1091 "Fiorelli Pizza Los Angeles" — no TA listing
+# MISS: 1095 "Old Gold Tomato Pies" — no TA listing (new spot)
+1098,27893323,Danny Boy's Famous Original Pizza
+1100,33363886,LaSorted's Chinatown
+# MISS: 1101 "Wallflour Pizza Los Angeles" — no TA listing (new 2025)
+# MISS: 1103 "Secret Pizza Los Angeles" — no LA TA listing (only Las Vegas)
+1155,2095050,Pomo Pizzeria Napoletana
+# MISS: 1161 "Source Gilbert AZ" — no TA listing
+# MISS: 1167 "Farina Rossa Minneapolis" — no TA listing
+# MISS: 1177 "Chicago Slice Austin" — no TA listing
+1183,27892708,Feral Pizza
+1190,34091523,Small's Pizza
+1192,26830623,Palm Pizza
+1193,4788614,The ABGB
+1208,19597503,Saccharum Pizzeria
+1252,1681497,Cesari
+1256,1008358,Pizzeria Napulè
+1258,4884044,Magazzino
+1259,2696129,La Pietra Azzurra
+1272,2464615,Pizzeria Oggi Napoletana
+1274,7471820,Pizzeria Pilaw
+1277,8489205,Pizzeria Volare
+1282,6437979,Pizzeria Polipo
+1289,3628427,Pizzeria Antichi Sapori
+1298,6873096,Il Sole Ten-3
+# MISS: 1313 "Osteria & pizzeria Felice Itoshima" — only "Cafe & Bar Felice" exists, different concept
+1318,26983699,The Little Stove
+# MISS: 1319 "Eddie's Pizza Napoletana Huntington Beach" — no TA listing (pop-up)
+1320,12323648,Da Moreno Pizzeria
+1321,2188463,Santa Maria
+1322,19268789,Napoli on the Road
+1323,3916918,L'Antica Pizzeria
+1333,27881183,Vicoli di Napoli Pizzeria
+1336,23379654,081 Pizzeria Peckham
+1337,3293879,Wandercrust Pizza at The Pelton Arms
+1346,15091012,Pizzeria Da Lioniello
+1354,25409414,San Martino – Pizza & Bolle
+1370,14970505,Francesco & Salvatore Salvo
+1371,33735526,La Notizia 94
+1394,27504881,Raf Bonetta
+1395,10446726,Carlo Sammarco Pizzeria
+1400,13322613,Pupillo Pura Pizza
+1401,2446070,'O Fiore Mio
+1402,6508838,Giangi
+1403,12430622,Meunier
+1405,15009822,I Borboni
+1404,19597503,Saccharum
+1407,6179832,Il Segreto di Pulcinella
+1409,4507391,Pizzeria Gigi Pipa
+1411,27179522,Grigoris
+1412,2039604,La Contrada
+1414,9807318,Frumento
+1415,21068158,I Fontana
+1417,2150108,Pizzeria Chicco
+1418,3168599,Pizzeria Elite Rossi
+1422,2638630,La Sorgente
+1423,23555598,Pizza Canneto Beach 2
+1425,8028122,Fuori Tempo
+1436,7612376,Luppolo & Farina
+1441,2033829,Renato Bosco Pizzeria
+1452,6717363,Gusto Divino
+1454,8620943,Mater
+1458,940424,La Pergola
+1465,27839226,BalobinoMama
+1466,19516161,Pizzeria Fiore di Latte
+1473,21011294,Pizza Zulu
+1507,14981188,San Gennaro
+# MISS: 1514 "Pizzeria Oro di Napoli Tenerife" — TA listing exists but only under Arona/Los Cristianos, search didn't surface clean TA URL
+1516,23924934,PEPPO's Pizzeria Contemporanea
+1548,32838116,See No Evil Pizza
+1553,12930420,Sapori
+1514,10090622,Pizzeria Oro di Napoli
+# MISS: 1561 "Sally Philadelphia" — no Philadelphia "Sally" pizza on TA (only Solly/Salerno's)
+1563,3341943,Hog & Hominy
+1567,21204051,Grá
+1571,4884044,PIZZERIA TRATTORIA MAGAZZINO
+1574,23004450,Heritage
+# MISS: 1576 "PITAK GOHAN Osaka" — no TA listing
+1579,28082596,Monteverdi Ristorante
+1580,32704834,Five Olives
+1600,3490828,Da Ezio
+1646,430928,Pat's Pizzeria & Ristorante
+1694,17562188,Pop's Pizza
+1730,28034388,Da Valentina
+1735,28478893,La Casa di Mario
+1738,12208448,Papà Famiglia
+1739,26670774,Prima
+# MISS: 1742 "Gemello Berlin" — TA Gemello is in Bernau, not Berlin
+1745,32973680,Ma Che Vuoi
+1746,17629058,Napul'è
+# MISS: 1762 "Melio Warsaw" — no TA listing
+1764,3666617,Antonio Mezzero
+1768,13371793,PizzaMania
+1771,11903608,Da Alfonso
+1807,28036265,Pizza Project
+1825,23408473,Maccarò
+1829,25085879,V Modern Italian
+# MISS: 1830 "Pizzeria Napulé Adeje" — no TA listing in Adeje
+1833,1994670,Ristorante Italiano il Popolo
+# MISS: 1838 "El leñador Valdepeñas" — no TA listing in Valdepeñas
+# MISS: 1843 "Vezzo Lagoh Sevilla" — no TA listing for Vezzo at Lagoh shopping center
+1847,32698364,Mamma Pizza
+# MISS: 1852 "San Vito Pizzeria Denia" — no TA listing in Denia
+1856,33247365,Il Piccolo Biondo
+1857,1001856,Restaurante y Pizzeria Salvatore
+1859,24166029,El Rincón Siciliano
+1860,24155413,Vezzo Parque Corredor
+# MISS: 1896 "Pizza A Volare Blanes" — no TA listing
+# MISS: 1899 "La Mole di Torino Vigo" — no TA listing
+1900,24155413,Avanti
+1903,3410297,Alboccalino Fomento
+1908,10169310,LUIGI
+# MISS: 1919 "Il Postino Palma de Mallorca" — TA has Inca/Alcudia/Binissalem branches but no Palma listing
+1921,28101224,da Roberto
+# MISS: 717 "Pizza e Grill La Porta Kakamigahara" — no TA listing
+# MISS: 1004 "Pizza Hut Napoli Pizza Shanghai" — no TA listing
+# MISS: 1090 "Ozzy's Apizza North Hollywood" — TA Ozzy's is in Glendale not NoHo
+1102,25156583,Bub & Grandma's Pizza
+1166,26947630,Slice Brothers
+2347,23631700,Dodo
+# MISS: 565 "Pizza Fritta Piccolina Caldera" — no TA listing
+280,4740975,Diaz
+# MISS: 730 "Pizzeria Dopodomani Naguanagua" — no TA listing yet (relocated to Caracas)
+# MISS: 793 "Hollywood Trattoria Abu Dhabi" — no standalone TA listing (only under Warner Bros World)
+# MISS: 821 "CRUST FAMILY PIZZA Gdynia" — no TA listing
+# MISS: 831 "Napolizza Truck Bierné" — no TA listing (food truck)
+# MISS: 840 "Pizzeria Solare Moriyama" — no Moriyama TA listing
+# MISS: 875 "Pizzit+39 Guangzhou" — no TA listing
+877,34066219,Santucci
+# MISS: 910 "Bufala Swadlincote" — no TA listing in Swadlincote
+1824,28041658,Elvezia 31
+2112,27375072,ME
+1029,2099108,La Villa
+1846,31837299,Pizzeria mayor la puebla
