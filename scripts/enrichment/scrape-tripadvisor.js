@@ -43,13 +43,16 @@ async function pickQueue(limit) {
                 },
                 // Never tried (null locationId) — search needed
                 { tripadvisorLocationId: null },
-                // Was a true-miss (-1 sentinel) but enough time passed
+                // Was a true-miss (-1 sentinel) but enough time passed.
+                // 2026-05-30: removed the `tripadvisorRatingsScrapedAt: null`
+                // branch — it was re-queuing every backfill sentinel every
+                // tick (the backfill never set scrapedAt on sentinels).
+                // Sentinels with null scrapedAt now mean "leave alone".
+                // Sentinel writes below ALSO set scrapedAt=now so the 180d
+                // retry clock actually starts.
                 {
                     tripadvisorLocationId: -1,
-                    OR: [
-                        { tripadvisorRatingsScrapedAt: null },
-                        { tripadvisorRatingsScrapedAt: { lt: retryAfter } },
-                    ],
+                    tripadvisorRatingsScrapedAt: { lt: retryAfter },
                 },
             ],
         },

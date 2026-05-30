@@ -1120,7 +1120,14 @@ router.post("/update-place-ta", express.json({ limit: "256kb" }), async (req, re
         //   - omitted (don't touch the column)
         if (req.body.tripadvisorLocationId !== undefined && req.body.tripadvisorLocationId !== null) {
             const id = Number(req.body.tripadvisorLocationId);
-            if (Number.isFinite(id)) data.tripadvisorLocationId = id;
+            if (Number.isFinite(id)) {
+                data.tripadvisorLocationId = id;
+                // 2026-05-30: when sentinel'ing (-1), stamp scrapedAt so the
+                // taScrape queue's SEARCH_RETRY_DAYS clock starts. Without
+                // this, sentinels stay null-scrapedAt and the old queue
+                // logic re-tried them every tick.
+                if (id === -1) data.tripadvisorRatingsScrapedAt = new Date();
+            }
         }
         if (req.body.tripadvisorUrl !== undefined) data.tripadvisorUrl = String(req.body.tripadvisorUrl || "");
         if (req.body.tripadvisorRating !== undefined) data.tripadvisorRating = Number(req.body.tripadvisorRating);
