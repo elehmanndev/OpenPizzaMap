@@ -417,12 +417,36 @@ router.get("/admin/places", requireAdmin, async (req, res) => {
     if (vis === "hidden") where.isVisible = false;
     if (Number.isFinite(styleId) && styleId) where.styles = { some: { styleId } };
     if (needs === "no-style") where.styles = { none: {} };
-    if (needs === "no-hero") where.heroImageUrl = null;
-    if (needs === "no-phone") where.phone = null;
-    if (needs === "no-website") where.websiteUrl = null;
-    if (needs === "no-hours") where.openingHours = null;
+    else if (needs === "no-hero") where.heroImageUrl = null;
+    else if (needs === "no-phone") where.phone = null;
+    else if (needs === "no-website") where.websiteUrl = null;
+    else if (needs === "no-hours") where.openingHours = null;
+    else if (needs === "no-google-id") where.googlePlaceId = null;
+    else if (needs === "no-google-bar") where.googleRatingsDistribution = null;
+    else if (needs === "no-ta-id") where.tripadvisorLocationId = null;
+    else if (needs === "ta-sentinel") where.tripadvisorLocationId = -1;
+    else if (needs === "no-ta-bar") where.tripadvisorRatingsDistribution = null;
+    else if (needs === "no-photos") where.images = { none: {} };
+    else if (needs === "no-google-reviews") where.googleReviewsJson = null;
+    else if (needs === "no-ta-reviews") where.tripadvisorReviewsJson = null;
+    else if (needs === "no-coords") where.OR = [{ lat: null }, { lng: null }];
+    else if (needs === "no-description") where.descriptionHtml = null;
+    else if (needs === "resolve-retired") where.AND = [{ googlePlaceId: null }, { enrichmentVersion: { gt: 0 } }];
 
-    const [places, allStyles] = await Promise.all([
+    // Aggregate stats — these run on the FULL visible catalog (not the
+    // filtered slice). Parallel queries, ~200ms total at 2.5k places.
+    const day30 = new Date(Date.now() - 30 * 86400_000);
+    const day90 = new Date(Date.now() - 90 * 86400_000);
+    const visPub = { isVisible: true };
+
+    const [
+        places, allStyles,
+        sTotal, sTotalAll, sHidden,
+        sGPlace, sGRating, sGDist, sGDistFresh, sGReviews, sGReviewsFresh,
+        sTaId, sTaSentinel, sTaRating, sTaDist, sTaDistFresh, sTaReviews, sTaReviewsFresh,
+        sHero, sAnyPhoto, sAddr, sPhone, sWebsite, sHours, sDesc, sCoords,
+        sResolveQueued, sResolveRetired,
+    ] = await Promise.all([
         prisma.place.findMany({
             where,
             orderBy: { id: "desc" },
@@ -431,17 +455,80 @@ router.get("/admin/places", requireAdmin, async (req, res) => {
                 id: true, slug: true, name: true, city: true, country: true,
                 isVisible: true, heroImageUrl: true, phone: true,
                 websiteUrl: true, openingHours: true,
+                googlePlaceId: true, googleRatingsDistribution: true, googleReviewsJson: true,
+                tripadvisorLocationId: true, tripadvisorRatingsDistribution: true, tripadvisorReviewsJson: true,
+                _count: { select: { images: true } },
                 styles: { select: { style: { select: { name: true } } } },
             },
         }),
         prisma.style.findMany({ orderBy: { sortOrder: "asc" }, select: { id: true, name: true } }),
+        prisma.place.count({ where: visPub }),
+        prisma.place.count({}),
+        prisma.place.count({ where: { isVisible: false } }),
+
+        // Google
+        prisma.place.count({ where: { ...visPub, googlePlaceId: { not: null } } }),
+        prisma.place.count({ where: { ...visPub, googleRating: { not: null } } }),
+        prisma.place.count({ where: { ...visPub, googleRatingsDistribution: { not: null } } }),
+        prisma.place.count({ where: { ...visPub, googleRatingsScrapedAt: { gte: day30 } } }),
+        prisma.place.count({ where: { ...visPub, googleReviewsJson: { not: null } } }),
+        prisma.place.count({ where: { ...visPub, googleReviewsFetchedAt: { gte: day30 } } }),
+
+        // TripAdvisor
+        prisma.place.count({ where: { ...visPub, tripadvisorLocationId: { gt: 0 } } }),
+        prisma.place.count({ where: { ...visPub, tripadvisorLocationId: -1 } }),
+        prisma.place.count({ where: { ...visPub, tripadvisorRating: { not: null } } }),
+        prisma.place.count({ where: { ...visPub, tripadvisorRatingsDistribution: { not: null } } }),
+        prisma.place.count({ where: { ...visPub, tripadvisorRatingsScrapedAt: { gte: day90 } } }),
+        prisma.place.count({ where: { ...visPub, tripadvisorReviewsJson: { not: null } } }),
+        prisma.place.count({ where: { ...visPub, tripadvisorReviewsFetchedAt: { gte: day90 } } }),
+
+        // Photos & basics
+        prisma.place.count({ where: { ...visPub, heroImageUrl: { not: null } } }),
+        prisma.place.count({ where: { ...visPub, images: { some: {} } } }),
+        prisma.place.count({ where: { ...visPub, addressLine: { not: null } } }),
+        prisma.place.count({ where: { ...visPub, phone: { not: null } } }),
+        prisma.place.count({ where: { ...visPub, websiteUrl: { not: null } } }),
+        prisma.place.count({ where: { ...visPub, openingHours: { not: null } } }),
+        prisma.place.count({ where: { ...visPub, descriptionHtml: { not: null } } }),
+        prisma.place.count({ where: { ...visPub, lat: { not: null }, lng: { not: null } } }),
+
+        // Resolver state
+        prisma.place.count({ where: { ...visPub, googlePlaceId: null, enrichmentVersion: 0 } }),
+        prisma.place.count({ where: { ...visPub, googlePlaceId: null, enrichmentVersion: { gt: 0 } } }),
     ]);
+
+    // TA budget snapshot from the runner's persisted JSON
+    let budget = null;
+    try {
+        const budgetPath = path.join(__dirname, "..", "..", "scripts", "lib", ".tripadvisor-budget.json");
+        if (fs.existsSync(budgetPath)) {
+            const raw = JSON.parse(fs.readFileSync(budgetPath, "utf8"));
+            budget = {
+                month: raw.month,
+                today: raw.today,
+                monthCalls: raw.detailCalls || 0,
+                todayCalls: raw.todayDetailCalls || 0,
+                monthlyCap: 4000,
+                dailyCap: 130,
+            };
+        }
+    } catch { budget = null; }
 
     res.render("admin_places", {
         user: req.session.user,
         places,
         allStyles,
         filters: { q, country, vis: vis || "", styleId: styleId || "", needs },
+        stats: {
+            total: sTotal, totalAll: sTotalAll, hidden: sHidden,
+            google: { placeId: sGPlace, rating: sGRating, dist: sGDist, distFresh: sGDistFresh, reviews: sGReviews, reviewsFresh: sGReviewsFresh },
+            tripadvisor: { locationId: sTaId, sentinel: sTaSentinel, rating: sTaRating, dist: sTaDist, distFresh: sTaDistFresh, reviews: sTaReviews, reviewsFresh: sTaReviewsFresh },
+            photos: { hero: sHero, gallery: sAnyPhoto },
+            basics: { address: sAddr, phone: sPhone, website: sWebsite, hours: sHours, description: sDesc, coords: sCoords },
+            resolver: { queued: sResolveQueued, retired: sResolveRetired },
+            budget,
+        },
     });
 });
 

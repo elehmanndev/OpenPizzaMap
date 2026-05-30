@@ -1,6 +1,95 @@
 <%- include("layout", { title: "Admin · Places", user, leaflet: false, body: String.raw`
   <h1>Places</h1>
 
+  <!-- ─────────────────────────  STATS DASHBOARD  ───────────────────────── -->
+  <div class="card" style="padding:14px 16px;">
+    <div class="row" style="gap:18px; flex-wrap:wrap; align-items:flex-start;">
+
+      <!-- Top-level counts -->
+      <div style="flex:0 0 auto; min-width:160px;">
+        <div class="small muted">Visible</div>
+        <div style="font-size:1.8rem; font-weight:700; line-height:1;">${stats.total.toLocaleString()}</div>
+        <div class="small muted" style="margin-top:4px;">${stats.hidden} hidden · ${stats.totalAll} total</div>
+      </div>
+
+      <!-- Resolver / dup signals -->
+      <div style="flex:0 0 auto; min-width:140px;">
+        <div class="small muted">Resolver</div>
+        <div style="font-size:1.1rem; font-weight:600;">${stats.resolver.queued} queued</div>
+        <div class="small muted" style="margin-top:2px;"><a href="/admin/places?needs=resolve-retired">${stats.resolver.retired} retired</a></div>
+      </div>
+
+      <!-- TA Budget -->
+      ${stats.budget ? `
+        <div style="flex:0 0 auto; min-width:180px;">
+          <div class="small muted">TA API budget</div>
+          <div style="font-size:1.0rem; font-weight:600;">${stats.budget.todayCalls}/${stats.budget.dailyCap} today</div>
+          <div class="small muted" style="margin-top:2px;">${stats.budget.monthCalls}/${stats.budget.monthlyCap} this month</div>
+        </div>
+      ` : ""}
+
+      <!-- Pillar bars -->
+      <div style="flex:1; min-width:280px;">
+        ${(() => {
+          const pct = (n) => stats.total ? Math.round(n / stats.total * 100) : 0;
+          const bar = (label, n, filterKey, freshN) => {
+            const p = pct(n);
+            const freshPct = freshN != null ? pct(freshN) : null;
+            return `
+              <div style="margin-bottom:8px;">
+                <div class="row" style="justify-content:space-between; font-size:0.85rem; margin-bottom:3px;">
+                  <span><a href="/admin/places?needs=${filterKey}" style="color:inherit;">${label}</a></span>
+                  <span class="small muted">${n.toLocaleString()} · ${p}%${freshPct != null ? ` (${freshPct}% fresh)` : ""}</span>
+                </div>
+                <div style="background:var(--c-border, #e5e7eb); height:6px; border-radius:3px; overflow:hidden; position:relative;">
+                  <div style="background:#3b82f6; height:100%; width:${p}%;"></div>
+                  ${freshPct != null ? `<div style="background:#10b981; height:100%; width:${freshPct}%; position:absolute; top:0; left:0;"></div>` : ""}
+                </div>
+              </div>
+            `;
+          };
+          return `
+            <div class="row" style="gap:18px; flex-wrap:wrap; align-items:flex-start;">
+              <div style="flex:1; min-width:240px;">
+                <div class="small" style="font-weight:600; margin-bottom:6px; color:#3b82f6;">Google Maps</div>
+                ${bar("Place ID resolved", stats.google.placeId, "no-google-id")}
+                ${bar("Rating + count", stats.google.rating, "no-google-id")}
+                ${bar("Rating distribution (bar graph)", stats.google.dist, "no-google-bar", stats.google.distFresh)}
+                ${bar("Review quotes", stats.google.reviews, "no-google-reviews", stats.google.reviewsFresh)}
+              </div>
+              <div style="flex:1; min-width:240px;">
+                <div class="small" style="font-weight:600; margin-bottom:6px; color:#10b981;">TripAdvisor</div>
+                ${bar("Location ID resolved", stats.tripadvisor.locationId, "no-ta-id")}
+                ${bar("Rating + count", stats.tripadvisor.rating, "no-ta-id")}
+                ${bar("Rating distribution (bar graph)", stats.tripadvisor.dist, "no-ta-bar", stats.tripadvisor.distFresh)}
+                ${bar("Review quotes", stats.tripadvisor.reviews, "no-ta-reviews", stats.tripadvisor.reviewsFresh)}
+                <div class="small muted" style="margin-top:4px;"><a href="/admin/places?needs=ta-sentinel">${stats.tripadvisor.sentinel} sentinels (-1, never on TA)</a></div>
+              </div>
+              <div style="flex:1; min-width:200px;">
+                <div class="small" style="font-weight:600; margin-bottom:6px; color:#f59e0b;">Photos &amp; basics</div>
+                ${bar("Hero image", stats.photos.hero, "no-hero")}
+                ${bar("Any gallery photo", stats.photos.gallery, "no-photos")}
+                ${bar("Address", stats.basics.address, "no-address")}
+                ${bar("Phone", stats.basics.phone, "no-phone")}
+                ${bar("Website", stats.basics.website, "no-website")}
+                ${bar("Opening hours", stats.basics.hours, "no-hours")}
+                ${bar("Description", stats.basics.description, "no-description")}
+                ${bar("Coordinates", stats.basics.coords, "no-coords")}
+              </div>
+            </div>
+          `;
+        })()}
+      </div>
+
+    </div>
+    <div class="small muted" style="margin-top:6px; border-top:1px solid var(--c-border, #e5e7eb); padding-top:6px;">
+      <span style="display:inline-block; width:10px; height:10px; background:#3b82f6; border-radius:2px; vertical-align:middle;"></span> has data
+      <span style="margin:0 12px;"></span>
+      <span style="display:inline-block; width:10px; height:10px; background:#10b981; border-radius:2px; vertical-align:middle;"></span> fresh (Google &lt;30d, TA &lt;90d)
+    </div>
+  </div>
+
+  <!-- ─────────────────────────  FILTERS  ───────────────────────── -->
   <div class="card">
     <form method="get" action="/admin/places" class="row" style="flex-wrap:wrap; gap:10px;">
       <div style="flex:2; min-width:180px;">
@@ -26,15 +115,32 @@
           ${allStyles.map(s => `<option value="${s.id}" ${String(filters.styleId) === String(s.id) ? "selected" : ""}>${escapeHtml(s.name)}</option>`).join("")}
         </select>
       </div>
-      <div style="flex:1; min-width:140px;">
-        <label>Needs</label>
+      <div style="flex:1.5; min-width:200px;">
+        <label>Missing</label>
         <select name="needs">
           <option value="">Anything</option>
-          <option value="no-style" ${filters.needs === "no-style" ? "selected" : ""}>No style</option>
-          <option value="no-hero" ${filters.needs === "no-hero" ? "selected" : ""}>No hero image</option>
-          <option value="no-phone" ${filters.needs === "no-phone" ? "selected" : ""}>No phone</option>
-          <option value="no-website" ${filters.needs === "no-website" ? "selected" : ""}>No website</option>
-          <option value="no-hours" ${filters.needs === "no-hours" ? "selected" : ""}>No hours</option>
+          <optgroup label="Basics">
+            <option value="no-style"      ${filters.needs === "no-style"      ? "selected" : ""}>Style</option>
+            <option value="no-hero"       ${filters.needs === "no-hero"       ? "selected" : ""}>Hero image</option>
+            <option value="no-photos"     ${filters.needs === "no-photos"     ? "selected" : ""}>Any photo</option>
+            <option value="no-phone"      ${filters.needs === "no-phone"      ? "selected" : ""}>Phone</option>
+            <option value="no-website"    ${filters.needs === "no-website"    ? "selected" : ""}>Website</option>
+            <option value="no-hours"      ${filters.needs === "no-hours"      ? "selected" : ""}>Opening hours</option>
+            <option value="no-description" ${filters.needs === "no-description" ? "selected" : ""}>Description</option>
+            <option value="no-coords"     ${filters.needs === "no-coords"     ? "selected" : ""}>Coordinates</option>
+          </optgroup>
+          <optgroup label="Google">
+            <option value="no-google-id"      ${filters.needs === "no-google-id"      ? "selected" : ""}>Place ID</option>
+            <option value="no-google-bar"     ${filters.needs === "no-google-bar"     ? "selected" : ""}>Rating distribution</option>
+            <option value="no-google-reviews" ${filters.needs === "no-google-reviews" ? "selected" : ""}>Review quotes</option>
+            <option value="resolve-retired"   ${filters.needs === "resolve-retired"   ? "selected" : ""}>Resolver retired</option>
+          </optgroup>
+          <optgroup label="TripAdvisor">
+            <option value="no-ta-id"      ${filters.needs === "no-ta-id"      ? "selected" : ""}>Location ID</option>
+            <option value="ta-sentinel"   ${filters.needs === "ta-sentinel"   ? "selected" : ""}>Sentinel (-1)</option>
+            <option value="no-ta-bar"     ${filters.needs === "no-ta-bar"     ? "selected" : ""}>Rating distribution</option>
+            <option value="no-ta-reviews" ${filters.needs === "no-ta-reviews" ? "selected" : ""}>Review quotes</option>
+          </optgroup>
         </select>
       </div>
       <div style="flex:0; align-self:end; min-width:80px;">
@@ -55,16 +161,30 @@
           <th>Name</th>
           <th>City · Country</th>
           <th>Styles</th>
-          <th style="width:36px; text-align:center;" title="Visible">👁</th>
-          <th style="width:36px; text-align:center;" title="Hero">🖼</th>
-          <th style="width:36px; text-align:center;" title="Phone">📞</th>
-          <th style="width:36px; text-align:center;" title="Website">🌐</th>
-          <th style="width:36px; text-align:center;" title="Hours">🕒</th>
+          <th style="width:32px; text-align:center;" title="Visible">👁</th>
+          <th style="width:32px; text-align:center;" title="Hero image">🖼</th>
+          <th style="width:38px; text-align:center;" title="Photo count">📷</th>
+          <th style="width:32px; text-align:center;" title="Google Place ID resolved" style="color:#3b82f6;">G</th>
+          <th style="width:32px; text-align:center;" title="Google rating distribution (bar graph)" style="color:#3b82f6;">G▮</th>
+          <th style="width:32px; text-align:center;" title="Google review quotes" style="color:#3b82f6;">G❝</th>
+          <th style="width:32px; text-align:center;" title="TripAdvisor Location ID" style="color:#10b981;">T</th>
+          <th style="width:32px; text-align:center;" title="TripAdvisor rating distribution (bar graph)" style="color:#10b981;">T▮</th>
+          <th style="width:32px; text-align:center;" title="TripAdvisor review quotes" style="color:#10b981;">T❝</th>
+          <th style="width:32px; text-align:center;" title="Phone">📞</th>
+          <th style="width:32px; text-align:center;" title="Website">🌐</th>
+          <th style="width:32px; text-align:center;" title="Hours">🕒</th>
           <th style="width:110px;"></th>
         </tr>
       </thead>
       <tbody>
-        ${places.map(p => `
+        ${places.map(p => {
+          const dot = (ok, opts = {}) => {
+            if (ok === "sentinel") return `<span class="muted" title="Sentinel — checked, not on TA" style="color:#f59e0b;">⊘</span>`;
+            return ok ? `<span style="color:${opts.color || "#10b981"};">✓</span>` : `<span class="muted">—</span>`;
+          };
+          const taIdState = p.tripadvisorLocationId === -1 ? "sentinel"
+                          : (p.tripadvisorLocationId && p.tripadvisorLocationId > 0);
+          return `
           <tr>
             <td style="text-align:center;"><input type="checkbox" class="row-cb" value="${p.id}" /></td>
             <td class="small muted">${p.id}</td>
@@ -72,10 +192,17 @@
             <td class="small">${escapeHtml(p.city || "—")} · ${escapeHtml(p.country || "—")}</td>
             <td class="small">${p.styles.length ? p.styles.map(s => escapeHtml(s.style.name)).join(", ") : '<span class="muted">—</span>'}</td>
             <td style="text-align:center;" class="small">${p.isVisible ? "✓" : '<span class="muted">—</span>'}</td>
-            <td style="text-align:center;" class="small">${p.heroImageUrl ? "✓" : '<span class="muted">—</span>'}</td>
-            <td style="text-align:center;" class="small">${p.phone ? "✓" : '<span class="muted">—</span>'}</td>
-            <td style="text-align:center;" class="small">${p.websiteUrl ? "✓" : '<span class="muted">—</span>'}</td>
-            <td style="text-align:center;" class="small">${p.openingHours ? "✓" : '<span class="muted">—</span>'}</td>
+            <td style="text-align:center;" class="small">${dot(!!p.heroImageUrl)}</td>
+            <td style="text-align:center;" class="small ${p._count.images ? "" : "muted"}">${p._count.images || "—"}</td>
+            <td style="text-align:center;" class="small">${dot(!!p.googlePlaceId, { color: "#3b82f6" })}</td>
+            <td style="text-align:center;" class="small">${dot(!!p.googleRatingsDistribution, { color: "#3b82f6" })}</td>
+            <td style="text-align:center;" class="small">${dot(!!p.googleReviewsJson, { color: "#3b82f6" })}</td>
+            <td style="text-align:center;" class="small">${dot(taIdState, { color: "#10b981" })}</td>
+            <td style="text-align:center;" class="small">${dot(!!p.tripadvisorRatingsDistribution, { color: "#10b981" })}</td>
+            <td style="text-align:center;" class="small">${dot(!!p.tripadvisorReviewsJson, { color: "#10b981" })}</td>
+            <td style="text-align:center;" class="small">${dot(!!p.phone)}</td>
+            <td style="text-align:center;" class="small">${dot(!!p.websiteUrl)}</td>
+            <td style="text-align:center;" class="small">${dot(!!p.openingHours)}</td>
             <td>
               <div class="row" style="gap:6px; justify-content:flex-end;">
                 <a class="btn primary" href="/admin/places/${p.id}">Edit</a>
@@ -83,7 +210,7 @@
               </div>
             </td>
           </tr>
-        `).join("")}
+        `;}).join("")}
       </tbody>
     </table>
   </div>
