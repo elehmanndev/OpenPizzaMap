@@ -154,3 +154,53 @@
 2312,4779089,Pizzeria Castellano
 # MISS: 1858 "Ristorante Gladiatore" Majadahonda — no TA listing for Majadahonda location
 610,3354907,Trattoria pizzeria Donna Carmela
+2357,12498860,Piccadilly Pizzeria
+2405,26497076,Su Mustazzeddu
+# MISS: 1138 "Meta Pizza" Portland — no TA listing for the SE Milwaukie Ave venue
+2518,27957211,Tema - Roma In Una Pizza
+388,7496283,Pizzeria la Gita
+2345,28543475,Strazzaria
+233,2561148,Angelo e Simonetta
+173,18964925,Pico - Pizza e Cocktail
+332,6105449,Echi Ponte Vecchio A Osaka
+346,7406876,Salina
+820,27969024,Pizza Beppe - Rotterdam Van Oldenbarneveltstraat
+2575,33280006,Forno Atipico Di Olivieri Alberto
+208,10453171,Emmy Squared Pizza - Williamsburg
+2238,27991691,Pizzeria Basta
+1283,7528628,Da Masaniello
+2014,23783592,Proxima Franco Pepe
+539,3483200,La Pineta
+2694,17374947,AMA Officina della Pizza
+2374,32763451,Avenida Calò Enopizzeria
+2036,2306198,Pizzeria La Lanterna
+1130,28513193,Grana
+# MISS: 635 "Da Fulvio" Bacoli — no TA listing for Bacoli; only Florence/Gubbio listings
+# MISS: 1888 "Pizzería Mayor" Torres de la Alameda — no TA listing
+2500,9694623,Oasi_pizzafuture
+2751,27733360,Maistà Pizza E Cucina
+# MISS: 1061 "Pizza Pushers" Algonquin — TA listing exists only for unrelated Gothenburg mobile pizzeria
+1141,21057292,The Rec Pizza & Detroit Eats
+670,23176451,Di Frabo La Vera Pizza Napoletana
+530,11913169,Pizzeria Da Gino
+2789,24190865,Nohasi Palace Hotel & SPA
+2635,27955181,GioMà Pizzeria
+556,13985279,PizzaPlex
+1631,11719016,Da Riccardo Pizza Pasta Catering
+# MISS: 1169 "Northern Fires Pizza" Minneapolis — no TA listing
+319,3506289,Hotel La Sirenella
+2182,31098845,Ristorante Rione
+371,5821381,Ristorante Pizzeria La Fenice
+2675,32696727,Legàmi
+2023,10469073,Pizzeria Cip Ciop
+2611,2033829,Saporè
+2625,4767752,Millenium
+2754,8311065,Al Taglio Laboratorio dei Sapori
+2095,33026441,Pizzeria Fratelli Nucilli
+2256,3175351,LA POSTA
+# MISS: 2771 "Loop" Albignasego — no TA listing
+# MISS: 751 "Andolini Pizzeria" Louveira Brazil — no TA listing despite AVPN certification
+1207,13810334,Alsolitoposto
+441,12393059,Trattoria Pizzeria Allegro Umeda
+
+# Agent A done — 200/200 processed

@@ -19,10 +19,13 @@
 153,28673546,Pizzeria Fina Fina - Colli Albani
 161,28207344,Pizzeria Errico Porzio (Milano)
 162,26915870,Santa Margherita
+173,18964925,Pico - Pizza e Cocktail
 194,914281,Louie & Ernie's Pizza
 202,457147,Sal and Carmine Pizza
 207,3599242,Detroit Style Pizza Co.
+208,10453171,Emmy Squared Pizza - Williamsburg
 223,4291042,Tano's Pizzeria
+233,2561148,Angelo e Simonetta
 259,2555422,Alba
 260,2210927,Cafasso
 261,1034510,Marino
@@ -35,19 +38,26 @@
 296,743683,Bella Napoli
 309,2025842,Pergola
 310,3952054,Al Borgo
+319,3506289,Hotel La Sirenella
 329,7661458,Trattoria Pizzeria Appetito
 330,1759605,Pitta 00 Ikspiari
+332,6105449,Echi Ponte Vecchio A Osaka
 334,1104575,L'Europeo di Mattozzi
 337,1640954,Gusto & Gusto
 342,2172597,Osteria Drago Verde
 343,1699670,Amici
+346,7406876,Salina
+347,4972447,Pizzeria e Trattoria Cervo
 351,5887478,Sugattiii
 352,1015679,PizzeriaTonino
+363,5074360,Dalsegno
 368,4892160,Castellano - Le Pizze di Luca
+371,5821381,Ristorante Pizzeria La Fenice
 373,1925938,Piatto Pizzeria + Enoteca (Saint John's Downtown)
 377,8055326,Pizzeria e Osteria PADRINO
 379,7251449,Tribeca
 386,4760222,Pizzeria CA PO LI
+388,7496283,Pizzeria la Gita
 396,4554499,Pizzeria Pulcinella
 399,8780545,Vera Hannam
 404,10274661,480° Gradi
@@ -73,10 +83,14 @@
 519,2411279,La Terrazza
 525,10299654,Cal's Own
 529,9669603,Pizzeria Lucci
+530,11913169,Pizzeria Da Gino
+539,3483200,La Pineta
+540,15053176,Ristorante dell'Agriturismo Paino
 542,10454548,Angelina's
 549,2184191,Antica Cantina Forentum
 551,8362087,Bananas
 552,3785715,La Ruota
+556,13985279,PizzaPlex
 557,4010979,Il Castello di Frabo
 561,11852973,Sciantusi
 562,12929970,Forno 500
@@ -90,8 +104,10 @@
 594,12849828,Re Carlo
 598,10742933,Pizzeria Trattoria Civico 29
 608,13564651,Mattarello
+610,3354907,Trattoria pizzeria Donna Carmela
 619,1400143,Amici
 620,14735870,Felix
+630,12158138,Soleado
 634,1925938,Piatto Pizzeria + Enoteca
 646,12030151,Pizzeria 1926
 652,17748595,Napoli Corner
@@ -99,6 +115,7 @@
 658,2214799,Prie Neigre
 666,9975740,La Saint Honoré
 669,20182105,Blu Maria
+670,23176451,Di Frabo La Vera Pizza Napoletana
 674,23428405,Papà Fredo
 679,17426356,Di Meglio Pizzeria
 681,23751585,Matteo Trattoria & Pizzeria
@@ -137,6 +154,7 @@
 811,17216388,That's Amore
 816,33059932,Donna Sofia
 818,3490883,Ristorante Pizzeria La Lanterna
+820,27969024,Pizza Beppe - Rotterdam Van Oldenbarneveltstraat
 823,33274113,Pizza Beppe 4
 825,23768814,GIO PIZZERIA NAPOLETANA
 828,1151979,Pepe's
@@ -151,6 +169,7 @@
 880,32709951,IL Pizzaiolo
 890,11880767,Brew Pub Espumeru & Curuxera
 892,3634231,Bel Cibo Pizza Napoletana
+893,12534491,Trecento Restaurant
 895,10482547,No 900 Maguire
 898,19830470,Vallino Pizzeria Napoletana
 899,13576716,Mozzatura
@@ -183,6 +202,7 @@
 1014,429108,Piece Brewery & Pizzeria
 1016,17423106,Bungalow by Middle Brow
 1017,33411828,Dimmi Dimmi Corner Italian
+1029,2099108,La Villa
 1034,25181465,Professor Pizza
 1054,20155215,Nancy's Pizzeria
 1059,428413,Nino's Pizza
@@ -199,8 +219,10 @@
 1109,34099550,Francesco Martucci
 1117,26970619,Vice City Pizza
 1128,439854,Original Dream Pizza
+1130,28513193,Grana
 1131,26891910,Pizza Kat
 1135,27915183,The Turning Peel
+1141,21057292,The Rec Pizza & Detroit Eats
 1151,33074829,Trevor's - Arcadia
 1155,2095050,Pomo Pizzeria Napoletana
 1166,26947630,Slice Brothers
@@ -233,6 +255,7 @@
 1277,8489205,Pizzeria Volare
 1279,1187310,Don Gennaro
 1282,6437979,Pizzeria Polipo
+1283,7528628,Da Masaniello
 1289,3628427,Pizzeria Antichi Sapori
 1291,6869315,Pizzeria Don Enzo
 1295,7629749,Pizzeria GG
@@ -319,6 +342,7 @@
 1597,10480949,Bottega Dani
 1599,10819554,Pizzarè
 1600,3490828,Da Ezio
+1631,11719016,Da Riccardo Pizza Pasta Catering
 1646,430928,Pat's Pizzeria & Ristorante
 1665,10264371,Officine del Cibo
 1668,13516787,Battil'oro
@@ -362,6 +386,8 @@
 1825,23408473,Maccarò
 1829,25085879,V Modern Italian
 1833,1994670,Ristorante Italiano il Popolo
+1840,33406942,Umore Pizza
+1846,31837299,Pizzeria mayor la puebla
 1847,32698364,Mamma Pizza
 1850,28048125,Can Edo
 1853,27761017,Farina 23
@@ -393,8 +419,11 @@
 1990,32868685,Cicci Pizzeria
 1995,2248167,Don Franchino
 2013,27344742,Flames
+2014,23783592,Proxima Franco Pepe
 2017,18962597,No Format Pizzeria
+2023,10469073,Pizzeria Cip Ciop
 2028,4909505,Agape Restaurant & Pizza
+2036,2306198,Pizzeria La Lanterna
 2039,19342742,Pizzeria Basilicò
 2041,23747158,Cotto & Mangiato da zii Fausto
 2044,8665153,Karma
@@ -403,8 +432,10 @@
 2073,14771856,Kalavri - Anima & Pizza
 2092,10489769,Grains
 2093,12971277,Al Paradise
+2095,33026441,Pizzeria Fratelli Nucilli
 2100,6518518,La Romana
 2105,27958456,Cannaruto – Pizza & Fritti Artigianali
+2106,33028912,Le Cinquine - Pizza e Tradizione Cecchini
 2112,27375072,ME
 2121,3775434,La Pizzeria Maxim
 2122,19689798,Pizzeria Lievito Concalma (Lievito la Pizzetteria)
@@ -419,6 +450,7 @@
 2174,27926837,Santissima Pizza
 2175,7149474,Capriccio
 2180,27537810,Kore
+2182,31098845,Ristorante Rione
 2183,4092799,Oasi
 2192,5506850,Pizzeria Levante
 2197,2664159,Giorgio & Chiara
@@ -433,8 +465,10 @@
 2231,15529839,30 11 Donatelli
 2235,2080574,Da Giovanni
 2237,2446400,Ristorante Val Pomaro
+2238,27991691,Pizzeria Basta
 2247,4788131,Bar pizzeria birreria excelsior
 2251,7282801,Verace
+2256,3175351,LA POSTA
 2257,27995543,Agrumi – Pizza Sushi Drink
 2258,26817228,OMG!
 2265,21380480,Fuoco
@@ -447,17 +481,21 @@
 2290,26503525,Lievin / Ian Spampatti
 2296,23357547,Campana Pizza In Teglia
 2303,13810205,Degusto
+2312,4779089,Pizzeria Castellano
 2315,25384215,San Biagio – Pizza & Bolle
 2318,27507283,Ultra
 2324,23800085,Brò Cucina Nouveau
 2332,27716598,Mirko Cicco – Il Golosone
 2334,27823226,Teglia – La Pizza al Taglio
 2339,2230503,PizzaArt
+2345,28543475,Strazzaria
 2347,23631700,Dodo
 2356,12537341,Berberè
+2357,12498860,Piccadilly Pizzeria
 2369,21235110,Forbici Pizza
 2370,2177404,Enosteria Mangia
 2371,1812930,Orsucci dal 1922
+2374,32763451,Avenida Calò Enopizzeria
 2380,33324902,Casa Tramontano
 2386,33056891,12 Pollici
 2392,12572322,Era Pizza
@@ -465,6 +503,7 @@
 2399,5012210,Pizzeria San Martin - Da Federico
 2401,4302095,Pizzeria Centrale
 2404,27707215,Carlo Fiamma
+2405,26497076,Su Mustazzeddu
 2412,15594612,Basilico
 2415,13391825,Gabin Gusto Esclamativo!
 2420,6849566,Marzitelli
@@ -481,9 +520,11 @@
 2483,28140837,Pizza Bakery Salvatore La Martina
 2489,6350684,È bona furia
 2498,10289857,Olio & Basilico
+2500,9694623,Oasi_pizzafuture
 2510,10506501,Hibiscus
 2511,2006113,Berberè
 2512,33966443,Luca! – Pizza e Fritti
+2518,27957211,Tema - Roma In Una Pizza
 2521,17380711,Cuore & Sapore
 2538,27491028,Gesti Restaurant
 2542,13108756,La bottega
@@ -493,26 +534,32 @@
 2566,27824915,Slice Of Capanno
 2569,27408959,Il Bacaro della Pizza
 2570,25407348,A Varcuzza
+2575,33280006,Forno Atipico Di Olivieri Alberto
 2585,2363222,Ristorante Pizzeria Rock 1978
 2586,2444616,Bella Napoli
 2587,21174549,#Prefermento
 2598,24137445,Fermento - Pizza E Bolle
 2602,3484533,La Rusticana
 2609,17332133,Spicchi d'Arte
+2611,2033829,Saporè
 2614,3773622,Cibò
 2618,2299194,Pulcinella
 2620,25192937,Trancio – pizza in teglia
+2625,4767752,Millenium
 2626,17143059,Pizzeria La Villa
+2635,27955181,GioMà Pizzeria
 2638,24154618,Luppolo e Grano
 2653,2286827,Pizza 120
 2657,4003831,Santa Caterina
 2663,1966029,Locanda Cervino
 2666,26495642,La Villa – Pizza in Teglia
+2675,32696727,Legàmi
 2677,6940331,DaZero Pizza e Territorio
 2680,28654492,La Vita è Bella
 2683,9607297,La Cucina
 2685,17815713,That's Amore
 2686,27873830,Quattro Braccia
+2694,17374947,AMA Officina della Pizza
 2695,5987183,Fratelli Mascolo dal 1995
 2697,24153630,Dal Fornaro del Castello
 2711,13955698,Poppy's
@@ -524,10 +571,13 @@
 2733,27750224,Capaldo Forno Contemporaneo
 2742,3249445,Pompei
 2746,14126582,La Lavagna Pizzeria
+2751,27733360,Maistà Pizza E Cucina
 2752,10361351,La Corte del Pettolino
+2754,8311065,Al Taglio Laboratorio dei Sapori
 2763,27940372,Sgranocchia Pizzeria
 2766,24869548,Twenties
 2769,2211786,Araldo Arte del Gusto
+2789,24190865,Nohasi Palace Hotel & SPA
 2791,25182710,AmaRAnto
 2793,32969846,Camilla Pizza
 2795,28059440,Björn Pizzería
