@@ -540,6 +540,7 @@ function coordsFromUrl(url) {
 // rewritten yet). Patterns mirror probe-playwright-feasibility.js.
 async function extractPlaceIdFromPage(page) {
     const url = page.url() || "";
+    // ChIJ format (preferred — matches historical data from Google Places API)
     for (const re of [
         /!1s(ChIJ[\w\-_]+)/,
         /!16s.*?(ChIJ[\w\-_]+)/,
@@ -551,7 +552,17 @@ async function extractPlaceIdFromPage(page) {
     }
     const html = await page.content().catch(() => "");
     const m = /(ChIJ[\w\-_]{20,})/g.exec(html);
-    return m ? m[1] : null;
+    if (m) return m[1];
+    // FTID hex format fallback — Google Maps serves /maps/place/ URLs with
+    // !1s0xAAAA:0xBBBB instead of !1sChIJ... for direct searches, especially
+    // from EU-geolocated IPs. Both encode the same place uniquely; the FTID
+    // is a valid identifier downstream (Maps URLs accept ?ftid=0x...:0x...).
+    // Confirmed 2026-05-30: Di Fara Pizza Brooklyn resolved via consent click
+    // from ES-located opm-runner IP yielded FTID-only URL even after
+    // networkidle wait.
+    const ftidMatch = /!1s(0x[0-9a-f]+:0x[0-9a-f]+)/i.exec(url);
+    if (ftidMatch) return ftidMatch[1];
+    return null;
 }
 const COORD_TRUST_M = 200;
 
@@ -1139,6 +1150,15 @@ async function findPlaceByName(page, { name, city, country, lat, lng } = {}) {
             await first.click().catch(() => {});
             await page.waitForSelector("h1", { timeout: 8000 }).catch(() => null);
         }
+
+        // The h1 appears at ~1.4s but the URL takes another 2-4s to update
+        // from /maps/search/ to /maps/place/ with the place identifier
+        // embedded. Extracting before the URL settles returns null.
+        // Confirmed 2026-05-30 with probe-consent-flow.js: STEP 6 (no URL
+        // wait) had no ChIJ/FTID, STEP 7 (3s wait) had FTID in URL.
+        await page.waitForURL(u => /\/maps\/place\//.test(u.toString()), {
+            timeout: 5000,
+        }).catch(() => {});
 
         const placeId = await extractPlaceIdFromPage(page);
         if (!placeId) return null;
