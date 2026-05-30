@@ -64,7 +64,8 @@ const ADMIN_API_KEY = process.env.ADMIN_API_KEY;
             console.log(`  #${placeId} "${name}" → ${locationId}`);
             applied++;
         } else {
-            console.warn(`  #${placeId} "${name}" → HTTP ${r.status}`);
+            const body = await r.text().catch(() => "");
+            console.warn(`  #${placeId} "${name}" → HTTP ${r.status} :: ${body.slice(0, 300)}`);
             failed++;
         }
         await new Promise((res) => setTimeout(res, 80));
