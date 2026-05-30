@@ -63,10 +63,19 @@ async function run({ limit = 5, disconnect = true } = {}) {
             if (!r || !r.matched) {
                 const reason = r?.reason || "no-match";
                 console.log(`[resolve] #${p.id} "${p.name}" — ${reason}`);
-                // Stamp enrichedAt so queue rotates this row to the back.
+                // 2026-05-30: for definitive mismatches (found a place,
+                // verified it's the wrong one) bump enrichmentVersion=1
+                // so the queue stops re-picking. Retrying won't change
+                // the outcome unless the input data (name, city, coords)
+                // changes — which would require human edit. For
+                // "no-match" (resolver returned null), also mark — same
+                // logic, this place simply isn't on Google Maps.
                 await prisma.place.update({
                     where: { id: p.id },
-                    data: { enrichedAt: new Date() },
+                    data: {
+                        enrichedAt: new Date(),
+                        enrichmentVersion: 1,
+                    },
                 }).catch(() => {});
                 if (reason === "name-mismatch" || reason === "coord-mismatch") stats.mismatch++;
                 else stats.missed++;
@@ -97,7 +106,9 @@ async function run({ limit = 5, disconnect = true } = {}) {
                 // duplicate of an existing row. Don't crash + retry forever.
                 // Mark enrichmentVersion=1 so the queue stops picking it,
                 // and log loudly as a dedup candidate.
-                if (writeErr.code === "P2002") {
+                const isUniqueViolation = writeErr.code === "P2002"
+                    || /Unique constraint failed/i.test(writeErr.message || "");
+                if (isUniqueViolation) {
                     const dup = await prisma.place.findFirst({
                         where: { googlePlaceId: r.placeId, NOT: { id: p.id } },
                         select: { id: true, name: true, city: true },
