@@ -30,7 +30,7 @@
 const fs = require("fs");
 const path = require("path");
 const { prisma, ROOT } = require("../lib/bootstrap");
-const { createGmapsPage, scrapeRatingsDistribution } = require("../lib/gmaps");
+const { createGmapsPage, scrapeRatingsDistribution, extractGoogleReviewsFromOpenPanel } = require("../lib/gmaps");
 
 const BACKOFF_FILE = path.join(ROOT, "data", "cache", "ratings-dist-backoff.json");
 const STRIKE_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -161,13 +161,23 @@ async function run({ limit = 10, disconnect = true } = {}) {
             continue;
         }
 
-        console.log(`[ratingsDist] #${p.id} "${p.name}" — dist=[${result.dist.join(",")}] sum=${result.total} drift=${driftPct}% (${elapsed}s)`);
+        // Piggyback: extract review cards from the already-open Reviews
+        // tab. Costs ~3s/place (a few feed scrolls + DOM walk). Stores
+        // structured reviews so place.ejs can render them alongside the
+        // refreshed bar graph.
+        const reviews = await extractGoogleReviewsFromOpenPanel(page, 5);
+
+        console.log(`[ratingsDist] #${p.id} "${p.name}" — dist=[${result.dist.join(",")}] sum=${result.total} drift=${driftPct}% reviews=${reviews.length} (${elapsed}s)`);
 
         await prisma.place.update({
             where: { id: p.id },
             data: {
                 googleRatingsDistribution: result.dist,
                 googleRatingsScrapedAt: new Date(),
+                ...(reviews.length ? {
+                    googleReviewsJson: JSON.stringify(reviews),
+                    googleReviewsFetchedAt: new Date(),
+                } : {}),
             },
         }).catch((e) => {
             console.warn(`[ratingsDist] #${p.id} db update failed: ${e.message}`);

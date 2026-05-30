@@ -1002,15 +1002,22 @@ async function scrapeRatingsDistribution(page, { googlePlaceId } = {}) {
             { waitUntil: "domcontentloaded", timeout: 30000 }
         );
 
-        // Consent dismissal — same selector set as scrapeReviews.
-        for (const sel of [
-            'button[aria-label*="Accept"]',
-            'button[aria-label*="Acepto"]',
-            'button[aria-label*="Akzeptieren"]',
-            'form[action*="consent"] button',
-        ]) {
-            const btn = await page.$(sel).catch(() => null);
-            if (btn) { await btn.click().catch(() => {}); await sleep(500); break; }
+        // Consent dismissal — same fix as findPlaceByName (2026-05-30).
+        // ES-geolocated IPs hit consent.google.com/m which renders two
+        // copies of "Accept all" (mobile + desktop). The aria-label loop
+        // picked a hidden duplicate, click silently failed. Force-click
+        // by stable jsname + wait for nav away from consent.
+        if (/consent\.google\.com/.test(page.url())) {
+            const acceptBtn = page.locator(
+                'button[jsname="b3VHJd"], button[aria-label="Accept all"]'
+            ).first();
+            if (await acceptBtn.count().catch(() => 0)) {
+                await Promise.all([
+                    page.waitForURL(u => !/consent\.google\.com/.test(u.toString()),
+                                    { timeout: 15000 }).catch(() => {}),
+                    acceptBtn.click({ force: true }).catch(() => {}),
+                ]);
+            }
         }
 
         // CAPTCHA check — Google's /sorry/index page is the tell.
@@ -1092,6 +1099,85 @@ async function scrapeRatingsDistribution(page, { googlePlaceId } = {}) {
         return { dist, total: sum };
     } catch (err) {
         return { error: err.message || String(err) };
+    }
+}
+
+// extractGoogleReviewsFromOpenPanel — assumes the page is already sitting
+// on a Place's Reviews tab (e.g. immediately after scrapeRatingsDistribution
+// completed successfully). Scrolls the feed to load a few cards, then
+// extracts structured review data.
+//
+// Returns: Array<{ author, rating, text, relativeTime }> — empty on miss.
+// Shape matches what src/routes/pages.js parseReviews expects so place.ejs
+// renders the cards correctly.
+//
+// Reuses the open page — no nav, no consent click, near-zero overhead.
+async function extractGoogleReviewsFromOpenPanel(page, maxReviews = 5) {
+    try {
+        // Feed should already be present from scrapeRatingsDistribution.
+        const hasFeed = await page.$('[role="feed"]').catch(() => null);
+        if (!hasFeed) return [];
+
+        // Scroll the feed a few times to load review cards. Google
+        // virtualizes the list — cards beyond the visible area aren't in
+        // the DOM until scrolled into view.
+        for (let i = 0; i < 3; i++) {
+            await page.evaluate(() => {
+                const feed = document.querySelector('[role="feed"]');
+                if (feed) feed.scrollBy(0, 800);
+            }).catch(() => {});
+            await sleep(700);
+        }
+
+        return await page.evaluate((max) => {
+            const out = [];
+            for (const card of document.querySelectorAll('[data-review-id]')) {
+                // Author: usually the first <button> with a name aria-label,
+                // or the first link-y element with text content.
+                let author = "";
+                const authorEl = card.querySelector('button[aria-label][jsaction*="user"], div[class*="d4r55"], div[class*="X5PpBb"]');
+                if (authorEl) author = (authorEl.textContent || "").replace(/\s+/g, " ").trim();
+
+                // Rating: aria-label like "5 stars" on the stars container.
+                let rating = null;
+                for (const el of card.querySelectorAll('[aria-label]')) {
+                    const m = (el.getAttribute("aria-label") || "").match(/^(\d)(?:[.,](\d))?\s*star/i);
+                    if (m) {
+                        rating = m[2] ? Number(`${m[1]}.${m[2]}`) : Number(m[1]);
+                        break;
+                    }
+                }
+
+                // Relative time: "a month ago", "2 weeks ago", etc.
+                let relativeTime = "";
+                for (const span of card.querySelectorAll("span")) {
+                    const t = (span.textContent || "").trim();
+                    if (/\b(ago|yesterday|last (week|month|year))\b/i.test(t) && t.length < 40) {
+                        relativeTime = t;
+                        break;
+                    }
+                }
+
+                // Body text: the longest <span> that isn't a UI label or date.
+                let text = "";
+                for (const span of card.querySelectorAll("span")) {
+                    const t = (span.textContent || "").replace(/\s+/g, " ").trim();
+                    if (t.length >= 80 && t.length <= 1500 &&
+                        !/^[\d.,]+\s*(stars?|★|reviews?)/i.test(t) &&
+                        !/(ago|yesterday|last (week|month|year))$/i.test(t)) {
+                        if (t.length > text.length) text = t;
+                    }
+                }
+
+                if (text || author) {
+                    out.push({ author, rating, text, relativeTime });
+                }
+                if (out.length >= max) break;
+            }
+            return out;
+        }, maxReviews).catch(() => []);
+    } catch {
+        return [];
     }
 }
 
@@ -1182,4 +1268,4 @@ async function findPlaceByName(page, { name, city, country, lat, lng } = {}) {
     }
 }
 
-module.exports = { createGmapsPage, lookup, scrapeReviews, scrapePhotos, scrapeRatingsDistribution, findPlaceByName, loadCache, saveCache, CACHE_PATH };
+module.exports = { createGmapsPage, lookup, scrapeReviews, scrapePhotos, scrapeRatingsDistribution, extractGoogleReviewsFromOpenPanel, findPlaceByName, loadCache, saveCache, CACHE_PATH };
