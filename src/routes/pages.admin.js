@@ -10,7 +10,6 @@
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
-const { Prisma } = require("@prisma/client");
 const { prisma } = require("../db");
 const { requireAdmin } = require("../middleware/auth");
 const { buildSitemapXml, writeSitemapFiles } = require("../services/sitemap");
@@ -423,10 +422,10 @@ router.get("/admin/places", requireAdmin, async (req, res) => {
     else if (needs === "no-website") where.websiteUrl = null;
     else if (needs === "no-hours") where.openingHours = null;
     else if (needs === "no-google-id") where.googlePlaceId = null;
-    else if (needs === "no-google-bar") where.googleRatingsDistribution = { equals: Prisma.DbNull };
+    else if (needs === "no-google-bar") where.googleRatingsDistribution = null;
     else if (needs === "no-ta-id") where.tripadvisorLocationId = null;
     else if (needs === "ta-sentinel") where.tripadvisorLocationId = -1;
-    else if (needs === "no-ta-bar") where.tripadvisorRatingsDistribution = { equals: Prisma.DbNull };
+    else if (needs === "no-ta-bar") where.tripadvisorRatingsDistribution = null;
     else if (needs === "no-photos") where.images = { none: {} };
     else if (needs === "no-google-reviews") where.googleReviewsJson = null;
     else if (needs === "no-ta-reviews") where.tripadvisorReviewsJson = null;
@@ -472,7 +471,7 @@ router.get("/admin/places", requireAdmin, async (req, res) => {
         // pattern instead, which works on all Prisma versions.
         prisma.place.count({ where: { ...visPub, NOT: { googlePlaceId: null } } }),
         prisma.place.count({ where: { ...visPub, NOT: { googleRating: null } } }),
-        prisma.place.count({ where: { ...visPub, googleRatingsDistribution: { not: Prisma.DbNull } } }),
+        prisma.place.count({ where: { ...visPub, NOT: { googleRatingsDistribution: null } } }),
         prisma.place.count({ where: { ...visPub, googleRatingsScrapedAt: { gte: day30 } } }),
         prisma.place.count({ where: { ...visPub, NOT: { googleReviewsJson: null } } }),
         prisma.place.count({ where: { ...visPub, googleReviewsFetchedAt: { gte: day30 } } }),
@@ -481,7 +480,7 @@ router.get("/admin/places", requireAdmin, async (req, res) => {
         prisma.place.count({ where: { ...visPub, tripadvisorLocationId: { gt: 0 } } }),
         prisma.place.count({ where: { ...visPub, tripadvisorLocationId: -1 } }),
         prisma.place.count({ where: { ...visPub, NOT: { tripadvisorRating: null } } }),
-        prisma.place.count({ where: { ...visPub, tripadvisorRatingsDistribution: { not: Prisma.DbNull } } }),
+        prisma.place.count({ where: { ...visPub, NOT: { tripadvisorRatingsDistribution: null } } }),
         prisma.place.count({ where: { ...visPub, tripadvisorRatingsScrapedAt: { gte: day90 } } }),
         prisma.place.count({ where: { ...visPub, NOT: { tripadvisorReviewsJson: null } } }),
         prisma.place.count({ where: { ...visPub, tripadvisorReviewsFetchedAt: { gte: day90 } } }),

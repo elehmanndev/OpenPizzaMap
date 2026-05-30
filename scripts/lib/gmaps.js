@@ -997,16 +997,10 @@ async function scrapePhotos(page, {
 async function scrapeRatingsDistribution(page, { googlePlaceId } = {}) {
     if (!googlePlaceId) return { error: "no googlePlaceId" };
     try {
-        // googlePlaceId can be either ChIJ format (legacy, from paid Google
-        // Places API) or FTID hex format (new, from the Playwright resolver
-        // since 2026-05-30). The `place_id:<id>` query param only works for
-        // ChIJ; for FTID we use the cid pattern: cid = decimal of the
-        // second hex pair, which Google Maps resolves to the same place.
-        const ftidMatch = /^0x([0-9a-f]+):0x([0-9a-f]+)$/i.exec(googlePlaceId);
-        const url = ftidMatch
-            ? `https://www.google.com/maps?cid=${BigInt("0x" + ftidMatch[2]).toString()}&hl=en`
-            : `https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(googlePlaceId)}&hl=en`;
-        await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
+        await page.goto(
+            `https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(googlePlaceId)}&hl=en`,
+            { waitUntil: "domcontentloaded", timeout: 30000 }
+        );
 
         // Consent dismissal — same fix as findPlaceByName (2026-05-30).
         // ES-geolocated IPs hit consent.google.com/m which renders two
