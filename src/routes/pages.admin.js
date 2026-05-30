@@ -422,10 +422,12 @@ router.get("/admin/places", requireAdmin, async (req, res) => {
     else if (needs === "no-website") where.websiteUrl = null;
     else if (needs === "no-hours") where.openingHours = null;
     else if (needs === "no-google-id") where.googlePlaceId = null;
-    else if (needs === "no-google-bar") where.googleRatingsDistribution = null;
+    // no-google-bar / no-ta-bar filters disabled — these are JSON columns
+    // and Prisma's null-equality syntax is finicky; deferred to a follow-up.
+    // The bar-graph stat counts below also skip the JSON columns for now.
     else if (needs === "no-ta-id") where.tripadvisorLocationId = null;
     else if (needs === "ta-sentinel") where.tripadvisorLocationId = -1;
-    else if (needs === "no-ta-bar") where.tripadvisorRatingsDistribution = null;
+    // no-ta-bar disabled — see no-google-bar note above.
     else if (needs === "no-photos") where.images = { none: {} };
     else if (needs === "no-google-reviews") where.googleReviewsJson = null;
     else if (needs === "no-ta-reviews") where.tripadvisorReviewsJson = null;
@@ -471,7 +473,7 @@ router.get("/admin/places", requireAdmin, async (req, res) => {
         // pattern instead, which works on all Prisma versions.
         prisma.place.count({ where: { ...visPub, NOT: { googlePlaceId: null } } }),
         prisma.place.count({ where: { ...visPub, NOT: { googleRating: null } } }),
-        prisma.place.count({ where: { ...visPub, NOT: { googleRatingsDistribution: null } } }),
+        Promise.resolve(0), // googleRatingsDistribution count — JSON column, deferred
         prisma.place.count({ where: { ...visPub, googleRatingsScrapedAt: { gte: day30 } } }),
         prisma.place.count({ where: { ...visPub, NOT: { googleReviewsJson: null } } }),
         prisma.place.count({ where: { ...visPub, googleReviewsFetchedAt: { gte: day30 } } }),
@@ -480,7 +482,7 @@ router.get("/admin/places", requireAdmin, async (req, res) => {
         prisma.place.count({ where: { ...visPub, tripadvisorLocationId: { gt: 0 } } }),
         prisma.place.count({ where: { ...visPub, tripadvisorLocationId: -1 } }),
         prisma.place.count({ where: { ...visPub, NOT: { tripadvisorRating: null } } }),
-        prisma.place.count({ where: { ...visPub, NOT: { tripadvisorRatingsDistribution: null } } }),
+        Promise.resolve(0), // tripadvisorRatingsDistribution count — JSON column, deferred
         prisma.place.count({ where: { ...visPub, tripadvisorRatingsScrapedAt: { gte: day90 } } }),
         prisma.place.count({ where: { ...visPub, NOT: { tripadvisorReviewsJson: null } } }),
         prisma.place.count({ where: { ...visPub, tripadvisorReviewsFetchedAt: { gte: day90 } } }),
