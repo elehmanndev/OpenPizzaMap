@@ -74,3 +74,7 @@ docs/trace-tool/
 docs/svg-from-png/
 docs/source-icons/
 public/img/stock/.raw-backup/
+
+m*.jpeg
+.playwright-mcp/
+

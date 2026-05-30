@@ -4660,6 +4660,18 @@ body.opm-home {
   font-family: 'Outfit', sans-serif;
 }
 
+/* `body > header` (defined at the top of this file for layout.ejs) pins
+   itself with position:fixed + height:var(--header-height). That rule
+   leaks onto the homepage header — they're both `body > header` — and
+   covers the first line of the H1. Reset the bits we don't want here. */
+body.opm-home > header.opm-home-header {
+  position: static;
+  height: auto;
+  border-bottom: none;
+  background: transparent;
+  gap: 0;
+  box-sizing: content-box;
+}
 .opm-home-header {
   display: flex;
   align-items: center;
@@ -5245,10 +5257,30 @@ img.opm-hero-suggest-thumb,
   font-size: 15px;
 }
 .opm-featured-tabs {
-  display: inline-flex;
-  flex-wrap: wrap;
+  display: flex;
+  flex-wrap: nowrap;
   gap: 8px;
-  justify-content: center;
+  justify-content: flex-start;
+  /* Horizontal scroll on narrow screens so all four tabs stay in one
+     row. scroll-snap snaps to each chip; scrollbar hidden for cleanliness. */
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  /* Negative inline margins + positive padding let the scroll container
+     bleed to the section edges while keeping the first/last chips inset. */
+  margin: 0 -20px;
+  padding: 4px 20px;
+}
+.opm-featured-tabs::-webkit-scrollbar { display: none; }
+.opm-featured-tab { scroll-snap-align: start; flex-shrink: 0; }
+@media (min-width: 768px) {
+  .opm-featured-tabs {
+    justify-content: center;
+    flex-wrap: wrap;
+    overflow-x: visible;
+    margin: 0;
+    padding: 0;
+  }
 }
 .opm-featured-tab {
   padding: 8px 16px;

@@ -136,7 +136,9 @@ async function getFeaturedPlaces(tab = "top-rated", take = 8) {
       id: p.id,
       title: p.name,
       categoryLabel: styleLabel,
-      address: `${p.addressLine}, ${p.city}, ${p.country}`,
+      // Card UI is too small for a full street address — show city +
+      // country only. Full address still rendered on the place profile.
+      address: [p.city, p.country].filter(Boolean).join(", "),
       href: p.slug ? `/place/${p.slug}` : `/place/${p.id}`,
       image: p.heroImageUrl,
       fallback: stampFor(p.id),
