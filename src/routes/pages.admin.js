@@ -466,32 +466,34 @@ router.get("/admin/places", requireAdmin, async (req, res) => {
         prisma.place.count({}),
         prisma.place.count({ where: { isVisible: false } }),
 
-        // Google
-        prisma.place.count({ where: { ...visPub, googlePlaceId: { not: null } } }),
-        prisma.place.count({ where: { ...visPub, googleRating: { not: null } } }),
-        prisma.place.count({ where: { ...visPub, googleRatingsDistribution: { not: null } } }),
+        // Google. Prisma rejects `{ field: { not: null } }` on this
+        // codebase's Prisma version — using top-level `NOT: { field: null }`
+        // pattern instead, which works on all Prisma versions.
+        prisma.place.count({ where: { ...visPub, NOT: { googlePlaceId: null } } }),
+        prisma.place.count({ where: { ...visPub, NOT: { googleRating: null } } }),
+        prisma.place.count({ where: { ...visPub, NOT: { googleRatingsDistribution: null } } }),
         prisma.place.count({ where: { ...visPub, googleRatingsScrapedAt: { gte: day30 } } }),
-        prisma.place.count({ where: { ...visPub, googleReviewsJson: { not: null } } }),
+        prisma.place.count({ where: { ...visPub, NOT: { googleReviewsJson: null } } }),
         prisma.place.count({ where: { ...visPub, googleReviewsFetchedAt: { gte: day30 } } }),
 
         // TripAdvisor
         prisma.place.count({ where: { ...visPub, tripadvisorLocationId: { gt: 0 } } }),
         prisma.place.count({ where: { ...visPub, tripadvisorLocationId: -1 } }),
-        prisma.place.count({ where: { ...visPub, tripadvisorRating: { not: null } } }),
-        prisma.place.count({ where: { ...visPub, tripadvisorRatingsDistribution: { not: null } } }),
+        prisma.place.count({ where: { ...visPub, NOT: { tripadvisorRating: null } } }),
+        prisma.place.count({ where: { ...visPub, NOT: { tripadvisorRatingsDistribution: null } } }),
         prisma.place.count({ where: { ...visPub, tripadvisorRatingsScrapedAt: { gte: day90 } } }),
-        prisma.place.count({ where: { ...visPub, tripadvisorReviewsJson: { not: null } } }),
+        prisma.place.count({ where: { ...visPub, NOT: { tripadvisorReviewsJson: null } } }),
         prisma.place.count({ where: { ...visPub, tripadvisorReviewsFetchedAt: { gte: day90 } } }),
 
         // Photos & basics
-        prisma.place.count({ where: { ...visPub, heroImageUrl: { not: null } } }),
+        prisma.place.count({ where: { ...visPub, NOT: { heroImageUrl: null } } }),
         prisma.place.count({ where: { ...visPub, images: { some: {} } } }),
-        prisma.place.count({ where: { ...visPub, addressLine: { not: null } } }),
-        prisma.place.count({ where: { ...visPub, phone: { not: null } } }),
-        prisma.place.count({ where: { ...visPub, websiteUrl: { not: null } } }),
-        prisma.place.count({ where: { ...visPub, openingHours: { not: null } } }),
-        prisma.place.count({ where: { ...visPub, descriptionHtml: { not: null } } }),
-        prisma.place.count({ where: { ...visPub, lat: { not: null }, lng: { not: null } } }),
+        prisma.place.count({ where: { ...visPub, NOT: { addressLine: null } } }),
+        prisma.place.count({ where: { ...visPub, NOT: { phone: null } } }),
+        prisma.place.count({ where: { ...visPub, NOT: { websiteUrl: null } } }),
+        prisma.place.count({ where: { ...visPub, NOT: { openingHours: null } } }),
+        prisma.place.count({ where: { ...visPub, NOT: { descriptionHtml: null } } }),
+        prisma.place.count({ where: { ...visPub, NOT: [{ lat: null }, { lng: null }] } }),
 
         // Resolver state
         prisma.place.count({ where: { ...visPub, googlePlaceId: null, enrichmentVersion: 0 } }),
