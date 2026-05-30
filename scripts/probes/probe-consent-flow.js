@@ -103,5 +103,19 @@ const { chromium } = require("playwright");
     const chijCount2 = (html2.match(/ChIJ[\w\-_]{20,}/g) || []).length;
     console.log("  ChIJ total hits:", chijCount2);
 
+    console.log("\nSTEP 8 — wait for networkidle, then re-check everything");
+    await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => {});
+    console.log("  url after idle: ", page.url());
+    const html3 = await page.content();
+    const htmlMatch3 = /(ChIJ[\w\-_]{20,})/.exec(html3);
+    console.log("  ChIJ in HTML:   ", htmlMatch3 ? htmlMatch3[1] : "NONE");
+    console.log("  ChIJ total hits:", (html3.match(/ChIJ[\w\-_]{20,}/g) || []).length);
+    // Also try FTID extraction
+    const ftidMatch = /!1s(0x[0-9a-f]+:0x[0-9a-f]+)/.exec(page.url());
+    console.log("  FTID in URL:    ", ftidMatch ? ftidMatch[1] : "NONE");
+    // And MID (Knowledge Graph ID)
+    const midMatch = /!16s%2F([\w%2F]+)/.exec(page.url());
+    console.log("  MID in URL:     ", midMatch ? decodeURIComponent(midMatch[1]) : "NONE");
+
     await browser.close();
 })().catch((e) => { console.error("ERR:", e); process.exit(1); });
