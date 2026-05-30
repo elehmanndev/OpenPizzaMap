@@ -19,7 +19,7 @@ router.get("/home-preview", async (req, res) => {
     const homepage = require("../services/homepage");
     const tab = String(req.query.tab || "top-rated");
     const [cityCards, styleCards, counters, featured, collage, footerLinks] = await Promise.all([
-        homepage.getCityCards(4),
+        homepage.getCityCards(12),
         homepage.getStyleCards(),
         homepage.getCounters(),
         homepage.getFeaturedPlaces(tab, 8),

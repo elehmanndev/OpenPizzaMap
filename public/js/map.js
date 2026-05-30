@@ -167,7 +167,7 @@
   ${hero}
   <div class="ppc-body">
     <h2 class="ppc-name">${esc(p.name)}</h2>
-    <a class="ppc-directions" href="${esc(directions)}" target="_blank" rel="noopener">${esc(address)}</a>
+    <a class="ppc-directions" href="${esc(directions)}" target="_blank" rel="noopener"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${esc(address)}</a>
     ${chips ? `<div class="ppc-styles">${chips}</div>` : ""}
     <p class="ppc-summary">${esc(summaryFor(p))}</p>
     <a class="ppc-cta" href="/place/${p.id}${p.slug ? '/' + p.slug : ''}">View profile</a>
@@ -212,7 +212,7 @@ ${hero}
 ${fav}
 <div class="msc-body">
   <h3 class="msc-name">${esc(p.name)}</h3>
-  ${cityLine ? `<p class="msc-meta">${esc(cityLine)}</p>` : ""}
+  ${cityLine ? `<p class="msc-meta"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${esc(cityLine)}</p>` : ""}
   ${priceLine ? `<p class="msc-price">${esc(priceLine)}</p>` : ""}
   ${chips ? `<div class="msc-styles">${chips}</div>` : ""}
 </div>`.trim();

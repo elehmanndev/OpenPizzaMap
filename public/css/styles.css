@@ -937,7 +937,11 @@ img.map-suggest-thumb { display: block; }
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
+.msc-meta svg { flex-shrink: 0; }
 .msc-price {
   font-size: 12px;
   color: var(--c-muted, #777);
@@ -1203,7 +1207,9 @@ img.map-suggest-thumb { display: block; }
   color: var(--c-text);
 }
 .ppc-directions {
-  display: block;
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
   font-size: 13px;
   font-weight: 500;
   color: var(--c-muted);
@@ -1211,6 +1217,7 @@ img.map-suggest-thumb { display: block; }
   margin-bottom: 12px;
   line-height: 1.4;
 }
+.ppc-directions svg { flex-shrink: 0; margin-top: 2px; }
 .ppc-directions:hover {
   color: var(--c-accent);
   text-decoration: underline;
@@ -5096,7 +5103,7 @@ body.opm-home {
     grid-template-columns: 1.1fr 1fr;
     gap: 56px;
   }
-  .opm-hero-collage { display: grid; }
+  .opm-hero-collage { display: grid; margin-right: -20px; }
   .opm-hero { padding-top: 48px; padding-bottom: 56px; }
 }
 
@@ -5204,10 +5211,32 @@ body.opm-home {
   padding: 22%;
   background: linear-gradient(135deg, #f3eedf 0%, #e7dec7 100%);
 }
-.opm-featured-card-pill {
+.opm-featured-card-rating-badge {
+  /* Mirrors .msc-rating on map sidebar cards — black square with the
+     OPM rating in white, top-left of the hero image. */
   position: absolute;
   top: 10px;
   left: 10px;
+  min-width: 38px;
+  height: 38px;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1e1e1e;
+  color: #fff;
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: 6px;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.30);
+}
+.opm-featured-card-pill {
+  position: absolute;
+  top: 10px;
+  right: 10px;
   padding: 4px 10px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.95);
@@ -5241,6 +5270,11 @@ body.opm-home {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+.opm-featured-card-addr-pin {
+  vertical-align: -2px;
+  margin-right: 5px;
+  flex-shrink: 0;
+}
 .opm-featured-card-foot {
   margin-top: auto;
   padding-top: 10px;
@@ -5263,9 +5297,15 @@ body.opm-home {
   font-weight: 600;
 }
 .opm-featured-card-price {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(var(--c-accent-rgb), 0.10);
   color: var(--c-accent-strong);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 @media (min-width: 900px) {
@@ -5280,60 +5320,47 @@ body.opm-home {
   }
 }
 
-/* Newsletter banner — splits city row from style row */
+/* Newsletter banner — quiet cream card, brand-red text. Sits between
+   featured pizzerias and blog. Inverse rhythm to the loud map banner
+   above: this one whispers, the map shouts. */
 .opm-newsletter {
-  /* Match row tracks: 20px left gutter, flush to the right edge. With
-     symmetric 20px both sides the banner came up short relative to the
-     row cards (which extend to the page-content edge after the peek
-     fix). Asymmetric here keeps the right edges aligned.
-     Dark warm gradient (deep maroon) replaces the earlier teal so the
-     band reads as part of the red brand family. */
   margin: 40px 0 40px 20px;
-  background: linear-gradient(135deg, #2a1410 0%, #1c0c09 100%);
-  color: #fff;
+  background: var(--c-bg);
+  color: var(--c-text);
+  border: 1px solid var(--c-border);
   border-radius: 22px;
-  padding: 36px 28px;
+  padding: 28px 24px;
   position: relative;
   overflow: hidden;
 }
-.opm-newsletter::before {
-  content: "";
-  position: absolute;
-  top: -60px;
-  right: -60px;
-  width: 220px;
-  height: 220px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(var(--c-accent-rgb), 0.30) 0%, transparent 70%);
-  pointer-events: none;
-}
 .opm-newsletter-inner {
   position: relative;
-  max-width: 640px;
+  max-width: 900px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 22px;
+  gap: 16px;
 }
 .opm-newsletter-copy h2 {
-  margin: 0 0 8px;
-  font-size: clamp(1.5rem, 3.5vw, 2rem);
+  margin: 0 0 4px;
+  font-size: clamp(1.25rem, 2.4vw, 1.5rem);
   font-weight: 800;
   letter-spacing: -0.01em;
+  color: var(--c-accent-strong);
 }
 .opm-newsletter-copy p {
   margin: 0;
-  color: rgba(255, 255, 255, 0.78);
+  color: var(--c-muted);
   font-size: 14px;
   line-height: 1.5;
 }
 .opm-newsletter-form {
   display: flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: #fff;
+  border: 1px solid var(--c-border);
   border-radius: 999px;
   padding: 4px 4px 4px 18px;
   width: 100%;
@@ -5344,13 +5371,13 @@ body.opm-home {
   background: transparent;
   border: none;
   outline: none;
-  color: #fff;
+  color: var(--c-text);
   font: inherit;
   font-size: 15px;
-  height: 44px;
+  height: 40px;
   min-width: 0;
 }
-.opm-newsletter-form input::placeholder { color: rgba(255, 255, 255, 0.55); }
+.opm-newsletter-form input::placeholder { color: var(--c-muted); }
 .opm-newsletter-form button {
   border: none;
   border-radius: 999px;
@@ -5359,29 +5386,35 @@ body.opm-home {
   font: inherit;
   font-weight: 700;
   padding: 0 22px;
-  height: 40px;
+  height: 36px;
   cursor: pointer;
   flex-shrink: 0;
 }
 .opm-newsletter-form button:hover { background: var(--c-accent-strong); }
 .opm-newsletter-form button:disabled { opacity: 0.6; cursor: default; }
 .opm-newsletter-msg {
-  margin: 8px 0 0;
+  margin: 4px 0 0;
   min-height: 1.2em;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.78);
+  color: var(--c-muted);
 }
-.opm-newsletter-msg.ok { color: #6bd9a0; }
-.opm-newsletter-msg.err { color: #ffb8a8; }
+.opm-newsletter-msg.ok { color: #1f7a48; }
+.opm-newsletter-msg.err { color: var(--c-accent-strong); }
 
 @media (min-width: 768px) {
-  .opm-newsletter { padding: 56px 40px; }
+  .opm-newsletter { padding: 32px 40px; }
+  .opm-newsletter-inner {
+    flex-direction: row;
+    text-align: left;
+    justify-content: space-between;
+    gap: 32px;
+  }
+  .opm-newsletter-copy { flex: 1; }
 }
 
-/* Map CTA banner — between city row and curated featured section.
-   Centered stack (text on top, CTA below), taller padding so it feels
-   like its own moment between the two product rows. Light cream-on-red
-   so it visually contrasts the dark newsletter band later in the page. */
+/* Map CTA banner — the "moment" between the city row and curated row.
+   Deep accent-red world-map feel: scattered pin dots over a faint
+   lat/lng dotted grid. Reads literally as THE map. All inline SVG. */
 .opm-mapcta {
   display: flex;
   flex-direction: column;
@@ -5389,54 +5422,54 @@ body.opm-home {
   text-align: center;
   gap: 24px;
   margin: 40px 0 40px 20px;
-  padding: 64px 32px;
+  padding: 72px 32px;
   border-radius: 22px;
-  /* Topographic-contour pattern over the cream base. Light variant of
-     the dark topo reference: muted brown lines + dashed lat/lng grid,
-     no pins (this is the "explore the terrain" feel, not a city map).
-     All inline SVG — no external tile fetch. */
   background:
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='600' viewBox='0 0 600 600'><g stroke='%238a7c6c' fill='none'><g stroke-opacity='0.18' stroke-dasharray='6 8' stroke-width='1'><path d='M0 200 H600'/><path d='M0 400 H600'/><path d='M200 0 V600'/><path d='M400 0 V600'/></g><g stroke-opacity='0.28' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M100 150 C 130 100, 200 90, 230 130 C 260 170, 230 220, 180 230 C 130 240, 80 200, 100 150 Z'/><path d='M120 155 C 145 120, 195 115, 218 145 C 240 175, 220 210, 180 218 C 140 226, 100 195, 120 155 Z' stroke-opacity='0.22'/><path d='M140 162 C 160 140, 190 138, 205 158 C 220 178, 205 200, 180 205 C 155 210, 130 188, 140 162 Z' stroke-opacity='0.16'/><path d='M380 380 C 410 340, 480 340, 510 380 C 540 420, 510 470, 460 480 C 410 490, 360 440, 380 380 Z'/><path d='M400 388 C 425 358, 475 358, 498 388 C 521 418, 498 458, 460 466 C 422 474, 388 432, 400 388 Z' stroke-opacity='0.22'/><path d='M420 398 C 440 378, 470 378, 485 398 C 500 418, 485 442, 460 446 C 435 450, 415 428, 420 398 Z' stroke-opacity='0.16'/></g><g stroke-opacity='0.22' stroke-width='1.3' stroke-linecap='round'><path d='M0 50 C 100 30, 200 80, 300 70 S 500 20, 600 60' fill='none'/><path d='M0 70 C 100 50, 200 100, 300 90 S 500 40, 600 80' stroke-opacity='0.14'/><path d='M0 540 C 100 510, 200 560, 300 530 S 500 580, 600 545' fill='none'/><path d='M0 560 C 100 530, 200 580, 300 550 S 500 600, 600 565' stroke-opacity='0.14'/><path d='M0 300 C 80 280, 150 320, 220 290 S 380 330, 460 295 S 580 320, 600 300' stroke-opacity='0.20'/><path d='M0 330 C 80 310, 150 350, 220 320 S 380 360, 460 325 S 580 350, 600 330' stroke-opacity='0.12'/></g></g></svg>"),
-    radial-gradient(circle at 90% 10%, rgba(var(--c-accent-rgb), 0.06) 0%, transparent 60%),
-    linear-gradient(135deg, #fdfaf3 0%, #f3ead9 100%);
-  background-repeat: repeat, no-repeat, no-repeat;
-  background-size: 600px 600px, auto, auto;
-  border: 1px solid var(--c-border);
+    /* floating pizza-slice motif (same paths as the maintenance page,
+       scaled down and scattered). White strokes at low opacity over
+       the red base. */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='400' viewBox='0 0 800 400'><defs><g id='s' fill='none' stroke='%23ffffff' stroke-opacity='0.22' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M15 35 a10 10 0 1 1 0 -20 M15 15 q50 -10 100 20 l -10 15 q -50 -25 -90 -10'/><path d='M105 35 l -60 85 l -30 -85'/><path d='M35 60 q 0 20 8 20 t 8 -20'/><circle cx='50' cy='45' r='7'/><circle cx='75' cy='65' r='6'/></g></defs><use href='%23s' transform='translate(20 30) rotate(10) scale(0.45)'/><use href='%23s' transform='translate(220 60) rotate(-22) scale(0.55)'/><use href='%23s' transform='translate(430 20) rotate(34) scale(0.5)'/><use href='%23s' transform='translate(630 70) rotate(-12) scale(0.5)'/><use href='%23s' transform='translate(80 210) rotate(24) scale(0.5)'/><use href='%23s' transform='translate(310 230) rotate(-38) scale(0.6)'/><use href='%23s' transform='translate(540 250) rotate(15) scale(0.45)'/><use href='%23s' transform='translate(700 200) rotate(-26) scale(0.55)'/></svg>"),
+    radial-gradient(ellipse at 20% 10%, rgba(255, 255, 255, 0.10) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 90%, rgba(0, 0, 0, 0.18) 0%, transparent 55%),
+    linear-gradient(135deg, var(--c-accent) 0%, var(--c-accent-strong) 55%, #7a1f17 100%);
+  background-repeat: repeat, no-repeat, no-repeat, no-repeat;
+  background-size: 800px 400px, auto, auto, auto;
   text-decoration: none;
-  color: var(--c-text);
+  color: #fff;
   position: relative;
   overflow: hidden;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  box-shadow: 0 8px 24px rgba(var(--c-accent-rgb), 0.18);
 }
 .opm-mapcta:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(30, 30, 30, 0.10);
-  border-color: rgba(var(--c-accent-rgb), 0.45);
+  box-shadow: 0 14px 32px rgba(var(--c-accent-rgb), 0.28);
 }
 .opm-mapcta-text {
-  max-width: 640px;
+  max-width: 720px;
   position: relative;
   z-index: 1;
 }
 .opm-mapcta-eyebrow {
   display: inline-block;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.22em;
   font-size: 11px;
   font-weight: 800;
-  color: var(--c-accent-strong);
-  margin-bottom: 12px;
+  color: rgba(255, 255, 255, 0.78);
+  margin-bottom: 14px;
 }
 .opm-mapcta h2 {
-  margin: 0 0 10px;
-  font-size: clamp(1.5rem, 3vw, 2.4rem);
+  margin: 0 0 12px;
+  font-size: clamp(1.75rem, 3.6vw, 2.75rem);
   font-weight: 800;
-  letter-spacing: -0.01em;
-  line-height: 1.15;
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+  color: #fff;
 }
 .opm-mapcta p {
   margin: 0;
-  color: var(--c-muted);
+  color: rgba(255, 255, 255, 0.82);
   font-size: 15px;
   line-height: 1.5;
 }
@@ -5449,17 +5482,18 @@ body.opm-home {
   align-items: center;
   gap: 8px;
   padding: 16px 28px;
-  background: var(--c-accent);
-  color: #fff;
+  background: #fff;
+  color: var(--c-accent-strong);
   border-radius: 999px;
   font-weight: 700;
   font-size: 16px;
   white-space: nowrap;
-  box-shadow: 0 6px 14px rgba(var(--c-accent-rgb), 0.25);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
   transition: background 0.15s ease, transform 0.15s ease;
 }
 .opm-mapcta:hover .opm-mapcta-button {
-  background: var(--c-accent-strong);
+  background: #1e1e1e;
+  color: #fff;
 }
 .opm-mapcta-decor {
   position: absolute;

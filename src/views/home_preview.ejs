@@ -120,17 +120,10 @@
   <section class="opm-hero">
     <div class="opm-hero-grid">
       <div class="opm-hero-text">
-        <div class="opm-hero-badge">
-          <span class="opm-hero-badge-icon" aria-hidden="true">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="color: var(--c-accent);"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-          </span>
-          <strong><%= counters.places.toLocaleString('en-US') %></strong>
-          <span>pizzerias in <%= counters.countries %> countries</span>
-        </div>
-        <h1>Find pizza<br>worth crossing<br>the street for.</h1>
+        <h1>Find the best pizza wherever you are.</h1>
         <p class="opm-hero-tagline">
-          The community-curated pizza map. Real opinions from people who
-          actually eat there — not algorithms, not Yelp lectures.
+          Explore community-curated pizzerias worldwide and discover
+          amazing pizza through reviews from real pizza lovers.
         </p>
         <form action="/map" method="get" class="opm-hero-search">
           <span class="opm-hero-search-icon" aria-hidden="true">
@@ -193,7 +186,7 @@
     <a href="/map" class="opm-mapcta" aria-label="Explore the full map">
       <div class="opm-mapcta-text">
         <span class="opm-mapcta-eyebrow">The big picture</span>
-        <h2>One map, <%= counters.places.toLocaleString('en-US') %> pizzerias.</h2>
+        <h2>One map, <%= counters.places.toLocaleString('en-US') %> pizzerias, <%= counters.countries %> countries.</h2>
         <p>Pan, zoom, filter. The whole community map in one place.</p>
       </div>
       <div class="opm-mapcta-action">
@@ -203,6 +196,13 @@
         </span>
       </div>
     </a>
+
+    <%- renderRow({
+      title: "Browse by style",
+      subtitle: "From Neapolitan to Detroit deep-dish",
+      viewAllHref: "/styles",
+      cards: styleCards,
+    }) %>
 
     <!-- Featured Places (curated) with tab filter -->
     <section class="opm-featured">
@@ -231,26 +231,24 @@
               <div class="opm-featured-card-imgwrap">
                 <img class="opm-featured-card-img" src="<%= p.image %>" alt="" loading="lazy"
                      onerror="this.onerror=null;this.src='<%= p.fallback %>';this.classList.add('opm-featured-card-img-fallback');" />
+                <% if (p.rating) { %>
+                  <span class="opm-featured-card-rating-badge"><%= p.rating %></span>
+                <% } %>
                 <span class="opm-featured-card-pill"><%= p.categoryLabel %></span>
               </div>
               <div class="opm-featured-card-body">
                 <h3><%= p.title %></h3>
                 <p class="opm-featured-card-addr">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;flex-shrink:0;" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                  <%= p.address %>
+                  <svg class="opm-featured-card-addr-pin" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><%= p.address %>
                 </p>
                 <div class="opm-featured-card-foot">
-                  <span class="opm-featured-card-rating">
-                    <% if (p.rating) { %>
-                      <span class="opm-star" aria-hidden="true">★</span>
-                      <strong><%= p.rating %></strong>
-                      <% if (p.reviewCount) { %>
-                        <span class="opm-featured-card-revcount">(<%= p.reviewCount.toLocaleString('en-US') %>)</span>
-                      <% } %>
-                    <% } else { %>
-                      <span class="opm-featured-card-revcount">No ratings yet</span>
-                    <% } %>
-                  </span>
+                  <% if (p.reviewCount) { %>
+                    <span class="opm-featured-card-revcount"><%= p.reviewCount.toLocaleString('en-US') %> reviews</span>
+                  <% } else if (!p.rating) { %>
+                    <span class="opm-featured-card-revcount">No ratings yet</span>
+                  <% } else { %>
+                    <span class="opm-featured-card-revcount"></span>
+                  <% } %>
                   <% if (p.priceLevel) { %>
                     <span class="opm-featured-card-price">
                       <%= "$".repeat(Math.max(1, Math.min(4, p.priceLevel))) %>
@@ -278,13 +276,6 @@
         <p class="opm-newsletter-msg" id="newsletterMsg" role="status" aria-live="polite"></p>
       </div>
     </section>
-
-    <%- renderRow({
-      title: "Browse by style",
-      subtitle: "From Neapolitan to Detroit deep-dish",
-      viewAllHref: "/styles",
-      cards: styleCards,
-    }) %>
 
     <!-- Blog row — placeholder until the Blog schema lands (see roadmap) -->
     <section class="opm-row opm-blog">
