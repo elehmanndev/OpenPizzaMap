@@ -76,7 +76,9 @@ async function run({ limit = 5, disconnect = true } = {}) {
                         enrichedAt: new Date(),
                         enrichmentVersion: 1,
                     },
-                }).catch(() => {});
+                }).catch((e) => {
+                    console.warn(`[resolve] #${p.id} mark-mismatch DB update failed: ${e.message}`);
+                });
                 if (reason === "name-mismatch" || reason === "coord-mismatch") stats.mismatch++;
                 else stats.missed++;
                 await sleep(3000);
