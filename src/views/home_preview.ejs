@@ -220,9 +220,12 @@
     <!-- Map CTA banner — bridges the city row to the curated section -->
     <a href="/map" class="opm-mapcta" aria-label="Explore the full map">
       <div class="opm-mapcta-text">
-        <span class="opm-mapcta-eyebrow">The big picture</span>
-        <h2>One map, <%= counters.places.toLocaleString('en-US') %> pizzerias, <%= counters.countries %> countries.</h2>
-        <p>Pan, zoom, filter. The whole community map in one place.</p>
+        <h2 class="opm-mapcta-stats">
+          <span>One map</span>
+          <span><%= counters.places %> pizzerias</span>
+          <span><%= counters.countries %> countries</span>
+        </h2>
+        <p>Pan around, zoom in, filter and sort. Explore the entire world of pizzerias in one place.</p>
       </div>
       <div class="opm-mapcta-action">
         <span class="opm-mapcta-button">

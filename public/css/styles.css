@@ -5594,13 +5594,19 @@ img.opm-hero-suggest-thumb,
   margin-bottom: 14px;
 }
 .opm-mapcta h2 {
-  margin: 0 0 12px;
+  margin: 0 0 14px;
   font-size: clamp(1.75rem, 3.6vw, 2.75rem);
   font-weight: 800;
   letter-spacing: -0.015em;
   line-height: 1.1;
   color: #fff;
 }
+.opm-mapcta-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.opm-mapcta-stats > span { display: block; }
 .opm-mapcta p {
   margin: 0;
   color: rgba(255, 255, 255, 0.82);
