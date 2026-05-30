@@ -1030,14 +1030,15 @@ async function scrapeRatingsDistribution(page, { googlePlaceId } = {}) {
         // Click the Reviews tab.
         const tabClicked = await page.evaluate(() => {
             for (const el of document.querySelectorAll('[role="tab"]')) {
-                if (/reviews?/i.test(el.textContent || "") || /reviews?/i.test(el.getAttribute("aria-label") || "")) {
+                if (/reviews?|rese[ñn]as|recensioni|\bavis\b|bewertungen|opini[oóõ]es|opiniones/i.test(el.textContent || "") || /reviews?|rese[ñn]as|recensioni|\bavis\b|bewertungen|opini[oóõ]es|opiniones/i.test(el.getAttribute("aria-label") || "")) {
                     el.click();
                     return true;
                 }
             }
             for (const btn of document.querySelectorAll("button")) {
                 const t = (btn.textContent || "").trim();
-                if (/^reviews?$/i.test(t) || /^\d[\d,.]+\s*reviews?$/i.test(t)) {
+                const tabRe = /reviews?|rese[ñn]as|recensioni|\bavis\b|bewertungen|opini[oóõ]es|opiniones/i;
+                if (tabRe.test(t) && t.length < 40) {
                     btn.click();
                     return true;
                 }

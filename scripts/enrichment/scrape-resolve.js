@@ -77,19 +77,41 @@ async function run({ limit = 5, disconnect = true } = {}) {
             // Match confirmed. Write placeId, bump enrichmentVersion,
             // stamp enrichedAt. Downstream phases (galleryScrape,
             // scrapeReviews, ratingsDist, TA) will pick it up next tick.
-            await prisma.place.update({
-                where: { id: p.id },
-                data: {
-                    googlePlaceId: r.placeId,
-                    enrichmentVersion: 1,
-                    enrichedAt: new Date(),
-                    ...(r.lat != null && r.lng != null && (p.lat == null || p.lng == null) ? {
-                        lat: r.lat, lng: r.lng,
-                    } : {}),
-                },
-            });
-            console.log(`[resolve] #${p.id} "${p.name}" → placeId=${r.placeId} (heading="${r.heading || ''}")`);
-            stats.resolved++;
+            try {
+                await prisma.place.update({
+                    where: { id: p.id },
+                    data: {
+                        googlePlaceId: r.placeId,
+                        enrichmentVersion: 1,
+                        enrichedAt: new Date(),
+                        ...(r.lat != null && r.lng != null && (p.lat == null || p.lng == null) ? {
+                            lat: r.lat, lng: r.lng,
+                        } : {}),
+                    },
+                });
+                console.log(`[resolve] #${p.id} "${p.name}" → placeId=${r.placeId} (heading="${r.heading || ''}")`);
+                stats.resolved++;
+            } catch (writeErr) {
+                // P2002 = unique constraint violation on googlePlaceId. Means
+                // ANOTHER place already has this googlePlaceId — i.e. p is a
+                // duplicate of an existing row. Don't crash + retry forever.
+                // Mark enrichmentVersion=1 so the queue stops picking it,
+                // and log loudly as a dedup candidate.
+                if (writeErr.code === "P2002") {
+                    const dup = await prisma.place.findFirst({
+                        where: { googlePlaceId: r.placeId, NOT: { id: p.id } },
+                        select: { id: true, name: true, city: true },
+                    }).catch(() => null);
+                    console.warn(`[resolve] #${p.id} "${p.name}" → DUPLICATE of #${dup?.id} "${dup?.name}" (${dup?.city}) — both resolve to ${r.placeId}; marking enrichmentVersion=1 to skip future ticks. Manual dedup candidate.`);
+                    await prisma.place.update({
+                        where: { id: p.id },
+                        data: { enrichmentVersion: 1, enrichedAt: new Date() },
+                    }).catch(() => {});
+                    stats.missed++;
+                } else {
+                    throw writeErr;
+                }
+            }
             await sleep(3000);
         } catch (err) {
             console.warn(`[resolve] #${p.id} crash: ${err.message}`);
