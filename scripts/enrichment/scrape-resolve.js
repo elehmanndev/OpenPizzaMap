@@ -46,13 +46,38 @@ async function run({ limit = 5, disconnect = true } = {}) {
 
     for (const p of queue) {
         try {
-            const r = await findPlaceByName(page, {
+            const lat = p.lat ? Number(p.lat) : null;
+            const lng = p.lng ? Number(p.lng) : null;
+
+            // Attempt 1: name-based search. Works for most places.
+            let r = await findPlaceByName(page, {
                 name: p.name,
                 city: p.city,
                 country: p.country,
-                lat: p.lat ? Number(p.lat) : null,
-                lng: p.lng ? Number(p.lng) : null,
+                lat, lng,
             });
+
+            // Attempt 2 (fallback): coord-centered search. Only when
+            // (a) the first attempt produced a mismatch we'd otherwise
+            //     have to permanently retire AND
+            // (b) we have lat/lng on file to center the viewport.
+            // This catches cases like "La Fenice Pizzeria Contemporanea"
+            // (Pistoia) being shadowed by the famous La Fenice theatre
+            // in Venice — coord-centering forces Google to pick the
+            // closest place to our known coords.
+            const isRetriableMismatch = r && r.matched === false &&
+                (r.reason === "name-mismatch" || r.reason === "coord-mismatch");
+            if (isRetriableMismatch && lat != null && lng != null) {
+                console.log(`[resolve] #${p.id} retry with coord-centered search`);
+                const r2 = await findPlaceByName(page, {
+                    name: p.name,
+                    city: p.city,
+                    country: p.country,
+                    lat, lng,
+                    useCoords: true,
+                });
+                if (r2 && r2.matched) r = r2;
+            }
 
             if (r && r.error === "captcha") {
                 console.warn(`[resolve] #${p.id} CAPTCHA — aborting tick`);

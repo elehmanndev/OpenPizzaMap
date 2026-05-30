@@ -1192,11 +1192,25 @@ async function extractGoogleReviewsFromOpenPanel(page, maxReviews = 5) {
 //   - placeId extracted from the URL (not just any ChIJ string in the HTML)
 //   - heading token-overlaps with input name (avoid wrong-venue near-misses)
 //   - if input lat/lng known, distance < 5km (avoid right-name-wrong-city)
-async function findPlaceByName(page, { name, city, country, lat, lng } = {}) {
+async function findPlaceByName(page, { name, city, country, lat, lng, useCoords = false } = {}) {
     if (!name) return null;
     try {
-        const q = encodeURIComponent([name, city, country].filter(Boolean).join(" "));
-        await page.goto(`https://www.google.com/maps/search/${q}?hl=en`, {
+        // Two URL strategies. The default is name-based search, which is
+        // free and works for most places. The useCoords=true mode uses
+        // the lat/lng to center the Maps viewport before searching for
+        // the name — this is the fallback after a name-mismatch or
+        // coord-mismatch on the first attempt. Forcing the viewport
+        // means Google picks the place CLOSEST to those coords rather
+        // than the most famous "name" hit globally (e.g. La Fenice
+        // theatre in Venice winning over a tiny pizzeria in Pistoia).
+        let url;
+        if (useCoords && lat != null && lng != null) {
+            url = `https://www.google.com/maps/search/${encodeURIComponent(name)}/@${lat},${lng},17z?hl=en`;
+        } else {
+            const q = encodeURIComponent([name, city, country].filter(Boolean).join(" "));
+            url = `https://www.google.com/maps/search/${q}?hl=en`;
+        }
+        await page.goto(url, {
             waitUntil: "domcontentloaded", timeout: 30000,
         });
         // Consent — fixed 2026-05-30: previous selector loop matched a
