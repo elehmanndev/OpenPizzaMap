@@ -1101,13 +1101,25 @@ async function findPlaceByName(page, { name, city, country, lat, lng } = {}) {
         await page.goto(`https://www.google.com/maps/search/${q}?hl=en`, {
             waitUntil: "domcontentloaded", timeout: 30000,
         });
-        // Consent
-        for (const sel of [
-            'button[aria-label*="Accept"]', 'button[aria-label*="Acepto"]',
-            'button[aria-label*="Akzeptieren"]', 'form[action*="consent"] button',
-        ]) {
-            const btn = await page.$(sel).catch(() => null);
-            if (btn) { await btn.click().catch(() => {}); await sleep(500); break; }
+        // Consent — fixed 2026-05-30: previous selector loop matched a
+        // hidden duplicate of the "Accept all" button. ES-geolocated IPs
+        // (opm-runner's residential IP geolocates to Spain) hit the
+        // consent.google.com/m variant which renders two copies of each
+        // button (mobile + desktop layouts in the same DOM). page.$()
+        // grabbed the first which was display:none, so the click was
+        // silently swallowed by the .catch(() => {}). Now we force-click
+        // by stable jsname and wait for navigation away from consent.
+        if (/consent\.google\.com/.test(page.url())) {
+            const acceptBtn = page.locator(
+                'button[jsname="b3VHJd"], button[aria-label="Accept all"]'
+            ).first();
+            if (await acceptBtn.count().catch(() => 0)) {
+                await Promise.all([
+                    page.waitForURL(u => !/consent\.google\.com/.test(u.toString()),
+                                    { timeout: 15000 }).catch(() => {}),
+                    acceptBtn.click({ force: true }).catch(() => {}),
+                ]);
+            }
         }
 
         // Captcha?
