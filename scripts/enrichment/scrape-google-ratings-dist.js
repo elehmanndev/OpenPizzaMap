@@ -114,7 +114,27 @@ async function run({ limit = 10, disconnect = true } = {}) {
 
     for (const p of queue) {
         const t0 = Date.now();
-        const result = await scrapeRatingsDistribution(page, { googlePlaceId: p.googlePlaceId });
+        // Always log start of attempt so we can correlate which places are
+        // being tried even if the script crashes mid-scrape.
+        console.log(`[ratingsDist] #${p.id} "${p.name}" — trying (placeId=${p.googlePlaceId})`);
+
+        let result;
+        try {
+            result = await scrapeRatingsDistribution(page, { googlePlaceId: p.googlePlaceId });
+        } catch (err) {
+            // Hard crash inside the scrape (Playwright nav timeout, DOM error,
+            // etc.) — don't lose visibility. Synthesize an error result so the
+            // rest of the loop handles it like any other miss.
+            const elapsed = Math.round((Date.now() - t0) / 1000);
+            console.warn(`[ratingsDist] #${p.id} "${p.name}" — crash: ${err.message} (${elapsed}s)`);
+            stats.failed++;
+            await prisma.place.update({
+                where: { id: p.id },
+                data: { googleRatingsScrapedAt: new Date() },
+            }).catch(() => {});
+            await sleep(2500);
+            continue;
+        }
         const elapsed = Math.round((Date.now() - t0) / 1000);
 
         if (result.captcha) {
