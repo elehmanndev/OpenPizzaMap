@@ -24,59 +24,13 @@
 
 const fs = require('fs');
 const path = require('path');
-const { prisma, ROOT } = require('../lib/bootstrap');
-const { normalizePlaceName } = require(path.join(ROOT, 'src/services/normalize-place-name'));
-const { buildPlan, haversineM } = require('./_logic');
+const { prisma, ROOT, PATHS } = require('../lib/bootstrap');
+const { buildPlan } = require('./_logic');
+// The 4-pass candidate finder now lives in a shared module so this CLI and the
+// /admin/merge queue run identical passes. See src/services/dedupCandidates.js.
+const { findCandidatePairs } = require(path.join(ROOT, 'src/services/dedupCandidates'));
 
 const INCLUDE_HIDDEN = process.argv.includes('--include-hidden');
-
-// Distance threshold for "same location" — duplicates whose coords differ
-// by more than this are flagged as suspect (might be chain locations).
-const COORD_MATCH_M = 100;
-
-// Aggressive token-overlap pass: within this radius AND with at least one
-// meaningful token in common, two rows are candidate dups even if the
-// normalized names don't match exactly. Catches "Errico" vs "Errico Porzio
-// Lungomare Napoli" at the same coords — they share token "errico" but
-// the exact-normalized-name bucket wouldn't pair them.
-const TOKEN_OVERLAP_RADIUS_M = 50;
-const MIN_TOKEN_LEN = 4;
-
-// Address-equality pass: rows with the same FULLY-normalized addressLine
-// are candidate dups (after stripping case, punctuation, and country names).
-// Prefix matching turned out to false-positive heavily on famous streets
-// like "Via Partenope" — every venue on that strip matched every other.
-const ADDRESS_MIN_LEN = 12; // Below this, address is too sparse to trust.
-
-// Generic venue/cuisine words that pair too many unrelated places when used
-// as the only shared "meaningful" token. "Maurizio's Pizzeria" + "Užupio
-// Pizzeria" should NOT pair just because both contain "pizzeria".
-const NAME_STOPWORDS = new Set([
-    'pizza', 'pizzeria', 'pizzaria', 'pizze', 'pizzette',
-    'restaurant', 'ristorante', 'trattoria', 'osteria',
-    'antica', 'gourmet', 'bistrot', 'bistro', 'cucina',
-    'forno', 'food', 'kitchen', 'house', 'place',
-    'napoli', 'naples', 'roma', 'rome', 'milano', 'milan',
-    'verona', 'firenze', 'florence', 'torino', 'turin',
-    'napoletana', 'napoletano',
-]);
-function meaningfulTokens(normalizedName) {
-    return String(normalizedName || '').split(/\s+/)
-        .filter((t) => t.length >= MIN_TOKEN_LEN && !NAME_STOPWORDS.has(t));
-}
-
-function normalizeAddress(addr) {
-    if (!addr) return null;
-    let s = String(addr).toLowerCase()
-        .normalize('NFD').replace(/[̀-ͯ]/g, '')
-        .replace(/[^a-z0-9\s]/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-    // Drop trailing country/region words that don't disambiguate.
-    s = s.replace(/\b(italy|italia|usa|united states|spain|espana|france|francia|uk|united kingdom)\b/g, '').trim();
-    s = s.replace(/\s+/g, ' ');
-    return s || null;
-}
 
 function fmtVal(v, max = 70) {
     if (v == null) return '(null)';
@@ -101,106 +55,9 @@ async function main() {
     });
     console.error(`[scan] ${places.length} candidate rows (visible-only=${!INCLUDE_HIDDEN})`);
 
-    // Four candidate-finding passes. A row pair becomes a candidate if ANY
-    // of these signals fire — duplicate-key dedup ensures we don't process
-    // the same pair twice across passes.
-    //
-    //   1. Same googlePlaceId (canonical identity match — strongest signal)
-    //   2. Exact normalized name + same country + within 100m
-    //      (the original pass — catches identical re-imports)
-    //   3. Same city + within 50m + meaningful-token overlap on names
-    //      (NEW — catches "Errico" vs "Errico Porzio Lungomare" at same coords)
-    //   4. Same city + same address-line prefix (15+ chars normalized)
-    //      (NEW — catches re-imports where one row has a longer address tail)
-
-    const byNameCountry = new Map();
-    const byGpid = new Map();
-    const byCity = new Map();
-    const byAddrPrefix = new Map();
-
-    for (const p of places) {
-        if (!p.lat || !p.lng) continue;
-        const normName = normalizePlaceName(p.name);
-        // Pass 2 bucket
-        const k2 = (p.country || '') + '|' + normName;
-        if (!byNameCountry.has(k2)) byNameCountry.set(k2, []);
-        byNameCountry.get(k2).push(p);
-        // Pass 1 bucket
-        if (p.googlePlaceId) {
-            if (!byGpid.has(p.googlePlaceId)) byGpid.set(p.googlePlaceId, []);
-            byGpid.get(p.googlePlaceId).push(p);
-        }
-        // Pass 3 bucket (per-city — we'll do O(n²) WITHIN each city, which
-        // stays cheap because no city has >300 rows)
-        const cityKey = (p.country || '') + '|' + (p.city || '');
-        if (!byCity.has(cityKey)) byCity.set(cityKey, []);
-        byCity.get(cityKey).push({ p, tokens: new Set(meaningfulTokens(normName)) });
-        // Pass 4 bucket — full normalized address equality (within same city).
-        const addr = normalizeAddress(p.addressLine);
-        if (addr && addr.length >= ADDRESS_MIN_LEN) {
-            const k4 = (p.city || '') + '|' + addr;
-            if (!byAddrPrefix.has(k4)) byAddrPrefix.set(k4, []);
-            byAddrPrefix.get(k4).push(p);
-        }
-    }
-
-    const seen = new Set();
-    const pairs = [];
-    const addPair = (a, b, dist, why) => {
-        const lo = Math.min(a.id, b.id), hi = Math.max(a.id, b.id);
-        const k = lo + ':' + hi;
-        if (seen.has(k)) return;
-        seen.add(k);
-        const survivor = a.id < b.id ? a : b;
-        const drop = a.id < b.id ? b : a;
-        pairs.push({ survivor, drop, distM: dist, why });
-    };
-
-    // Pass 1: same gpid
-    for (const arr of byGpid.values()) {
-        if (arr.length < 2) continue;
-        for (let i = 0; i < arr.length; i++) for (let j = i + 1; j < arr.length; j++) {
-            const a = arr[i], b = arr[j];
-            const d = haversineM(Number(a.lat), Number(a.lng), Number(b.lat), Number(b.lng));
-            addPair(a, b, Math.round(d), 'same-gpid');
-        }
-    }
-    // Pass 2: exact normalized name + country + ≤100m
-    for (const arr of byNameCountry.values()) {
-        if (arr.length < 2) continue;
-        for (let i = 0; i < arr.length; i++) for (let j = i + 1; j < arr.length; j++) {
-            const a = arr[i], b = arr[j];
-            const d = haversineM(Number(a.lat), Number(a.lng), Number(b.lat), Number(b.lng));
-            if (d <= COORD_MATCH_M) addPair(a, b, Math.round(d), 'exact-name');
-        }
-    }
-    // Pass 3: same city + ≤50m + token overlap
-    for (const arr of byCity.values()) {
-        if (arr.length < 2) continue;
-        for (let i = 0; i < arr.length; i++) for (let j = i + 1; j < arr.length; j++) {
-            const a = arr[i], b = arr[j];
-            const d = haversineM(Number(a.p.lat), Number(a.p.lng), Number(b.p.lat), Number(b.p.lng));
-            if (d > TOKEN_OVERLAP_RADIUS_M) continue;
-            // Token overlap
-            let overlap = 0;
-            for (const t of a.tokens) if (b.tokens.has(t)) overlap++;
-            if (overlap === 0) continue;
-            addPair(a.p, b.p, Math.round(d), `token-overlap(${overlap})`);
-        }
-    }
-    // Pass 4: same fully-normalized address in same city — but ONLY when
-    // coords also agree (≤200m). Without the coord gate, landmark-style
-    // addresses ("Ferrari World Abu Dhabi", "Praça do Comércio") pair every
-    // venue inside the same complex even though they're kilometers apart.
-    const ADDRESS_PASS_MAX_M = 200;
-    for (const arr of byAddrPrefix.values()) {
-        if (arr.length < 2) continue;
-        for (let i = 0; i < arr.length; i++) for (let j = i + 1; j < arr.length; j++) {
-            const a = arr[i], b = arr[j];
-            const d = haversineM(Number(a.lat), Number(a.lng), Number(b.lat), Number(b.lng));
-            if (d <= ADDRESS_PASS_MAX_M) addPair(a, b, Math.round(d), 'address-match');
-        }
-    }
+    // Candidate pairs from the shared 4-pass finder (gpid / exact-name /
+    // token-overlap / address-match). See src/services/dedupCandidates.js.
+    const pairs = findCandidatePairs(places);
 
     // Per-pair plan + relation transfer counts
     const plans = pairs.map(({ survivor, drop, distM, why }) => {
@@ -315,6 +172,40 @@ async function main() {
     fs.writeFileSync(outPath, lines.join('\n'));
     console.error(`[done] report → ${path.relative(ROOT, outPath)}`);
     console.error(`        pairs: ${pairs.length} | clean=${clean.length}  +relations=${cleanWithRelations.length}  valuable=${valuable.length}  flagged=${flagged.length}`);
+
+    // Batch-approve file for the flagged pairs. Each pair's `S:D` line is
+    // commented out by default — uncomment the ones that are real dupes, then
+    // feed the file to merge-duplicates.js --from-file. Turns "type ids one at
+    // a time" into "skim and uncomment". Always (re)written so a run with zero
+    // flags leaves an empty-but-explanatory file rather than a stale one.
+    const flagPath = path.join(PATHS.reports, 'flagged-pairs.txt');
+    const fl = [];
+    fl.push(`# Flagged duplicate pairs — ${today}`);
+    fl.push('#');
+    fl.push('# These pairs disagree on a field that should match for one venue');
+    fl.push('# (different phone, or two same-format Google place ids), so they');
+    fl.push('# might be two REAL places. Review each below.');
+    fl.push('#');
+    fl.push('# To MERGE a pair: delete the leading "# " from its "S:D" line');
+    fl.push('# (keep survivor:drop order — survivor is the lower id). Then run:');
+    fl.push('#   node scripts/dedup/merge-duplicates.js --from-file data/reports/flagged-pairs.txt');
+    fl.push('#');
+    fl.push('# Lines starting with "#" are ignored. Pairs left commented stay unmerged.');
+    fl.push('');
+    if (!flagged.length) {
+        fl.push('# (no flagged pairs in the latest scan)');
+    }
+    for (const p of flagged) {
+        const { survivor: s, drop: d, distM, flags } = p;
+        fl.push(`# survivor=[${s.id}] "${fmtVal(s.name, 50)}"  drop=[${d.id}] "${fmtVal(d.name, 50)}"  (${s.city}, ${s.country}, ${distM}m)`);
+        for (const f of flags) {
+            fl.push(`#   ${f.field}: ${fmtVal(f.sv)} ≠ ${fmtVal(f.dv)} — ${f.reason}`);
+        }
+        fl.push(`# ${s.id}:${d.id}`);
+        fl.push('');
+    }
+    fs.writeFileSync(flagPath, fl.join('\n'));
+    console.error(`        flagged batch file → ${path.relative(ROOT, flagPath)} (uncomment pairs to approve)`);
 
     await prisma.$disconnect();
 }
