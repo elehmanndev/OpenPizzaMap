@@ -479,16 +479,30 @@ router.get("/admin/places/:id", requireAdmin, async (req, res) => {
     const id = Number(req.params.id);
     const place = await prisma.place.findUnique({
         where: { id },
-        include: { styles: { select: { styleId: true } } },
+        include: {
+            styles: { select: { styleId: true } },
+            images: { orderBy: [{ position: "asc" }, { id: "asc" }] },
+        },
     });
     if (!place) return res.redirect("/admin/places");
     const allStyles = await prisma.style.findMany({ orderBy: { sortOrder: "asc" } });
     const selectedStyleIds = new Set(place.styles.map((s) => s.styleId));
+    // Parse external review snapshots for the admin review manager. Each item:
+    //   { author, rating, text, relativeTime, hidden? }
+    // hidden is an admin-set flag stored inline (see review endpoints below).
+    let googleReviews = [];
+    try { const a = JSON.parse(place.googleReviewsJson || "[]"); if (Array.isArray(a)) googleReviews = a; } catch { /* ignore */ }
     res.render("admin_place_edit", {
         user: req.session.user,
         place,
         allStyles,
         selectedStyleIds,
+        photos: (place.images || []).map((img) => ({
+            ...img,
+            thumb: thumbOf(img.localPath),
+            isHero: !!place.heroImageUrl && (largeOf(img.localPath) === place.heroImageUrl || img.localPath === place.heroImageUrl),
+        })),
+        googleReviews,
     });
 });
 
@@ -587,6 +601,60 @@ router.post("/admin/places/:id/toggle-visible", requireAdmin, async (req, res) =
     if (!place) return res.redirect("/admin/places");
     await prisma.place.update({ where: { id }, data: { isVisible: !place.isVisible } });
     res.redirect("/admin/places");
+});
+
+// --- Place photo management (PlaceImage reorder / hide / set-hero) ---
+// PlaceImage rows already carry position + isHidden (isHidden survives
+// re-scrapes via the sourceRef dedup unique constraint). These endpoints
+// give the admin direct control; each redirects back to the edit page.
+// localPath is /uploads/places/{id}/{pos}.{ext}; siblings are
+// {pos}-thumb.jpg (admin grid) and {pos}-large.jpg (hero).
+function thumbOf(localPath) {
+    const m = /^(.*)\.[a-z0-9]+$/i.exec(localPath || "");
+    return m && !/-thumb$/.test(m[1]) ? `${m[1]}-thumb.jpg` : (localPath || "");
+}
+function largeOf(localPath) {
+    const m = /^(.*)\.[a-z0-9]+$/i.exec(localPath || "");
+    return m && !/-large$/.test(m[1]) ? `${m[1]}-large.jpg` : (localPath || "");
+}
+
+router.post("/admin/places/:id/photos/:imageId/move", requireAdmin, async (req, res) => {
+    const id = Number(req.params.id);
+    const imageId = Number(req.params.imageId);
+    const dir = String(req.query.dir || (req.body && req.body.dir) || "").toLowerCase();
+    const imgs = await prisma.placeImage.findMany({
+        where: { placeId: id },
+        orderBy: [{ position: "asc" }, { id: "asc" }],
+    });
+    const idx = imgs.findIndex((x) => x.id === imageId);
+    const swapWith = dir === "up" ? idx - 1 : idx + 1;
+    if (idx !== -1 && swapWith >= 0 && swapWith < imgs.length) {
+        const arr = imgs.slice();
+        const [moved] = arr.splice(idx, 1);
+        arr.splice(swapWith, 0, moved);
+        // Renumber positions 1..N — heals any pre-existing gaps. No unique
+        // constraint on (placeId, position) so transient dupes are fine.
+        await prisma.$transaction(
+            arr.map((img, i) => prisma.placeImage.update({ where: { id: img.id }, data: { position: i + 1 } }))
+        );
+    }
+    res.redirect(`/admin/places/${id}`);
+});
+
+router.post("/admin/places/:id/photos/:imageId/toggle-hidden", requireAdmin, async (req, res) => {
+    const id = Number(req.params.id);
+    const imageId = Number(req.params.imageId);
+    const img = await prisma.placeImage.findFirst({ where: { id: imageId, placeId: id } });
+    if (img) await prisma.placeImage.update({ where: { id: img.id }, data: { isHidden: !img.isHidden } });
+    res.redirect(`/admin/places/${id}`);
+});
+
+router.post("/admin/places/:id/photos/:imageId/set-hero", requireAdmin, async (req, res) => {
+    const id = Number(req.params.id);
+    const imageId = Number(req.params.imageId);
+    const img = await prisma.placeImage.findFirst({ where: { id: imageId, placeId: id } });
+    if (img) await prisma.place.update({ where: { id }, data: { heroImageUrl: largeOf(img.localPath) } });
+    res.redirect(`/admin/places/${id}`);
 });
 
 // --- Styles CMS ---
