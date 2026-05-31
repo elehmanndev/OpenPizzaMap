@@ -1,105 +1,188 @@
 <%- include("layout", { title: "Admin · Places", user, leaflet: false, body: String.raw`
-  <h1>Places</h1>
+  <div class="admin-places">
+    <div class="ap-head">
+      <h1>Places</h1>
+      <span class="ap-total">${total.toLocaleString()} total</span>
+    </div>
 
-  <div class="card">
-    <form method="get" action="/admin/places" class="row" style="flex-wrap:wrap; gap:10px;">
-      <div style="flex:2; min-width:180px;">
-        <label>Name</label>
-        <input name="q" value="${escapeAttr(filters.q || "")}" placeholder="Sorbillo" />
-      </div>
-      <div style="flex:1; min-width:120px;">
-        <label>Country</label>
-        <input name="country" value="${escapeAttr(filters.country || "")}" placeholder="Italy" />
-      </div>
-      <div style="flex:1; min-width:110px;">
-        <label>Visibility</label>
-        <select name="vis">
-          <option value="">All</option>
-          <option value="visible" ${filters.vis === "visible" ? "selected" : ""}>Visible</option>
-          <option value="hidden" ${filters.vis === "hidden" ? "selected" : ""}>Hidden</option>
-        </select>
-      </div>
-      <div style="flex:1; min-width:140px;">
-        <label>Style</label>
-        <select name="styleId">
-          <option value="">Any style</option>
-          ${allStyles.map(s => `<option value="${s.id}" ${String(filters.styleId) === String(s.id) ? "selected" : ""}>${escapeHtml(s.name)}</option>`).join("")}
-        </select>
-      </div>
-      <div style="flex:1; min-width:140px;">
-        <label>Needs</label>
-        <select name="needs">
-          <option value="">Anything</option>
-          <option value="no-style" ${filters.needs === "no-style" ? "selected" : ""}>No style</option>
-          <option value="no-hero" ${filters.needs === "no-hero" ? "selected" : ""}>No hero image</option>
-          <option value="no-phone" ${filters.needs === "no-phone" ? "selected" : ""}>No phone</option>
-          <option value="no-website" ${filters.needs === "no-website" ? "selected" : ""}>No website</option>
-          <option value="no-hours" ${filters.needs === "no-hours" ? "selected" : ""}>No hours</option>
-        </select>
-      </div>
-      <div style="flex:0; align-self:end; min-width:80px;">
-        <button type="submit">Filter</button>
-      </div>
-    </form>
-  </div>
+    <div class="card">
+      <form method="get" action="/admin/places" class="ap-filters">
+        <div class="ap-field ap-field--grow">
+          <label>Name</label>
+          <input name="q" value="${escapeAttr(filters.q || "")}" placeholder="Sorbillo" />
+        </div>
+        <div class="ap-field">
+          <label>Country</label>
+          <input name="country" value="${escapeAttr(filters.country || "")}" placeholder="Italy" />
+        </div>
+        <div class="ap-field">
+          <label>Visibility</label>
+          <select name="vis">
+            <option value="">All</option>
+            <option value="visible" ${filters.vis === "visible" ? "selected" : ""}>Visible</option>
+            <option value="hidden" ${filters.vis === "hidden" ? "selected" : ""}>Hidden</option>
+          </select>
+        </div>
+        <div class="ap-field">
+          <label>Style</label>
+          <select name="styleId">
+            <option value="">Any style</option>
+            ${allStyles.map(s => `<option value="${s.id}" ${String(filters.styleId) === String(s.id) ? "selected" : ""}>${escapeHtml(s.name)}</option>`).join("")}
+          </select>
+        </div>
+        <div class="ap-field">
+          <label>Needs</label>
+          <select name="needs">
+            <option value="">Anything</option>
+            <option value="no-style" ${filters.needs === "no-style" ? "selected" : ""}>No style</option>
+            <option value="no-hero" ${filters.needs === "no-hero" ? "selected" : ""}>No hero image</option>
+            <option value="no-photos" ${filters.needs === "no-photos" ? "selected" : ""}>No photos</option>
+            <option value="no-reviews" ${filters.needs === "no-reviews" ? "selected" : ""}>No reviews</option>
+            <option value="no-description" ${filters.needs === "no-description" ? "selected" : ""}>No description</option>
+            <option value="no-phone" ${filters.needs === "no-phone" ? "selected" : ""}>No phone</option>
+            <option value="no-website" ${filters.needs === "no-website" ? "selected" : ""}>No website</option>
+            <option value="no-hours" ${filters.needs === "no-hours" ? "selected" : ""}>No hours</option>
+            <option value="not-enriched" ${filters.needs === "not-enriched" ? "selected" : ""}>Not enriched</option>
+          </select>
+        </div>
+        <div class="ap-field">
+          <label>Sort</label>
+          <select name="sort">
+            <option value="id_desc" ${filters.sort === "id_desc" ? "selected" : ""}>Newest</option>
+            <option value="id_asc" ${filters.sort === "id_asc" ? "selected" : ""}>Oldest</option>
+            <option value="name_asc" ${filters.sort === "name_asc" ? "selected" : ""}>Name A–Z</option>
+            <option value="rating_desc" ${filters.sort === "rating_desc" ? "selected" : ""}>Top rated</option>
+          </select>
+        </div>
+        <div class="ap-field ap-field--btn">
+          <button type="submit" class="btn primary">Filter</button>
+          <a class="btn" href="/admin/places">Reset</a>
+        </div>
+      </form>
+    </div>
 
-  <p class="small muted" style="margin:0 0 8px;">${places.length} result${places.length === 1 ? "" : "s"}${places.length === 300 ? " (capped at 300)" : ""}</p>
+    <p class="small muted ap-resultline">
+      Showing ${places.length ? ((page - 1) * perPage + 1) : 0}–${(page - 1) * perPage + places.length} of ${total.toLocaleString()} · page ${page}/${totalPages}
+    </p>
 
-  ${places.length ? `
-  <div class="card" style="padding:0; overflow:hidden;">
-    <table class="admin-table" id="places-table">
-      <thead>
-        <tr>
-          <th style="width:36px; text-align:center;"><input type="checkbox" id="select-all" title="Select all" /></th>
-          <th style="width:52px;">ID</th>
-          <th>Name</th>
-          <th>City · Country</th>
-          <th>Styles</th>
-          <th style="width:36px; text-align:center;" title="Visible">👁</th>
-          <th style="width:36px; text-align:center;" title="Hero">🖼</th>
-          <th style="width:36px; text-align:center;" title="Phone">📞</th>
-          <th style="width:36px; text-align:center;" title="Website">🌐</th>
-          <th style="width:36px; text-align:center;" title="Hours">🕒</th>
-          <th style="width:110px;"></th>
-        </tr>
-      </thead>
-      <tbody>
-        ${places.map(p => `
+    ${places.length ? `
+    <div class="card ap-tablecard">
+      <table class="admin-table ap-table">
+        <thead>
           <tr>
-            <td style="text-align:center;"><input type="checkbox" class="row-cb" value="${p.id}" /></td>
-            <td class="small muted">${p.id}</td>
-            <td><strong>${escapeHtml(p.name)}</strong></td>
-            <td class="small">${escapeHtml(p.city || "—")} · ${escapeHtml(p.country || "—")}</td>
-            <td class="small">${p.styles.length ? p.styles.map(s => escapeHtml(s.style.name)).join(", ") : '<span class="muted">—</span>'}</td>
-            <td style="text-align:center;" class="small">${p.isVisible ? "✓" : '<span class="muted">—</span>'}</td>
-            <td style="text-align:center;" class="small">${p.heroImageUrl ? "✓" : '<span class="muted">—</span>'}</td>
-            <td style="text-align:center;" class="small">${p.phone ? "✓" : '<span class="muted">—</span>'}</td>
-            <td style="text-align:center;" class="small">${p.websiteUrl ? "✓" : '<span class="muted">—</span>'}</td>
-            <td style="text-align:center;" class="small">${p.openingHours ? "✓" : '<span class="muted">—</span>'}</td>
-            <td>
-              <div class="row" style="gap:6px; justify-content:flex-end;">
-                <a class="btn primary" href="/admin/places/${p.id}">Edit</a>
-                <a class="btn" href="/place/${p.id}${p.slug ? '/' + p.slug : ''}" target="_blank">↗</a>
-              </div>
-            </td>
+            <th class="ap-c-cb"><input type="checkbox" id="select-all" title="Select all" /></th>
+            <th class="ap-c-thumb"></th>
+            <th>Place</th>
+            <th class="ap-c-loc">City · Country</th>
+            <th class="ap-c-rating" title="Google ★ / OPM">★</th>
+            <th class="ap-c-num" title="Photos">📷</th>
+            <th class="ap-c-num" title="Reviews">💬</th>
+            <th class="ap-c-flag" title="Visible">👁</th>
+            <th class="ap-c-flag" title="Enriched">✨</th>
+            <th class="ap-c-actions"></th>
           </tr>
-        `).join("")}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          ${places.map(p => `
+            <tr class="${p.isVisible ? "" : "ap-row--hidden"}">
+              <td class="ap-c-cb"><input type="checkbox" class="row-cb" value="${p.id}" /></td>
+              <td class="ap-c-thumb">
+                ${p.heroThumb
+                  ? `<img class="ap-thumb" src="${escapeAttr(p.heroThumb)}" alt="" loading="lazy" onerror="this.classList.add('ap-thumb--err')" />`
+                  : `<span class="ap-thumb ap-thumb--ph">🍕</span>`}
+              </td>
+              <td>
+                <a class="ap-name" href="/admin/places/${p.id}">${escapeHtml(p.name)}</a>
+                <span class="ap-id">#${p.id}</span>
+                <div class="ap-styles small muted">${p.styles.length ? p.styles.map(s => escapeHtml(s.style.name)).join(", ") : "no style"}</div>
+              </td>
+              <td class="ap-c-loc small">${escapeHtml(p.city || "—")}<br><span class="muted">${escapeHtml(p.country || "—")}</span></td>
+              <td class="ap-c-rating small">
+                ${p.googleRating != null ? `<span title="Google">${Number(p.googleRating).toFixed(1)}</span>` : `<span class="muted">—</span>`}
+                ${p.opmRating != null ? `<br><span class="ap-opm" title="OPM">${Number(p.opmRating).toFixed(1)}</span>` : ""}
+              </td>
+              <td class="ap-c-num small ${p._count.images ? "" : "muted"}">${p._count.images || "—"}</td>
+              <td class="ap-c-num small ${p._count.externalReviews ? "" : "muted"}">${p._count.externalReviews || "—"}</td>
+              <td class="ap-c-flag">
+                <form method="post" action="/admin/places/${p.id}/toggle-visible" class="ap-toggle">
+                  <button type="submit" class="ap-iconbtn ${p.isVisible ? "is-on" : ""}" title="${p.isVisible ? "Visible — click to hide" : "Hidden — click to show"}">${p.isVisible ? "👁" : "🚫"}</button>
+                </form>
+              </td>
+              <td class="ap-c-flag small">${p.enrichedAt ? `<span title="Enriched ${new Date(p.enrichedAt).toISOString().slice(0,10)}">✓</span>` : `<span class="muted">—</span>`}</td>
+              <td class="ap-c-actions">
+                <a class="btn primary btn--sm" href="/admin/places/${p.id}">Edit</a>
+                <a class="btn btn--sm" href="/place/${p.id}${p.slug ? '/' + p.slug : ''}" target="_blank" rel="noopener" title="View public page">↗</a>
+              </td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+
+    <nav class="ap-pager">
+      ${page > 1 ? `<a class="btn" href="/admin/places?${qbase ? qbase + "&" : ""}page=${page - 1}">← Prev</a>` : `<span class="btn btn--disabled">← Prev</span>`}
+      <span class="ap-pageinfo">Page ${page} of ${totalPages}</span>
+      ${page < totalPages ? `<a class="btn" href="/admin/places?${qbase ? qbase + "&" : ""}page=${page + 1}">Next →</a>` : `<span class="btn btn--disabled">Next →</span>`}
+    </nav>
+
+    <div id="bulk-bar" class="ap-bulkbar" style="display:none;">
+      <form method="post" action="/admin/places/bulk-style" id="bulk-form" class="card ap-bulkform">
+        <span id="bulk-count" class="ap-bulkcount"></span>
+        <select name="styleId" id="bulk-style-select">
+          <option value="">— style —</option>
+          ${allStyles.map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join("")}
+        </select>
+        <button type="submit" class="btn primary" id="bulk-submit" disabled>Assign style</button>
+        <button type="submit" class="btn" name="action" value="show" formaction="/admin/places/bulk-visibility">Show</button>
+        <button type="submit" class="btn" name="action" value="hide" formaction="/admin/places/bulk-visibility">Hide</button>
+        <button type="button" id="bulk-cancel" class="btn">Clear</button>
+        <div id="bulk-ids"></div>
+      </form>
+    </div>
+    ` : `<p class="small muted">No places match these filters.</p>`}
   </div>
 
-  <div id="bulk-bar" style="display:none; position:sticky; bottom:16px; margin-top:12px;">
-    <form method="post" action="/admin/places/bulk-style" id="bulk-form" class="card row" style="gap:12px; align-items:center; background:var(--c-surface); box-shadow:0 4px 20px rgba(0,0,0,0.15);">
-      <span id="bulk-count" class="small" style="white-space:nowrap; font-weight:600;"></span>
-      <select name="styleId" id="bulk-style-select" style="flex:1; min-width:160px;">
-        <option value="">— pick a style —</option>
-        ${allStyles.map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join("")}
-      </select>
-      <button type="submit" class="btn primary" id="bulk-submit" disabled>Assign style</button>
-      <button type="button" id="bulk-cancel" class="btn">Clear</button>
-      <div id="bulk-ids"></div>
-    </form>
-  </div>
+  <style>
+    .admin-places { max-width: 1200px; }
+    .ap-head { display:flex; align-items:baseline; gap:12px; }
+    .ap-total { color:#999; font-size:13px; }
+    .ap-filters { display:flex; flex-wrap:wrap; gap:10px; align-items:end; }
+    .ap-field { display:flex; flex-direction:column; gap:3px; min-width:120px; }
+    .ap-field label { font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:#999; }
+    .ap-field--grow { flex:2 1 200px; }
+    .ap-field--btn { flex-direction:row; gap:6px; align-items:end; }
+    .ap-resultline { margin:10px 2px; }
+    .ap-tablecard { padding:0; overflow:auto; }
+    .ap-table { width:100%; border-collapse:collapse; }
+    .ap-table th, .ap-table td { padding:7px 8px; vertical-align:middle; border-bottom:1px solid #ececec; }
+    .ap-table thead th { font-size:11px; color:#999; text-align:left; position:sticky; top:0; background:#faf8f4; }
+    .ap-c-cb, .ap-c-flag, .ap-c-num, .ap-c-rating { text-align:center; width:38px; }
+    .ap-c-thumb { width:52px; }
+    .ap-c-loc { width:150px; }
+    .ap-c-actions { width:96px; text-align:right; white-space:nowrap; }
+    .ap-row--hidden { opacity:.55; }
+    .ap-thumb { width:44px; height:44px; object-fit:cover; border-radius:6px; display:block; background:#eee; }
+    .ap-thumb--ph { display:flex; align-items:center; justify-content:center; font-size:20px; }
+    .ap-thumb--err { visibility:hidden; }
+    .ap-name { font-weight:600; }
+    .ap-id { color:#bbb; font-size:12px; margin-left:6px; }
+    .ap-styles { margin-top:2px; }
+    .ap-opm { color:#c0392b; }
+    .ap-iconbtn { border:none; background:none; cursor:pointer; font-size:16px; padding:2px; opacity:.35; filter:grayscale(1); }
+    .ap-iconbtn.is-on { opacity:1; filter:none; }
+    .ap-toggle { margin:0; }
+    .btn--sm { padding:3px 9px; font-size:12px; }
+    .ap-pager { display:flex; align-items:center; gap:14px; justify-content:center; margin:16px 0; }
+    .ap-pageinfo { font-size:13px; color:#777; }
+    .btn--disabled { opacity:.4; pointer-events:none; }
+    .ap-bulkbar { position:sticky; bottom:14px; margin-top:12px; }
+    .ap-bulkform { display:flex; gap:10px; align-items:center; box-shadow:0 4px 20px rgba(0,0,0,.15); }
+    .ap-bulkcount { font-weight:600; font-size:13px; white-space:nowrap; }
+    @media (max-width:640px) {
+      .ap-c-loc, .ap-styles { display:none; }
+      .admin-places { font-size:14px; }
+    }
+  </style>
 
   <script>
     (function () {
@@ -110,46 +193,33 @@
       var bulkSubmit = document.getElementById("bulk-submit");
       var bulkStyleSelect = document.getElementById("bulk-style-select");
       var bulkCancel = document.getElementById("bulk-cancel");
+      if (!selectAll) return;
 
-      function getChecked() {
-        return Array.from(document.querySelectorAll(".row-cb:checked"));
-      }
-
+      function getChecked() { return Array.from(document.querySelectorAll(".row-cb:checked")); }
       function updateBar() {
         var checked = getChecked();
         if (checked.length === 0) {
           bulkBar.style.display = "none";
-          selectAll.indeterminate = false;
-          selectAll.checked = false;
-          return;
+          selectAll.indeterminate = false; selectAll.checked = false; return;
         }
         bulkBar.style.display = "";
         var total = document.querySelectorAll(".row-cb").length;
         selectAll.indeterminate = checked.length > 0 && checked.length < total;
         selectAll.checked = checked.length === total;
         bulkCount.textContent = checked.length + " selected";
-        bulkIdsEl.innerHTML = checked.map(cb => '<input type="hidden" name="ids" value="' + cb.value + '" />').join("");
+        bulkIdsEl.innerHTML = checked.map(function (cb) { return '<input type="hidden" name="ids" value="' + cb.value + '" />'; }).join("");
         bulkSubmit.disabled = !bulkStyleSelect.value;
       }
-
-      document.querySelectorAll(".row-cb").forEach(function (cb) {
-        cb.addEventListener("change", updateBar);
-      });
-
+      document.querySelectorAll(".row-cb").forEach(function (cb) { cb.addEventListener("change", updateBar); });
       selectAll.addEventListener("change", function () {
         document.querySelectorAll(".row-cb").forEach(function (cb) { cb.checked = selectAll.checked; });
         updateBar();
       });
-
-      bulkStyleSelect.addEventListener("change", function () {
-        bulkSubmit.disabled = !this.value;
-      });
-
+      bulkStyleSelect.addEventListener("change", function () { bulkSubmit.disabled = !this.value; });
       bulkCancel.addEventListener("click", function () {
         document.querySelectorAll(".row-cb").forEach(function (cb) { cb.checked = false; });
         updateBar();
       });
     })();
   </script>
-  ` : "<p class=\"small muted\">No places found.</p>"}
 ` }) %>

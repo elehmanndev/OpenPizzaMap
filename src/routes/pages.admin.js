@@ -403,12 +403,26 @@ router.post("/admin/cities/:id/toggle-visible", requireAdmin, async (req, res) =
     res.redirect("/admin/cities");
 });
 
+// Hero thumbnail path for the list grid. heroImageUrl may be a base
+// (/uploads/places/{id}/{n}.jpg), a -large.jpg, or an external URL.
+// Derive the -thumb.jpg sibling for local uploads; leave external URLs alone.
+function heroThumb(u) {
+    if (!u) return null;
+    if (!u.startsWith("/uploads/")) return u;
+    const m = /^(.*?)(?:-large|-thumb)?\.[a-z0-9]+$/i.exec(u);
+    return m ? `${m[1]}-thumb.jpg` : u;
+}
+
+const PLACES_PER_PAGE = 50;
+
 router.get("/admin/places", requireAdmin, async (req, res) => {
     const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
     const country = typeof req.query.country === "string" ? req.query.country.trim() : "";
     const vis = req.query.vis; // "visible" | "hidden" | undefined
     const styleId = typeof req.query.styleId === "string" ? Number(req.query.styleId) : null;
     const needs = typeof req.query.needs === "string" ? req.query.needs : "";
+    const sort = typeof req.query.sort === "string" ? req.query.sort : "id_desc";
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
 
     const where = {};
     if (q) where.name = { contains: q };
@@ -421,28 +435,65 @@ router.get("/admin/places", requireAdmin, async (req, res) => {
     if (needs === "no-phone") where.phone = null;
     if (needs === "no-website") where.websiteUrl = null;
     if (needs === "no-hours") where.openingHours = null;
+    if (needs === "no-description") where.descriptionHtml = null;
+    if (needs === "no-photos") where.images = { none: {} };
+    if (needs === "no-reviews") where.externalReviews = { none: {} };
+    if (needs === "not-enriched") where.enrichedAt = null;
 
-    const [places, allStyles] = await Promise.all([
+    const orderBy =
+        sort === "name_asc" ? [{ name: "asc" }] :
+        sort === "rating_desc" ? [{ googleRating: "desc" }, { id: "desc" }] :
+        sort === "id_asc" ? [{ id: "asc" }] :
+        [{ id: "desc" }];
+
+    const [total, places, allStyles] = await Promise.all([
+        prisma.place.count({ where }),
         prisma.place.findMany({
             where,
-            orderBy: { id: "desc" },
-            take: 300,
+            orderBy,
+            take: PLACES_PER_PAGE,
+            skip: (page - 1) * PLACES_PER_PAGE,
             select: {
                 id: true, slug: true, name: true, city: true, country: true,
                 isVisible: true, heroImageUrl: true, phone: true,
                 websiteUrl: true, openingHours: true,
+                googleRating: true, opmRating: true, enrichedAt: true,
                 styles: { select: { style: { select: { name: true } } } },
+                _count: { select: { images: true, externalReviews: true } },
             },
         }),
         prisma.style.findMany({ orderBy: { sortOrder: "asc" }, select: { id: true, name: true } }),
     ]);
 
+    const totalPages = Math.max(1, Math.ceil(total / PLACES_PER_PAGE));
+    // Filter querystring (minus page) so pagination/sort links keep context.
+    const qparts = [];
+    if (q) qparts.push("q=" + encodeURIComponent(q));
+    if (country) qparts.push("country=" + encodeURIComponent(country));
+    if (vis) qparts.push("vis=" + encodeURIComponent(vis));
+    if (Number.isFinite(styleId) && styleId) qparts.push("styleId=" + styleId);
+    if (needs) qparts.push("needs=" + encodeURIComponent(needs));
+    if (sort && sort !== "id_desc") qparts.push("sort=" + encodeURIComponent(sort));
     res.render("admin_places", {
         user: req.session.user,
-        places,
+        places: places.map((p) => ({ ...p, heroThumb: heroThumb(p.heroImageUrl) })),
         allStyles,
-        filters: { q, country, vis: vis || "", styleId: styleId || "", needs },
+        filters: { q, country, vis: vis || "", styleId: styleId || "", needs, sort },
+        page, totalPages, total, perPage: PLACES_PER_PAGE,
+        qbase: qparts.join("&"),
     });
+});
+
+// Bulk visibility — show/hide the selected places at once.
+router.post("/admin/places/bulk-visibility", requireAdmin, async (req, res) => {
+    const rawIds = Array.isArray(req.body.ids) ? req.body.ids : (req.body.ids ? [req.body.ids] : []);
+    const ids = rawIds.map(Number).filter((n) => Number.isFinite(n) && n > 0);
+    const makeVisible = req.body.action === "show";
+    const back = req.headers.referer || "/admin/places";
+    if (ids.length) {
+        await prisma.place.updateMany({ where: { id: { in: ids } }, data: { isVisible: makeVisible } });
+    }
+    res.redirect(back);
 });
 
 router.post("/admin/places/bulk-style", requireAdmin, async (req, res) => {
@@ -482,16 +533,16 @@ router.get("/admin/places/:id", requireAdmin, async (req, res) => {
         include: {
             styles: { select: { styleId: true } },
             images: { orderBy: [{ position: "asc" }, { id: "asc" }] },
+            externalReviews: { orderBy: [{ source: "asc" }, { position: "asc" }, { id: "asc" }] },
+            _count: { select: { reviews: true } },
         },
     });
     if (!place) return res.redirect("/admin/places");
     const allStyles = await prisma.style.findMany({ orderBy: { sortOrder: "asc" } });
     const selectedStyleIds = new Set(place.styles.map((s) => s.styleId));
-    // Parse external review snapshots for the admin review manager. Each item:
-    //   { author, rating, text, relativeTime, hidden? }
-    // hidden is an admin-set flag stored inline (see review endpoints below).
-    let googleReviews = [];
-    try { const a = JSON.parse(place.googleReviewsJson || "[]"); if (Array.isArray(a)) googleReviews = a; } catch { /* ignore */ }
+    // External reviews now come from the ExternalReview table (admin sees ALL
+    // incl. hidden, so they can toggle). Split by source for the manager.
+    const reviews = place.externalReviews || [];
     res.render("admin_place_edit", {
         user: req.session.user,
         place,
@@ -502,7 +553,8 @@ router.get("/admin/places/:id", requireAdmin, async (req, res) => {
             thumb: thumbOf(img.localPath),
             isHero: !!place.heroImageUrl && (largeOf(img.localPath) === place.heroImageUrl || img.localPath === place.heroImageUrl),
         })),
-        googleReviews,
+        googleReviews: reviews.filter((r) => r.source === "google"),
+        taReviews: reviews.filter((r) => r.source === "tripadvisor"),
     });
 });
 
@@ -600,7 +652,7 @@ router.post("/admin/places/:id/toggle-visible", requireAdmin, async (req, res) =
     const place = await prisma.place.findUnique({ where: { id } });
     if (!place) return res.redirect("/admin/places");
     await prisma.place.update({ where: { id }, data: { isVisible: !place.isVisible } });
-    res.redirect("/admin/places");
+    res.redirect(req.headers.referer || "/admin/places");
 });
 
 // --- Place photo management (PlaceImage reorder / hide / set-hero) ---
@@ -655,6 +707,53 @@ router.post("/admin/places/:id/photos/:imageId/set-hero", requireAdmin, async (r
     const img = await prisma.placeImage.findFirst({ where: { id: imageId, placeId: id } });
     if (img) await prisma.place.update({ where: { id }, data: { heroImageUrl: largeOf(img.localPath) } });
     res.redirect(`/admin/places/${id}`);
+});
+
+// --- Place external-review management (ExternalReview reorder / hide) ---
+// Same model as photos: each review row owns position + isHidden, both of
+// which survive re-scrapes (scraper upserts on placeId+source+dedupKey).
+// move reorders within a (place, source) group; toggle-hidden flips isHidden.
+router.post("/admin/places/:id/reviews/:reviewId/move", requireAdmin, async (req, res) => {
+    const id = Number(req.params.id);
+    const reviewId = Number(req.params.reviewId);
+    const dir = String(req.query.dir || (req.body && req.body.dir) || "").toLowerCase();
+    const target = await prisma.externalReview.findFirst({ where: { id: reviewId, placeId: id } });
+    if (target) {
+        const group = await prisma.externalReview.findMany({
+            where: { placeId: id, source: target.source },
+            orderBy: [{ position: "asc" }, { id: "asc" }],
+        });
+        const idx = group.findIndex((r) => r.id === reviewId);
+        const swapWith = dir === "up" ? idx - 1 : idx + 1;
+        if (idx !== -1 && swapWith >= 0 && swapWith < group.length) {
+            const arr = group.slice();
+            const [moved] = arr.splice(idx, 1);
+            arr.splice(swapWith, 0, moved);
+            await prisma.$transaction(
+                arr.map((r, i) => prisma.externalReview.update({ where: { id: r.id }, data: { position: i + 1 } }))
+            );
+        }
+    }
+    res.redirect(`/admin/places/${id}`);
+});
+
+router.post("/admin/places/:id/reviews/:reviewId/toggle-hidden", requireAdmin, async (req, res) => {
+    const id = Number(req.params.id);
+    const reviewId = Number(req.params.reviewId);
+    const r = await prisma.externalReview.findFirst({ where: { id: reviewId, placeId: id } });
+    if (r) await prisma.externalReview.update({ where: { id: r.id }, data: { isHidden: !r.isHidden } });
+    res.redirect(`/admin/places/${id}`);
+});
+
+// --- Delete a place (danger zone). Cascades to images, externalReviews,
+// styles, visits, favorites, reviews via the schema's onDelete rules. ---
+router.post("/admin/places/:id/delete", requireAdmin, async (req, res) => {
+    const id = Number(req.params.id);
+    if (String(req.body.confirm || "") !== String(id)) {
+        return res.redirect(`/admin/places/${id}`);
+    }
+    await prisma.place.delete({ where: { id } }).catch(() => {});
+    res.redirect("/admin/places");
 });
 
 // --- Styles CMS ---

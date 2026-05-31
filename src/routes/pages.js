@@ -192,8 +192,19 @@ router.get("/place/:id/:slug?", async (req, res) => {
         try { const arr = JSON.parse(json); return Array.isArray(arr) ? arr : []; }
         catch { return []; }
     }
-    place.googleReviews = parseReviews(place.googleReviewsJson);
-    place.tripadvisorReviews = parseReviews(place.tripadvisorReviewsJson);
+    // External reviews now come from the ExternalReview table: only non-hidden
+    // rows, in admin order. Row columns (author/rating/text/relativeTime/
+    // profilePhoto) already match what place.ejs expects. Fall back to the
+    // legacy JSON blob for any place not yet represented in the table.
+    const extRows = await prisma.externalReview.findMany({
+        where: { placeId: id, isHidden: false },
+        orderBy: [{ position: "asc" }, { id: "asc" }],
+        select: { source: true, author: true, rating: true, text: true, relativeTime: true, profilePhoto: true },
+    });
+    const gRows = extRows.filter((r) => r.source === "google");
+    const taRows = extRows.filter((r) => r.source === "tripadvisor");
+    place.googleReviews = gRows.length ? gRows : parseReviews(place.googleReviewsJson);
+    place.tripadvisorReviews = taRows.length ? taRows : parseReviews(place.tripadvisorReviewsJson);
     // Free up the raw JSON from the view scope; the view only needs the parsed array.
     delete place.googleReviewsJson;
     delete place.tripadvisorReviewsJson;
