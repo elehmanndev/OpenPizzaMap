@@ -658,7 +658,13 @@ async function scrapePhotos(page, {
         };
 
         if (googlePlaceId) {
-            const url = `https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(googlePlaceId)}&hl=en`;
+            // FTID-format placeIds (0x..:0x.. from the Playwright resolver)
+            // are ignored by place_id: — Google serves a generic search page
+            // and page.goto hangs. Convert to a ?cid= direct-panel URL.
+            const ftidMatch = /^0x([0-9a-f]+):0x([0-9a-f]+)$/i.exec(googlePlaceId);
+            const url = ftidMatch
+                ? `https://www.google.com/maps?cid=${BigInt("0x" + ftidMatch[2]).toString()}&hl=en`
+                : `https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(googlePlaceId)}&hl=en`;
             await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
             await dismissConsent();
             await page.waitForSelector('h1, button[data-item-id="address"]', { timeout: 15000 }).catch(() => null);
@@ -997,10 +1003,15 @@ async function scrapePhotos(page, {
 async function scrapeRatingsDistribution(page, { googlePlaceId } = {}) {
     if (!googlePlaceId) return { error: "no googlePlaceId" };
     try {
-        await page.goto(
-            `https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(googlePlaceId)}&hl=en`,
-            { waitUntil: "domcontentloaded", timeout: 30000 }
-        );
+        // FTID-format placeIds (0x..:0x.. from the Playwright resolver) are
+        // ignored by the place_id: query param — Google serves a generic
+        // search page with no Reviews tab. Convert the second hex pair to a
+        // decimal CID and use the ?cid= direct-panel URL instead.
+        const ftidMatch = /^0x([0-9a-f]+):0x([0-9a-f]+)$/i.exec(googlePlaceId);
+        const placeUrl = ftidMatch
+            ? `https://www.google.com/maps?cid=${BigInt("0x" + ftidMatch[2]).toString()}&hl=en`
+            : `https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(googlePlaceId)}&hl=en`;
+        await page.goto(placeUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
 
         // Consent dismissal — same fix as findPlaceByName (2026-05-30).
         // ES-geolocated IPs hit consent.google.com/m which renders two

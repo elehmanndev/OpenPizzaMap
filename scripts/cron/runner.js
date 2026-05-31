@@ -44,6 +44,7 @@
 //                              Disable by leaving unset/0.
 
 const path = require('path');
+const fs = require('fs');
 const ROOT = path.resolve(__dirname, '..', '..');
 const { runMaintenance } = require(path.join(ROOT, 'src', 'services', 'maintenance'));
 
