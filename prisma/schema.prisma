@@ -132,6 +132,7 @@ model Place {
   favorites     Favorite[]
   reviews       Review[]
   images        PlaceImage[]
+  externalReviews ExternalReview[]
 
   @@index([city])
   @@index([lat])
@@ -176,6 +177,39 @@ model PlaceImage {
 
   @@index([placeId, position])
   @@unique([placeId, sourceRef])
+}
+
+// Scraped external reviews (Google + TripAdvisor), promoted from the
+// Place.*ReviewsJson blobs to first-class rows — same pattern as PlaceImage.
+// Each row owns its position + isHidden so admin reorder/hide survives the
+// monthly re-scrape: the scraper upserts on (placeId, source, dedupKey) and
+// preserves position/isHidden for rows that already exist.
+//
+//   - source: 'google' | 'tripadvisor'
+//   - position: display order within (placeId, source); 1-based
+//   - dedupKey: stable identity for re-scrape merge = sha1(author|text-prefix)
+//     (the public Maps/TA DOM gives no durable review id)
+//   - isHidden: admin "hide from the public page forever" flag
+//   - publishedAt/profilePhoto/lang: nullable, only some sources populate them
+model ExternalReview {
+  id           Int       @id @default(autoincrement())
+  placeId      Int
+  source       String    @db.VarChar(20)
+  position     Int
+  author       String?   @db.VarChar(191)
+  rating       Decimal?  @db.Decimal(2, 1)
+  text         String?   @db.Text
+  relativeTime String?   @db.VarChar(60)
+  profilePhoto String?   @db.VarChar(500)
+  publishedAt  DateTime?
+  lang         String?   @db.VarChar(10)
+  isHidden     Boolean   @default(false)
+  dedupKey     String    @db.VarChar(191)
+  scrapedAt    DateTime  @default(now())
+  place        Place     @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@index([placeId, source, position])
+  @@unique([placeId, source, dedupKey])
 }
 
 model Visit {
