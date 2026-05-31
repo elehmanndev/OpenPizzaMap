@@ -340,7 +340,15 @@ async function tick(n) {
                     where: {
                         isVisible: true,
                         descriptionHtml: null,
-                        googleReviewsJson: { not: null },
+                        // Eligible if we have EITHER Google or TripAdvisor review
+                        // text. TA reviews were previously fetched + logged here
+                        // but never used for descriptions, so places with only TA
+                        // reviews (e.g. high-id spots the free Google review
+                        // scrape never reaches) sat description-less forever.
+                        OR: [
+                            { googleReviewsJson: { not: null } },
+                            { tripadvisorReviewsJson: { not: null } },
+                        ],
                     },
                     select: {
                         id: true,
@@ -398,8 +406,12 @@ async function tick(n) {
 
                         // Hydrate the legacy cache shape the script expects:
                         //   { [placeId]: { reviews: [{ text, ... }] } }
-                        if (gReviews.length) {
-                            cache[String(p.id)] = { reviews: gReviews };
+                        // Prefer Google review text; fall back to TripAdvisor
+                        // when Google has none. Both share the { text, ... }
+                        // shape usableReviewTexts() reads.
+                        const reviewsForDesc = gReviews.length ? gReviews : taReviews;
+                        if (reviewsForDesc.length) {
+                            cache[String(p.id)] = { reviews: reviewsForDesc };
                         }
                     }
 
