@@ -102,6 +102,7 @@ body > header {
 .menu-toggle {
   width: 40px;
   height: 40px;
+  padding: 0; /* kill UA button padding (10px 12px) that pushed the icon ~2px low */
   border-radius: 10px;
   border: none;
   background: transparent;
@@ -119,6 +120,7 @@ body > header {
 .menu-toggle .material-symbols-rounded {
   font-size: 24px;
   line-height: 1;
+  display: block; /* center the glyph box cleanly inside the grid */
 }
 
 /* ── Sidebar backdrop ── */
