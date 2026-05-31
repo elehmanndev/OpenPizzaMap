@@ -76,10 +76,22 @@ async function pickQueue(limit) {
         where: {
             isVisible: true,
             googlePlaceId: { not: null },
-            googleReviewCount: { gte: 5 },
-            OR: [
-                { googleRatingsScrapedAt: null },
-                { googleRatingsScrapedAt: { lt: ttlBoundary } },
+            AND: [
+                {
+                    OR: [
+                        { googleReviewCount: { gte: 5 } },
+                        // Admin-edited (priority) places re-qualify even with an
+                        // unknown count — e.g. the count was cleared when fixing
+                        // a wrong listing. Bounded: scrapedAt gets stamped after.
+                        { googleReviewCount: null, enrichPriorityAt: { not: null } },
+                    ],
+                },
+                {
+                    OR: [
+                        { googleRatingsScrapedAt: null },
+                        { googleRatingsScrapedAt: { lt: ttlBoundary } },
+                    ],
+                },
             ],
         },
         select: {
