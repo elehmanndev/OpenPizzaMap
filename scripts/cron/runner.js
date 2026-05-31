@@ -327,9 +327,12 @@ async function tick(n) {
         // so we hydrate that file from DB before invoking — bridges the
         // old cache-file flow to the new DB-stored reviews shape.
         //
-        // Limit 20/tick — Gemini's free tier is 1500 RPD; at 48 ticks/day
-        // that's 960 calls max, comfortable headroom. Bump GEMINI_DELAY_MS
-        // in env (default 4100ms) if rate-limit errors appear.
+        // Limit 20/tick. Gemini free tier (gemini-2.5-flash-lite) is
+        // 1000 RPD as of Google's 2025-12-07 quota cut (was 1500). At the
+        // 60-min default interval that's 20*24 = 480/day (safe). If the
+        // interval is dropped to 30 min, 20*48 = 960/day = 96% of cap —
+        // lower this cap to ~15 first. 4100ms delay keeps us under 15 RPM.
+        // Bump GEMINI_DELAY_MS in env if rate-limit errors appear.
         if (!SKIP.includes('descriptions')) {
             try {
                 const { prisma } = require('../lib/bootstrap');
