@@ -86,9 +86,17 @@ function buildReviewPrompt(place, styles, reviews) {
         styleNames ? `Pizza style(s): ${styleNames}` : null,
     ].filter(Boolean).join("\n");
 
-    const reviewBlock = reviews
-        .slice(0, 20)
-        .map((r, i) => `${i + 1}. ${r.slice(0, 500)}`)
+    // Reviews may be plain strings (legacy scrape-reviews.js cache) or
+    // structured objects { author, rating, text, relativeTime } (the
+    // ratingsDist piggyback via extractGoogleReviewsFromOpenPanel).
+    // Normalize to body text and drop empties before numbering.
+    const reviewTexts = reviews
+        .map((r) => (typeof r === "string" ? r : (r && r.text) || ""))
+        .map((t) => t.trim())
+        .filter(Boolean)
+        .slice(0, 20);
+    const reviewBlock = reviewTexts
+        .map((t, i) => `${i + 1}. ${t.slice(0, 500)}`)
         .join("\n");
 
     return `Write a short summary of what customers say about this pizzeria using EXACTLY this format:
@@ -108,7 +116,7 @@ Rules:
 - Output only the single formatted line, nothing else
 
 PIZZERIA: ${header}
-REVIEWS (${reviews.length}):
+REVIEWS (${reviewTexts.length}):
 ${reviewBlock}`;
 }
 
