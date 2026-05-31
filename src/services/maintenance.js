@@ -87,7 +87,12 @@ const MODE_PRESETS = {
         // on the next tick after the expiry window.
         resolve: 0,
         photos: 0,
-        osm: 20,
+        // osm RETIRED 2026-05-31 — every tick was "0 resolved, ~16 missed,
+        // ~4 skipped (no new fields)". OSM coverage of pizzerias outside
+        // a handful of well-mapped countries is too sparse to justify the
+        // every-10-min DB hit. Combined with the other phases it was the
+        // main contributor to the recurring ~75-process Hostinger spikes.
+        osm: 0,
         // tripadvisor + localizeImages RETIRED 2026-05-30 — opm-runner
         // v2 pipeline owns both phases entirely. Keeping them >0 risks
         // duplicate work + Hostinger process-cap spikes (observed today
@@ -105,7 +110,7 @@ const MODE_PRESETS = {
     min: {
         resolve: 0,
         photos: 0,
-        osm: 20,
+        osm: 0,  // RETIRED 2026-05-31, see burn config above
         // tripadvisor + localizeImages RETIRED 2026-05-30 — see burn config above.
         tripadvisor: 0,
         opmRating: true,

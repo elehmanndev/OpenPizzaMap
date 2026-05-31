@@ -317,6 +317,106 @@ async function tick(n) {
         } catch (err) {
             console.warn(`[runner]   resolve(v2): crash ${err.message}`);
         }
+
+        // Gemini descriptions — pick places that have Google review quotes
+        // (from the ratingsDist piggyback) but no description yet, and ask
+        // Gemini 2.5 Flash Lite to summarize the reviews into a 2-sentence
+        // blurb. The downstream generate-descriptions.js script reads its
+        // input from data/cache/google-reviews-cache.json (legacy path),
+        // so we hydrate that file from DB before invoking — bridges the
+        // old cache-file flow to the new DB-stored reviews shape.
+        //
+        // Limit 20/tick — Gemini's free tier is 1500 RPD; at 48 ticks/day
+        // that's 960 calls max, comfortable headroom. Bump GEMINI_DELAY_MS
+        // in env (default 4100ms) if rate-limit errors appear.
+        if (!SKIP.includes('descriptions')) {
+            try {
+                const { prisma } = require('../lib/bootstrap');
+                const candidates = await prisma.place.findMany({
+                    where: {
+                        isVisible: true,
+                        descriptionHtml: null,
+                        googleReviewsJson: { not: null },
+                    },
+                    select: {
+                        id: true,
+                        name: true,
+                        city: true,
+                        googleReviewsJson: true,
+                        tripadvisorReviewsJson: true,
+                    },
+                    orderBy: { id: 'asc' },
+                    take: 20,
+                });
+                if (!candidates.length) {
+                    console.log(`[runner]   descriptions: queue empty`);
+                } else {
+                    // Photo breakdown by source for the candidate set —
+                    // single grouped query so we can log "Ng + Mta photos"
+                    // alongside the review breakdown.
+                    const candIds = candidates.map(c => c.id);
+                    const photoGroups = await prisma.placeImage.groupBy({
+                        by: ['placeId', 'source'],
+                        where: { placeId: { in: candIds }, isHidden: false },
+                        _count: { _all: true },
+                    }).catch(() => []);
+                    const photoCounts = new Map(); // placeId → { google, tripadvisor, other }
+                    for (const g of photoGroups) {
+                        const slot = photoCounts.get(g.placeId) || { google: 0, tripadvisor: 0, other: 0 };
+                        const src = (g.source || '').toLowerCase();
+                        if (src === 'google') slot.google += g._count._all;
+                        else if (src === 'tripadvisor' || src === 'ta') slot.tripadvisor += g._count._all;
+                        else slot.other += g._count._all;
+                        photoCounts.set(g.placeId, slot);
+                    }
+
+                    // Per-candidate breakdown — what data sources we have
+                    // for each place going into the Gemini call.
+                    console.log(`[runner]   descriptions: queue ${candidates.length} places`);
+                    const cacheDir = path.join(ROOT, 'data', 'cache');
+                    fs.mkdirSync(cacheDir, { recursive: true });
+                    const cachePath = path.join(cacheDir, 'google-reviews-cache.json');
+                    const cache = {};
+                    for (const p of candidates) {
+                        let gReviews = [];
+                        try {
+                            gReviews = JSON.parse(p.googleReviewsJson) || [];
+                            if (!Array.isArray(gReviews)) gReviews = [];
+                        } catch { gReviews = []; }
+                        let taReviews = [];
+                        try {
+                            taReviews = JSON.parse(p.tripadvisorReviewsJson || '[]') || [];
+                            if (!Array.isArray(taReviews)) taReviews = [];
+                        } catch { taReviews = []; }
+                        const photos = photoCounts.get(p.id) || { google: 0, tripadvisor: 0, other: 0 };
+                        const otherStr = photos.other ? ` + ${photos.other} other` : '';
+                        console.log(`[descriptions] #${p.id} "${p.name}" (${p.city || '?'}) — reviews: ${gReviews.length}g + ${taReviews.length}ta, photos: ${photos.google}g + ${photos.tripadvisor}ta${otherStr}`);
+
+                        // Hydrate the legacy cache shape the script expects:
+                        //   { [placeId]: { reviews: [{ text, ... }] } }
+                        if (gReviews.length) {
+                            cache[String(p.id)] = { reviews: gReviews };
+                        }
+                    }
+
+                    fs.writeFileSync(cachePath, JSON.stringify(cache, null, 2));
+                    const cacheCount = Object.keys(cache).length;
+                    if (cacheCount === 0) {
+                        console.log(`[runner]   descriptions: 0 candidates had usable review JSON, skipping`);
+                    } else {
+                        const { run: runDescriptions } = require('../enrichment/generate-descriptions');
+                        const r = await runDescriptions({
+                            apply: true,
+                            limit: 20,
+                            reconnectMidLoop: false,
+                        });
+                        console.log(`[runner]   descriptions: written=${r.written || 0} skipped=${r.skipped || 0} failed=${r.failed || 0}`);
+                    }
+                }
+            } catch (err) {
+                console.warn(`[runner]   descriptions: crash ${err.message}`);
+            }
+        }
     }
 }
 
