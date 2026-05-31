@@ -417,38 +417,12 @@ router.get("/admin/places", requireAdmin, async (req, res) => {
     if (vis === "hidden") where.isVisible = false;
     if (Number.isFinite(styleId) && styleId) where.styles = { some: { styleId } };
     if (needs === "no-style") where.styles = { none: {} };
-    else if (needs === "no-hero") where.heroImageUrl = null;
-    else if (needs === "no-phone") where.phone = null;
-    else if (needs === "no-website") where.websiteUrl = null;
-    else if (needs === "no-hours") where.openingHours = null;
-    else if (needs === "no-google-id") where.googlePlaceId = null;
-    // no-google-bar / no-ta-bar filters disabled — these are JSON columns
-    // and Prisma's null-equality syntax is finicky; deferred to a follow-up.
-    // The bar-graph stat counts below also skip the JSON columns for now.
-    else if (needs === "no-ta-id") where.tripadvisorLocationId = null;
-    else if (needs === "ta-sentinel") where.tripadvisorLocationId = -1;
-    // no-ta-bar disabled — see no-google-bar note above.
-    else if (needs === "no-photos") where.images = { none: {} };
-    else if (needs === "no-google-reviews") where.googleReviewsJson = null;
-    else if (needs === "no-ta-reviews") where.tripadvisorReviewsJson = null;
-    else if (needs === "no-coords") where.OR = [{ lat: null }, { lng: null }];
-    else if (needs === "no-description") where.descriptionHtml = null;
-    else if (needs === "resolve-retired") where.AND = [{ googlePlaceId: null }, { enrichmentVersion: { gt: 0 } }];
+    if (needs === "no-hero") where.heroImageUrl = null;
+    if (needs === "no-phone") where.phone = null;
+    if (needs === "no-website") where.websiteUrl = null;
+    if (needs === "no-hours") where.openingHours = null;
 
-    // Aggregate stats — these run on the FULL visible catalog (not the
-    // filtered slice). Parallel queries, ~200ms total at 2.5k places.
-    const day30 = new Date(Date.now() - 30 * 86400_000);
-    const day90 = new Date(Date.now() - 90 * 86400_000);
-    const visPub = { isVisible: true };
-
-    const [
-        places, allStyles,
-        sTotal, sTotalAll, sHidden,
-        sGPlace, sGRating, sGDist, sGDistFresh, sGReviews, sGReviewsFresh,
-        sTaId, sTaSentinel, sTaRating, sTaDist, sTaDistFresh, sTaReviews, sTaReviewsFresh,
-        sHero, sAnyPhoto, sAddr, sPhone, sWebsite, sHours, sDesc, sCoords,
-        sResolveQueued, sResolveRetired,
-    ] = await Promise.all([
+    const [places, allStyles] = await Promise.all([
         prisma.place.findMany({
             where,
             orderBy: { id: "desc" },
@@ -457,88 +431,17 @@ router.get("/admin/places", requireAdmin, async (req, res) => {
                 id: true, slug: true, name: true, city: true, country: true,
                 isVisible: true, heroImageUrl: true, phone: true,
                 websiteUrl: true, openingHours: true,
-                googlePlaceId: true, googleRatingsDistribution: true, googleReviewsJson: true,
-                tripadvisorLocationId: true, tripadvisorRatingsDistribution: true, tripadvisorReviewsJson: true,
-                _count: { select: { images: true } },
                 styles: { select: { style: { select: { name: true } } } },
             },
         }),
         prisma.style.findMany({ orderBy: { sortOrder: "asc" }, select: { id: true, name: true } }),
-        prisma.place.count({ where: visPub }),
-        prisma.place.count({}),
-        prisma.place.count({ where: { isVisible: false } }),
-
-        // Counts are computed as (total - null count). This Prisma version
-        // rejects both `{ field: { not: null } }` AND `NOT: { field: null }`,
-        // but `{ field: null }` (IS NULL) works. So we count nulls and
-        // subtract from total downstream.
-        prisma.place.count({ where: { ...visPub, googlePlaceId: null } }),
-        prisma.place.count({ where: { ...visPub, googleRating: null } }),
-        Promise.resolve(0), // googleRatingsDistribution — Json column, deferred
-        prisma.place.count({ where: { ...visPub, googleRatingsScrapedAt: { gte: day30 } } }),
-        prisma.place.count({ where: { ...visPub, googleReviewsJson: null } }),
-        prisma.place.count({ where: { ...visPub, googleReviewsFetchedAt: { gte: day30 } } }),
-
-        // TripAdvisor
-        prisma.place.count({ where: { ...visPub, tripadvisorLocationId: { gt: 0 } } }),
-        prisma.place.count({ where: { ...visPub, tripadvisorLocationId: -1 } }),
-        prisma.place.count({ where: { ...visPub, tripadvisorRating: null } }),
-        Promise.resolve(0), // tripadvisorRatingsDistribution — Json column, deferred
-        prisma.place.count({ where: { ...visPub, tripadvisorRatingsScrapedAt: { gte: day90 } } }),
-        prisma.place.count({ where: { ...visPub, tripadvisorReviewsJson: null } }),
-        prisma.place.count({ where: { ...visPub, tripadvisorReviewsFetchedAt: { gte: day90 } } }),
-
-        // Photos & basics — same pattern: count NULLs, derive has-value
-        prisma.place.count({ where: { ...visPub, heroImageUrl: null } }),
-        prisma.place.count({ where: { ...visPub, images: { some: {} } } }),
-        prisma.place.count({ where: { ...visPub, addressLine: null } }),
-        prisma.place.count({ where: { ...visPub, phone: null } }),
-        prisma.place.count({ where: { ...visPub, websiteUrl: null } }),
-        prisma.place.count({ where: { ...visPub, openingHours: null } }),
-        prisma.place.count({ where: { ...visPub, descriptionHtml: null } }),
-        prisma.place.count({ where: { ...visPub, OR: [{ lat: null }, { lng: null }] } }),
-
-        // Resolver state
-        prisma.place.count({ where: { ...visPub, googlePlaceId: null, enrichmentVersion: 0 } }),
-        prisma.place.count({ where: { ...visPub, googlePlaceId: null, enrichmentVersion: { gt: 0 } } }),
     ]);
-
-    // TA budget snapshot from the runner's persisted JSON
-    let budget = null;
-    try {
-        const budgetPath = path.join(__dirname, "..", "..", "scripts", "lib", ".tripadvisor-budget.json");
-        if (fs.existsSync(budgetPath)) {
-            const raw = JSON.parse(fs.readFileSync(budgetPath, "utf8"));
-            budget = {
-                month: raw.month,
-                today: raw.today,
-                monthCalls: raw.detailCalls || 0,
-                todayCalls: raw.todayDetailCalls || 0,
-                monthlyCap: 4000,
-                dailyCap: 130,
-            };
-        }
-    } catch { budget = null; }
-
-    // Convert "null counts" → "has-value counts" by subtracting from total.
-    // (This Prisma version rejects `{ field: { not: null } }` so we computed
-    // null counts above and derive has-value here.)
-    const has = (nullCount) => Math.max(0, sTotal - nullCount);
 
     res.render("admin_places", {
         user: req.session.user,
         places,
         allStyles,
         filters: { q, country, vis: vis || "", styleId: styleId || "", needs },
-        stats: {
-            total: sTotal, totalAll: sTotalAll, hidden: sHidden,
-            google: { placeId: has(sGPlace), rating: has(sGRating), dist: sGDist, distFresh: sGDistFresh, reviews: has(sGReviews), reviewsFresh: sGReviewsFresh },
-            tripadvisor: { locationId: sTaId, sentinel: sTaSentinel, rating: has(sTaRating), dist: sTaDist, distFresh: sTaDistFresh, reviews: has(sTaReviews), reviewsFresh: sTaReviewsFresh },
-            photos: { hero: has(sHero), gallery: sAnyPhoto },
-            basics: { address: has(sAddr), phone: has(sPhone), website: has(sWebsite), hours: has(sHours), description: has(sDesc), coords: has(sCoords) },
-            resolver: { queued: sResolveQueued, retired: sResolveRetired },
-            budget,
-        },
     });
 });
 
