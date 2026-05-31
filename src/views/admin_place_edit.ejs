@@ -73,6 +73,7 @@
           <div class="field"><label class="field__label" for="f-web">Website</label><input id="f-web" name="websiteUrl" type="url" value="${escapeAttr(place.websiteUrl || "")}" placeholder="https://..." /></div>
           <div class="field"><label class="field__label" for="f-ig">Instagram</label><input id="f-ig" name="instagramUrl" type="url" value="${escapeAttr(place.instagramUrl || "")}" /></div>
           <div class="field"><label class="field__label" for="f-gmaps">Google Maps</label><input id="f-gmaps" name="googleMapsUrl" type="url" value="${escapeAttr(place.googleMapsUrl || "")}" /></div>
+          <div class="field"><label class="field__label" for="f-ta">TripAdvisor URL</label><input id="f-ta" name="tripadvisorUrl" type="url" value="${escapeAttr(place.tripadvisorUrl || "")}" placeholder="https://www.tripadvisor.com/Restaurant_Review-..." /><span class="field__hint">Paste the correct page if TripAdvisor enrichment can't find this place — opm-runner will scrape it directly.</span></div>
           <div class="field"><label class="field__label" for="f-phone">Phone</label><input id="f-phone" name="phone" value="${escapeAttr(place.phone || "")}" /></div>
         </section>
 
@@ -167,7 +168,8 @@
           <tr><th>Google placeId</th><td class="ed-mono">${place.googlePlaceId ? escapeHtml(place.googlePlaceId) + (ftid ? ' <span class="ed-tag">FTID</span>' : "") : "—"}</td></tr>
           <tr><th>Google Maps URL</th><td>${place.googleMapsUrl ? `<a href="${escapeAttr(place.googleMapsUrl)}" target="_blank" rel="noopener">open ↗</a>` : "—"}</td></tr>
           <tr><th>Google rating</th><td>${place.googleRating != null ? `★ ${place.googleRating} · ${place.googleReviewCount ?? "—"} reviews` : "—"}</td></tr>
-          <tr><th>TripAdvisor</th><td>${place.tripadvisorRating != null ? `★ ${place.tripadvisorRating} · ${place.tripadvisorReviewCount ?? "—"} reviews` : "—"}</td></tr>
+          <tr><th>TripAdvisor</th><td>${place.tripadvisorRating != null ? `★ ${place.tripadvisorRating} · ${place.tripadvisorReviewCount ?? "—"} reviews` : "—"}${place.tripadvisorUrl ? ` · <a href="${escapeAttr(place.tripadvisorUrl)}" target="_blank" rel="noopener">open ↗</a>` : ""}</td></tr>
+          <tr><th>TripAdvisor locationId</th><td>${place.tripadvisorLocationId != null ? (place.tripadvisorLocationId === -1 ? '<span class="ed-tag ed-tag--hidden">not found (-1)</span>' : place.tripadvisorLocationId) : "—"}</td></tr>
         </table>
       </section>
       <section class="admin-section">

@@ -598,6 +598,7 @@ router.post("/admin/places/:id", requireAdmin, async (req, res) => {
         phone: nullable(b.phone, 60),
         websiteUrl: nullable(b.websiteUrl, 500),
         googleMapsUrl: nullable(b.googleMapsUrl, 500),
+        tripadvisorUrl: nullable(b.tripadvisorUrl, 500),
         instagramUrl: nullable(b.instagramUrl, 500),
         openingHours: nullable(b.openingHours),
         slug: nullable(b.slug, 191),
