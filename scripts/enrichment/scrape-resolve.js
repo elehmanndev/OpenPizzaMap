@@ -20,7 +20,8 @@ async function pickQueue(limit) {
             enrichmentVersion: 0,
         },
         orderBy: [
-            { isVisible: "asc" },                     // hidden submissions first
+            { enrichPriorityAt: { sort: "desc", nulls: "last" } }, // admin-edited spots first
+            { isVisible: "asc" },                     // then hidden submissions
             { enrichedAt: { sort: "asc", nulls: "first" } },
             { id: "asc" },
         ],

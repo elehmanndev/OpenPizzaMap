@@ -61,7 +61,7 @@ async function pickQueue(limit) {
             tripadvisorLocationId: true,
             tripadvisorUrl: true,
         },
-        orderBy: { id: "asc" },
+        orderBy: [{ enrichPriorityAt: { sort: "desc", nulls: "last" } }, { id: "asc" }],
         take: limit,
     });
 }

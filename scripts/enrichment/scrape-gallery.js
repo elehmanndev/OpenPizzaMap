@@ -100,7 +100,7 @@ async function pickQueue(limit) {
             addressLine: true, lat: true, lng: true,
             googlePlaceId: true,
         },
-        orderBy: { id: "asc" },
+        orderBy: [{ enrichPriorityAt: { sort: "desc", nulls: "last" } }, { id: "asc" }],
         take: limit,
     });
 }

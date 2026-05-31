@@ -86,7 +86,7 @@ async function pickQueue(limit) {
             id: true, name: true, city: true,
             googlePlaceId: true, googleReviewCount: true,
         },
-        orderBy: { id: "asc" },
+        orderBy: [{ enrichPriorityAt: { sort: "desc", nulls: "last" } }, { id: "asc" }],
         take: limit,
     });
 }

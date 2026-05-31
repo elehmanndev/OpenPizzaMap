@@ -349,7 +349,7 @@ async function tick(n) {
                         googleReviewsJson: true,
                         tripadvisorReviewsJson: true,
                     },
-                    orderBy: { id: 'asc' },
+                    orderBy: [{ enrichPriorityAt: { sort: 'desc', nulls: 'last' } }, { id: 'asc' }],
                     take: 20,
                 });
                 if (!candidates.length) {

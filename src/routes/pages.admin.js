@@ -555,6 +555,7 @@ router.get("/admin/places/:id", requireAdmin, async (req, res) => {
         })),
         googleReviews: reviews.filter((r) => r.source === "google"),
         taReviews: reviews.filter((r) => r.source === "tripadvisor"),
+        note: typeof req.query.note === "string" ? req.query.note.slice(0, 300) : null,
     });
 });
 
@@ -562,6 +563,10 @@ router.post("/admin/places/:id", requireAdmin, async (req, res) => {
     const { sanitizeRichText } = require("../services/sanitize");
     const id = Number(req.params.id);
     const b = req.body || {};
+    const current = await prisma.place.findUnique({
+        where: { id },
+        select: { googleMapsUrl: true, addressLine: true, googlePlaceId: true },
+    });
 
     function s(v, max) {
         const x = String(v == null ? "" : v).trim();
@@ -630,11 +635,70 @@ router.post("/admin/places/:id", requireAdmin, async (req, res) => {
         data.stylesJson = "[]";
     }
 
+    // If the Google Maps link changed, resolve it to coords + placeId
+    // (exact, parsed from the resolved URL) and fill the address ONLY when
+    // blank — OSM reverse-geocode is the nearest-pin address, so never
+    // clobber a good existing one.
+    let placeIdChanged = false;
+    let mapsResolveNote = null;
+    if (data.googleMapsUrl && current && data.googleMapsUrl !== current.googleMapsUrl) {
+        try {
+            const { resolveMapsLink } = require("../services/resolve-maps-link");
+            const r = await resolveMapsLink(data.googleMapsUrl);
+            if (r) {
+                if (Number.isFinite(r.lat) && Number.isFinite(r.lng)) { data.lat = r.lat; data.lng = r.lng; }
+                if (r.placeId) {
+                    // googlePlaceId is unique. If another place already owns
+                    // this id, the pasted link points at a duplicate — skip
+                    // setting it (would fail the whole save) and flag it.
+                    const clash = await prisma.place.findFirst({ where: { googlePlaceId: r.placeId }, select: { id: true } });
+                    if (clash && clash.id !== id) {
+                        mapsResolveNote = `Heads up: that Google place is already on #${clash.id} — looks like a duplicate. Coordinates were updated; placeId left unchanged.`;
+                        console.warn(`[admin] #${id} maps link resolves to placeId already on #${clash.id} — not setting (likely duplicate)`);
+                    } else {
+                        data.googlePlaceId = r.placeId;
+                        placeIdChanged = r.placeId !== current.googlePlaceId;
+                    }
+                }
+                if (r.address && !(current.addressLine || "").trim()) {
+                    data.addressLine = String(r.address).slice(0, 191);
+                }
+            }
+        } catch (err) {
+            console.warn(`[admin] maps-link resolve failed for #${id}: ${err && err.message}`);
+        }
+    }
+
+    // When the placeId changed, the cached Google rating/reviews belong to the
+    // OLD (wrong) listing — wipe them so the scrapers re-fetch the right place.
+    if (placeIdChanged) {
+        data.googleRating = null;
+        data.googleReviewCount = null;
+        data.googleReviewsJson = null;
+        data.googleReviewsFetchedAt = null;
+        // The existing description was written from the wrong listing's
+        // reviews — clear it so it regenerates from the correct place.
+        data.descriptionHtml = null;
+    }
+
+    // Any admin edit jumps the opm-runner queue (enrichPriorityAt DESC) and
+    // re-triggers enrichment by clearing the scrape TTL stamps.
+    data.enrichPriorityAt = new Date();
+    data.enrichedAt = null;
+    data.googleRatingsScrapedAt = null;
+    data.galleryLastScrapedAt = null;
+    data.tripadvisorRatingsScrapedAt = null;
+
     await prisma.$transaction([
         prisma.place.update({ where: { id }, data }),
         prisma.placeStyle.deleteMany({ where: { placeId: id } }),
         ...(styleIds.length ? [prisma.placeStyle.createMany({ data: styleIds.map((sid) => ({ placeId: id, styleId: sid })) })] : []),
     ]);
+
+    // Drop reviews tied to the old listing once the placeId has changed.
+    if (placeIdChanged) {
+        await prisma.externalReview.deleteMany({ where: { placeId: id, source: "google" } }).catch(() => {});
+    }
 
     // Ensure city/country/thresholds are up to date after manual edits.
     try {
@@ -645,7 +709,7 @@ router.post("/admin/places/:id", requireAdmin, async (req, res) => {
         console.error("Auto city/country ensure failed:", err && err.message ? err.message : err);
     }
 
-    res.redirect(`/admin/places/${id}`);
+    res.redirect(`/admin/places/${id}` + (mapsResolveNote ? `?note=${encodeURIComponent(mapsResolveNote)}` : ""));
 });
 
 router.post("/admin/places/:id/toggle-visible", requireAdmin, async (req, res) => {

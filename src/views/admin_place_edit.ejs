@@ -21,6 +21,7 @@
 %>
 <%- include("layout", { title: `Admin · Place · ${place.name}`, user, leaflet: false, bodyClass: "admin-page", body: String.raw`
   <div class="ed-shell">
+    ${note ? `<div class="ed-note">${escapeHtml(note)}</div>` : ""}
     <header class="ed-top">
       <div>
         <h1>${escapeHtml(place.name)}</h1>
@@ -197,6 +198,7 @@
 
   <style>
     .ed-shell { max-width: 920px; }
+    .ed-note { background:#fff6e0; border:1px solid #e8c878; color:#7a5a10; padding:10px 14px; border-radius:8px; margin-bottom:14px; font-size:14px; }
     .ed-top { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; }
     .ed-top__actions { display:flex; gap:8px; }
     .ed-top__actions form { margin:0; }
