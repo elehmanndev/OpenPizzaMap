@@ -77,6 +77,27 @@ async function callGemini(prompt) {
     });
 }
 
+// ─── Reviews normalization ──────────────────────────────────────────────────
+
+// Normalize a reviews array to non-empty body-text strings.
+//
+// Reviews may be plain strings (legacy scrape-reviews.js cache) or
+// structured objects { author, rating, text, relativeTime } (the
+// ratingsDist piggyback) or { author, rating, text:"", publishedAt, ... }
+// (legacy paid Places SearchText API — some of these carry NO text at all,
+// e.g. #185 Totonno's: 2 reviews, both text:"").
+//
+// Dropping empties is critical: a place whose only cached reviews are
+// text-less must NEVER reach Gemini, or it confabulates a generic blurb
+// from nothing (Eric's rule: descriptions come from real customers only).
+function usableReviewTexts(reviews) {
+    if (!Array.isArray(reviews)) return [];
+    return reviews
+        .map((r) => (typeof r === "string" ? r : (r && r.text) || ""))
+        .map((t) => t.trim())
+        .filter(Boolean);
+}
+
 // ─── Prompt builders ──────────────────────────────────────────────────────────
 
 function buildReviewPrompt(place, styles, reviews) {
@@ -86,15 +107,7 @@ function buildReviewPrompt(place, styles, reviews) {
         styleNames ? `Pizza style(s): ${styleNames}` : null,
     ].filter(Boolean).join("\n");
 
-    // Reviews may be plain strings (legacy scrape-reviews.js cache) or
-    // structured objects { author, rating, text, relativeTime } (the
-    // ratingsDist piggyback via extractGoogleReviewsFromOpenPanel).
-    // Normalize to body text and drop empties before numbering.
-    const reviewTexts = reviews
-        .map((r) => (typeof r === "string" ? r : (r && r.text) || ""))
-        .map((t) => t.trim())
-        .filter(Boolean)
-        .slice(0, 20);
+    const reviewTexts = usableReviewTexts(reviews).slice(0, 20);
     const reviewBlock = reviewTexts
         .map((t, i) => `${i + 1}. ${t.slice(0, 500)}`)
         .join("\n");
@@ -226,15 +239,19 @@ async function run({
         let prompt, source;
 
         const cached = reviewsCache[String(place.id)];
-        if (!cached || !cached.reviews || cached.reviews.length === 0) {
-            // No reviews → no description. Skip until reviews are scraped.
-            // Eric's rule: descriptions must come from real customers, never
-            // from website blurbs or pure metadata.
+        const usable = cached && cached.reviews ? usableReviewTexts(cached.reviews) : [];
+        if (usable.length === 0) {
+            // No usable review TEXT → no description. Skip until real reviews
+            // are scraped. Guards against text-less cached rows (e.g. legacy
+            // paid-API reviews with text:"") that would otherwise make Gemini
+            // confabulate a description from an empty review block.
+            // Eric's rule: descriptions come from real customers, never from
+            // website blurbs, pure metadata, or an empty prompt.
             skipped++;
             continue;
         }
         prompt = buildReviewPrompt(place, styles, cached.reviews);
-        source = `reviews(${cached.reviews.length})`;
+        source = `reviews(${usable.length})`;
 
         let description = "";
         try {
