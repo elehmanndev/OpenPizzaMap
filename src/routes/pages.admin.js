@@ -940,6 +940,71 @@ router.post("/admin/sitemap/rebuild", requireAdmin, async (req, res) => {
 // where unique constraints allow, drop is hidden + tagged with
 // enrichmentVersion=-1 so publishReady never auto-revives it.
 const { buildMergePlan, applyMergePlan } = require("../services/dedupMerge");
+const { findCandidatePairs } = require("../services/dedupCandidates");
+// buildPlan (the CLI merge-decision module) is reused ONLY to detect conflicts
+// for queue highlighting — the actual merge still runs through dedupMerge.js.
+const { buildPlan } = require("../../scripts/dedup/_logic");
+
+// In-memory candidate-queue cache (per Passenger worker). The scan is a
+// full-table O(n²)-per-city pass, so it must NOT run on every page load.
+// Cleared by a manual rescan (?rescan=1) or a completed merge.
+const DUP_TTL_MS = 10 * 60 * 1000;
+let _dupCache = null; // { at, scanned, pairs }
+
+// Persisted "not a dupe" suppress-list — a JSON file, deliberately NOT a DB
+// model so this ships without a prisma schema change (prod has no staging).
+const DISMISS_PATH = path.join(__dirname, "..", "..", "data", "reports", "dedup-dismissed.json");
+const pairKey = (a, b) => Math.min(a, b) + ":" + Math.max(a, b);
+function loadDismissed() {
+    try { return new Set(JSON.parse(fs.readFileSync(DISMISS_PATH, "utf8"))); }
+    catch { return new Set(); }
+}
+function saveDismissed(set) {
+    try {
+        fs.mkdirSync(path.dirname(DISMISS_PATH), { recursive: true });
+        fs.writeFileSync(DISMISS_PATH, JSON.stringify([...set]));
+    } catch { /* best-effort; a lost dismiss just re-shows the pair */ }
+}
+
+// Build (or reuse cached) candidate-duplicate queue. Each pair is tagged with
+// whether _logic.buildPlan flags it (phone / same-format-gpid conflict).
+async function getDupQueue(force) {
+    if (!force && _dupCache && (Date.now() - _dupCache.at) < DUP_TTL_MS) return _dupCache;
+    const places = await prisma.place.findMany({
+        where: { status: "active", isVisible: true },
+        select: {
+            id: true, name: true, slug: true, city: true, country: true,
+            lat: true, lng: true, addressLine: true, phone: true, googlePlaceId: true,
+        },
+    });
+    const pairs = findCandidatePairs(places).map((p) => {
+        const { flags } = buildPlan(p.survivor, p.drop);
+        return {
+            survivorId: p.survivor.id, survivorName: p.survivor.name,
+            dropId: p.drop.id, dropName: p.drop.name,
+            city: p.survivor.city, country: p.survivor.country,
+            distM: p.distM, why: p.why,
+            flagged: flags.length > 0,
+            flags: flags.map((f) => ({ field: f.field, reason: f.reason })),
+            key: pairKey(p.survivor.id, p.drop.id),
+        };
+    });
+    // Flagged first (need a careful look), then closest coords first.
+    pairs.sort((a, b) => (Number(b.flagged) - Number(a.flagged)) || a.distM - b.distM);
+    _dupCache = { at: Date.now(), scanned: places.length, pairs };
+    return _dupCache;
+}
+
+// "Not a dupe" — suppress a pair so the queue stops surfacing it.
+router.post("/admin/merge/dismiss", requireAdmin, (req, res) => {
+    const s = Number(req.body.survivor), d = Number(req.body.drop);
+    if (s && d) {
+        const set = loadDismissed();
+        set.add(pairKey(s, d));
+        saveDismissed(set);
+    }
+    res.redirect("/admin/merge");
+});
 
 router.get("/admin/merge", requireAdmin, async (req, res) => {
     const survivor = Number(req.query.survivor) || null;
@@ -955,12 +1020,28 @@ router.get("/admin/merge", requireAdmin, async (req, res) => {
             if (plan.error) { error = plan.error; plan = null; }
             else if (action === "apply") {
                 result = await applyMergePlan(prisma, plan);
+                _dupCache = null; // queue is now stale — force a rescan next load
             }
         } catch (e) {
             error = e.message;
         }
     }
-    res.render("admin_merge", { user: req.session.user, survivor, drop, plan, result, error });
+
+    // Candidate-duplicate queue (cached; ?rescan=1 forces a fresh scan).
+    let queue = null, queueError = null;
+    try {
+        const cache = await getDupQueue(req.query.rescan === "1");
+        const dismissed = loadDismissed();
+        queue = {
+            scanned: cache.scanned,
+            ageMin: Math.round((Date.now() - cache.at) / 60000),
+            pairs: cache.pairs.filter((p) => !dismissed.has(p.key)),
+        };
+    } catch (e) {
+        queueError = e.message;
+    }
+
+    res.render("admin_merge", { user: req.session.user, survivor, drop, plan, result, error, queue, queueError });
 });
 
 router.post("/admin/merge", requireAdmin, async (req, res) => {

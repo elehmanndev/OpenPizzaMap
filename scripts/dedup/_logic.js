@@ -25,6 +25,28 @@ function isInternationalPhone(p) {
     return typeof p === 'string' && p.trim().startsWith('+');
 }
 
+// Classify a Google place id by ID scheme. The Places API returns canonical
+// `ChIJ…` ids; our Playwright resolver writes the FTID hex form `0x…:0x…`
+// as a fallback for the SAME physical venue (see notes: ftid-placeid-format).
+function gpidFormat(g) {
+    if (!g) return null;
+    if (/^0x[0-9a-f]+:0x[0-9a-f]+$/i.test(String(g))) return 'ftid';
+    if (/^ChIJ/.test(String(g))) return 'chij';
+    return 'other';
+}
+
+// Do two gpids plausibly point at the SAME place? Equal → yes. One empty →
+// not a conflict. Different *formats* (FTID vs ChIJ) → yes: the pair already
+// matched on name+coords, so a cross-format id pair is the same venue under
+// two schemes, NOT two distinct Google entries. Same format but different
+// value → a real conflict (return false → caller flags).
+function gpidSamePlace(a, b) {
+    if (!a || !b) return true;
+    if (a === b) return true;
+    const fa = gpidFormat(a), fb = gpidFormat(b);
+    return !!(fa && fb && fa !== fb);
+}
+
 // Returns { keep: 'survivor'|'drop'|'merged', reason, mergedValue?, flag? }.
 function decideField(field, sv, dv, survivor, drop) {
     if (isEmpty(sv) && !isEmpty(dv)) return { keep: 'drop', reason: 'survivor empty' };
@@ -62,6 +84,13 @@ function decideField(field, sv, dv, survivor, drop) {
                 if (isInternationalPhone(dv) && !isInternationalPhone(sv)) return { keep: 'drop', reason: 'drop uses international format' };
                 return { keep: 'survivor', reason: 'same number' };
             }
+            // Phones differ — but if BOTH rows carry a gpid for the same place
+            // (equal, or cross-format FTID↔ChIJ), it's one venue whose number
+            // changed or that has a second line. Keep survivor's; don't flag.
+            if (survivor.googlePlaceId && drop.googlePlaceId
+                && gpidSamePlace(survivor.googlePlaceId, drop.googlePlaceId)) {
+                return { keep: 'survivor', reason: 'same place (gpid) — phone differs, survivor kept' };
+            }
             return { keep: 'survivor', reason: 'DIFFERENT numbers — flag', flag: true };
         }
         case 'websiteUrl': {
@@ -73,6 +102,14 @@ function decideField(field, sv, dv, survivor, drop) {
         }
         case 'googlePlaceId': {
             if (sv === dv) return { keep: 'survivor', reason: 'same gpid' };
+            // Cross-format (FTID hex ↔ ChIJ) is the same venue under two id
+            // schemes, not a conflict. Prefer the canonical ChIJ over the
+            // Playwright FTID fallback so the survivor ends up Places-API-clean.
+            const fSv = gpidFormat(sv), fDv = gpidFormat(dv);
+            if (fSv && fDv && fSv !== fDv) {
+                if (fDv === 'chij' && fSv !== 'chij') return { keep: 'drop', reason: 'drop is canonical ChIJ (survivor FTID)' };
+                return { keep: 'survivor', reason: 'cross-format gpid — survivor canonical, kept' };
+            }
             return { keep: 'survivor', reason: 'DIFFERENT gpids — flag', flag: true };
         }
         case 'lat':
@@ -203,6 +240,7 @@ function haversineM(lat1, lng1, lat2, lng2) {
 
 module.exports = {
     isEmpty, phonesEqual, isInternationalPhone,
+    gpidFormat, gpidSamePlace,
     decideField, MERGE_FIELDS, buildPlan,
     haversineM,
 };

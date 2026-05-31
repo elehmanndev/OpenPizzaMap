@@ -11,14 +11,18 @@
 // rolls back. No partial state on failure.
 //
 // Flagged pairs (different phones / gpids) are SKIPPED by default — they
-// need human review. Pass --include-flagged to also process them (rare).
+// need human review. Pass --include-flagged to also process them (rare), or
+// approve specific ones via --from-file (see find-duplicates.js, which emits
+// data/reports/flagged-pairs.txt with each flagged S:D pre-commented).
 //
 // Usage:
-//   node scripts/dedup/merge-duplicates.js [--dry-run] [--limit N] [--include-flagged] [--pair S:D]
+//   node scripts/dedup/merge-duplicates.js [--dry-run] [--limit N] [--include-flagged] [--pair S:D] [--from-file <path>]
 //
-//   --dry-run       — print plan, no writes
-//   --limit N       — process at most N pairs (after sort)
-//   --pair 324:1622 — process only this single pair (S=survivor, D=drop)
+//   --dry-run        — print plan, no writes
+//   --limit N        — process at most N pairs (after sort)
+//   --pair 324:1622  — process only this single pair (S=survivor, D=drop)
+//   --from-file PATH — merge exactly the uncommented S:D pairs in PATH;
+//                      flagged pairs ARE merged here (explicit approval).
 //
 // All actions logged to data/reports/dedup-merge-{timestamp}.log so we have
 // a permanent record of every UPDATE/DELETE for forensics.
@@ -44,6 +48,13 @@ const PAIR_FILTER = (() => {
     const m = args[i + 1] && args[i + 1].match(/^(\d+):(\d+)$/);
     return m ? { s: parseInt(m[1], 10), d: parseInt(m[2], 10) } : null;
 })();
+// --from-file <path>: read a list of human-approved `S:D` pairs (the
+// uncommented lines from data/reports/flagged-pairs.txt) and merge exactly
+// those. Approval is explicit, so flagged pairs ARE merged in this mode.
+const FROM_FILE = (() => {
+    const i = args.indexOf('--from-file');
+    return i === -1 ? null : args[i + 1];
+})();
 
 const COORD_MATCH_M = 100;
 
@@ -65,17 +76,61 @@ function findHeroFile(placeId) {
     return null;
 }
 
+// Relation includes needed to compute a merge plan + relation transfers.
+// Shared by the full scan (loadPairs) and the id-targeted load (loadPairsByIds)
+// so both build identically-shaped pair objects.
+const PLACE_INCLUDE = {
+    sources: { select: { id: true, source: true, rank: true } },
+    visits: { select: { id: true, userId: true } },
+    favorites: { select: { id: true, userId: true } },
+    reviews: { select: { id: true } },
+    styles: { select: { styleId: true } },
+    faqs: { select: { id: true } },
+};
+
+// Build pair objects directly from explicit id pairs (used by --from-file and
+// avoids the loadPairs candidate-pass limitation: a pair flagged by the
+// token-overlap or address passes in find-duplicates.js won't appear in
+// loadPairs's name/gpid buckets, but the human approved it by id so we trust
+// it). Order is preserved from the file: first id = survivor, second = drop.
+async function loadPairsByIds(idPairs) {
+    const ids = [...new Set(idPairs.flatMap(({ s, d }) => [s, d]))];
+    const places = await prisma.place.findMany({
+        where: { id: { in: ids } },
+        include: PLACE_INCLUDE,
+    });
+    const byId = new Map(places.map((p) => [p.id, p]));
+    const pairs = [];
+    for (const { s, d } of idPairs) {
+        const sv = byId.get(s), dr = byId.get(d);
+        if (!sv || !dr) { log(`[from-file] SKIP ${s}:${d} — id ${!sv ? s : d} not found (already merged?)`); continue; }
+        const dist = (sv.lat && sv.lng && dr.lat && dr.lng)
+            ? Math.round(haversineM(Number(sv.lat), Number(sv.lng), Number(dr.lat), Number(dr.lng)))
+            : -1;
+        pairs.push({ survivor: sv, drop: dr, distM: dist });
+    }
+    return pairs;
+}
+
+// Parse approved `S:D` lines from a --from-file list. Comment (#) and blank
+// lines are ignored — that's how the audit pre-comments every pair.
+function readApprovedPairs(file) {
+    const txt = fs.readFileSync(file, 'utf8');
+    const out = [];
+    for (const raw of txt.split(/\r?\n/)) {
+        const line = raw.trim();
+        if (!line || line.startsWith('#')) continue;
+        const m = line.match(/^(\d+):(\d+)$/);
+        if (m) out.push({ s: parseInt(m[1], 10), d: parseInt(m[2], 10) });
+        else log(`[from-file] ignoring unparseable line: ${raw}`);
+    }
+    return out;
+}
+
 async function loadPairs() {
     const places = await prisma.place.findMany({
         where: { status: 'active' },
-        include: {
-            sources: { select: { id: true, source: true, rank: true } },
-            visits: { select: { id: true, userId: true } },
-            favorites: { select: { id: true, userId: true } },
-            reviews: { select: { id: true } },
-            styles: { select: { styleId: true } },
-            faqs: { select: { id: true } },
-        },
+        include: PLACE_INCLUDE,
     });
     // Same name-bucket + same-gpid candidate logic as find-duplicates.js.
     const buckets = new Map();
@@ -240,26 +295,47 @@ async function mergePair(pair, plan) {
 }
 
 async function main() {
-    log(`[mode] dry-run=${DRY_RUN}  include-flagged=${INCLUDE_FLAGGED}  limit=${LIMIT ?? 'none'}  pair=${PAIR_FILTER ? `${PAIR_FILTER.s}:${PAIR_FILTER.d}` : 'all'}`);
+    log(`[mode] dry-run=${DRY_RUN}  include-flagged=${INCLUDE_FLAGGED}  from-file=${FROM_FILE || 'no'}  limit=${LIMIT ?? 'none'}  pair=${PAIR_FILTER ? `${PAIR_FILTER.s}:${PAIR_FILTER.d}` : 'all'}`);
 
-    const allPairs = await loadPairs();
-    log(`[load] ${allPairs.length} candidate duplicate pairs`);
-
-    let pairs = allPairs;
-    if (PAIR_FILTER) {
-        pairs = pairs.filter((p) => p.survivor.id === PAIR_FILTER.s && p.drop.id === PAIR_FILTER.d);
-        if (!pairs.length) {
-            log(`No pair matching ${PAIR_FILTER.s}:${PAIR_FILTER.d} found. Note: survivor must be the LOWER id.`);
+    // Explicit approval modes (--from-file) merge flagged pairs too: the human
+    // already vetted them by uncommenting. Same for --include-flagged.
+    let pairs;
+    const fromFileMode = !!FROM_FILE;
+    if (fromFileMode) {
+        const approved = readApprovedPairs(FROM_FILE);
+        log(`[from-file] ${approved.length} approved pair(s) read from ${FROM_FILE}`);
+        if (!approved.length) {
+            log('[from-file] nothing to merge — uncomment some "S:D" lines first.');
             await prisma.$disconnect();
             return;
+        }
+        pairs = await loadPairsByIds(approved);
+        if (!pairs.length) {
+            log('[from-file] none of the approved pairs resolved to live rows.');
+            await prisma.$disconnect();
+            return;
+        }
+    } else {
+        pairs = await loadPairs();
+        log(`[load] ${pairs.length} candidate duplicate pairs`);
+        if (PAIR_FILTER) {
+            pairs = pairs.filter((p) => p.survivor.id === PAIR_FILTER.s && p.drop.id === PAIR_FILTER.d);
+            if (!pairs.length) {
+                log(`No pair matching ${PAIR_FILTER.s}:${PAIR_FILTER.d} found. Note: survivor must be the LOWER id.`);
+                await prisma.$disconnect();
+                return;
+            }
         }
     }
     // Build plans, partition by flagged.
     const planned = pairs.map((p) => ({ pair: p, plan: buildPlan(p.survivor, p.drop) }));
     const flagged = planned.filter((x) => x.plan.flags.length > 0);
-    let runnable = planned.filter((x) => x.plan.flags.length === 0);
-    if (INCLUDE_FLAGGED) runnable = planned;
-    log(`[partition] runnable=${runnable.length}  flagged=${flagged.length}  ${INCLUDE_FLAGGED ? '(including flagged)' : '(skipping flagged)'}`);
+    const runFlagged = INCLUDE_FLAGGED || fromFileMode;
+    let runnable = runFlagged ? planned : planned.filter((x) => x.plan.flags.length === 0);
+    if (fromFileMode && flagged.length) {
+        log(`[from-file] ${flagged.length} approved pair(s) carry flags — merging anyway (explicit approval).`);
+    }
+    log(`[partition] runnable=${runnable.length}  flagged=${flagged.length}  ${runFlagged ? '(including flagged)' : '(skipping flagged)'}`);
 
     if (LIMIT && runnable.length > LIMIT) {
         runnable = runnable.slice(0, LIMIT);
@@ -277,7 +353,7 @@ async function main() {
         }
     }
 
-    log(`[done] merged=${ok}  errored=${errored}  flagged-skipped=${INCLUDE_FLAGGED ? 0 : flagged.length}`);
+    log(`[done] merged=${ok}  errored=${errored}  flagged-skipped=${runFlagged ? 0 : flagged.length}`);
     if (logStream) {
         log(`[log] full audit → ${path.relative(ROOT, LOG_PATH)}`);
         logStream.end();
