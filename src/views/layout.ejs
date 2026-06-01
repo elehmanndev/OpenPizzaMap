@@ -1,14 +1,45 @@
 <!doctype html>
-<html>
+<html lang="<%= (typeof htmlLang !== "undefined" && htmlLang) ? htmlLang : "en" %>">
 
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>
-    <%= (typeof title === "string" && title.includes("OpenPizzaMap"))
-      ? title
-      : (title ? `${title} | OpenPizzaMap` : "OpenPizzaMap") %>
-  </title>
+  <% const __title = (typeof title === "string" && title.includes("OpenPizzaMap"))
+       ? title
+       : (title ? `${title} | OpenPizzaMap` : "OpenPizzaMap"); %>
+  <title><%= __title %></title>
+  <% if (typeof description !== "undefined" && description) { %>
+  <meta name="description" content="<%= description %>" />
+  <% } %>
+  <% if (typeof robots !== "undefined" && robots) { %>
+  <meta name="robots" content="<%= robots %>" />
+  <% } %>
+  <% if (typeof canonicalUrl !== "undefined" && canonicalUrl) { %>
+  <link rel="canonical" href="<%= canonicalUrl %>" />
+  <% } %>
+  <meta property="og:site_name" content="OpenPizzaMap" />
+  <meta property="og:type" content="<%= (typeof ogType !== "undefined" && ogType) ? ogType : "website" %>" />
+  <meta property="og:title" content="<%= __title %>" />
+  <% if (typeof description !== "undefined" && description) { %>
+  <meta property="og:description" content="<%= description %>" />
+  <% } %>
+  <% if (typeof canonicalUrl !== "undefined" && canonicalUrl) { %>
+  <meta property="og:url" content="<%= canonicalUrl %>" />
+  <% } %>
+  <% if (typeof ogImage !== "undefined" && ogImage) { %>
+  <meta property="og:image" content="<%= ogImage %>" />
+  <% } %>
+  <meta name="twitter:card" content="<%= (typeof ogImage !== "undefined" && ogImage) ? "summary_large_image" : "summary" %>" />
+  <meta name="twitter:title" content="<%= __title %>" />
+  <% if (typeof description !== "undefined" && description) { %>
+  <meta name="twitter:description" content="<%= description %>" />
+  <% } %>
+  <% if (typeof ogImage !== "undefined" && ogImage) { %>
+  <meta name="twitter:image" content="<%= ogImage %>" />
+  <% } %>
+  <% if (typeof jsonLd !== "undefined" && jsonLd) { (Array.isArray(jsonLd) ? jsonLd : [jsonLd]).forEach(function (block) { %>
+  <script type="application/ld+json"><%- JSON.stringify(block).replace(/</g, "\\u003c") %></script>
+  <% }); } %>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">

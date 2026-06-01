@@ -213,8 +213,9 @@
     if (bNorm !== aNorm) return bNorm - aNorm;
     return (b.count || 0) - (a.count || 0);
   });
+  const __seo = (typeof seo !== "undefined" && seo) ? seo : {};
 %>
-<%- include("layout", { title: place.name, user, leaflet: false, bodyClass: "place-page", body: String.raw`
+<%- include("layout", { title: __seo.title || place.name, description: __seo.description, canonicalUrl: __seo.canonicalUrl, ogImage: __seo.ogImage, ogType: __seo.ogType, robots: __seo.robots, jsonLd: __seo.jsonLd, user, leaflet: false, bodyClass: "place-page", body: String.raw`
   ${(() => {
     // Hero = first PlaceImage if any (Track 2 backfill), else legacy
     // heroImageUrl, else nothing. The mosaic gallery section below

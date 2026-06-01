@@ -5,6 +5,7 @@ const path = require("path");
 const { prisma } = require("../db");
 const { requireAuth, requireAdmin } = require("../middleware/auth");
 const { buildSitemapXml, writeSitemapFiles } = require("../services/sitemap");
+const { buildPlaceSeo } = require("../services/seo");
 const { isGoogleAuthConfigured } = require("../services/googleAuth");
 const { getDefaultMapView } = require("../services/geoip");
 
@@ -209,7 +210,8 @@ router.get("/place/:id/:slug?", async (req, res) => {
     delete place.googleReviewsJson;
     delete place.tripadvisorReviewsJson;
 
-    res.render("place", { user: req.session.user || null, place });
+    const seo = buildPlaceSeo(place);
+    res.render("place", { user: req.session.user || null, place, seo });
 });
 
 // Old form-based /add was replaced by the Gemini-chat intake at
